@@ -14,10 +14,10 @@ To import an SBtab (collection of) file(s) it is possible to use the function ´
 
 For information about the SBtab data format please refer to [the official git repository](https://github.com/tlubitz/SBtab).
 
-Input to function ´ímport_from_SBtab´:
-* the directory ´SBtabDir´ in which the SBtab spreadsheet are saved as tsv files.
+**Input** to function ´ímport_from_SBtab´:
+* the directory ´SBtabDir´ in which the SBtab spreadsheet are saved as tsv files
 
-Output of function ´import_from_SBtab´:
+**Output** of function ´import_from_SBtab´:
 * an R variable with information from the SBtab spreadsheets
 
 By running function ´ímport_from_SBtab´, a ´.vf´ is created in the same folder given as input to the function (´SBtabDir´).
