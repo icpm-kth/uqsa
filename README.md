@@ -26,7 +26,7 @@ By running function `import_from_SBtab`, two files are created in the same folde
 
 
 Example
-`sbtab_var <- import_from_SBtab(SBtabDir)
+`sbtab_var <- import_from_SBtab(SBtabDir)`
 
 ### Full ODE-model
 
