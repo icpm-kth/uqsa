@@ -20,7 +20,10 @@ For information about the SBtab data format please refer to [the official git re
 **Output** of function ´import_from_SBtab´:
 * an R variable with information from the SBtab spreadsheets
 
-By running function ´ímport_from_SBtab´, a ´.vf´ is created in the same folder given as input to the function (´SBtabDir´).
+By running function ´ímport_from_SBtab´, two files are created in the same folder given as input to the function (´SBtabDir´):
+* ´model_name.vf´ - SBtab converted into vfgen 
+* ´model_name.R´ - file containing the **vector field** and the **jacobian** of the ODE model described by the SBtab file
+
 
 Example
 ´sbtab_var <- import_from_SBtab(SBtabDir)´
