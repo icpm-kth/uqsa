@@ -10,19 +10,19 @@ Th SA folder contains MATLAB scripts to run global sensitivity analysis. A versi
 
 ### Import an SBtab file in R
 
-To import an SBtab (collection of) file(s) it is possible to use the function ´import_from_SBtab´ defined in the file "import_from_SBtab.R".
+To import an SBtab (collection of) file(s) it is possible to use the function `import_from_SBtab` defined in the file "import_from_SBtab.R".
 
 For information about the SBtab data format please refer to [the official git repository](https://github.com/tlubitz/SBtab).
 
-**Input** to function ´ímport_from_SBtab´:
-* the directory ´SBtabDir´ in which the SBtab spreadsheet are saved as tsv files
+**Input** to function `import_from_SBtab`:
+* the directory `SBtabDir` in which the SBtab spreadsheet are saved as tsv files
 
-**Output** of function ´import_from_SBtab´:
+**Output** of function `import_from_SBtab`:
 * an R variable with information from the SBtab spreadsheets
 
-By running function ´ímport_from_SBtab´, two files are created in the same folder given as input to the function (´SBtabDir´):
-* ´model_name.vf´ - SBtab converted into vfgen 
-* ´model_name.R´ - file containing the **vector field** and the **jacobian** of the ODE model described by the SBtab file
+By running function `import_from_SBtab`, two files are created in the same folder given as input to the function (`SBtabDir`):
+* `model_name.vf` - SBtab converted into vfgen 
+* `model_name.R` - file containing the **vector field** and the **jacobian** of the ODE model described by the SBtab file
 
 
 Example
