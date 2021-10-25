@@ -10,4 +10,7 @@ import_from_SBtab <- function(tsvDirectory){
 	vfFileName = dir(pattern = ".*[.]vf$")
 	system(paste("cd", tsvDirectory))
 	system(paste("vfgen r", vfFileName))
+	
+	return(sbtab_model)
 }
+
