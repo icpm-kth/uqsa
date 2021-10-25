@@ -8,6 +8,23 @@ The UQ folder contains R scripts to run the uncertainty quantification method (A
 
 Th SA folder contains MATLAB scripts to run global sensitivity analysis. A version of MATLAB later than 2014a is required. The main script to run is called get_predictions_do_SA.m and requires access to the file Draws-Phenotype123-Scale1000.mat which is available in the UQ folder. 
 
+### Import an SBtab file in R
+
+To import an SBtab (collection of) file(s) it is possible to use the function ´import_from_SBtab´ defined in the file "import_from_SBtab.R".
+
+For information about the SBtab data format please refer to [the official git repository](https://github.com/tlubitz/SBtab).
+
+Input to function ´ímport_from_SBtab´:
+* the directory ´SBtabDir´ in which the SBtab spreadsheet are saved as tsv files.
+
+Output of function ´import_from_SBtab´:
+* an R variable with information from the SBtab spreadsheets
+
+By running function ´ímport_from_SBtab´, a ´.vf´ is created in the same folder given as input to the function (´SBtabDir´).
+
+Example
+´sbtab_var <- import_from_SBtab(SBtabDir)´
+
 ### Full ODE-model
 
 The full ODE-model correponding to all phenotypes can be recieved from the correponding authors upon request.
