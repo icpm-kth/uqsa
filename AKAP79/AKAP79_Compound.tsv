@@ -1,0 +1,18 @@
+!!SBtab	Document='AKAP79' SBtabVersion='1.0'	TableName='Compound' TableTitle='Compounds in AKAP79 Model'  TableType='Compound'			
+!ID	!Name	!InitialValue	!Unit	!Location	%!Assignment
+Rii	Rii	0	micromole/liter	spine	
+cAMP	cAMP	0	micromole/liter	spine	
+RiiP	RiiP	0	micromole/liter	spine	
+Rii_C	Rii_C	0	micromole/liter	spine	
+RiiP_cAMP	RiiP_cAMP	0	micromole/liter	spine	
+RiiP_C	RiiP_C	0	micromole/liter	spine	
+RiiP_C_cAMP	RiiP_C_cAMP	0	micromole/liter	spine	
+C	C	0	micromole/liter	spine	
+Rii_cAMP	Rii_cAMP	0	micromole/liter	spine	
+Rii_C_cAMP	Rii_C_cAMP	0	micromole/liter	spine	
+CaN	CaN	0	micromole/liter	spine	
+RiiP_CaN	RiiP_CaN	0	micromole/liter	spine	
+RiiP_cAMP_CaN	RiiP_cAMP_CaN	0	micromole/liter	spine	
+AKAR4	AKAR4	0	micromole/liter	spine	
+AKAR4_C	AKAR4_C	0	micromole/liter	spine	
+AKAR4p	AKAR4p	0	micromole/liter	spine	

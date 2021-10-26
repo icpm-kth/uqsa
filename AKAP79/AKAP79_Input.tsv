@@ -1,0 +1,3 @@
+!!SBtab	Document='AKAP79' SBtabVersion='1.0'	TableName='Input' TableTitle='Inputs in AKAP79 Model'  TableType='Quantity'	
+!ID	!Name	!DefaultValue	!Unit
+b_AKAP	b_AKAP	0	1
