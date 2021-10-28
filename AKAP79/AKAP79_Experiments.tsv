@@ -1,0 +1,5 @@
+!!SBtab	Document='PKA' SBtabVersion='1.0'	TableName='Experiments' TableTitle='Model inputs and measurements in PKA Model'  TableType='Quantity'																		
+!ID	!Name	>cAMP	>CaN	>b_AKAP
+e1	e1	6.3	1	0	0.63	0	0	0	0	0	0	0	0	0	0	2	0	0	0	0
+e2	e2	6.3	1	0	0.63	0	0	0	0	0	0	1.5	0	0	0	2	0	0	0	0
+e3	e3	6.3	1	0	0.63	0	0	0	0	0	0	1.5	0	0	0	2	0	0	0	1
