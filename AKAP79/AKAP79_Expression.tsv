@@ -4,8 +4,8 @@ kf_RiiP_cAMP_CaN__CaNXRii_cAMP	kf_RiiP_cAMP_CaN__CaNXRii_cAMP	b_AKAP * AKAPon_1 
 kb_RiiPxCaN__RiiP_CaN	kb_RiiPxCaN__RiiP_CaN	b_AKAP*AKAPon_3  +  (1 - b_AKAP)* AKAPoff_3	1
 kf_RiiP_CaN__RiixCaN	kf_RiiP_CaN__RiixCaN	b_AKAP * AKAPon_1 + (1 - b_AKAP) * AKAPoff_1	1
 kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN	kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN	b_AKAP*AKAPon_3  +  (1 - b_AKAP)* AKAPoff_3	1
-kf_RiiPxCaN__RiiP_CaN	kf_RiiPxCaN__RiiP_CaN	b_AKAP * ((kb_RiiPxCaN__RiiP_CaN + kf_RiiP_cAMP_CaN__CaNXRii_cAMP)/kmON ) + (1 - b_AKAP) * (kb_RiiPxCaN__RiiP_CaN + kf_RiiP_cAMP_CaN__CaNXRii_cAMP) / kmOFF
-kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN	kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN	b_AKAP * ((kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN + kf_RiiP_CaN__RiixCaN)/kmON) + (1 - b_AKAP) * (kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN + kf_RiiP_CaN__RiixCaN)/kmOFF
-kb_RiiP_CxcAMP__RiiP_C_cAMP	kb_RiiP_CxcAMP__RiiP_C_cAMP	kf_RiiP_CxcAMP__RiiP_C_cAMP * KD_T
+kf_RiiPxCaN__RiiP_CaN	kf_RiiPxCaN__RiiP_CaN	b_AKAP * ((kb_RiiPxCaN__RiiP_CaN + kf_RiiP_cAMP_CaN__CaNXRii_cAMP)/kmON ) + (1 - b_AKAP) * (kb_RiiPxCaN__RiiP_CaN + kf_RiiP_cAMP_CaN__CaNXRii_cAMP) / kmOFF	1
+kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN	kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN	b_AKAP * ((kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN + kf_RiiP_CaN__RiixCaN)/kmON) + (1 - b_AKAP) * (kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN + kf_RiiP_CaN__RiixCaN)/kmOFF	1
+kb_RiiP_CxcAMP__RiiP_C_cAMP	kb_RiiP_CxcAMP__RiiP_C_cAMP	kf_RiiP_CxcAMP__RiiP_C_cAMP * KD_T	1
 
 
