@@ -1,4 +1,4 @@
-!!SBtab	Document='PKA' SBtabVersion='1.0'	TableName='Expression' TableTitle='Expressions in PKA Model'  TableType='Quantity'	
+!!SBtab	Document='AKAP79' SBtabVersion='1.0'	TableName='Expression' TableTitle='Expressions in AKAP79 Model'  TableType='Quantity'	
 !ID	!Name	!Formula	!Unit
 kf_RiiP_cAMP_CaN__CaNXRii_cAMP	kf_RiiP_cAMP_CaN__CaNXRii_cAMP	b_AKAP * AKAPon_1 + (1 - b_AKAP) * AKAPoff_1	1
 kb_RiiPxCaN__RiiP_CaN	kb_RiiPxCaN__RiiP_CaN	b_AKAP*AKAPon_3  +  (1 - b_AKAP)* AKAPoff_3	1
