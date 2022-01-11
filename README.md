@@ -30,6 +30,10 @@ Example
 
 ### Simulate an ODE-model with function runModel.R
 
+```
+runModel <- function(y0, modelFunctionName, params, inputs, outputTimes, outputFunction, environment="R", mc.cores = 8)
+```
+
 Function `runModel` simulates the ODE model with name `modelFunctionName` given:
 *	a vector `y0`of initial conditions, whose dimension is equal to the dimension of the state variables
 *	a vector `param` of parameters
