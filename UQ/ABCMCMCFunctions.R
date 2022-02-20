@@ -1,5 +1,7 @@
 # Uncertainty Quantification: ABC-MCMC with copulas
-# Copyright (C) 2018 Alexandra Jauhiainen (alexandra.jauhiainen@gmail.com)
+# Federica Milinanni (fedmil@kth.se)
+# (based on: Copyright (C) 2018 Alexandra Jauhiainen (alexandra.jauhiainen@gmail.com)
+# and based on modifications: 2021 by Joao Antunes (joaodgantunes@gmail.com) and Olivia Eriksson (olivia@kth.se))
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -11,7 +13,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 
-ABCMCMC <- function(input, parIdx, nSims, xtarget,ytarget, startPar, Sigma0, delta, U, Z, Y, copula, rInd, ll, ul){
+ABCMCMC <- function(experiments, modelName, startPar, parIdx, parDefVal, nSims, Sigma0, delta, U, Z, Y, copula, ll, ul, nCores, environment){
   
   cat("Started chain.\n")
   Sigma1 <- 0.25*diag(diag(Sigma0))
@@ -20,12 +22,33 @@ ABCMCMC <- function(input, parIdx, nSims, xtarget,ytarget, startPar, Sigma0, del
   scount <- 1  
   
   curPar  <- startPar
-  invisible(capture.output(out <- runModel(curPar, parIdx, input, rInd)))
-  curDelta <- getMaxScore(xtarget, ytarget, out$xx, out$yy)
+  
+  numExperiments <- length(experiments)
+  
+  currPar <- parDefVal
+  currPar[parIdx] <- 10^(startPar)
+  
+  tmp_list <- mclapply(experiments, function(exper) c(currPar, exper[["input"]]), mc.preschedule = FALSE, mc.cores = nCores)
+  params_inputs <- do.call(cbind, tmp_list)
+  
+  tmp_list <- mclapply(experiments, function(exper) exper[["initialState"]],  mc.preschedule = FALSE, mc.cores = nCores)
+  y0 <- do.call(cbind, tmp_list)
+  
+  outputTimes_list <- mclapply(experiments, function(exper) exper[["outputTimes"]], mc.preschedule = FALSE, mc.cores = nCores)
+  outputFunctions_list <- mclapply(experiments, function(exper) exper[["outputFunction"]], mc.preschedule = FALSE, mc.cores = nCores)
+  
+  invisible(capture.output(out <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)))
+  
+  curDelta <- mclapply(1:length(out), function(i) getScoreTimeSeries(out[[i]], experiments[[i]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
+  curDelta <- unlist(curDelta)
+  
+  #Similarly to what we did in the preCalibration, we "sum" the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
+  #As in preCalibration, we can use - for instance - the sum of squares
+  curDelta <- sum(curDelta^2)
+  
   curPrior <- dprior(curPar, U, Z, Y, copula, ll, ul)
-  
   draws <- matrix(0, nSims,np)
-  
+
   n <- 0
   
   while (n < nSims){
@@ -34,7 +57,7 @@ ABCMCMC <- function(input, parIdx, nSims, xtarget,ytarget, startPar, Sigma0, del
     }else{
       canPar <- mvrnorm(n=1, curPar, Sigma1)
     }
-    out <- parUpdate(input, curPar, canPar, curDelta, curPrior, xtarget, ytarget, delta, U, Z, Y, copula, rInd, ll, ul)
+    out <- parUpdate(experiments, modelName, parIdx, parDefVal, curPar, canPar, curDelta, curPrior, delta, U, Z, Y, copula, ll, ul, environment, nCores)
     curPar <- out$curPar
     curDelta <- out$curDelta
     curPrior <- out$curPrior
@@ -74,17 +97,38 @@ dprior <- function(inx, U, Z, Y, copula, ll, ul){
   return(jpdf)
 }
 
-parUpdate <- function(input, curPar, canPar, curDelta, curPrior, xtarg, ytarg, delta, U, Z, Y, copula, rInd, ll, ul){
+
+parUpdate <- function(experiments, modelName, parIdx, parDefVal, curPar, canPar, curDelta, curPrior, delta, U, Z, Y, copula, ll, ul, environment, nCores){
+  #browser()
   
-  invisible(capture.output(out <- withTimeout(runModel(canPar, parIdx, input, rInd), timeout=25, onTimeout="silent")))
+  numExperiments <- length(experiments)
+  
+  par <- parDefVal
+  par[parIdx] <- 10^(canPar)
+  tmp_list <- mclapply(experiments, function(exper) c(par, exper[["input"]]), mc.preschedule = FALSE, mc.cores = nCores)
+  params_inputs <- do.call(cbind, tmp_list)
+  
+  tmp_list <- mclapply(experiments, function(exper) exper[["initialState"]],  mc.preschedule = FALSE, mc.cores = nCores)
+  y0 <- do.call(cbind, tmp_list)
+  
+  outputTimes_list <- mclapply(experiments, function(exper) exper[["outputTimes"]], mc.preschedule = FALSE, mc.cores = nCores)
+  outputFunctions_list <- mclapply(experiments, function(exper) exper[["outputFunction"]], mc.preschedule = FALSE, mc.cores = nCores)
+  
+  invisible(capture.output(out <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)))
+  
   if(is.null(out)){
-	canDelta <- Inf
-	canPrior <- 0
+    canDelta <- Inf
+    canPrior <- 0
   }else{  	
-    canDelta <- getMaxScore(xtarg, ytarg, out$xx, out$yy)
+    canDelta <- mclapply(1:length(out), function(i) getScoreTimeSeries(out[[i]], experiments[[i]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
+    canDelta <- unlist(canDelta)
+    
+    #Similarly to what we did in the preCalibration and in ABCMCMC, we "sum" the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
+    #As in preCalibration and ABCMCMC, we can use - for instance - the sum of squares
+    canDelta <- sum(canDelta^2)
     canPrior <- dprior(canPar, U, Z, Y, copula, ll, ul)
   }
-
+  
   if (canDelta <= max(delta,curDelta)){
     if (canPrior==0){
       h <- 0
@@ -100,5 +144,3 @@ parUpdate <- function(input, curPar, canPar, curDelta, curPrior, xtarg, ytarg, d
   }
   list(curPar=curPar, curDelta=curDelta, curPrior=curPrior)
 }
-
-

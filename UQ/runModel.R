@@ -1,6 +1,6 @@
-remotes::install_github("a-kramer/rgsl") #, ref="OpenMP")
+remotes::install_github("a-kramer/rgsl", ref="OpenMP")
 
-runModel <- function(y0, modelFunctionName, params_inputs, outputTimes, outputFunction, environment="R", mc.cores = 8){
+runModel <- function(y0, modelFunctionName, params_inputs, outputTimes_list, outputFunctions_list, environment="R", mc.cores = 8){
     
   if(environment=="C")
   {
@@ -12,11 +12,11 @@ runModel <- function(y0, modelFunctionName, params_inputs, outputTimes, outputFu
     }
     
     if (require("rgsl") && require("parallel")){
-      N <- ncol(params_inputs)
-      y0 <- matrix(rep(y0,N),ncol=N)
-      yy_gsl<-r_gsl_odeiv2(modelFunctionName,outputTimes,y0,params_inputs)
+      N <- size(params_inputs,2)
+      outputTimes <- outputTimes_list[[1]] ##TO CHANGE WHEN WE WILL HAVE A MORE GENERAL r_gsl_odeiv2 THAT ACCEPTS DIFFERENT OUTPUTTIMES FOR EACH PARAMETER/INPUT SET
+      yy_gsl<-r_gsl_odeiv2(modelFunctionName, as.double(outputTimes), y0, params_inputs)
       yy_gsl_as_list <- mclapply(seq(dim(yy_gsl)[3]), function(x) yy_gsl[ , , x], mc.preschedule = FALSE, mc.cores = mc.cores)
-      output_yy <- mclapply(yy_gsl_as_list, function(yy_) apply(yy_,2,outputFunction), mc.preschedule = FALSE, mc.cores = mc.cores)
+      output_yy <- mclapply(1:N, function(i)  apply(yy_gsl_as_list[[i]],2,outputFunctions_list[[i]]), mc.preschedule = FALSE, mc.cores = mc.cores)
     }
   }
   else
@@ -30,9 +30,9 @@ runModel <- function(y0, modelFunctionName, params_inputs, outputTimes, outputFu
     func <- eval(as.name(modelFunctionName))
     if(require("deSolve") && require("parallel")){
       
-      params_inputs_as_list <- mclapply(seq(dim(params_inputs)[2]), function(x) params_inputs[,x], mc.preschedule = FALSE, mc.cores = mc.cores)
-      yy <- mclapply(params_inputs_as_list, function(p) matrix(t(lsode(y0, outputTimes, func=func, parms=p)[, -1]),ncol=length(outputTimes)), mc.preschedule = FALSE, mc.cores = mc.cores)
-      output_yy <- mclapply(yy, function(yy_) apply(yy_,2,outputFunction), mc.preschedule = FALSE, mc.cores = mc.cores)
+      numSimulations <- size(params_inputs, 2);
+      yy <- mclapply(1:numSimulations, function(i) matrix(t(lsode(y0[,i], outputTimes_list[[i]], func=func, parms=params_inputs[,i])[, -1]),ncol=length(outputTimes_list[[i]])), mc.preschedule = FALSE, mc.cores = mc.cores)
+      output_yy <- mclapply(1:numSimulations, function(i)  apply(yy[[i]],2,outputFunctions_list[[i]]), mc.preschedule = FALSE, mc.cores = mc.cores)
     }
   }
   return(output_yy)

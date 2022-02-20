@@ -1,5 +1,6 @@
 # Uncertainty Quantification: Precalibration for ABC-MCMC
-# Copyright (C) 2018 Alexandra Jauhiainen (alexandra.jauhiainen@gmail.com)
+# Federica Milinanni (fedmil@kth.se)
+# (based on: Copyright (C) 2018 Alexandra Jauhiainen (alexandra.jauhiainen@gmail.com))
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -11,8 +12,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 
-preCalibration <- function(input, parIdx, xtarget, ytarget, npc, U, Z, copula, rInd){
+preCalibration <- function(experiments, modelName, parDefVal, parIdx, npc, copula, U, Z, nCores, environment){
   
+  numExperiments <- length(experiments)
   np <- length(parIdx)
   
   R <- RVineSim(npc, copula)
@@ -20,21 +22,33 @@ preCalibration <- function(input, parIdx, xtarget, ytarget, npc, U, Z, copula, r
   for(i in 1:np){
     prePar[,i] = spline(Z[,i],U[,i],xout=R[,i])$y
   }
-	
-	fun <- function(i) {
-		tpar <- prePar[i,]
-    	invisible(capture.output(out <- withTimeout(runModel(tpar, parIdx, input, rInd), timeout=25, onTimeout="silent")))
-		tmp <- ifelse(is.null(out), NA, getMaxScore(xtarget, ytarget, out$xx, out$yy))
-		return(tmp)
-	}
-
-  preDelta <- lapply(1:npc, fun)
-  # preDelta <- mclapply(1:npc, fun, mc.preschedule = FALSE, mc.cores = 20) # on a cluster
+  
+  tmp_list <- mclapply(experiments, function(x) replicate(npc, c(parDefVal,x[["input"]])),  mc.preschedule = FALSE, mc.cores = nCores)
+  params_inputs <- do.call(cbind, tmp_list)
+  params_inputs[parIdx,] <- 10^t(prePar)
+  
+  tmp_list <- mclapply(experiments, function(x) replicate(npc, x[["initialState"]]),  mc.preschedule = FALSE, mc.cores = nCores)
+  y0 <- do.call(cbind, tmp_list)
+  
+  outputTimes_list <- list()
+  outputFunctions_list <- list()
+  for(i in 1:numExperiments){
+    outputTimes_list <- c(outputTimes_list, replicate(npc, list(experiments[[i]][["outputTimes"]])))
+    outputFunctions_list <- c(outputFunctions_list, replicate(npc, list(experiments[[i]][["outputFunction"]])))
+  }
+  
+  invisible(capture.output(output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)))
+  preDelta <- mclapply(1:length(output_yy), function(i) getScoreTimeSeries(output_yy[[i]], experiments[[idivide(i-1,npc)+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
   preDelta <- unlist(preDelta)
-
+  
+  #preDelta is a vector of length npc*numExperiments.
+  #It is obtained using npc different parameter vectors, each of them tested on all the experiment.
+  #In particular, parameter i (in 1:npc) was used in the generation of preDelta[i+j*npc] (j in 0:numExperiments-1)
+  #Hence, to get an estimate of the delta that sums up the goodness of a certain parameter on the chosen experiments, we can use - for instance - the mean of squares
+  preDelta <- sapply(1:npc, function(i) sum((preDelta[i+seq(0,npc*(numExperiments-1), npc)])^2)/numExperiments)
+  
   return(list(preDelta=preDelta, prePar=prePar))
 }
-
 
 
 getMCMCPar <- function(prePar, preDelta, p, sfactor, delta, nChains){
@@ -49,12 +63,13 @@ getMCMCPar <- function(prePar, preDelta, p, sfactor, delta, nChains){
   }else{
     pick <- pick2
   }
-
+  
   Scorr <- cor(prePar[pick,])*0.8 #tone down corrs
   diag(Scorr) <- 1
   sdv <- apply(prePar[pick,], 2, sd)
   Sigma <- sfactor * Scorr * tcrossprod(sdv)
- 
+  
   startPar <- prePar[sample(pick, nChains, replace = FALSE),]
   list(Sigma=Sigma, startPar=startPar)
 }
+
