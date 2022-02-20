@@ -40,10 +40,6 @@ ul = log10(ul) # log10-scale
 
 normalizeAKAR4p <- function(x) ((x/1.08 - 100) / ( 171.67 - 100)) * 0.2
 
-#FIX EXPERIMENTS (THIS INFORMATION SHOULD BE WRITTEN DIRECTLY IN THE SBTAB FILES, 
-#I.E. NOT ADMIT NA VALUES IN THE SBTABS
-# HAVING THE CORRECT INITIAL CONDITIONS IN THE SBTABS
-# ...)
 for(i in 1:length(experiments)){
   experiments[[i]][["outputValues"]] <- normalizeAKAR4p(experiments[[i]][["outputValues"]])
 }
