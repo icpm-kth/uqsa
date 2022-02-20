@@ -31,18 +31,18 @@ Example
 ### Simulate an ODE-model with function runModel.R
 
 ```
-runModel <- function(y0, modelFunctionName, params, inputs, outputTimes, outputFunction, environment="R", mc.cores = 8)
+runModel <- function(y0, modelFunctionName, params_inputs, outputTimes, outputFunction, environment="R", mc.cores = 8)
+
 ```
 
 Function `runModel` simulates the ODE model with name `modelFunctionName` given:
 *	a vector `y0`of initial conditions, whose dimension is equal to the dimension of the state variables
-*	a vector `param` of parameters
-*	a list `inputs` of N input vectors
+*	a matrix `params_inputs`, whose N column vectors are sets of parameters and inputs (first and second part of the vector correspond, respectively, to parameters and inputs)
 *	a vector `outputTimes` of T times at which we want to simulate the ODE system
-*	a function `outputFunction` that converts the output state (the solution of the ODE system at given times) into an output vector
+*	a function `outputFunction` that converts a state vector (the solution of the ODE system at given times, in this case) into an output vector
 *	a string `environment`, that can be set as `R` or `C` to solve the ODE system, respectively, with the R-solver lsode (from the R package `deSolve`) or the C-solver  gsl_odeiv2 (from the C library `gsl`). The default value is set at environment=`R`.
 *	a positive integer `mc.cores` indicating the number of cores to use in the R parallelization. The default value is set at mc.cores = 8.
-The output of runModel is a list of N matrices (each element of the list corresponding to a different input vector in the list `inputs`). Each matrix of this list has dimension (N_o,T), where N_o is the dimension of the output of the function `outputFunction` and T is the length of the `outputTimes` vector. Element (i,j) of such matrices corresponds to the i-th component of the outputFunction applied to the solution of the ODE system at the j-th time in vector `outputTimes`.
+The output of runModel is a list of N matrices (each element of the list corresponding to a different column vector in the matrix `params_inputs`, i.e. a different parameter/input set). Each matrix of this list has dimension (N_o,T), where N_o is the length of the output vector of function `outputFunction`, and T is the length of the `outputTimes` vector. Element (i,j) of such matrices corresponds to the i-th component of the outputFunction applied to the solution of the ODE system at the j-th time in vector `outputTimes`.
 
 
 
