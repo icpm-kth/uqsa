@@ -8,44 +8,6 @@ The UQ folder contains R scripts to run the uncertainty quantification method (A
 
 Th SA folder contains MATLAB scripts to run global sensitivity analysis. A version of MATLAB later than 2014a is required. The main script to run is called get_predictions_do_SA.m and requires access to the file Draws-Phenotype123-Scale1000.mat which is available in the UQ folder. 
 
-### Import an SBtab file in R
-
-To import an SBtab (collection of) file(s) it is possible to use the function `import_from_SBtab` defined in the file "import_from_SBtab.R".
-
-For information about the SBtab data format please refer to [the official git repository](https://github.com/tlubitz/SBtab).
-
-**Input** to function `import_from_SBtab`:
-* the directory `SBtabDir` in which the SBtab spreadsheet are saved as tsv files
-
-**Output** of function `import_from_SBtab`:
-* an R variable with information from the SBtab spreadsheets
-
-By running function `import_from_SBtab`, two files are created in the same folder given as input to the function (`SBtabDir`):
-* `model_name.vf` - SBtab converted into vfgen 
-* `model_name.R` - file containing the **vector field** and the **jacobian** of the ODE model described by the SBtab file
-
-
-Example
-`sbtab_var <- import_from_SBtab(SBtabDir)`
-
-### Simulate an ODE-model with function runModel.R
-
-```
-runModel <- function(y0, modelFunctionName, params_inputs, outputTimes, outputFunction, environment="R", mc.cores = 8)
-
-```
-
-Function `runModel` simulates the ODE model with name `modelFunctionName` given:
-*	a vector `y0`of initial conditions, whose dimension is equal to the dimension of the state variables
-*	a matrix `params_inputs`, whose N column vectors are sets of parameters and inputs (first and second part of the vector correspond, respectively, to parameters and inputs)
-*	a vector `outputTimes` of T times at which we want to simulate the ODE system
-*	a function `outputFunction` that converts a state vector (the solution of the ODE system at given times, in this case) into an output vector
-*	a string `environment`, that can be set as `R` or `C` to solve the ODE system, respectively, with the R-solver lsode (from the R package `deSolve`) or the C-solver  gsl_odeiv2 (from the C library `gsl`). The default value is set at environment=`R`.
-*	a positive integer `mc.cores` indicating the number of cores to use in the R parallelization. The default value is set at mc.cores = 8.
-The output of runModel is a list of N matrices (each element of the list corresponding to a different column vector in the matrix `params_inputs`, i.e. a different parameter/input set). Each matrix of this list has dimension (N_o,T), where N_o is the length of the output vector of function `outputFunction`, and T is the length of the `outputTimes` vector. Element (i,j) of such matrices corresponds to the i-th component of the outputFunction applied to the solution of the ODE system at the j-th time in vector `outputTimes`.
-
-
-
 ### Full ODE-model
 
 The full ODE-model correponding to all phenotypes can be recieved from the correponding authors upon request.
