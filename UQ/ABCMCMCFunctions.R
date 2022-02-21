@@ -13,7 +13,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 
-ABCMCMC <- function(experiments, modelName, startPar, parIdx, parDefVal, nSims, Sigma0, delta, U, Z, Y, copula, ll, ul, nCores, environment){
+ABCMCMC <- function(experiments, modelName, startPar, parIdx, parDefVal, nSims, Sigma0, delta, U, Z, Y, copula, ll, ul, getScore, nCores, environment){
   
   cat("Started chain.\n")
   Sigma1 <- 0.25*diag(diag(Sigma0))
@@ -39,12 +39,12 @@ ABCMCMC <- function(experiments, modelName, startPar, parIdx, parDefVal, nSims, 
   
   invisible(capture.output(out <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)))
   
-  curDelta <- mclapply(1:length(out), function(i) getScoreTimeSeries(out[[i]], experiments[[i]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
+  curDelta <- mclapply(1:length(out), function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
   curDelta <- unlist(curDelta)
   
-  #Similarly to what we did in the preCalibration, we "sum" the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
+  #Similarly to what we did in the preCalibration, we average the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
   #As in preCalibration, we can use - for instance - the sum of squares
-  curDelta <- sum(curDelta^2)
+  curDelta <- mean(curDelta^2)
   
   curPrior <- dprior(curPar, U, Z, Y, copula, ll, ul)
   draws <- matrix(0, nSims,np)
@@ -98,7 +98,7 @@ dprior <- function(inx, U, Z, Y, copula, ll, ul){
 }
 
 
-parUpdate <- function(experiments, modelName, parIdx, parDefVal, curPar, canPar, curDelta, curPrior, delta, U, Z, Y, copula, ll, ul, environment, nCores){
+parUpdate <- function(experiments, modelName, parIdx, parDefVal, curPar, canPar, curDelta, curPrior, delta, U, Z, Y, copula, ll, ul, getScore, environment, nCores){
   #browser()
   
   numExperiments <- length(experiments)
@@ -120,12 +120,12 @@ parUpdate <- function(experiments, modelName, parIdx, parDefVal, curPar, canPar,
     canDelta <- Inf
     canPrior <- 0
   }else{  	
-    canDelta <- mclapply(1:length(out), function(i) getScoreTimeSeries(out[[i]], experiments[[i]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
+    canDelta <- mclapply(1:length(out), function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
     canDelta <- unlist(canDelta)
     
-    #Similarly to what we did in the preCalibration and in ABCMCMC, we "sum" the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
+    #Similarly to what we did in the preCalibration and in ABCMCMC, we average the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
     #As in preCalibration and ABCMCMC, we can use - for instance - the sum of squares
-    canDelta <- sum(canDelta^2)
+    canDelta <- mean(canDelta^2)
     canPrior <- dprior(canPar, U, Z, Y, copula, ll, ul)
   }
   

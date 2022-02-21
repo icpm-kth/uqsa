@@ -12,7 +12,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 
-preCalibration <- function(experiments, modelName, parDefVal, parIdx, npc, copula, U, Z, nCores, environment){
+preCalibration <- function(experiments, modelName, parDefVal, parIdx, npc, copula, U, Z, getScore, nCores, environment){
   
   numExperiments <- length(experiments)
   np <- length(parIdx)
@@ -38,7 +38,7 @@ preCalibration <- function(experiments, modelName, parDefVal, parIdx, npc, copul
   }
   
   invisible(capture.output(output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)))
-  preDelta <- mclapply(1:length(output_yy), function(i) getScoreTimeSeries(output_yy[[i]], experiments[[idivide(i-1,npc)+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
+  preDelta <- mclapply(1:length(output_yy), function(i) getScore(output_yy[[i]], experiments[[idivide(i-1,npc)+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
   preDelta <- unlist(preDelta)
   
   #preDelta is a vector of length npc*numExperiments.

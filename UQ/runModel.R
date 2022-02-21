@@ -26,12 +26,12 @@ runModel <- function(y0, modelFunctionName, params_inputs, outputTimes_list, out
       str <- sprintf("%s is not admitted as value for the variable 'environment'. The default value 'R' will be used instead.", environment)
       warning(str)
     }
-    source(sprintf("%s.R",modelFunctionName))
+    source(sprintf("%s/%s.R",modelFunctionName,modelFunctionName))
     func <- eval(as.name(modelFunctionName))
     if(require("deSolve") && require("parallel")){
       
       numSimulations <- size(params_inputs, 2);
-      yy <- mclapply(1:numSimulations, function(i) matrix(t(lsode(y0[,i], outputTimes_list[[i]], func=func, parms=params_inputs[,i])[, -1]),ncol=length(outputTimes_list[[i]])), mc.preschedule = FALSE, mc.cores = mc.cores)
+      yy <- mclapply(1:numSimulations, function(i) matrix(t(lsode(y0[,i], c(0,outputTimes_list[[i]]), func=func, parms=params_inputs[,i])[-1, -1]),ncol=length(outputTimes_list[[i]])), mc.preschedule = FALSE, mc.cores = mc.cores)
       output_yy <- mclapply(1:numSimulations, function(i)  apply(yy[[i]],2,outputFunctions_list[[i]]), mc.preschedule = FALSE, mc.cores = mc.cores)
     }
   }
