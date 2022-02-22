@@ -57,7 +57,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parIdx, parDefVal, nSims, 
     }else{
       canPar <- mvrnorm(n=1, curPar, Sigma1)
     }
-    out <- parUpdate(experiments, modelName, parIdx, parDefVal, curPar, canPar, curDelta, curPrior, delta, U, Z, Y, copula, ll, ul, environment, nCores)
+    out <- parUpdate(experiments, modelName, parIdx, parDefVal, curPar, canPar, curDelta, curPrior, delta, U, Z, Y, copula, ll, ul, getScore, environment, nCores)
     curPar <- out$curPar
     curDelta <- out$curDelta
     curPrior <- out$curPrior
@@ -99,8 +99,7 @@ dprior <- function(inx, U, Z, Y, copula, ll, ul){
 
 
 parUpdate <- function(experiments, modelName, parIdx, parDefVal, curPar, canPar, curDelta, curPrior, delta, U, Z, Y, copula, ll, ul, getScore, environment, nCores){
-  #browser()
-  
+
   numExperiments <- length(experiments)
   
   par <- parDefVal

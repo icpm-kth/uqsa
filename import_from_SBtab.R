@@ -1,8 +1,6 @@
 remotes::install_github("a-kramer/SBtabVFGEN")
 
 import_from_SBtab <- function(SBtabDir){
-  prevwd <- getwd()
-  setwd(SBtabDir)
   tsvList <- dir(pattern = ".*[.]tsv$")
   sbtab_model <- SBtabVFGEN::sbtab_from_tsv(tsvList)
   
@@ -17,9 +15,7 @@ import_from_SBtab <- function(SBtabDir){
   vfFileName <- dir(pattern = ".*[.]vf$")
   modelName <- substr(vfFileName,1,nchar(vfFileName)-3)
   
-  system(paste(prevwd, "/many_outputs_to_one.sh ", modelName, ".R > ", modelName, "_out.R", sep=""))
-  
-  setwd(prevwd)
+  system(paste("../many_outputs_to_one.sh ", modelName, ".R > ", modelName, "_out.R", sep=""))
   return(sbtab_model)
 }
 

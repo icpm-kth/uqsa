@@ -1,14 +1,14 @@
-source('import_from_SBtab.R')
-source('UQ/copulaFunctions.R')
-source('UQ/runModel.R')
-source('UQ/PreCalibration.R')
-source('UQ/ABCMCMCFunctions.R')
-source('UQ/ScoringFunction.R')
+source('../import_from_SBtab.R')
+source('../UQ/copulaFunctions.R')
+source('../UQ/runModel.R')
+source('../UQ/PreCalibration.R')
+source('../UQ/ABCMCMCFunctions.R')
+source('../UQ/ScoringFunction.R')
 library(parallel)
 library(VineCopula)
 library(MASS)
 
-SBtabDir <- paste(getwd(),"/AKAP79",sep="")
+SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
 
 modelName <- "AKAP79"
@@ -28,19 +28,18 @@ parIdx <- 1:length(parVal)
 parNames <- parNames[parIdx]
 
 # Define Lower and Upper Limits for logUniform prior distribution for the parameters
-ll <- c(parVal[1:19]/defRange, parVal[20]/1.9, parVal[21]/defRange, parVal[22:24]/1.25, par[25:26]/1.5, par[27]/2)
-ul <- c(parVal[1:19]*defRange, parVal[20]*1.9, parVal[21]*defRange, parVal[22:24]*1.25, par[25:26]*1.5, par[27]*2)
+ll <- c(parVal[1:19]/defRange, parVal[20]/1.9, parVal[21]/defRange, parVal[22:24]/1.25, parVal[25:26]/1.5, parVal[27]/2)
+ul <- c(parVal[1:19]*defRange, parVal[20]*1.9, parVal[21]*defRange, parVal[22:24]*1.25, parVal[25:26]*1.5, parVal[27]*2)
 ll = log10(ll) # log10-scale
 ul = log10(ul) # log10-scale
 
 
 # Define the experiments that have to be considered in each iteration of the for loop to compare simulations with experimental data
-experimentsIndices <- list(3, 12, -1, 9, 2, 11, -1, 8, 1, 10, -1, 7)
-#1uM cAMP is missing
+experimentsIndices <- list(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 10 # no of samples required from each ABC-MCMC chain #WAS 1000
-npc <- 50 # pre-calibration  WAS 50.000
+ns <- 100 # no of samples required from each ABC-MCMC chain #WAS 1000
+npc <- 500 # pre-calibration  WAS 50.000
 
 # Define ABC-MCMC Settings
 p <- 0.01     # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
@@ -54,16 +53,22 @@ set.seed(7619201)
 
 # Define the score function to compare simulated data with experimental data
 getScore  <- function(yy_sim, yy_exp){
-  distance <- 100
+  
   yy_sim <- (yy_sim-0)/(0.2-0.0)
   yy_exp <- (yy_exp-100)/(171.67-100)
-  
   distance <- mean((yy_sim-yy_exp)^2)
   
   return(distance)
 }
 
+# set up cluster
+cl <- makeCluster(nChains, outfile="out-log.txt")
+clusterEvalQ(cl, c(library(parallel), library(VineCopula), library(MASS), source('../UQ/ABCMCMCFunctions.R')))
+clusterExport(cl, list("runModel", "modelName", "getScore", "Sigma", "delta", "startPar", "experiments", "expInd", "parVal", "parIdx", "copula", "ns", "Z", "U", "Y", "ll", "ul", "nCores"))
+
+
 # Loop through the Different Experimental Settings
+start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
   
   expInd <- experimentsIndices[[i]]
@@ -99,7 +104,55 @@ for (i in 1:length(experimentsIndices)){
   ## Run ABC-MCMC Sampling
   cat(sprintf("-Running MCMC chains \n"))
   
-  draws <- mclapply(1:nChains, function(k) ABCMCMC(experiments[expInd], modelName, startPar[k,], parIdx, parVal, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore, nCores, "C"), mc.preschedule = FALSE, mc.cores = nChains);
+
+  # run outer loop
+  draws <- parLapply(cl, 1:nChains, function(k) ABCMCMC(experiments[expInd], modelName, startPar[k,], parIdx, parVal, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore, nCores, "C"))
+  
+  # put together
+  draws <- do.call("rbind", draws)
+  pick <- !apply(draws, 1, function(rw) all(rw==0))
+  draws <- draws[pick,]
+  
+  for(j in 1:i){
+    filtInd <- experimentsIndices[[j]]
+    cat("-Checking fit with dataset", filtInd, "\n")
+    nDraws = dim(draws)[1]
+    
+    
+    tmp_list <- mclapply(experiments[filtInd], function(x) replicate(nDraws, c(parVal,x[["input"]])),  mc.preschedule = FALSE, mc.cores = nCores)
+    params_inputs <- do.call(cbind, tmp_list)
+    params_inputs[parIdx,] <- 10^t(draws)
+    
+    tmp_list <- mclapply(experiments[filtInd], function(x) replicate(nDraws, x[["initialState"]]),  mc.preschedule = FALSE, mc.cores = nCores)
+    y0 <- do.call(cbind, tmp_list)
+    
+    outputTimes_list <- list()
+    outputFunctions_list <- list()
+    for(i in 1:length(filtInd)){
+      outputTimes_list <- c(outputTimes_list, replicate(nDraws, list(experiments[[i]][["outputTimes"]])))
+      outputFunctions_list <- c(outputFunctions_list, replicate(nDraws, list(experiments[[i]][["outputFunction"]])))
+    }
+    
+    output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, "C", nCores)
+    scores <- mclapply(1:length(output_yy), function(i) getScore(output_yy[[i]], experiments[[filtInd[(i-1)%/%nDraws+1]]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
+    scores <- unlist(scores)
+    
+    pick <- scores <= delta
+    draws <- draws[pick,];
+    nPickedDraws <- nrow(draws)
+    nonFits <-  nDraws - nPickedDraws;
+    cat("-- ", nonFits, " samples of posterior after datasets ", expInd, " did not fit dataset ", filtInd)
+  }
+  
+  # Save Resulting Samples to MATLAB and R files.
+  cat("-Saving sample \n")
+  outFile <- paste(unlist(experimentsIndices[1:i]), collapse="_")
+  outFileR <- paste0("DrawsExperiments_",outFile,".RData",collapse="_")
+  outFileM <- paste0("DrawsExperiments_",outFile,".mat",collapse="_")
+  save(draws, parNames, file=outFileR)
+  #writeMat(outFileM, samples=10^draws)
   
 }
+end_time = Sys.time()
+time_ = end_time - start_time
 
