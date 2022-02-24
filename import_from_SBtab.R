@@ -1,4 +1,4 @@
-#remotes::install_github("a-kramer/SBtabVFGEN")
+remotes::install_github("a-kramer/SBtabVFGEN")
 
 import_from_SBtab <- function(SBtabDir){
   tsvList <- dir(pattern = ".*[.]tsv$")
