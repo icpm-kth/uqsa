@@ -7,6 +7,7 @@ source('../UQ/ScoringFunction.R')
 library(parallel)
 library(VineCopula)
 library(MASS)
+library(ks)
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
