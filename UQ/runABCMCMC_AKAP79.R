@@ -66,6 +66,7 @@ cl <- makeCluster(nChains, outfile="out-log.txt")
 clusterEvalQ(cl, c(library(parallel), library(VineCopula), library(MASS), source('../UQ/ABCMCMCFunctions.R')))
 clusterExport(cl, list("runModel", "modelName", "getScore", "delta", "experiments", "parIdx", "ns", "ll", "ul", "nCores"))
 
+environment <- "C"
 
 # Loop through the Different Experimental Settings
 start_time = Sys.time()
@@ -92,7 +93,7 @@ for (i in 1:length(experimentsIndices)){
   
   ## Run Pre-Calibration Sampling
   cat(sprintf("-Precalibration \n"))
-  out1 <- preCalibration(experiments[expInd], modelName, parVal, parIdx, npc, copula, U, Z, getScore, nCores = nCores, environment = "C")
+  out1 <- preCalibration(experiments[expInd], modelName, parVal, parIdx, npc, copula, U, Z, getScore, nCores = nCores, environment)
   
   sfactor <- 0.1 # scaling factor 
   
@@ -107,7 +108,7 @@ for (i in 1:length(experimentsIndices)){
   clusterExport(cl, list("Sigma", "startPar", "expInd", "copula","Z", "U", "Y"))
   
   # run outer loop
-  draws <- parLapply(cl, 1:nChains, function(k) ABCMCMC(experiments[expInd], modelName, startPar[k,], parIdx, parVal, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore, nCores, "C"))
+  draws <- parLapply(cl, 1:nChains, function(k) ABCMCMC(experiments[expInd], modelName, startPar[k,], parIdx, parVal, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore, nCores, environment))
   
   # put together
   draws <- do.call("rbind", draws)
@@ -134,7 +135,7 @@ for (i in 1:length(experimentsIndices)){
       outputFunctions_list <- c(outputFunctions_list, replicate(nDraws, list(experiments[[i]][["outputFunction"]])))
     }
     
-    output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, "C", nCores)
+    output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)
     scores <- mclapply(1:length(output_yy), function(i) getScore(output_yy[[i]], experiments[[filtInd[(i-1)%/%nDraws+1]]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
     scores <- unlist(scores)
     
