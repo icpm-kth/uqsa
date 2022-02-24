@@ -27,7 +27,7 @@ runModel <- function(y0, modelFunctionName, params_inputs, outputTimes_list, out
       str <- sprintf("%s is not admitted as value for the variable 'environment'. The default value 'R' will be used instead.", environment)
       warning(str)
     }
-    source(sprintf("%s.R",modelFunctionName,modelFunctionName))
+    source(sprintf("%s.R",modelFunctionName))
     func <- eval(as.name(modelFunctionName))
     if(require("deSolve") && require("parallel")){
       
