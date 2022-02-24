@@ -150,8 +150,11 @@ for (i in 1:length(experimentsIndices)){
   # Save Resulting Samples to MATLAB and R files.
   cat("-Saving sample \n")
   outFile <- paste(unlist(experimentsIndices[1:i]), collapse="_")
-  outFileR <- paste0("DrawsExperiments_",outFile,".RData",collapse="_")
-  outFileM <- paste0("DrawsExperiments_",outFile,".mat",collapse="_")
+  timeStr <- Sys.time()
+  timeStr <- gsub(":","_", timeStr)
+  timeStr <- gsub(" ","_", timeStr)
+  outFileR <- paste0("DrawsExperiments_",outFile,timeStr,".RData",collapse="_")
+  #outFileM <- paste0("DrawsExperiments_",outFile,timeStr,".mat",collapse="_")
   save(draws, parNames, file=outFileR)
   #writeMat(outFileM, samples=10^draws)
   
