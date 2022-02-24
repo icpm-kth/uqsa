@@ -60,13 +60,14 @@ getScore  <- function(yy_sim, yy_exp){
   
   return(distance)
 }
+environment <- "R"
 
 # set up cluster
 cl <- makeCluster(nChains, outfile="out-log.txt")
 clusterEvalQ(cl, c(library(parallel), library(VineCopula), library(MASS), source('../UQ/ABCMCMCFunctions.R')))
-clusterExport(cl, list("runModel", "modelName", "getScore", "delta", "experiments", "parVal", "parIdx", "ns", "ll", "ul", "nCores"))
+clusterExport(cl, list("runModel", "modelName", "getScore", "delta", "experiments", "parVal", "parIdx", "ns", "ll", "ul", "nCores", "environment"))
 
-environment <- "R"
+
 
 # Loop through the Different Experimental Settings
 start_time = Sys.time()
