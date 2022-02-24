@@ -64,7 +64,7 @@ getScore  <- function(yy_sim, yy_exp){
 # set up cluster
 cl <- makeCluster(nChains, outfile="out-log.txt")
 clusterEvalQ(cl, c(library(parallel), library(VineCopula), library(MASS), source('../UQ/ABCMCMCFunctions.R')))
-clusterExport(cl, list("runModel", "modelName", "getScore", "Sigma", "delta", "startPar", "experiments", "expInd", "parVal", "parIdx", "copula", "ns", "Z", "U", "Y", "ll", "ul", "nCores"))
+clusterExport(cl, list("runModel", "modelName", "getScore", "delta", "experiments", "parIdx", "ns", "ll", "ul", "nCores"))
 
 
 # Loop through the Different Experimental Settings
@@ -104,7 +104,8 @@ for (i in 1:length(experimentsIndices)){
   ## Run ABC-MCMC Sampling
   cat(sprintf("-Running MCMC chains \n"))
   
-
+  clusterExport(cl, list("Sigma", "startPar", "expInd", "copula","Z", "U", "Y"))
+  
   # run outer loop
   draws <- parLapply(cl, 1:nChains, function(k) ABCMCMC(experiments[expInd], modelName, startPar[k,], parIdx, parVal, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore, nCores, "C"))
   
