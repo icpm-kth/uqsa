@@ -1,0 +1,5 @@
+!!SBtab Document='AKAR4' Version='1.0' TableName='Experiments' TableType='QuantityMatrix'
+!ID	!Name	>C
+AKAR4_400nM	AKAR4_400nM	0.4
+AKAR4_100nM	AKAR4_100nM	0.1
+AKAR4_25nM	AKAR4_25nM	0.025

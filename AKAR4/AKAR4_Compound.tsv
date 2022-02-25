@@ -1,0 +1,6 @@
+!!SBtab	Document='AKAR4' SBtabVersion='1.0'	TableName='Compound' TableTitle='Compounds in AKAR4 Model'  TableType='Compound'			
+!ID	!Name	!InitialValue	!Unit	!Location	%!Assignment
+AKAR4	AKAR4	0.2	micromole/liter	spine	
+AKAR4_C	AKAR4_C	0	micromole/liter	spine	
+AKAR4p	AKAR4p	0	micromole/liter	spine	
+C	C	0	micromole/liter	spine	
