@@ -1,21 +1,17 @@
 remotes::install_github("a-kramer/SBtabVFGEN")
 
 import_from_SBtab <- function(SBtabDir){
-  tsvList <- dir(pattern = ".*[.]tsv$")
-  sbtab_model <- SBtabVFGEN::sbtab_from_tsv(tsvList)
+  tsvList <- dir(path = SBtabDir, pattern = ".*[.]tsv$")
+  sbtab_model <- SBtabVFGEN::sbtab_from_tsv(paste(SBtabDir,"/",tsvList,sep=""))
   
-  if(length(dir(pattern = ".*[.]vf$")) == 0){
+  if(length(dir(path = SBtabDir, pattern = ".*[.]vf$")) == 0){
     SBtabVFGEN::sbtab_to_vfgen(sbtab_model, cla = FALSE)		#this function creates a .vf file (located in the tsvDirectory) from the SBtab model
-    vfFileName <- dir(pattern = ".*[.]vf$")
+    vfFileName <- dir(path = SBtabDir, pattern = ".*[.]vf$")
     system(paste("cd", SBtabDir))
     system(paste("vfgen r:func=yes", vfFileName))
     system(paste("vfgen gsl", vfFileName))
   }
-  #Create an R function that given a state, returns a vector of outputs
-  vfFileName <- dir(pattern = ".*[.]vf$")
-  modelName <- substr(vfFileName,1,nchar(vfFileName)-3)
   
-  system(paste("../many_outputs_to_one.sh ", modelName, ".R > ", modelName, "_out.R", sep=""))
   return(sbtab_model)
 }
 
@@ -34,8 +30,8 @@ import_experiments <- function(modelName, SBtabDir){
   
   outputNames <- SBtab[["Output"]][["!Name"]]
   outputId <- SBtab[["Output"]][["!ID"]]
-  source(paste(SBtabDir, "/", modelName, "_out.R", sep = ""))
-  vectorialOutputFunction <- eval(as.name(paste(modelName, "_out", sep = "")))
+  source(paste(SBtabDir, "/", modelName, ".R", sep = ""))
+  vectorialOutputFunction <- eval(as.name(paste(modelName,"_", outputNames[1], sep="")))
   
   n_experiments <- dim(SBtab[["Experiments"]])[1]
   experiments <- vector("list", length = n_experiments)

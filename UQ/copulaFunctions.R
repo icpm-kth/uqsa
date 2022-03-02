@@ -11,13 +11,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 
-fitCopula <- function(X,ll,ul){
+fitCopula <- function(X,ll,ul, nChains){
   
   ncx <- ncol(X)
   ns <- nrow(X)
   eps <- 0.1
-  npoints <- 1000 
-  #npoints <- 5000 # possible on a cluster
+  npoints <- 5000 
   
   # randomly pick sample points
   if(ns > npoints){
@@ -31,7 +30,7 @@ fitCopula <- function(X,ll,ul){
   I <- unique(I)
   
   Z <- U <- Y <-  matrix(NA, length(I), ncx)
-  
+  newZ <- newY <-  matrix(NA, length(I), ncx)
   # must evaluate in real datapoints to 
   # keep connection between params
   # this is a normal kernel, looks similar 
@@ -43,12 +42,11 @@ fitCopula <- function(X,ll,ul){
     us <- min(ul[i],maxx+eps)
     U[,i] <- X[I,i]
     Z[,i] = kcde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
-    Y[,i] = kde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
+    Y[,i] = ks::kde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
   }
   
   # fit copula
-  vineCop <- RVineStructureSelect(Z,indeptest = T)
-  # vineCop <- RVineStructureSelect(Z,indeptest = T, mc.cores=20) # on a cluster
+  vineCop <- RVineStructureSelect(Z,indeptest = T, cores = nChains)
   return(list(copula=vineCop, U=U, Z=Z, Y=Y))
 }
 

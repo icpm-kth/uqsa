@@ -1,10 +1,9 @@
-setwd('/Users/federicamilinanni/Documents/PhD/UQSA/uqsa/AKAR4')
-source('../import_from_SBtab.R')
-source('../UQ/copulaFunctions.R')
-source('../UQ/runModel.R')
-source('../UQ/PreCalibration.R')
-source('../UQ/ABCMCMCFunctions.R')
-source('../UQ/ScoringFunction.R')
+source('import_from_SBtab.R')
+source('UQ/copulaFunctions.R')
+source('UQ/runModel.R')
+source('UQ/PreCalibration.R')
+source('UQ/ABCMCMCFunctions.R')
+source('UQ/ScoringFunction.R')
 library(parallel)
 library(VineCopula)
 library(MASS)
@@ -12,10 +11,11 @@ library(ks)
 library(R.utils)
 library(R.matlab)
 
-SBtabDir <- getwd()
+mainDir <- getwd()
+modelName <- "AKAR4"
+SBtabDir <- paste(mainDir, "/", modelName, sep = "")
 model = import_from_SBtab(SBtabDir)
 
-modelName <- "AKAR4"
 source(paste(SBtabDir,"/",modelName,".R",sep=""))
 
 parVal <- model[["Parameter"]][["!DefaultValue"]]
@@ -42,8 +42,8 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(1,2,3)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 10000 # no of samples required from each ABC-MCMC chain #WAS 1000
-npc <- 50000 # pre-calibration  WAS 50.000
+ns <- 10000 # no of samples required from each ABC-MCMC chain 
+npc <- 50000 # pre-calibration 
 
 # Define ABC-MCMC Settings
 p <- 0.01     # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
@@ -76,7 +76,7 @@ getScore  <- function(yy_sim, yy_exp){
 
 environment <- "C"
 
-
+setwd(SBtabDir)
 # Loop through the Different Experimental Settings
 start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
@@ -165,8 +165,8 @@ for (i in 1:length(experimentsIndices)){
   timeStr <- Sys.time()
   timeStr <- gsub(":","_", timeStr)
   timeStr <- gsub(" ","_", timeStr)
-  outFileR <- paste0("DrawsExperiments_",modelName,outFile,timeStr,".RData",collapse="_")
-  outFileM <- paste0("DrawsExperiments_",modelName,outFile,timeStr,".mat",collapse="_")
+  outFileR <- paste0("DrawsExperiments_ns",ns,"_npc",npc,"_",modelName,outFile,timeStr,".RData",collapse="_")
+  outFileM <- paste0("DrawsExperiments_ns",ns,"_npc",npc,"_",modelName,outFile,timeStr,".mat",collapse="_")
   save(draws, parNames, file=outFileR)
   writeMat(outFileM, samples=10^draws)
   
@@ -174,4 +174,17 @@ for (i in 1:length(experimentsIndices)){
 end_time = Sys.time()
 time_ = end_time - start_time
 
+#### PLOT RESTULTS FOR AKAR4 
+par(mfrow=c(2,3))
+for(i in 1:3){
+  hist(draws[,i], main=parNames[i], xlab = "Value in log scale")
+}
+combinePar <- list(c(1,2), c(1,3), c(2,3))
+for(i in combinePar){
+  plot(draws[,i[1]], draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
+}
 
+library(plotly)
+df = as.data.frame(draws)
+colnames(df) <- parNames
+plot_ly(dat = df, x = ~kf_C_AKAR4, y = ~kb_C_AKAR4, z = ~kcat_AKARp, type="scatter3d", mode="markers", marker=list(size = 1, color = "red"))
