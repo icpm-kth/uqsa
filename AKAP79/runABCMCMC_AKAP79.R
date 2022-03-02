@@ -11,7 +11,8 @@ library(ks)
 library(R.utils)
 library(R.matlab)
 
-modelName <- "AKAR4"
+
+modelName <- "AKAP79"
 SBtabDir <- paste(getwd(), "/", modelName, sep = "")
 model = import_from_SBtab(SBtabDir)
 
@@ -31,14 +32,14 @@ parIdx <- 1:length(parVal)
 parNames <- parNames[parIdx]
 
 # Define Lower and Upper Limits for logUniform prior distribution for the parameters
-ll <- c(parVal/defRange)
-ul <- c(parVal*defRange)
+ll <- c(parVal[1:19]/defRange, parVal[20]/1.9, parVal[21]/defRange, parVal[22:24]/1.25, parVal[25:26]/1.5, parVal[27]/2)
+ul <- c(parVal[1:19]*defRange, parVal[20]*1.9, parVal[21]*defRange, parVal[22:24]*1.25, parVal[25:26]*1.5, parVal[27]*2)
 ll = log10(ll) # log10-scale
 ul = log10(ul) # log10-scale
 
 
 # Define the experiments that have to be considered in each iteration of the for loop to compare simulations with experimental data
-experimentsIndices <- list(1,2,3)
+experimentsIndices <- list(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
 ns <- 10 # no of samples required from each ABC-MCMC chain 
@@ -52,22 +53,13 @@ delta <- 0.01
 # Define the number of Cores for the parallelization
 nCores <- 10
 
-set.seed(2022)
+set.seed(7619201)
 
 # Define the score function to compare simulated data with experimental data
-maxVal<-numeric(0)
-minVal<-numeric(0)
-for(i in 1:3){
-  maxVal[i] <- (max(experiments[[i]]$outputValues))
-  minVal[i] <- (min(experiments[[i]]$outputValues))
-}
-maxVal<-max(maxVal)
-minVal<-min(minVal)
-
 getScore  <- function(yy_sim, yy_exp){
   
   yy_sim <- (yy_sim-0)/(0.2-0.0)
-  yy_exp <- (yy_exp-minVal)/(maxVal-minVal)
+  yy_exp <- (yy_exp-100)/(171.67-100)
   distance <- mean((yy_sim-yy_exp)^2)
   
   return(distance)
@@ -114,7 +106,7 @@ for (i in 1:length(experimentsIndices)){
   cat(sprintf("-Running MCMC chains \n"))
   cl <- makeCluster(nChains, outfile="out-log.txt")
   clusterEvalQ(cl, c(library(parallel), library(VineCopula), library(MASS), source('../UQ/ABCMCMCFunctions.R')))
-  clusterExport(cl, list("runModel", "modelName", "getScore", "delta", "experiments", "parVal", "parIdx", "ns", "ll", "ul", "nCores", "environment","Sigma", "startPar", "expInd", "copula","Z", "U", "Y", "minVal", "maxVal"))
+  clusterExport(cl, list("runModel", "modelName", "getScore", "delta", "experiments", "parVal", "parIdx", "ns", "ll", "ul", "nCores", "environment","Sigma", "startPar", "expInd", "copula","Z", "U", "Y"))
   
   # run outer loop
   draws <- parLapply(cl, 1:nChains, function(k) ABCMCMC(experiments[expInd], modelName, startPar[k,], parIdx, parVal, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore, nCores, environment))
@@ -125,37 +117,36 @@ for (i in 1:length(experimentsIndices)){
   draws <- do.call("rbind", draws)
   pick <- !apply(draws, 1, function(rw) all(rw==0))
   draws <- draws[pick,]
-  if(i>1){
-    for(j in 1:(i-1)){
-      filtInd <- experimentsIndices[[j]]
-      cat("-Checking fit with dataset", filtInd, "\n")
-      nDraws = dim(draws)[1]
-      
-      
-      tmp_list <- mclapply(experiments[filtInd], function(x) replicate(nDraws, c(parVal,x[["input"]])),  mc.preschedule = FALSE, mc.cores = nCores)
-      params_inputs <- do.call(cbind, tmp_list)
-      params_inputs[parIdx,] <- 10^t(draws)
-      
-      tmp_list <- mclapply(experiments[filtInd], function(x) replicate(nDraws, x[["initialState"]]),  mc.preschedule = FALSE, mc.cores = nCores)
-      y0 <- do.call(cbind, tmp_list)
-      
-      outputTimes_list <- list()
-      outputFunctions_list <- list()
-      for(k in 1:length(filtInd)){
-        outputTimes_list <- c(outputTimes_list, replicate(nDraws, list(experiments[[k]][["outputTimes"]])))
-        outputFunctions_list <- c(outputFunctions_list, replicate(nDraws, list(experiments[[k]][["outputFunction"]])))
-      }
-      
-      output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)
-      scores <- mclapply(1:length(output_yy), function(k) getScore(output_yy[[k]], experiments[[filtInd[(k-1)%/%nDraws+1]]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
-      scores <- unlist(scores)
-      
-      pick <- scores <= delta
-      draws <- draws[pick,];
-      nPickedDraws <- nrow(draws)
-      nonFits <-  nDraws - nPickedDraws;
-      cat("-- ", nonFits, " samples of posterior after datasets ", expInd, " did not fit dataset ", filtInd)
+
+  for(j in 1:i){
+    filtInd <- experimentsIndices[[j]]
+    cat("-Checking fit with dataset", filtInd, "\n")
+    nDraws = dim(draws)[1]
+    
+    
+    tmp_list <- mclapply(experiments[filtInd], function(x) replicate(nDraws, c(parVal,x[["input"]])),  mc.preschedule = FALSE, mc.cores = nCores)
+    params_inputs <- do.call(cbind, tmp_list)
+    params_inputs[parIdx,] <- 10^t(draws)
+    
+    tmp_list <- mclapply(experiments[filtInd], function(x) replicate(nDraws, x[["initialState"]]),  mc.preschedule = FALSE, mc.cores = nCores)
+    y0 <- do.call(cbind, tmp_list)
+    
+    outputTimes_list <- list()
+    outputFunctions_list <- list()
+    for(i in 1:length(filtInd)){
+      outputTimes_list <- c(outputTimes_list, replicate(nDraws, list(experiments[[i]][["outputTimes"]])))
+      outputFunctions_list <- c(outputFunctions_list, replicate(nDraws, list(experiments[[i]][["outputFunction"]])))
     }
+    
+    output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)
+    scores <- mclapply(1:length(output_yy), function(i) getScore(output_yy[[i]], experiments[[filtInd[(i-1)%/%nDraws+1]]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
+    scores <- unlist(scores)
+    
+    pick <- scores <= delta
+    draws <- draws[pick,];
+    nPickedDraws <- nrow(draws)
+    nonFits <-  nDraws - nPickedDraws;
+    cat("-- ", nonFits, " samples of posterior after datasets ", expInd, " did not fit dataset ", filtInd)
   }
   
   # Save Resulting Samples to MATLAB and R files.
@@ -173,17 +164,4 @@ for (i in 1:length(experimentsIndices)){
 end_time = Sys.time()
 time_ = end_time - start_time
 
-#### PLOT RESTULTS FOR AKAR4 
-par(mfrow=c(2,3))
-for(i in 1:3){
-  hist(draws[,i], main=parNames[i], xlab = "Value in log scale")
-}
-combinePar <- list(c(1,2), c(1,3), c(2,3))
-for(i in combinePar){
-  plot(draws[,i[1]], draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
-}
 
-library(plotly)
-df = as.data.frame(draws)
-colnames(df) <- parNames
-plot_ly(dat = df, x = ~kf_C_AKAR4, y = ~kb_C_AKAR4, z = ~kcat_AKARp, type="scatter3d", mode="markers", marker=list(size = 1, color = "red"))
