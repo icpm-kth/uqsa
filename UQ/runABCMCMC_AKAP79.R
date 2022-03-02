@@ -8,6 +8,8 @@ library(parallel)
 library(VineCopula)
 library(MASS)
 library(ks)
+library(R.utils)
+library(R.matlab)
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
@@ -39,16 +41,16 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 100 # no of samples required from each ABC-MCMC chain #WAS 1000
-npc <- 500 # pre-calibration  WAS 50.000
+ns <- 1000 # no of samples required from each ABC-MCMC chain #WAS 1000
+npc <- 5000 # pre-calibration  WAS 50.000
 
 # Define ABC-MCMC Settings
 p <- 0.01     # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
-nChains <- 19 # For the ABC-MCMC Process: Nr of Parallel Chains; 
+nChains <- 12 # For the ABC-MCMC Process: Nr of Parallel Chains; 
 delta <- 0.01 
 
 # Define the number of Cores for the parallelization
-nCores <- 20
+nCores <- 10
 
 set.seed(7619201)
 
@@ -61,13 +63,8 @@ getScore  <- function(yy_sim, yy_exp){
   
   return(distance)
 }
-environment <- "R"
 
-# set up cluster
-cl <- makeCluster(nChains, outfile="out-log.txt")
-clusterEvalQ(cl, c(library(parallel), library(VineCopula), library(MASS), source('../UQ/ABCMCMCFunctions.R')))
-clusterExport(cl, list("runModel", "modelName", "getScore", "delta", "experiments", "parVal", "parIdx", "ns", "ll", "ul", "nCores", "environment"))
-
+environment <- "C"
 
 
 # Loop through the Different Experimental Settings
@@ -106,17 +103,20 @@ for (i in 1:length(experimentsIndices)){
   
   ## Run ABC-MCMC Sampling
   cat(sprintf("-Running MCMC chains \n"))
-  
-  clusterExport(cl, list("Sigma", "startPar", "expInd", "copula","Z", "U", "Y"))
+  cl <- makeCluster(nChains, outfile="out-log.txt")
+  clusterEvalQ(cl, c(library(parallel), library(VineCopula), library(MASS), source('../UQ/ABCMCMCFunctions.R')))
+  clusterExport(cl, list("runModel", "modelName", "getScore", "delta", "experiments", "parVal", "parIdx", "ns", "ll", "ul", "nCores", "environment","Sigma", "startPar", "expInd", "copula","Z", "U", "Y"))
   
   # run outer loop
   draws <- parLapply(cl, 1:nChains, function(k) ABCMCMC(experiments[expInd], modelName, startPar[k,], parIdx, parVal, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore, nCores, environment))
+  stopCluster(cl)
+  rm(cl)
   
   # put together
   draws <- do.call("rbind", draws)
   pick <- !apply(draws, 1, function(rw) all(rw==0))
   draws <- draws[pick,]
-  
+
   for(j in 1:i){
     filtInd <- experimentsIndices[[j]]
     cat("-Checking fit with dataset", filtInd, "\n")
@@ -154,12 +154,13 @@ for (i in 1:length(experimentsIndices)){
   timeStr <- Sys.time()
   timeStr <- gsub(":","_", timeStr)
   timeStr <- gsub(" ","_", timeStr)
-  outFileR <- paste0("DrawsExperiments_",outFile,timeStr,".RData",collapse="_")
-  #outFileM <- paste0("DrawsExperiments_",outFile,timeStr,".mat",collapse="_")
+  outFileR <- paste0("DrawsExperiments_",modelName,outFile,timeStr,".RData",collapse="_")
+  outFileM <- paste0("DrawsExperiments_",modelName,outFile,timeStr,".mat",collapse="_")
   save(draws, parNames, file=outFileR)
-  #writeMat(outFileM, samples=10^draws)
+  writeMat(outFileM, samples=10^draws)
   
 }
 end_time = Sys.time()
 time_ = end_time - start_time
+
 

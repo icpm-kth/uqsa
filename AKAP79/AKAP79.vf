@@ -51,20 +51,20 @@
  <Expression Name="reaction_3_7" Description="flux reaction_37" Formula="kf_RiiP_cAMP_CaN__CaNXRii_cAMP*RiiP_cAMP_CaN"/>
  <Expression Name="reaction_1" Description="flux reaction_1" Formula="kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C"/>
  <Expression Name="reaction_2" Description="flux reaction_2" Formula="kcat_AKARp*AKAR4_C"/>
- <StateVariable Name="Rii" Description="compound Rii" DefaultInitialCondition="0" Formula="-reaction_78-reaction_58+reaction_4_8"/>
+ <StateVariable Name="Rii" Description="compound Rii" DefaultInitialCondition="6.3" Formula="-reaction_78-reaction_58+reaction_4_8"/>
  <StateVariable Name="cAMP" Description="compound cAMP" DefaultInitialCondition="0" Formula="-reaction_12-reaction_43-reaction_78-reaction_56"/>
  <StateVariable Name="RiiP" Description="compound RiiP" DefaultInitialCondition="0" Formula="-reaction_14-reaction_43-reaction_44_"/>
- <StateVariable Name="Rii_C" Description="compound Rii_C" DefaultInitialCondition="0" Formula="-reaction_51-reaction_56+reaction_58"/>
+ <StateVariable Name="Rii_C" Description="compound Rii_C" DefaultInitialCondition="0.63" Formula="-reaction_51-reaction_56+reaction_58"/>
  <StateVariable Name="RiiP_cAMP" Description="compound RiiP_cAMP" DefaultInitialCondition="0" Formula="+reaction_43-reaction_23-reaction_33_"/>
  <StateVariable Name="RiiP_C" Description="compound RiiP_C" DefaultInitialCondition="0" Formula="+reaction_51+reaction_14-reaction_12"/>
  <StateVariable Name="RiiP_C_cAMP" Description="compound RiiP_C_cAMP" DefaultInitialCondition="0" Formula="+reaction_12+reaction_23+reaction_62"/>
  <StateVariable Name="C" Description="compound C" DefaultInitialCondition="0" Formula="-reaction_14-reaction_23-reaction_76-reaction_58-reaction_1+reaction_2"/>
  <StateVariable Name="Rii_cAMP" Description="compound Rii_cAMP" DefaultInitialCondition="0" Formula="+reaction_78-reaction_76+reaction_3_7"/>
  <StateVariable Name="Rii_C_cAMP" Description="compound Rii_C_cAMP" DefaultInitialCondition="0" Formula="+reaction_56+reaction_76-reaction_62"/>
- <StateVariable Name="CaN" Description="compound CaN" DefaultInitialCondition="0" Formula="-reaction_44_-reaction_33_+reaction_4_8+reaction_3_7"/>
+ <StateVariable Name="CaN" Description="compound CaN" DefaultInitialCondition="1.5" Formula="-reaction_44_-reaction_33_+reaction_4_8+reaction_3_7"/>
  <StateVariable Name="RiiP_CaN" Description="compound RiiP_CaN" DefaultInitialCondition="0" Formula="+reaction_44_-reaction_4_8"/>
  <StateVariable Name="RiiP_cAMP_CaN" Description="compound RiiP_cAMP_CaN" DefaultInitialCondition="0" Formula="+reaction_33_-reaction_3_7"/>
- <StateVariable Name="AKAR4" Description="compound AKAR4" DefaultInitialCondition="0" Formula="-reaction_1"/>
+ <StateVariable Name="AKAR4" Description="compound AKAR4" DefaultInitialCondition="0.2" Formula="-reaction_1"/>
  <StateVariable Name="AKAR4_C" Description="compound AKAR4_C" DefaultInitialCondition="0" Formula="+reaction_1-reaction_2"/>
  <StateVariable Name="AKAR4p" Description="compound AKAR4p" DefaultInitialCondition="0" Formula="+reaction_2"/>
  <Function Name="AKAR4pOUT" Description="output AKAR4pOUT" Formula="AKAR4p"/>
