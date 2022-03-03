@@ -37,7 +37,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parIdx, parDefVal, nSims, 
   outputTimes_list <- mclapply(experiments, function(exper) exper[["outputTimes"]], mc.preschedule = FALSE, mc.cores = nCores)
   outputFunctions_list <- mclapply(experiments, function(exper) exper[["outputFunction"]], mc.preschedule = FALSE, mc.cores = nCores)
   
-  invisible(capture.output(out <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)))
+  out <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)
   
   curDelta <- mclapply(1:length(out), function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
   curDelta <- unlist(curDelta)
