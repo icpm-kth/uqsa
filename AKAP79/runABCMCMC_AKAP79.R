@@ -45,8 +45,8 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 100 # no of samples required from each ABC-MCMC chain 
-npc <- 500 # pre-calibration 
+ns <- 1000 # no of samples required from each ABC-MCMC chain 
+npc <- 5000 # pre-calibration 
 
 # Define ABC-MCMC Settings
 p <- 0.01     # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
@@ -155,8 +155,8 @@ for (i in 1:length(experimentsIndices)){
   timeStr <- Sys.time()
   timeStr <- gsub(":","_", timeStr)
   timeStr <- gsub(" ","_", timeStr)
-  outFileR <- paste0("PosteriorSamples/Draws",modelName,"_",environment,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
-  outFileM <- paste0("PosteriorSamples/Draws",modelName,"_",environment,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
+  outFileR <- paste0("../PosteriorSamples/Draws",modelName,"_",environment,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
+  outFileM <- paste0("../PosteriorSamples/Draws",modelName,"_",environment,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
   save(draws, parNames, file=outFileR)
   writeMat(outFileM, samples=10^draws)
   

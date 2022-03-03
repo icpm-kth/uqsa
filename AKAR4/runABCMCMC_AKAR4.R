@@ -165,8 +165,8 @@ for (i in 1:length(experimentsIndices)){
   timeStr <- Sys.time()
   timeStr <- gsub(":","_", timeStr)
   timeStr <- gsub(" ","_", timeStr)
-  outFileR <- paste0("PosteriorSamples/Draws",modelName,"_",environment,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
-  outFileM <- paste0("PosteriorSamples/Draws",modelName,"_",environment,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
+  outFileR <- paste0("../PosteriorSamples/Draws",modelName,"_",environment,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
+  outFileM <- paste0("../PosteriorSamples/Draws",modelName,"_",environment,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
   save(draws, parNames, file=outFileR)
   writeMat(outFileM, samples=10^draws)
   
