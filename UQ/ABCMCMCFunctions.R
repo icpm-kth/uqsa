@@ -81,17 +81,21 @@ ABCMCMC <- function(experiments, modelName, startPar, parIdx, parDefVal, nSims, 
 
 
 dprior <- function(inx, U, Z, Y, copula, ll, ul){
-  np <- length(inx)
-  
-  ed <- sapply(1:np, function(i) approx(U[,i], Z[,i], xout=inx[i])$y)
-  mpdf <- sapply(1:np, function(i) approx(U[,i], Y[,i], xout=inx[i])$y)
-  
-  if(any(is.na(ed))|any(is.na(mpdf))){ # outside of copula defined limits
+  if(all(!is.na(inx))){
+    np <- length(inx)
+    
+    ed <- sapply(1:np, function(i) approx(U[,i], Z[,i], xout=inx[i])$y)
+    mpdf <- sapply(1:np, function(i) approx(U[,i], Y[,i], xout=inx[i])$y)
+    
+    if(any(is.na(ed))|any(is.na(mpdf))){ # outside of copula defined limits
+      jpdf <- 0
+    }else if(!(all(inx >=ll) & all(inx<=ul))){ # outside of prior
+      jpdf <- 0
+    }else{
+      jpdf <- RVinePDF(ed, copula, verbose = TRUE)*prod(mpdf)
+    }
+  } else {
     jpdf <- 0
-  }else if(!(all(inx >=ll) & all(inx<=ul))){ # outside of prior
-    jpdf <- 0
-  }else{
-    jpdf <- RVinePDF(ed, copula, verbose = TRUE)*prod(mpdf)
   }
   
   return(jpdf)
