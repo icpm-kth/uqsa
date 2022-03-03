@@ -1,7 +1,7 @@
 remotes::install_github("a-kramer/rgsl", ref="OpenMP")
 
 runModel <- function(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment="R", mc.cores = 8){
-    
+  
   if(environment=="C")
   {
     LIBS <- "-lgsl -lgslcblas -lm"
@@ -11,14 +11,13 @@ runModel <- function(y0, modelName, params_inputs, outputTimes_list, outputFunct
       system2("gcc",sprintf("%s -o %s %s_gvf.c %s",CFLAGS,so,modelName,LIBS))
     }
     
-    if (require("rgsl") && require("parallel")){
-      N <- dim(params_inputs)[2]
-      outputTimes <- outputTimes_list[[1]] ##TO CHANGE WHEN WE WILL HAVE A MORE GENERAL r_gsl_odeiv2 THAT ACCEPTS DIFFERENT OUTPUTTIMES FOR EACH PARAMETER/INPUT SET
-      yy_gsl<-r_gsl_odeiv2(modelName, as.double(outputTimes), y0, params_inputs)
-      
-      yy_gsl_as_list <- mclapply(seq(dim(yy_gsl)[3]), function(x) yy_gsl[ , , x], mc.preschedule = FALSE, mc.cores = mc.cores)
-      output_yy <- mclapply(1:N, function(i)  apply(yy_gsl_as_list[[i]],2,outputFunctions_list[[i]]), mc.preschedule = FALSE, mc.cores = mc.cores)
-    }
+    N <- dim(params_inputs)[2]
+    outputTimes <- outputTimes_list[[1]] ##TO CHANGE WHEN WE WILL HAVE A MORE GENERAL r_gsl_odeiv2 THAT ACCEPTS DIFFERENT OUTPUTTIMES FOR EACH PARAMETER/INPUT SET
+    yy_gsl<-r_gsl_odeiv2(modelName, as.double(outputTimes), y0, params_inputs)
+    
+    yy_gsl_as_list <- mclapply(seq(dim(yy_gsl)[3]), function(x) yy_gsl[ , , x], mc.preschedule = FALSE, mc.cores = mc.cores)
+    output_yy <- mclapply(1:N, function(i)  apply(yy_gsl_as_list[[i]],2,outputFunctions_list[[i]]), mc.preschedule = FALSE, mc.cores = mc.cores)
+    
   }
   else
   {
