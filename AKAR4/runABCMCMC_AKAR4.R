@@ -59,14 +59,8 @@ nCores <- 10
 set.seed(2022)
 
 # Define the score function to compare simulated data with experimental data
-maxVal<-numeric(0)
-minVal<-numeric(0)
-for(i in 1:3){
-  maxVal[i] <- (max(experiments[[i]]$outputValues))
-  minVal[i] <- (min(experiments[[i]]$outputValues))
-}
-maxVal<-max(maxVal)
-minVal<-min(minVal)
+maxVal <- max(unlist(lapply(experiments, function(x) max(x[["outputValues"]]))))
+minVal <- min(unlist(lapply(experiments, function(x) min(x[["outputValues"]]))))
 
 getScore  <- function(yy_sim, yy_exp){
   
