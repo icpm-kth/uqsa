@@ -151,3 +151,40 @@ parUpdate <- function(experiments, modelName, parIdx, parDefVal, curPar, canPar,
   }
   list(curPar=curPar, curDelta=curDelta, curPrior=curPrior)
 }
+
+
+checkFitWithPreviousExperiments <- function(currentExpSet, experimentsIndices, modelName, draws, experiments, parVal, parIdx, getScore, delta, environment, nCores, nChains){
+  if(currentExpSet>1){
+    for(j in 1:(currentExpSet-1)){
+      filtInd <- experimentsIndices[[j]]
+      cat("-Checking fit with dataset", filtInd, "\n")
+      nDraws = dim(draws)[1]
+      
+      
+      tmp_list <- mclapply(experiments[filtInd], function(x) replicate(nDraws, c(parVal,x[["input"]])),  mc.preschedule = FALSE, mc.cores = nCores*nChains)
+      params_inputs <- do.call(cbind, tmp_list)
+      params_inputs[parIdx,] <- 10^t(draws)
+      
+      tmp_list <- mclapply(experiments[filtInd], function(x) replicate(nDraws, x[["initialState"]]),  mc.preschedule = FALSE, mc.cores = nCores*nChains)
+      y0 <- do.call(cbind, tmp_list)
+      
+      outputTimes_list <- list()
+      outputFunctions_list <- list()
+      for(k in 1:length(filtInd)){
+        outputTimes_list <- c(outputTimes_list, replicate(nDraws, list(experiments[[k]][["outputTimes"]])))
+        outputFunctions_list <- c(outputFunctions_list, replicate(nDraws, list(experiments[[k]][["outputFunction"]])))
+      }
+      
+      output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores*nChains)
+      scores <- mclapply(1:length(output_yy), function(k) getScore(output_yy[[k]], experiments[[filtInd[(k-1)%/%nDraws+1]]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores*nChains)
+      scores <- unlist(scores)
+      
+      pick <- scores <= delta
+      draws <- draws[pick,];
+      nPickedDraws <- nrow(draws)
+      nonFits <-  nDraws - nPickedDraws;
+      cat("-- ", nonFits, " samples of posterior after datasets ", expInd, " did not fit dataset ", filtInd)
+    }
+  }
+  return(draws)
+}

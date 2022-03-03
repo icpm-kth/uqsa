@@ -117,37 +117,7 @@ for (i in 1:length(experimentsIndices)){
   draws <- do.call("rbind", draws)
   pick <- !apply(draws, 1, function(rw) all(rw==0))
   draws <- draws[pick,]
-
-  for(j in 1:i){
-    filtInd <- experimentsIndices[[j]]
-    cat("-Checking fit with dataset", filtInd, "\n")
-    nDraws = dim(draws)[1]
-    
-    
-    tmp_list <- mclapply(experiments[filtInd], function(x) replicate(nDraws, c(parVal,x[["input"]])),  mc.preschedule = FALSE, mc.cores = nCores)
-    params_inputs <- do.call(cbind, tmp_list)
-    params_inputs[parIdx,] <- 10^t(draws)
-    
-    tmp_list <- mclapply(experiments[filtInd], function(x) replicate(nDraws, x[["initialState"]]),  mc.preschedule = FALSE, mc.cores = nCores)
-    y0 <- do.call(cbind, tmp_list)
-    
-    outputTimes_list <- list()
-    outputFunctions_list <- list()
-    for(i in 1:length(filtInd)){
-      outputTimes_list <- c(outputTimes_list, replicate(nDraws, list(experiments[[i]][["outputTimes"]])))
-      outputFunctions_list <- c(outputFunctions_list, replicate(nDraws, list(experiments[[i]][["outputFunction"]])))
-    }
-    
-    output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)
-    scores <- mclapply(1:length(output_yy), function(i) getScore(output_yy[[i]], experiments[[filtInd[(i-1)%/%nDraws+1]]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
-    scores <- unlist(scores)
-    
-    pick <- scores <= delta
-    draws <- draws[pick,];
-    nPickedDraws <- nrow(draws)
-    nonFits <-  nDraws - nPickedDraws;
-    cat("-- ", nonFits, " samples of posterior after datasets ", expInd, " did not fit dataset ", filtInd)
-  }
+  draws <- checkFitWithPreviousExperiments(i, experimentsIndices, modelName, draws, experiments, parVal, parIdx, getScore, delta, environment, nCores, nChains)
   
   # Save Resulting Samples to MATLAB and R files.
   cat("-Saving sample \n")

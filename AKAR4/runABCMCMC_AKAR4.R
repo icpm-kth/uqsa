@@ -45,8 +45,8 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(1,2,3)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 1000 # no of samples required from each ABC-MCMC chain 
-npc <- 5000 # pre-calibration 
+ns <- 100 # no of samples required from each ABC-MCMC chain 
+npc <- 500 # pre-calibration 
 
 # Define ABC-MCMC Settings
 p <- 0.01     # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
@@ -71,7 +71,7 @@ getScore  <- function(yy_sim, yy_exp){
   return(distance)
 }
 
-environment <- "C"
+environment <- "R"
 
 # Loop through the Different Experimental Settings
 start_time = Sys.time()
@@ -120,38 +120,7 @@ for (i in 1:length(experimentsIndices)){
   draws <- do.call("rbind", draws)
   pick <- !apply(draws, 1, function(rw) all(rw==0))
   draws <- draws[pick,]
-  if(i>1){
-    for(j in 1:(i-1)){
-      filtInd <- experimentsIndices[[j]]
-      cat("-Checking fit with dataset", filtInd, "\n")
-      nDraws = dim(draws)[1]
-      
-      
-      tmp_list <- mclapply(experiments[filtInd], function(x) replicate(nDraws, c(parVal,x[["input"]])),  mc.preschedule = FALSE, mc.cores = nCores)
-      params_inputs <- do.call(cbind, tmp_list)
-      params_inputs[parIdx,] <- 10^t(draws)
-      
-      tmp_list <- mclapply(experiments[filtInd], function(x) replicate(nDraws, x[["initialState"]]),  mc.preschedule = FALSE, mc.cores = nCores)
-      y0 <- do.call(cbind, tmp_list)
-      
-      outputTimes_list <- list()
-      outputFunctions_list <- list()
-      for(k in 1:length(filtInd)){
-        outputTimes_list <- c(outputTimes_list, replicate(nDraws, list(experiments[[k]][["outputTimes"]])))
-        outputFunctions_list <- c(outputFunctions_list, replicate(nDraws, list(experiments[[k]][["outputFunction"]])))
-      }
-      
-      output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)
-      scores <- mclapply(1:length(output_yy), function(k) getScore(output_yy[[k]], experiments[[filtInd[(k-1)%/%nDraws+1]]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
-      scores <- unlist(scores)
-      
-      pick <- scores <= delta
-      draws <- draws[pick,];
-      nPickedDraws <- nrow(draws)
-      nonFits <-  nDraws - nPickedDraws;
-      cat("-- ", nonFits, " samples of posterior after datasets ", expInd, " did not fit dataset ", filtInd)
-    }
-  }
+  draws <- checkFitWithPreviousExperiments(i, experimentsIndices, modelName, draws, experiments, parVal, parIdx, getScore, delta, environment, nCores, nChains)
   
   # Save Resulting Samples to MATLAB and R files.
   cat("-Saving sample \n")
