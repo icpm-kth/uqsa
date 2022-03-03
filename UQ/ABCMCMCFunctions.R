@@ -64,9 +64,13 @@ ABCMCMC <- function(experiments, modelName, startPar, parIdx, parDefVal, nSims, 
     
     scount <- ifelse(!all(curPar == canPar), scount+1, 1)
     
-    if (curDelta <= delta & all(curPar == canPar)){
-      n=n+1
-      draws[n,] = curPar
+    if(!is.na(curDelta <= delta & all(curPar == canPar))){
+      if (curDelta <= delta & all(curPar == canPar)){
+        n=n+1
+        draws[n,] = curPar
+      }
+    } else {
+      cat('NA when evaluating: "curDelta <= delta & all(curPar == canPar)"')
     }
     
     if(scount>500){ #terminate chain if stuck
