@@ -16,7 +16,7 @@ fitCopula <- function(X,ll,ul, nChains){
   ncx <- ncol(X)
   ns <- nrow(X)
   eps <- 0.1
-  npoints <- 5000 
+  npoints <- min(5000, dim(X)[1]) 
   
   # randomly pick sample points
   if(ns > npoints){
@@ -52,7 +52,7 @@ fitCopula <- function(X,ll,ul, nChains){
 
 
 makeIndepCopula <- function(ll, ul){
-  npoints <- 1000
+  npoints <- 5000
   np <- length(ll)
   Z <- U <- Y <- matrix(NA, npoints, np)
    for(i in 1:np){
