@@ -1,5 +1,3 @@
-remotes::install_github("a-kramer/rgsl", ref="OpenMP")
-
 runModel <- function(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment="R", mc.cores = 8){
   
   if(environment=="C")

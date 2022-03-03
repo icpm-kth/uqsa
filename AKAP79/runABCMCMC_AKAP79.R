@@ -1,19 +1,22 @@
-source('import_from_SBtab.R')
-source('UQ/copulaFunctions.R')
-source('UQ/runModel.R')
-source('UQ/PreCalibration.R')
-source('UQ/ABCMCMCFunctions.R')
-source('UQ/ScoringFunction.R')
+source('../import_from_SBtab.R')
+source('../UQ/copulaFunctions.R')
+source('../UQ/runModel.R')
+source('../UQ/PreCalibration.R')
+source('../UQ/ABCMCMCFunctions.R')
+source('../UQ/ScoringFunction.R')
+#remotes::install_github("a-kramer/rgsl", ref="OpenMP")
+#remotes::install_github("a-kramer/SBtabVFGEN")
 library(parallel)
 library(VineCopula)
 library(MASS)
 library(ks)
 library(R.utils)
 library(R.matlab)
-
+library(rgsl)
+library(SBtabVFGEN)
 
 modelName <- "AKAP79"
-SBtabDir <- paste(getwd(), "/", modelName, sep = "")
+SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
 
 source(paste(SBtabDir,"/",modelName,".R",sep=""))
@@ -42,8 +45,8 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 10 # no of samples required from each ABC-MCMC chain 
-npc <- 50 # pre-calibration 
+ns <- 100 # no of samples required from each ABC-MCMC chain 
+npc <- 500 # pre-calibration 
 
 # Define ABC-MCMC Settings
 p <- 0.01     # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
@@ -59,15 +62,14 @@ set.seed(7619201)
 getScore  <- function(yy_sim, yy_exp){
   
   yy_sim <- (yy_sim-0)/(0.2-0.0)
-  yy_exp <- (yy_exp-100)/(171.67-100)
+  ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-100)/(171.67-100), Inf)
   distance <- mean((yy_sim-yy_exp)^2)
   
   return(distance)
 }
 
-environment <- "C"
+environment <- "R"
 
-setwd(SBtabDir)
 # Loop through the Different Experimental Settings
 start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
@@ -104,10 +106,8 @@ for (i in 1:length(experimentsIndices)){
   
   ## Run ABC-MCMC Sampling
   cat(sprintf("-Running MCMC chains \n"))
-  cl <- makeCluster(nChains, outfile="out-log.txt")
-  clusterEvalQ(cl, c(library(parallel), library(VineCopula), library(MASS), source('../UQ/ABCMCMCFunctions.R')))
-  clusterExport(cl, list("runModel", "modelName", "getScore", "delta", "experiments", "parVal", "parIdx", "ns", "ll", "ul", "nCores", "environment","Sigma", "startPar", "expInd", "copula","Z", "U", "Y"))
-  
+  cl <- makeCluster(nChains, type="FORK", outfile=paste("out-log_",modelName,"_",environment,"_ns",ns,".txt",sep=""))
+
   # run outer loop
   draws <- parLapply(cl, 1:nChains, function(k) ABCMCMC(experiments[expInd], modelName, startPar[k,], parIdx, parVal, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore, nCores, environment))
   stopCluster(cl)
@@ -155,8 +155,8 @@ for (i in 1:length(experimentsIndices)){
   timeStr <- Sys.time()
   timeStr <- gsub(":","_", timeStr)
   timeStr <- gsub(" ","_", timeStr)
-  outFileR <- paste0("PosteriorSamples/DrawsExperiments_ns",ns,"_npc",npc,"_",modelName,outFile,timeStr,".RData",collapse="_")
-  outFileM <- paste0("PosteriorSamples/DrawsExperiments_ns",ns,"_npc",npc,"_",modelName,outFile,timeStr,".mat",collapse="_")
+  outFileR <- paste0("PosteriorSamples/Draws",modelName,"_",environment,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
+  outFileM <- paste0("PosteriorSamples/Draws",modelName,"_",environment,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
   save(draws, parNames, file=outFileR)
   writeMat(outFileM, samples=10^draws)
   

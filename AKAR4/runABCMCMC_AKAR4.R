@@ -1,18 +1,22 @@
-source('import_from_SBtab.R')
-source('UQ/copulaFunctions.R')
-source('UQ/runModel.R')
-source('UQ/PreCalibration.R')
-source('UQ/ABCMCMCFunctions.R')
-source('UQ/ScoringFunction.R')
+source('../import_from_SBtab.R')
+source('../UQ/copulaFunctions.R')
+source('../UQ/runModel.R')
+source('../UQ/PreCalibration.R')
+source('../UQ/ABCMCMCFunctions.R')
+source('../UQ/ScoringFunction.R')
+#remotes::install_github("a-kramer/rgsl", ref="OpenMP")
+#remotes::install_github("a-kramer/SBtabVFGEN")
 library(parallel)
 library(VineCopula)
 library(MASS)
 library(ks)
 library(R.utils)
 library(R.matlab)
+library(rgsl)
+library(SBtabVFGEN)
 
 modelName <- "AKAR4"
-SBtabDir <- paste(getwd(), "/", modelName, sep = "")
+SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
 
 source(paste(SBtabDir,"/",modelName,".R",sep=""))
@@ -41,8 +45,8 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(1,2,3)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 10 # no of samples required from each ABC-MCMC chain 
-npc <- 50 # pre-calibration 
+ns <- 1000 # no of samples required from each ABC-MCMC chain 
+npc <- 5000 # pre-calibration 
 
 # Define ABC-MCMC Settings
 p <- 0.01     # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
@@ -67,7 +71,7 @@ minVal<-min(minVal)
 getScore  <- function(yy_sim, yy_exp){
   
   yy_sim <- (yy_sim-0)/(0.2-0.0)
-  yy_exp <- (yy_exp-minVal)/(maxVal-minVal)
+  ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-minVal)/(maxVal-minVal), Inf)
   distance <- mean((yy_sim-yy_exp)^2)
   
   return(distance)
@@ -75,7 +79,6 @@ getScore  <- function(yy_sim, yy_exp){
 
 environment <- "C"
 
-setwd(SBtabDir)
 # Loop through the Different Experimental Settings
 start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
@@ -112,10 +115,8 @@ for (i in 1:length(experimentsIndices)){
   
   ## Run ABC-MCMC Sampling
   cat(sprintf("-Running MCMC chains \n"))
-  cl <- makeCluster(nChains, outfile="out-log.txt")
-  clusterEvalQ(cl, c(library(parallel), library(VineCopula), library(MASS), source('../UQ/ABCMCMCFunctions.R')))
-  clusterExport(cl, list("runModel", "modelName", "getScore", "delta", "experiments", "parVal", "parIdx", "ns", "ll", "ul", "nCores", "environment","Sigma", "startPar", "expInd", "copula","Z", "U", "Y", "minVal", "maxVal"))
-  
+  cl <- makeCluster(nChains, type="FORK", outfile=paste("out-log_",modelName,"_",environment,"_ns",ns,".txt",sep=""))
+ 
   # run outer loop
   draws <- parLapply(cl, 1:nChains, function(k) ABCMCMC(experiments[expInd], modelName, startPar[k,], parIdx, parVal, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore, nCores, environment))
   stopCluster(cl)
@@ -164,8 +165,8 @@ for (i in 1:length(experimentsIndices)){
   timeStr <- Sys.time()
   timeStr <- gsub(":","_", timeStr)
   timeStr <- gsub(" ","_", timeStr)
-  outFileR <- paste0("PosteriorSamples/DrawsExperiments_ns",ns,"_npc",npc,"_",modelName,outFile,timeStr,".RData",collapse="_")
-  outFileM <- paste0("PosteriorSamples/DrawsExperiments_ns",ns,"_npc",npc,"_",modelName,outFile,timeStr,".mat",collapse="_")
+  outFileR <- paste0("PosteriorSamples/Draws",modelName,"_",environment,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
+  outFileM <- paste0("PosteriorSamples/Draws",modelName,"_",environment,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
   save(draws, parNames, file=outFileR)
   writeMat(outFileM, samples=10^draws)
   
@@ -174,16 +175,16 @@ end_time = Sys.time()
 time_ = end_time - start_time
 
 #### PLOT RESTULTS FOR AKAR4 
-par(mfrow=c(2,3))
-for(i in 1:3){
-  hist(draws[,i], main=parNames[i], xlab = "Value in log scale")
-}
-combinePar <- list(c(1,2), c(1,3), c(2,3))
-for(i in combinePar){
-  plot(draws[,i[1]], draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
-}
-
-library(plotly)
-df = as.data.frame(draws)
-colnames(df) <- parNames
-plot_ly(dat = df, x = ~kf_C_AKAR4, y = ~kb_C_AKAR4, z = ~kcat_AKARp, type="scatter3d", mode="markers", marker=list(size = 1, color = "red"))
+# par(mfrow=c(2,3))
+# for(i in 1:3){
+#   hist(draws[,i], main=parNames[i], xlab = "Value in log scale")
+# }
+# combinePar <- list(c(1,2), c(1,3), c(2,3))
+# for(i in combinePar){
+#   plot(draws[,i[1]], draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
+# }
+# 
+# library(plotly)
+# df = as.data.frame(draws)
+# colnames(df) <- parNames
+# plot_ly(dat = df, x = ~kf_C_AKAR4, y = ~kb_C_AKAR4, z = ~kcat_AKARp, type="scatter3d", mode="markers", marker=list(size = 1, color = "red"))
