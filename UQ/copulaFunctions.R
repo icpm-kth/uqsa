@@ -16,7 +16,7 @@ fitCopula <- function(X,ll,ul, nChains){
   ncx <- ncol(X)
   ns <- nrow(X)
   eps <- 0.1
-  npoints <- min(5000, dim(X)[1]) 
+  npoints <- 5000
   
   # randomly pick sample points
   if(ns > npoints){
@@ -42,7 +42,7 @@ fitCopula <- function(X,ll,ul, nChains){
     us <- min(ul[i],maxx+eps)
     U[,i] <- X[I,i]
     Z[,i] = kcde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
-    Y[,i] = ks::kde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
+    Y[,i] = kde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
   }
   
   # fit copula
