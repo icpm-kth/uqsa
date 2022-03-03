@@ -95,7 +95,7 @@ for (i in 1:length(experimentsIndices)){
   
   ## Run Pre-Calibration Sampling
   cat(sprintf("-Precalibration \n"))
-  out1 <- preCalibration(experiments[expInd], modelName, parVal, parIdx, npc, copula, U, Z, getScore, nCores = nCores, environment)
+  out1 <- preCalibration(experiments[expInd], modelName, parVal, parIdx, npc, copula, U, Z, getScore, nCores = nCores*nChains, environment)
   
   sfactor <- 0.1 # scaling factor 
   
