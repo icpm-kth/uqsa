@@ -30,7 +30,6 @@ fitCopula <- function(X,ll,ul, nChains){
   I <- unique(I)
   
   Z <- U <- Y <-  matrix(NA, length(I), ncx)
-  newZ <- newY <-  matrix(NA, length(I), ncx)
   # must evaluate in real datapoints to 
   # keep connection between params
   # this is a normal kernel, looks similar 
