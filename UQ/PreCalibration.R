@@ -37,6 +37,7 @@ preCalibration <- function(experiments, modelName, parDefVal, parIdx, npc, copul
     outputFunctions_list <- c(outputFunctions_list, replicate(npc, list(experiments[[i]][["outputFunction"]])))
   }
   
+
   output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)
   preDelta <- mclapply(1:length(output_yy), function(i) getScore(output_yy[[i]], experiments[[(i-1)%/%npc+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
   preDelta <- unlist(preDelta)
@@ -46,7 +47,10 @@ preCalibration <- function(experiments, modelName, parDefVal, parIdx, npc, copul
   #In particular, parameter i (in 1:npc) was used in the generation of preDelta[i+j*npc] (j in 0:numExperiments-1)
   #Hence, to get an estimate of the delta that sums up the goodness of a certain parameter on the chosen experiments, we can use - for instance - the mean of squares
   preDelta <- sapply(1:npc, function(i) sum((preDelta[i+seq(0,npc*(numExperiments-1), npc)])^2)/numExperiments)
-  
+  if(any(is.na(preDelta))){
+    cat("*** [preCalibration] Some of the preDelta is NA. Replacing with Inf ***")
+    preDelta[is.na(preDelta)] <- Inf
+  }
   return(list(preDelta=preDelta, prePar=prePar))
 }
 

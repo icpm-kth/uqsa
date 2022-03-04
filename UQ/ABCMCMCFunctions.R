@@ -46,6 +46,11 @@ ABCMCMC <- function(experiments, modelName, startPar, parIdx, parDefVal, nSims, 
   #As in preCalibration, we can use - for instance - the sum of squares
   curDelta <- mean(curDelta^2)
   
+  if(is.na(curDelta)){
+    cat("\n*** [parUpdate] curDelta is NA. Replacing it with Inf ***\n")
+    curDelta <- Inf
+  }
+  
   curPrior <- dprior(curPar, U, Z, Y, copula, ll, ul)
   draws <- matrix(0, nSims,np)
 
@@ -133,6 +138,10 @@ parUpdate <- function(experiments, modelName, parIdx, parDefVal, curPar, canPar,
     #Similarly to what we did in the preCalibration and in ABCMCMC, we average the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
     #As in preCalibration and ABCMCMC, we can use - for instance - the sum of squares
     canDelta <- mean(canDelta^2)
+    if(is.na(canDelta))
+    {cat("\n*** [ABCMCMC] canDelta is NA. Replacing it with Inf ***")
+      canDelta <- Inf
+    }
     canPrior <- dprior(canPar, U, Z, Y, copula, ll, ul)
   }
   
@@ -178,6 +187,8 @@ checkFitWithPreviousExperiments <- function(currentExpSet, experimentsIndices, m
       output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores*nChains)
       scores <- mclapply(1:length(output_yy), function(k) getScore(output_yy[[k]], experiments[[filtInd[(k-1)%/%nDraws+1]]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores*nChains)
       scores <- unlist(scores)
+      
+      scores <-	scores[!is.na(scores)]
       
       pick <- scores <= delta
       draws <- draws[pick,];
