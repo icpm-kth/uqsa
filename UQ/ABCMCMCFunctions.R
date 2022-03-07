@@ -44,7 +44,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parIdx, parDefVal, nSims, 
   
   #Similarly to what we did in the preCalibration, we average the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
   #As in preCalibration, we can use - for instance - the sum of squares
-  curDelta <- mean(curDelta^2)
+  curDelta <- mean(curDelta)
   
   if(is.na(curDelta)){
     cat("\n*** [parUpdate] curDelta is NA. Replacing it with Inf ***\n")
@@ -137,7 +137,7 @@ parUpdate <- function(experiments, modelName, parIdx, parDefVal, curPar, canPar,
     
     #Similarly to what we did in the preCalibration and in ABCMCMC, we average the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
     #As in preCalibration and ABCMCMC, we can use - for instance - the sum of squares
-    canDelta <- mean(canDelta^2)
+    canDelta <- mean(canDelta)
     if(is.na(canDelta))
     {cat("\n*** [ABCMCMC] canDelta is NA. Replacing it with Inf ***")
       canDelta <- Inf
