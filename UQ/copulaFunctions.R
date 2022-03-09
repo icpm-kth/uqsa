@@ -11,7 +11,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 
-fitCopula <- function(X,ll,ul, nChains){
+fitCopula <- function(X,ll,ul, nCores){
   
   ncx <- ncol(X)
   ns <- nrow(X)
@@ -45,7 +45,7 @@ fitCopula <- function(X,ll,ul, nChains){
   }
   
   # fit copula
-  vineCop <- RVineStructureSelect(Z,indeptest = T, cores = nChains)
+  vineCop <- RVineStructureSelect(Z,indeptest = T, cores = nCores)
   return(list(copula=vineCop, U=U, Z=Z, Y=Y))
 }
 

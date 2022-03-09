@@ -45,8 +45,9 @@ preCalibration <- function(experiments, modelName, parDefVal, parIdx, npc, copul
   #preDelta is a vector of length npc*numExperiments.
   #It is obtained using npc different parameter vectors, each of them tested on all the experiment.
   #In particular, parameter i (in 1:npc) was used in the generation of preDelta[i+j*npc] (j in 0:numExperiments-1)
-  #Hence, to get an estimate of the delta that sums up the goodness of a certain parameter on the chosen experiments, we can use - for instance - the mean of squares
-  preDelta <- sapply(1:npc, function(i) sum((preDelta[i+seq(0,npc*(numExperiments-1), npc)])^2)/numExperiments)
+  #Hence, to get an estimate of the delta that sums up the goodness of a certain parameter on the chosen experiments, we can use - for instance - the mean
+  
+  #preDelta <- sapply(1:npc, function(i) sum((preDelta[i+seq(0,npc*(numExperiments-1), npc)]))/numExperiments)
   if(any(is.na(preDelta))){
     cat("*** [preCalibration] Some of the preDelta is NA. Replacing with Inf ***")
     preDelta[is.na(preDelta)] <- Inf
