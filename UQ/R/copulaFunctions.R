@@ -11,6 +11,20 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 
+#' Makes a Probability Density Estimate (from a sample)
+#'
+#' Given a sample (from some probability distribution) this function
+#' makes a Copula fit to the source distribution using the VineCopula
+#' package.
+#'
+#' @export
+#' @param X sample that characterizes the traget distribution (rows)
+#' @param ll lower limit of x values (rows in X)
+#' @param ul upper limit of x values (rows in X)
+#' @param nCores passed to parallel::mclapply()
+#' @return as list: vineCop, U, Z, and Y where U are marginal
+#'     probability samples, Z are cummulative density values for U,
+#'     and Y are the probability density values of U.
 fitCopula <- function(X,ll,ul, nCores){
   
   ncx <- ncol(X)
@@ -49,19 +63,26 @@ fitCopula <- function(X,ll,ul, nCores){
   return(list(copula=vineCop, U=U, Z=Z, Y=Y))
 }
 
-
+#' Copula Formulation for Uniform Prior Distributions
+#'
+#' Covers the (simpler) special case where the prior(x) is iid uniform.
+#' The return value has the same structure as the value of fitCopula().
+#'
+#' @export
+#' @param ll ll[i] is the lower limit of random variable x[i]
+#' @param ul upper limit, analogous to ll.
+#' @return list with: copula, U, Z, and Y entries.
 makeIndepCopula <- function(ll, ul){
   npoints <- 5000
   np <- length(ll)
   Z <- U <- Y <- matrix(NA, npoints, np)
-   for(i in 1:np){
-    minx <- ll[i]
-    maxx <- ul[i]
-    U[,i] <- seq(minx, maxx, length.out = npoints)
-    Z[,i] <- seq(0,1, length.out=npoints) 
-    Y[,i] <- rep(1/(maxx-minx), npoints) 
+  for(i in 1:np){
+     minx <- ll[i]
+     maxx <- ul[i]
+     U[,i] <- seq(minx, maxx, length.out = npoints)
+     Z[,i] <- seq(0,1, length.out=npoints) 
+     Y[,i] <- rep(1/(maxx-minx), npoints) 
   }
   vineCop <- RVineStructureSelect(Z, family=0)
   return(list(copula=vineCop, U=U, Z=Z, Y=Y))
 }
-

@@ -1,3 +1,40 @@
+#' Simulate an Experiment using the named ODE Model
+#'
+#' Simulation experiments constist at least of initial values for the
+#' state variables, a parameter vector, and a list of times at which
+#' the solution needs to be known.
+#'
+#' This function will use the GSL solvers, or deSolve [default].  In
+#' addition, a model usually has observables: values that depend on
+#' the state variables and can be measured in a real experiment. These
+#' are modeled by output functions.
+#'
+#' We distinguish normal parameters and input parameters. Input
+#' parameters are known and not subject to any estimation
+#' procedure. Furthermore, they are meant to represent the
+#' experimental conditions, so they are either under direct control of
+#' the experimenter or very carefully measured. The inputs are
+#' probably different for each simulation experiment in at least one
+#' value.
+#'
+#' If the environment variable is set to "C", then this function will
+#' attempt to compile the file modelName_gvf.c to a shared library
+#' modelName.so, if it doesn't already exist.
+#' 
+#' @export
+#' @param y0 Initial values: y'=f(t,y,p), y(t=0)=y0
+#' @param modelName used to find model files and functions within the
+#'     file (a prefix)
+#' @param params_inputs a matrix of column vectors; each column
+#'     contains a vector of both normal parameters (e.g. kinetic
+#'     params like kf and kr) and input_parameters (concatenated in
+#'     that order). With N columns, N simulations will be performed.
+#' @param outputTimes_list a list of output time vectors, one per
+#'     simulation experiment.
+#' @param outputFunctions_list a list of vector valued output functions
+#' @param environment "C" selects GSL solvers, "R" (default) selects deSolve as backend
+#' @param mc.cores number of cores to use (defaults to 8)
+#' @return output function values
 runModel <- function(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment="R", mc.cores = 8){
   
   if(environment=="C")
@@ -7,8 +44,7 @@ runModel <- function(y0, modelName, params_inputs, outputTimes_list, outputFunct
     so <- sprintf("%s.so",modelName)
     if (!file.exists(so)){
       system2("gcc",sprintf("%s -o %s %s_gvf.c %s",CFLAGS,so,modelName,LIBS))
-    }
-    
+    }    
     N <- dim(params_inputs)[2]
     outputTimes <- outputTimes_list[[1]] ##TO CHANGE WHEN WE WILL HAVE A MORE GENERAL r_gsl_odeiv2 THAT ACCEPTS DIFFERENT OUTPUTTIMES FOR EACH PARAMETER/INPUT SET
     yy_gsl<-r_gsl_odeiv2(modelName, as.double(outputTimes), y0, params_inputs)
