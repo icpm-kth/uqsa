@@ -38,7 +38,7 @@ simulation experiment.}
 output function values
 }
 \description{
-Simulation experiments constist at least of initial values for the
+Simulation experiments consist at least of initial values for the
 state variables, a parameter vector, and a list of times at which
 the solution needs to be known.
 }

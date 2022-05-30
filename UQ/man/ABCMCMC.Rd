@@ -29,11 +29,11 @@ ABCMCMC(
 
 \item{modelName}{model functions will be assumed to have this prefix}
 
-\item{startPar}{starting vaue for the parameter vector}
+\item{startPar}{starting value for the parameter vector}
 
-\item{parIdx}{NEEDS CLARIFICATION}
+\item{parIdx}{re-mapping between the MCMC variables and model parameters}
 
-\item{parDefVal}{NEEDS CLARIFICATION}
+\item{parDefVal}{default values for parameters, useful when some are not subject to estimation}
 
 \item{nSims}{requested sample size}
 
@@ -47,7 +47,7 @@ ABCMCMC(
 
 \item{Y}{(PDE) marginal probability density estimate}
 
-\item{copula}{An RVineMatrix() asreturned by RVineStructureSelect}
+\item{copula}{An RVineMatrix() as returned by RVineStructureSelect}
 
 \item{ll}{lower limit of model parameters}
 

@@ -11,7 +11,7 @@ dprior(inx, U, Z, Y, copula, ll, ul)
 
 \item{U}{samples of marginal distributions}
 
-\item{Z}{(CDE) cummulative density estimates of U}
+\item{Z}{(CDE) cumulative density estimates of U}
 
 \item{Y}{(PDE) probability density estimates of U}
 
@@ -22,7 +22,7 @@ dprior(inx, U, Z, Y, copula, ll, ul)
 \item{ul}{upper limit of inx}
 }
 \value{
-probability denisty function value
+probability density function value
 }
 \description{
 This function calculates a probability density value of an argument value x (vector) given a copula

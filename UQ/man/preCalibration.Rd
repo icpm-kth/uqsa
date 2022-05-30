@@ -47,6 +47,6 @@ list with entries preDelta and prePar, final values of calibration run
 }
 \description{
 In ABC settings a model solution is compared to data with an
-acceptance thershold: delta. This pre calibration function attempts
+acceptance threshold: delta. This-pre calibration function attempts
 to adjust this delta value.
 }

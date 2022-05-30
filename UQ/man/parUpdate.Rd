@@ -28,21 +28,27 @@ parUpdate(
 \arguments{
 \item{experiments}{list of simulation experiments}
 
-\item{modelName}{(characters), this will be used to find the model file and the functions in that file}
+\item{modelName}{(characters), this will be used to find the model
+file and the functions in that file}
 
-\item{parIdx}{remapping index set for passing parameters to the model}
+\item{parIdx}{remapping index set for passing parameters to the
+model}
 
-\item{parDefVal}{default values for the parameters (for cases in which some never change)}
+\item{parDefVal}{default values for the parameters (for cases in
+which some never change)}
 
 \item{curPar}{current parameter values (as ABC samples them)}
 
 \item{canPar}{candidate parameter values (for MCMC)}
 
-\item{curDelta}{current distance between data and simulation, if this is above threshold (delta) any run that is closer to the data than this is accepted as the new current state (for the MCMC variables).}
+\item{curDelta}{current distance between data and simulation, if
+the MCMC chain has not yet reached any point where this is
+below the threshold (delta), this can be accepted as the new
+current state for the chain.}
 
 \item{curPrior}{current Prior values given curPar}
 
-\item{delta}{distance thershold for ABC}
+\item{delta}{distance threshold for ABC}
 
 \item{U}{sampled marginal parameter values}
 
@@ -50,17 +56,18 @@ parUpdate(
 
 \item{Y}{(PDE) probability density estimate values of U}
 
+\item{copula}{as returned by copula estimators}
+
 \item{ll}{lower limit of parameters}
 
 \item{ul}{upper limit of parameters}
 
 \item{getScore}{a scoring function}
 
-\item{environment}{"C" selects GSL solvers, "R" selects the deSolve as backend}
+\item{environment}{"C" selects GSL solvers, "R" selects the deSolve
+as backend}
 
 \item{nCores}{number of cores to use in mclapply().}
-
-\item{cupula}{as returned by copula estimators}
 }
 \value{
 updated values for curPar, curDelta, and curPrior

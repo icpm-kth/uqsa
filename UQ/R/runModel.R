@@ -1,6 +1,6 @@
 #' Simulate an Experiment using the named ODE Model
 #'
-#' Simulation experiments constist at least of initial values for the
+#' Simulation experiments consist at least of initial values for the
 #' state variables, a parameter vector, and a list of times at which
 #' the solution needs to be known.
 #'
@@ -20,7 +20,7 @@
 #' If the environment variable is set to "C", then this function will
 #' attempt to compile the file modelName_gvf.c to a shared library
 #' modelName.so, if it doesn't already exist.
-#' 
+#'
 #' @export
 #' @param y0 Initial values: y'=f(t,y,p), y(t=0)=y0
 #' @param modelName used to find model files and functions within the
@@ -36,7 +36,6 @@
 #' @param mc.cores number of cores to use (defaults to 8)
 #' @return output function values
 runModel <- function(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment="R", mc.cores = 8){
-  
   if(environment=="C")
   {
     LIBS <- "-lgsl -lgslcblas -lm"
@@ -44,11 +43,11 @@ runModel <- function(y0, modelName, params_inputs, outputTimes_list, outputFunct
     so <- sprintf("%s.so",modelName)
     if (!file.exists(so)){
       system2("gcc",sprintf("%s -o %s %s_gvf.c %s",CFLAGS,so,modelName,LIBS))
-    }    
+    }
     N <- dim(params_inputs)[2]
     outputTimes <- outputTimes_list[[1]] ##TO CHANGE WHEN WE WILL HAVE A MORE GENERAL r_gsl_odeiv2 THAT ACCEPTS DIFFERENT OUTPUTTIMES FOR EACH PARAMETER/INPUT SET
     yy_gsl<-r_gsl_odeiv2(modelName, as.double(outputTimes), y0, params_inputs)
-    
+
     yy_gsl_as_list <- mclapply(seq(dim(yy_gsl)[3]), function(x) yy_gsl[ , , x], mc.preschedule = FALSE, mc.cores = mc.cores)
     output_yy <- mclapply(1:N, function(i)  apply(yy_gsl_as_list[[i]],2,outputFunctions_list[[i]]), mc.preschedule = FALSE, mc.cores = mc.cores)
   }
