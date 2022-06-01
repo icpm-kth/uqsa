@@ -1,17 +1,15 @@
-source('../import_from_SBtab.R')
-source('../UQ/copulaFunctions.R')
-source('../UQ/runModel.R')
-source('../UQ/PreCalibration.R')
-source('../UQ/ABCMCMCFunctions.R')
-source('../UQ/ScoringFunction.R')
-#remotes::install_github("a-kramer/rgsl", ref="OpenMP")
-#remotes::install_github("a-kramer/SBtabVFGEN")
-library(parallel)
-library(VineCopula)
-library(MASS)
-library(ks)
-library(R.utils)
-library(R.matlab)
+## source('../UQ/copulaFunctions.R')
+## source('../UQ/runModel.R')
+## source('../UQ/PreCalibration.R')
+## source('../UQ/ABCMCMCFunctions.R')
+## source('../UQ/ScoringFunction.R')
+
+#library(parallel)
+#library(VineCopula)
+#library(MASS)
+#library(ks)
+#library(R.utils)
+library(UQ)
 library(rgsl)
 library(SBtabVFGEN)
 
@@ -45,16 +43,16 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(1,2,3)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 10 # no of samples required from each ABC-MCMC chain 
-npc <- 50 # pre-calibration 
+ns <- 1000 # no of samples required from each ABC-MCMC chain 
+npc <- 500 # pre-calibration 
 
 # Define ABC-MCMC Settings
 p <- 0.01     # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
-nChains <- 12 # For the ABC-MCMC Process: Nr of Parallel Chains; 
+nChains <- 2 # For the ABC-MCMC Process: Nr of Parallel Chains; 
 delta <- 0.01 
 
 # Define the number of Cores for the parallelization
-nCores <- 10
+nCores <- 1
 
 set.seed(2022)
 
