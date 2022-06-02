@@ -1,20 +1,20 @@
 !!SBtab Document='AKAP79' Version='1.0' TableName='Experiments' TableType='QuantityMatrix'
-!ID	!Name	>cAMP	>CaN	>b_AKAP
-X0uM_cAMPCaN_AKAP79_0_nM_cAMP	X0uM_cAMPCaN_AKAP79_0_nM_cAMP	0	1.5	1
-X0uM_cAMPCaN_only_0_nM_cAMP	X0uM_cAMPCaN_only_0_nM_cAMP	0	1.5	0
-X0uM_cAMPno_CaN_0_nM_cAMP	X0uM_cAMPno_CaN_0_nM_cAMP	0	0	0
-X100nM_cAMPCaN_AKAP79_100_nM_cAMP	X100nM_cAMPCaN_AKAP79_100_nM_cAMP	100	1.5	1
-X100nM_cAMPCaN_only_100_nM_cAMP	X100nM_cAMPCaN_only_100_nM_cAMP	100	1.5	0
-X100nM_cAMPno_CaN_100_nM_cAMP	X100nM_cAMPno_CaN_100_nM_cAMP	100	0	0
-X2000nM_cAMPCaN_AKAP79_2_uM_cAMP	X2000nM_cAMPCaN_AKAP79_2_uM_cAMP	2000	1.5	1
-X2000nM_cAMPCaN_only_2_uM_cAMP	X2000nM_cAMPCaN_only_2_uM_cAMP	2000	1.5	0
-X2000nM_cAMPno_CaN_2_uM_cAMP	X2000nM_cAMPno_CaN_2_uM_cAMP	2000	0	0
-X200nM_cAMPCaN_AKAP79_200_nM_cAMP	X200nM_cAMPCaN_AKAP79_200_nM_cAMP	200	1.5	1
-X200nM_cAMPCaN_only_200_nM_cAMP	X200nM_cAMPCaN_only_200_nM_cAMP	200	1.5	0
-X200nM_cAMPno_CaN_200_nM_cAMP	X200nM_cAMPno_CaN_200_nM_cAMP	200	0	0
-X500nM_cAMPCaN_AKAP79_500_nM_cAMP	X500nM_cAMPCaN_AKAP79_500_nM_cAMP	500	1.5	1
-X500nM_cAMPCaN_only_500_nM_cAMP	X500nM_cAMPCaN_only_500_nM_cAMP	500	1.5	0
-X500nM_cAMPno_CaN_500_nM_cAMP	X500nM_cAMPno_CaN_500_nM_cAMP	500	0	0
-X1000nM_cAMPCaN_AKAP79_1_uM_cAMP	X1000nM_cAMPCaN_AKAP79_1_uM_cAMP	1000	1.5	1
-X1000nM_cAMPCaN_only_1_uM_cAMP	X1000nM_cAMPCaN_only_1_uM_cAMP	1000	1.5	0
-X1000nM_cAMPno_CaN_1_uM_cAMP	X1000nM_cAMPno_CaN_1_uM_cAMP	1000	0	0
+!ID	!Name	>cAMP	>CaN	>b_AKAP	!Comment
+X0uM_cAMPCaN_AKAP79_0_nM_cAMP	X0uM_cAMPCaN_AKAP79_0_nM_cAMP	0	1.5	1	Figure 3 in https://doi.org/10.7554/eLife.68164
+X0uM_cAMPCaN_only_0_nM_cAMP	X0uM_cAMPCaN_only_0_nM_cAMP	0	1.5	0	Figure 3 in https://doi.org/10.7554/eLife.68164
+X0uM_cAMPno_CaN_0_nM_cAMP	X0uM_cAMPno_CaN_0_nM_cAMP	0	0	0	Figure 3 in https://doi.org/10.7554/eLife.68164
+X100nM_cAMPCaN_AKAP79_100_nM_cAMP	X100nM_cAMPCaN_AKAP79_100_nM_cAMP	100	1.5	1	Figure 3 in https://doi.org/10.7554/eLife.68164
+X100nM_cAMPCaN_only_100_nM_cAMP	X100nM_cAMPCaN_only_100_nM_cAMP	100	1.5	0	Figure 3 in https://doi.org/10.7554/eLife.68164
+X100nM_cAMPno_CaN_100_nM_cAMP	X100nM_cAMPno_CaN_100_nM_cAMP	100	0	0	Figure 3 in https://doi.org/10.7554/eLife.68164
+X2000nM_cAMPCaN_AKAP79_2_uM_cAMP	X2000nM_cAMPCaN_AKAP79_2_uM_cAMP	2000	1.5	1	Figure 3 in https://doi.org/10.7554/eLife.68164
+X2000nM_cAMPCaN_only_2_uM_cAMP	X2000nM_cAMPCaN_only_2_uM_cAMP	2000	1.5	0	Figure 3 in https://doi.org/10.7554/eLife.68164
+X2000nM_cAMPno_CaN_2_uM_cAMP	X2000nM_cAMPno_CaN_2_uM_cAMP	2000	0	0	Figure 3 in https://doi.org/10.7554/eLife.68164
+X200nM_cAMPCaN_AKAP79_200_nM_cAMP	X200nM_cAMPCaN_AKAP79_200_nM_cAMP	200	1.5	1	Figure 3 in https://doi.org/10.7554/eLife.68164
+X200nM_cAMPCaN_only_200_nM_cAMP	X200nM_cAMPCaN_only_200_nM_cAMP	200	1.5	0	Figure 3 in https://doi.org/10.7554/eLife.68164
+X200nM_cAMPno_CaN_200_nM_cAMP	X200nM_cAMPno_CaN_200_nM_cAMP	200	0	0	Figure 3 in https://doi.org/10.7554/eLife.68164
+X500nM_cAMPCaN_AKAP79_500_nM_cAMP	X500nM_cAMPCaN_AKAP79_500_nM_cAMP	500	1.5	1	Figure 3 in https://doi.org/10.7554/eLife.68164
+X500nM_cAMPCaN_only_500_nM_cAMP	X500nM_cAMPCaN_only_500_nM_cAMP	500	1.5	0	Figure 3 in https://doi.org/10.7554/eLife.68164
+X500nM_cAMPno_CaN_500_nM_cAMP	X500nM_cAMPno_CaN_500_nM_cAMP	500	0	0	Figure 3 in https://doi.org/10.7554/eLife.68164
+X1000nM_cAMPCaN_AKAP79_1_uM_cAMP	X1000nM_cAMPCaN_AKAP79_1_uM_cAMP	1000	1.5	1	Figure 3 in https://doi.org/10.7554/eLife.68164
+X1000nM_cAMPCaN_only_1_uM_cAMP	X1000nM_cAMPCaN_only_1_uM_cAMP	1000	1.5	0	Figure 3 in https://doi.org/10.7554/eLife.68164
+X1000nM_cAMPno_CaN_1_uM_cAMP	X1000nM_cAMPno_CaN_1_uM_cAMP	1000	0	0	Figure 3 in https://doi.org/10.7554/eLife.68164
