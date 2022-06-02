@@ -48,7 +48,7 @@ npc <- 500 # pre-calibration
 
 # Define ABC-MCMC Settings
 p <- 0.01     # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
-nChains <- 2 # For the ABC-MCMC Process: Nr of Parallel Chains; 
+nChains <- 1 # For the ABC-MCMC Process: Nr of Parallel Chains; 
 delta <- 0.01 
 
 # Define the number of Cores for the parallelization
@@ -106,16 +106,16 @@ for (i in 1:length(experimentsIndices)){
   startPar <- out2$startPar
   
   ## Run ABC-MCMC Sampling
-  cat(sprintf("-Running MCMC chains \n"))
-  cl <- makeCluster(nChains, type="FORK", outfile=paste("out-log_",modelName,"_",environment,"_ns",ns,".txt",sep=""))
+  #cat(sprintf("-Running MCMC chains \n"))
+  #cl <- makeCluster(nChains, type="FORK", outfile=paste("out-log_",modelName,"_",environment,"_ns",ns,".txt",sep=""))
  
   # run outer loop
-  draws <- parLapply(cl, 1:nChains, function(k) ABCMCMC(experiments[expInd], modelName, startPar[k,], parIdx, parVal, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore, nCores, environment))
-  stopCluster(cl)
-  rm(cl)
-  
+  #draws <- parLapply(cl, 1:nChains, function(k) ABCMCMC(experiments[expInd], modelName, startPar[k,], parIdx, parVal, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore, nCores, environment))
+  #stopCluster(cl)
+  #rm(cl)
+  draws <- ABCMCMC(experiments[expInd], modelName, startPar, parIdx, parVal, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore, nCores, environment)
   # put together
-  draws <- do.call("rbind", draws)
+  #draws <- do.call("rbind", draws)
   pick <- !apply(draws, 1, function(rw) all(rw==0))
   draws <- draws[pick,]
   draws <- checkFitWithPreviousExperiments(i, experimentsIndices, modelName, draws, experiments, parVal, parIdx, getScore, delta, environment, nCores, nChains)
@@ -129,7 +129,7 @@ for (i in 1:length(experimentsIndices)){
   outFileR <- paste0("../PosteriorSamples/Draws",modelName,"_",environment,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
   outFileM <- paste0("../PosteriorSamples/Draws",modelName,"_",environment,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
   save(draws, parNames, file=outFileR)
-  writeMat(outFileM, samples=10^draws)
+  #writeMat(outFileM, samples=10^draws)
   
 }
 end_time = Sys.time()
