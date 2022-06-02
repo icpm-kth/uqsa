@@ -106,8 +106,8 @@ for (i in 1:length(experimentsIndices)){
   startPar <- out2$startPar
   
   ## Run ABC-MCMC Sampling
-  #cat(sprintf("-Running MCMC chains \n"))
-  #cl <- makeCluster(nChains, type="FORK", outfile=paste("out-log_",modelName,"_",environment,"_ns",ns,".txt",sep=""))
+  cat(sprintf("-Running MCMC chains \n"))
+  #cl <- makeCluster(nChains)#, type="FORK", outfile=paste("out-log_",modelName,"_",environment,"_ns",ns,".txt",sep=""))
  
   # run outer loop
   #draws <- parLapply(cl, 1:nChains, function(k) ABCMCMC(experiments[expInd], modelName, startPar[k,], parIdx, parVal, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore, nCores, environment))
