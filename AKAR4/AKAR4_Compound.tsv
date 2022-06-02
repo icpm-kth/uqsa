@@ -1,6 +1,6 @@
-!!SBtab	Document='AKAR4' SBtabVersion='1.0'	TableName='Compound' TableTitle='Compounds in AKAR4 Model'  TableType='Compound'				
+!!SBtab	"Document='AKAR4' SBtabVersion='1.0'"	"TableName='Compound' TableTitle='Compounds in AKAR4 Model'  TableType='Compound'"				
 !ID	!Name	!InitialValue	!Unit	!Location	!Identifiers:RRID	!Comment
-AKAR4	AKAR4	0.2	micromole/liter	spine	RRID:Addgene_64727	pcDNA3-AKAR4-NES
+AKAR4	AKAR4	0.2	micromole/liter	spine	RRID:Addgene_61619	AKAR4-8His-NES
 AKAR4_C	AKAR4_C	0	micromole/liter	spine	NONE	NONE
 AKAR4p	AKAR4p	0	micromole/liter	spine	NONE	NONE
-C	C	0	micromole/liter	spine	NONE	catalytic subunit of PKA
+C	C	0	micromole/liter	spine	NONE	"catalytic subunit of PKA"

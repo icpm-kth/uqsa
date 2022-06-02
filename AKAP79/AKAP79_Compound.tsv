@@ -1,18 +1,18 @@
-!!SBtab	Document='AKAP79' SBtabVersion='1.0'	TableName='Compound' TableTitle='Compounds in AKAP79 Model'  TableType='Compound'			
-!ID	!Name	!InitialValue	!Unit	!Location	%!Assignment
-Rii	Rii	6.3	micromole/liter	spine	
-cAMP	cAMP	0	micromole/liter	spine	
-RiiP	RiiP	0	micromole/liter	spine	
-Rii_C	Rii_C	0.63	micromole/liter	spine	
-RiiP_cAMP	RiiP_cAMP	0	micromole/liter	spine	
-RiiP_C	RiiP_C	0	micromole/liter	spine	
-RiiP_C_cAMP	RiiP_C_cAMP	0	micromole/liter	spine	
-C	C	0	micromole/liter	spine	
-Rii_cAMP	Rii_cAMP	0	micromole/liter	spine	
-Rii_C_cAMP	Rii_C_cAMP	0	micromole/liter	spine	
-CaN	CaN	1.5	micromole/liter	spine	
-RiiP_CaN	RiiP_CaN	0	micromole/liter	spine	
-RiiP_cAMP_CaN	RiiP_cAMP_CaN	0	micromole/liter	spine	
-AKAR4	AKAR4	0.2	micromole/liter	spine	
-AKAR4_C	AKAR4_C	0	micromole/liter	spine	
-AKAR4p	AKAR4p	0	micromole/liter	spine	
+!!SBtab	"Document='AKAP79' SBtabVersion='1.0'"	"TableName='Compound' TableTitle='Compounds in AKAP79 Model (AKAP5_HUMAN)'  TableType='Compound'"				
+!ID	!Name	!InitialValue	!Unit	!Location	!Identifiers:uniprot	!Comment
+Rii	Rii	6.3	micromole/liter	spine	KAP2_HUMAN	"also KAP3_HUMAN because Rii = RII_alpha+RII_beta"
+cAMP	cAMP	0	micromole/liter	spine	NONE	NONE
+RiiP	RiiP	0	micromole/liter	spine	NONE	phosphorylated
+Rii_C	Rii_C	0.63	micromole/liter	spine	NONE	NONE
+RiiP_cAMP	RiiP_cAMP	0	micromole/liter	spine	NONE	NONE
+RiiP_C	RiiP_C	0	micromole/liter	spine	NONE	NONE
+RiiP_C_cAMP	RiiP_C_cAMP	0	micromole/liter	spine	NONE	NONE
+C	C	0	micromole/liter	spine	KAPCB_HUMAN	NONE
+Rii_cAMP	Rii_cAMP	0	micromole/liter	spine	NONE	NONE
+Rii_C_cAMP	Rii_C_cAMP	0	micromole/liter	spine	NONE	NONE
+CaN	CaN	1.5	micromole/liter	spine	PP2BA_HUMAN	PP3R1_HUMAN
+RiiP_CaN	RiiP_CaN	0	micromole/liter	spine	NONE	NONE
+RiiP_cAMP_CaN	RiiP_cAMP_CaN	0	micromole/liter	spine	NONE	NONE
+AKAR4	AKAR4	0.2	micromole/liter	spine	NONE	RRID:addgene_61619
+AKAR4_C	AKAR4_C	0	micromole/liter	spine	NONE	NONE
+AKAR4p	AKAR4p	0	micromole/liter	spine	NONE	NONE
