@@ -23,7 +23,7 @@
 #' @param modelName this name will be used to find the file and
 #'     functions within the file according to naming conventions.
 #' @param parDefVal default values for the parameters (without inputs).
-#' @param parIdx a remapping index set, the model will be simulated with, e.g.: p[parIdx] <- parDefVal.
+#' @param parMap a remapping function that takes ABC sampling variables and returns valid model parameters
 #' @param npc sample size of pre-calibration.
 #' @param copula the result of copula estimation.
 #' @param U sample of marginal (1D) values for the copula.
@@ -32,53 +32,52 @@
 #' @param nCores number of processor cores to use in mclapply().
 #' @param environment "C" selects GSL solvers, "R" (default) selects deSolve.
 #' @return list with entries preDelta and prePar, final values of calibration run
-preCalibration <- function(experiments, modelName, parDefVal, parIdx, npc, copula, U, Z, getScore, nCores, environment){
+preCalibration <- function(experiments, modelName, parDefVal, parMap=identity, npc=1000, copula, U, Z, getScore, nCores=NULL){
+	if (is.null(nCores)) nCores <- parallel::detect.cores()
+	numExperiments <- length(experiments)
+	np <- length(parIdx)
+  
+	R <- RVineSim(npc, copula)
+	prePar <- matrix(0, npc, np)
+	for(i in 1:np){
+		prePar[,i] = spline(Z[,i],U[,i],xout=R[,i])$y
+	}
+	tmp_list <- mclapply(experiments,
+                       function(x) replicate(npc, c(parDefVal,x[["input"]])),
+                       mc.preschedule = FALSE,
+                       mc.cores = nCores)
+	params_inputs <- do.call(cbind, tmp_list)
+	params_inputs[parIdx,] <- 10^t(prePar)
 
-  numExperiments <- length(experiments)
-  np <- length(parIdx)
+	tmp_list <- mclapply(experiments,
+                       function(x) replicate(npc, x[["initialState"]]),
+                       mc.preschedule = FALSE,
+                       mc.cores = nCores)
+	y0 <- do.call(cbind, tmp_list)
 
-  R <- RVineSim(npc, copula)
-  prePar <- matrix(0, npc, np)
-  for(i in 1:np){
-    prePar[,i] = spline(Z[,i],U[,i],xout=R[,i])$y
-  }
-
-  tmp_list <- mclapply(experiments,
-											 function(x) replicate(npc, c(parDefVal,x[["input"]])),
-											 mc.preschedule = FALSE,
-											 mc.cores = nCores)
-  params_inputs <- do.call(cbind, tmp_list)
-  params_inputs[parIdx,] <- 10^t(prePar)
-
-  tmp_list <- mclapply(experiments,
-											 function(x) replicate(npc, x[["initialState"]]),
-											 mc.preschedule = FALSE,
-											 mc.cores = nCores)
-  y0 <- do.call(cbind, tmp_list)
-
-  outputTimes_list <- list()
-  outputFunctions_list <- list()
-  for(i in 1:numExperiments){
-    outputTimes_list <- c(outputTimes_list, replicate(npc, list(experiments[[i]][["outputTimes"]])))
-    outputFunctions_list <- c(outputFunctions_list, replicate(npc, list(experiments[[i]][["outputFunction"]])))
-  }
+	outputTimes_list <- list()
+	outputFunctions_list <- list()
+	for(i in 1:numExperiments){
+		outputTimes_list <- c(outputTimes_list, replicate(npc, list(experiments[[i]][["outputTimes"]])))
+		outputFunctions_list <- c(outputFunctions_list, replicate(npc, list(experiments[[i]][["outputFunction"]])))
+	}
 
 
-  output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)
-  preDelta <- mclapply(1:length(output_yy), function(i) getScore(output_yy[[i]], experiments[[(i-1)%/%npc+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
-  preDelta <- unlist(preDelta)
+	output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)
+	preDelta <- mclapply(1:length(output_yy), function(i) getScore(output_yy[[i]], experiments[[(i-1)%/%npc+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
+	preDelta <- unlist(preDelta)
 
-  #preDelta is a vector of length npc*numExperiments.
-  #It is obtained using npc different parameter vectors, each of them tested on all the experiment.
-  #In particular, parameter i (in 1:npc) was used in the generation of preDelta[i+j*npc] (j in 0:numExperiments-1)
-  #Hence, to get an estimate of the delta that sums up the goodness of a certain parameter on the chosen experiments, we can use - for instance - the mean
+	#preDelta is a vector of length npc*numExperiments.
+	#It is obtained using npc different parameter vectors, each of them tested on all the experiment.
+	#In particular, parameter i (in 1:npc) was used in the generation of preDelta[i+j*npc] (j in 0:numExperiments-1)
+	#Hence, to get an estimate of the delta that sums up the goodness of a certain parameter on the chosen experiments, we can use - for instance - the mean
 
-  #preDelta <- sapply(1:npc, function(i) sum((preDelta[i+seq(0,npc*(numExperiments-1), npc)]))/numExperiments)
-  if(any(is.na(preDelta))){
-    cat("*** [preCalibration] Some of the preDelta is NA. Replacing with Inf ***")
-    preDelta[is.na(preDelta)] <- Inf
-  }
-  return(list(preDelta=preDelta, prePar=prePar))
+	#preDelta <- sapply(1:npc, function(i) sum((preDelta[i+seq(0,npc*(numExperiments-1), npc)]))/numExperiments)
+	if(any(is.na(preDelta))){
+		cat("*** [preCalibration] Some of the preDelta is NA. Replacing with Inf ***")
+		preDelta[is.na(preDelta)] <- Inf
+	}
+	return(list(preDelta=preDelta, prePar=prePar))
 }
 
 #' Selects MCMC scheme specific setup parameters
