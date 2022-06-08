@@ -1,3 +1,6 @@
+# Uncertainty Quantification: import model and experimental data from SBtab files
+# Copyright (C) 2022 Federica Milinanni (fedmil@kth.se)
+
 #' Import Systems Biology Models given in Tabular Form 
 #'
 #' This function uses SBtabVFGEN to read a series of tsv files, each
