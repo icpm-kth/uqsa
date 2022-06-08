@@ -1,3 +1,6 @@
+# Uncertainty Quantification: run model ordinary differential equation
+# Copyright (C) 2022 Federica Milinanni (fedmil@kth.se)
+
 #' Simulate an Experiment using the named ODE Model
 #'
 #' Simulation experiments consist at least of initial values for the
