@@ -7,7 +7,7 @@ Eriksson, Olivia and Jauhiainen Alexandra et al. "Uncertainty quantification, pr
 Bayesian analysis combined with global sensitivity analysis applied to dynamical intracellular pathway models." 
 Bioinformatics 35.2 (2019): 284-292.
 ```
-The original code for that paper can be found at: https://github.com/alexjau/uqsa
+The original code for that paper can be found at: https://github.com/alexjau/uqsa.
 
 The demo UQ.ipynb was presented in Figure 5c of the paper
 ```
