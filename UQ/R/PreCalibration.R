@@ -96,7 +96,7 @@ preCalibration <- function(experiments, modelName, parDefVal, parIdx, npc, copul
 #' @param nChains number of mcmc chains to use later, affects the
 #'     returned set of starting parameters.
 #' @return Sigma and startPar as a list
-getMCMCPar <- function(prePar, preDelta, p, sfactor, delta, nChains){
+getMCMCPar <- function(prePar, preDelta, p, sfactor, delta, nChains=1){
   prePar <- prePar[!is.na(preDelta),]
   preDelta <- preDelta[!is.na(preDelta)]
   nk <- nrow(prePar)*p

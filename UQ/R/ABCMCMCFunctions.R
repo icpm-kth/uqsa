@@ -280,8 +280,8 @@ parUpdate <- function(experiments, modelName, parIdx, parDefVal, curPar, canPar,
 #' @param delta the acceptance threshold.
 #' @param environment passed to runModel(), selects solver.
 #' @param nCores number of cores to use in mclapply() calls.
-#' @param nChains number of parallel Markov chains (unused?).
-checkFitWithPreviousExperiments <- function(currentExpSet, experimentsIndices, modelName, draws, experiments, parVal, parIdx, getScore, delta, environment, nCores, nChains){
+#' @param nChains number of parallel Markov chains (if any).
+checkFitWithPreviousExperiments <- function(currentExpSet, experimentsIndices, modelName, draws, experiments, parVal, parIdx, getScore, delta, environment, nCores, nChains=1){
   if(currentExpSet>1){
     for(j in 1:(currentExpSet-1)){
       filtInd <- experimentsIndices[[j]]
