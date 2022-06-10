@@ -8,14 +8,13 @@ preCalibration(
   experiments,
   modelName,
   parDefVal,
-  parIdx,
-  npc,
+  parMap = identity,
+  npc = 1000,
   copula,
   U,
   Z,
   getScore,
-  nCores,
-  environment
+  nCores = detectCores()
 )
 }
 \arguments{
@@ -26,7 +25,7 @@ functions within the file according to naming conventions.}
 
 \item{parDefVal}{default values for the parameters (without inputs).}
 
-\item{parIdx}{a remapping index set, the model will be simulated with, e.g.: p[parIdx] <- parDefVal.}
+\item{parMap}{a remapping function that takes ABC sampling variables and returns valid model parameters}
 
 \item{npc}{sample size of pre-calibration.}
 

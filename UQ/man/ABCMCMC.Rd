@@ -8,8 +8,7 @@ ABCMCMC(
   experiments,
   modelName,
   startPar,
-  parIdx,
-  parDefVal,
+  parMap,
   nSims,
   Sigma0,
   delta,
@@ -20,8 +19,7 @@ ABCMCMC(
   ll,
   ul,
   getScore,
-  nCores,
-  environment
+  nCores = detectCores()
 )
 }
 \arguments{
@@ -30,10 +28,6 @@ ABCMCMC(
 \item{modelName}{model functions will be assumed to have this prefix}
 
 \item{startPar}{starting value for the parameter vector}
-
-\item{parIdx}{re-mapping between the MCMC variables and model parameters}
-
-\item{parDefVal}{default values for parameters, useful when some are not subject to estimation}
 
 \item{nSims}{requested sample size}
 
@@ -56,6 +50,10 @@ ABCMCMC(
 \item{getScore}{a function(model_output,experiment) that returns scores}
 
 \item{nCores}{setting for multicore package}
+
+\item{parIdx}{re-mapping between the MCMC variables and model parameters}
+
+\item{parDefVal}{default values for parameters, useful when some are not subject to estimation}
 
 \item{environment}{(string) "R" or "C", selects solvers}
 }

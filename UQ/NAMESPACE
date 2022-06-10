@@ -2,6 +2,7 @@
 
 export(ABCMCMC)
 export(checkFitWithPreviousExperiments)
+export(checkModel)
 export(dprior)
 export(fitCopula)
 export(getMCMCPar)

@@ -41,8 +41,7 @@
 #' @param nCores setting for multicore package
 #' @param environment (string) "R" or "C", selects solvers
 #' @return a sample matrix
-ABCMCMC <- function(experiments, modelName, startPar, parIdx, parDefVal, nSims, Sigma0, delta, U, Z, Y, copula, ll, ul, getScore, nCores, environment){
-
+ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, delta, U, Z, Y, copula, ll, ul, getScore, nCores=detectCores()){
   cat("Started chain.\n")
   Sigma1 <- 0.25*diag(diag(Sigma0))
   curDelta <- Inf
@@ -53,31 +52,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parIdx, parDefVal, nSims, 
 
   numExperiments <- length(experiments)
 
-  currPar <- parDefVal
-  currPar[parIdx] <- 10^(startPar)
-
-  tmp_list <- mclapply(experiments,
-                       function(exper) c(currPar, exper[["input"]]),
-                       mc.preschedule = FALSE,
-                       mc.cores = nCores)
-  params_inputs <- do.call(cbind, tmp_list)
-
-  tmp_list <- mclapply(experiments,
-                       function(exper) exper[["initialState"]],
-                       mc.preschedule = FALSE,
-                       mc.cores = nCores)
-  y0 <- do.call(cbind, tmp_list)
-
-  outputTimes_list <- mclapply(experiments,
-                               function(exper) exper[["outputTimes"]],
-                               mc.preschedule = FALSE,
-                               mc.cores = nCores)
-  outputFunctions_list <- mclapply(experiments,
-                                   function(exper) exper[["outputFunction"]],
-                                   mc.preschedule = FALSE,
-                                   mc.cores = nCores)
-
-  out <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)
+  out <- runModel(experiments, modelName, curPar, parMap, nCores)
 
   curDelta <- mclapply(1:length(out),
                        function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]),
@@ -105,7 +80,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parIdx, parDefVal, nSims, 
     }else{
       canPar <- mvrnorm(n=1, curPar, Sigma1)
     }
-    out <- parUpdate(experiments, modelName, parIdx, parDefVal, curPar, canPar, curDelta, curPrior, delta, U, Z, Y, copula, ll, ul, getScore, environment, nCores)
+    out <- parUpdate(experiments, modelName, parMap, curPar, canPar, curDelta, curPrior, delta, U, Z, Y, copula, ll, ul, getScore, nCores)
     curPar <- out$curPar
     curDelta <- out$curDelta
     curPrior <- out$curPrior
@@ -197,34 +172,9 @@ dprior <- function(inx, U, Z, Y, copula, ll, ul){
 #'     as backend
 #' @param nCores number of cores to use in mclapply().
 #' @return updated values for curPar, curDelta, and curPrior
-parUpdate <- function(experiments, modelName, parIdx, parDefVal, curPar, canPar, curDelta, curPrior, delta, U, Z, Y, copula, ll, ul, getScore, environment, nCores){
-
+parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, curPrior, delta, U, Z, Y, copula, ll, ul, getScore, environment, nCores=detectCores()){
   numExperiments <- length(experiments)
-
-  par <- parDefVal
-  par[parIdx] <- 10^(canPar)
-  tmp_list <- mclapply(experiments,
-                       function(exper) c(par, exper[["input"]]),
-                       mc.preschedule = FALSE,
-                       mc.cores = nCores)
-  params_inputs <- do.call(cbind, tmp_list)
-
-  tmp_list <- mclapply(experiments,
-                       function(exper) exper[["initialState"]],
-                       mc.preschedule = FALSE,
-                       mc.cores = nCores)
-  y0 <- do.call(cbind, tmp_list)
-
-  outputTimes_list <- mclapply(experiments,
-                               function(exper) exper[["outputTimes"]],
-                               mc.preschedule = FALSE,
-                               mc.cores = nCores)
-  outputFunctions_list <- mclapply(experiments,
-                                   function(exper) exper[["outputFunction"]],
-                                   mc.preschedule = FALSE,
-                                   mc.cores = nCores)
-
-  invisible(capture.output(out <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)))
+  invisible(capture.output(out <- runModel(experiments, modelName, parABC=canPar, parMap, mc.cores=nCores)))
 
   if(is.null(out)){
     canDelta <- Inf
@@ -281,54 +231,31 @@ parUpdate <- function(experiments, modelName, parIdx, parDefVal, curPar, canPar,
 #' @param environment passed to runModel(), selects solver.
 #' @param nCores number of cores to use in mclapply() calls.
 #' @param nChains number of parallel Markov chains (unused?).
-checkFitWithPreviousExperiments <- function(currentExpSet, experimentsIndices, modelName, draws, experiments, parVal, parIdx, getScore, delta, environment, nCores, nChains){
-  if(currentExpSet>1){
-    for(j in 1:(currentExpSet-1)){
-      filtInd <- experimentsIndices[[j]]
-      cat("-Checking fit with dataset", filtInd, "\n")
-      nDraws = dim(draws)[1]
+checkFitWithPreviousExperiments <- function(modelName, draws, experiments, parMap=identity(), getScore, delta, nCores=detectCores()){
+	numExperiments <- length(experiments)
+	cat("-Checking fit with previous data\n")
+	nDraws = dim(draws)[1]
+	outputTimes_list <- list()
+	outputFunctions_list <- list()
+	for(k in 1:numExperiments){
+		outputTimes_list <- c(outputTimes_list, replicate(nDraws, list(experiments[[k]][["outputTimes"]])))
+		outputFunctions_list <- c(outputFunctions_list,replicate(nDraws, list(experiments[[k]][["outputFunction"]])))
+	}
 
-
-      tmp_list <- mclapply(experiments[filtInd],
-                           function(x) replicate(nDraws, c(parVal,x[["input"]])),
-                           mc.preschedule = FALSE,
-                           mc.cores = nCores*nChains)
-      params_inputs <- do.call(cbind, tmp_list)
-      params_inputs[parIdx,] <- 10^t(draws)
-
-      tmp_list <- mclapply(experiments[filtInd],
-                           function(x) replicate(nDraws, x[["initialState"]]),
-                           mc.preschedule = FALSE,
-                           mc.cores = nCores*nChains)
-      y0 <- do.call(cbind, tmp_list)
-
-      outputTimes_list <- list()
-      outputFunctions_list <- list()
-      for(k in 1:length(filtInd)){
-        outputTimes_list <- c(outputTimes_list,
-                              replicate(nDraws, list(experiments[[k]][["outputTimes"]])))
-        outputFunctions_list <- c(outputFunctions_list,
-                                  replicate(nDraws, list(experiments[[k]][["outputFunction"]])))
-      }
-
-      output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list,
-                            outputFunctions_list, environment, nCores*nChains)
-      scores <- mclapply(1:length(output_yy),
-                         function(k) getScore(output_yy[[k]],
-                                              experiments[[filtInd[(k-1)%/%nDraws+1]]][["outputValues"]]),
-                         mc.preschedule = FALSE,
-                         mc.cores = nCores*nChains)
-      scores <- unlist(scores)
-
-      scores <-  scores[!is.na(scores)]
-
-      pick <- scores <= delta
-      draws <- draws[pick,];
-      nPickedDraws <- nrow(draws)
-      nonFits <-  nDraws - nPickedDraws;
-      cat("-- ", nonFits, " samples of posterior after datasets ",
-          expInd, " did not fit dataset ", filtInd)
-    }
-  }
-  return(draws)
+	output_yy <- runModel(experiments, modelName, t(draws), parMap, nCores)
+	scores <- mclapply(seq(length(output_yy)),function(k) getScore(output_yy[[k]], experiments[[(k %/% nDraws)+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
+	scores <- unlist(scores)
+	dim(scores) <- c(nDraws,numExperiments)
+	acceptable <- apply(scores <= delta,1,all)
+	stopifnot(length(acceptable)==nDraws)
+	if (any(acceptable)){
+		draws <- draws[acceptable,]
+		nPickedDraws <- nrow(draws)
+		nonFits <- nDraws - nPickedDraws;
+		cat("-- ", nonFits, " samples  did not fit previous datasets")
+	} else {
+		print(scores)
+		warning("none of the draws have been accepted.")
+	}
+	return(draws)
 }

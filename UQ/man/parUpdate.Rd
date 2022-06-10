@@ -7,8 +7,7 @@
 parUpdate(
   experiments,
   modelName,
-  parIdx,
-  parDefVal,
+  parMap,
   curPar,
   canPar,
   curDelta,
@@ -22,7 +21,7 @@ parUpdate(
   ul,
   getScore,
   environment,
-  nCores
+  nCores = detectCores()
 )
 }
 \arguments{
@@ -30,12 +29,6 @@ parUpdate(
 
 \item{modelName}{(characters), this will be used to find the model
 file and the functions in that file}
-
-\item{parIdx}{remapping index set for passing parameters to the
-model}
-
-\item{parDefVal}{default values for the parameters (for cases in
-which some never change)}
 
 \item{curPar}{current parameter values (as ABC samples them)}
 
@@ -68,6 +61,12 @@ current state for the chain.}
 as backend}
 
 \item{nCores}{number of cores to use in mclapply().}
+
+\item{parIdx}{remapping index set for passing parameters to the
+model}
+
+\item{parDefVal}{default values for the parameters (for cases in
+which some never change)}
 }
 \value{
 updated values for curPar, curDelta, and curPrior

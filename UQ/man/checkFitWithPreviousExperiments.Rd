@@ -5,44 +5,39 @@
 \title{ABC acceptance of currently sampled values given old data (Prior)}
 \usage{
 checkFitWithPreviousExperiments(
-  currentExpSet,
-  experimentsIndices,
   modelName,
   draws,
   experiments,
-  parVal,
-  parIdx,
+  parMap = identity(),
   getScore,
   delta,
-  environment,
-  nCores,
-  nChains
+  nCores = detectCores()
 )
 }
 \arguments{
-\item{currentExpSet}{an index, all experiments before that index
-will be evaluated for scores and acceptance.}
-
-\item{experimentsIndices}{can be used to filter simulation
-experiments (to exclude some), e.g. 2:4, to exclude 1.}
-
 \item{modelName}{name (prefix), is used to find the file and model functions therein.}
 
 \item{draws}{matrix of sampled values (to be filtered).}
 
 \item{experiments}{a list of experiments (all of them, or up to currentExpSet).}
 
-\item{parVal}{not used other than for size?}
-
-\item{parIdx}{remapping index passed to runModel().}
-
 \item{getScore}{scoring function.}
 
 \item{delta}{the acceptance threshold.}
 
-\item{environment}{passed to runModel(), selects solver.}
-
 \item{nCores}{number of cores to use in mclapply() calls.}
+
+\item{currentExpSet}{an index, all experiments before that index
+will be evaluated for scores and acceptance.}
+
+\item{experimentsIndices}{can be used to filter simulation
+experiments (to exclude some), e.g. 2:4, to exclude 1.}
+
+\item{parVal}{not used other than for size?}
+
+\item{parIdx}{remapping index passed to runModel().}
+
+\item{environment}{passed to runModel(), selects solver.}
 
 \item{nChains}{number of parallel Markov chains (unused?).}
 }

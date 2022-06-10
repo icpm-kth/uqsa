@@ -4,7 +4,7 @@
 \alias{getMCMCPar}
 \title{Selects MCMC scheme specific setup parameters}
 \usage{
-getMCMCPar(prePar, preDelta, p, sfactor, delta, nChains)
+getMCMCPar(prePar, preDelta, p, sfactor, delta, num = 1)
 }
 \arguments{
 \item{prePar}{a sample of parameters from pre-Calibration}
@@ -17,11 +17,10 @@ getMCMCPar(prePar, preDelta, p, sfactor, delta, nChains)
 
 \item{delta}{ABC threshold}
 
-\item{nChains}{number of mcmc chains to use later, affects the
-returned set of starting parameters.}
+\item{num}{number of different starting oarameter vectors.}
 }
 \value{
-Sigma and startPar as a list
+Sigma and startPar (matrix with `num` rows) as a list
 }
 \description{
 The MCMC scheme uses a transition kernel. This function returns the
