@@ -65,8 +65,12 @@ getScore	<- function(yy_sim, yy_exp){
 
 # Loop through the Different Experimental Settings
 start_time = Sys.time()
-for (i in 1:length(experiments)){
-	expInd <- i
+
+# work packages
+chunks <- list(c(1,2),3)
+
+for (i in seq(length(chunks))){
+	expInd <- chunks[[i]]
 	cat("#####Starting run for Experiments ", expInd, "######\n")
 	## If First Experimental Setting, Create an Independente Colupla
 	if(i==1){
@@ -83,7 +87,7 @@ for (i in 1:length(experiments)){
 	Y <- out$Y
 	## Run Pre-Calibration Sampling
 	cat(sprintf("-Precalibration \n"))
-	out1 <- preCalibration(experiments[i], modelName, parVal, parMap, npc, copula, U, Z, getScore)
+	out1 <- preCalibration(experiments[expInd], modelName, parVal, parMap, npc, copula, U, Z, getScore)
 	sfactor <- 0.1 # scaling factor
 	## Get Starting Parameters from Pre-Calibration
 	out2 <- getMCMCPar(out1$prePar, out1$preDelta, p, sfactor, delta)
@@ -91,12 +95,12 @@ for (i in 1:length(experiments)){
 	startPar <- out2$startPar
 	## Run ABC-MCMC Sampling
 	cat(sprintf("-Running MCMC\n"))
-	draws <- ABCMCMC(experiments[i], modelName, startPar, parMap, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore)
+	draws <- ABCMCMC(experiments[expInd], modelName, startPar, parMap, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore)
 
 	pick <- !apply(draws, 1, function(rw) all(rw==0))
 	draws <- draws[pick,]
 	if (i>1){
-	 draws <- checkFitWithPreviousExperiments(modelName, draws, experiments[1:i-1], parMap, getScore, delta)
+	 draws <- checkFitWithPreviousExperiments(modelName, draws, experiments[unlist(chunks[1:i-1])], parMap, getScore, delta)
 	}
 	# Save Resulting Samples to MATLAB and R files.
 	cat("-Saving sample \n")

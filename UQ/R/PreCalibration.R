@@ -45,7 +45,8 @@ preCalibration <- function(experiments, modelName, parDefVal, parMap=identity, n
 	output_yy <- runModel(experiments, modelName, t(prePar), parMap, nCores)
 	preDelta <- mclapply(1:length(output_yy), function(i) getScore(output_yy[[i]], experiments[[(i-1)%/%npc+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
 	preDelta <- unlist(preDelta)
-
+  dim(preDelta)<-c(npc,numExperiments)
+	preDelta <- apply(preDelta,1,max)
 	#preDelta is a vector of length npc*numExperiments.
 	#It is obtained using npc different parameter vectors, each of them tested on all the experiment.
 	#In particular, parameter vector i (in 1:npc) was used in the generation of preDelta[i+j*npc] (j in 0:numExperiments-1)
@@ -54,7 +55,7 @@ preCalibration <- function(experiments, modelName, parDefVal, parMap=identity, n
 	#preDelta <- sapply(1:npc, function(i) sum((preDelta[i+seq(0,npc*(numExperiments-1), npc)]))/numExperiments)
 	if(any(is.na(preDelta))){
 		cat("*** [preCalibration] Some of the preDelta is NA. Replacing with Inf ***")
-		preDelta[is.na(preDelta)] <- Inf
+		preDelta[is.na(preDelta),] <- Inf
 	}
 	return(list(preDelta=preDelta, prePar=prePar))
 }

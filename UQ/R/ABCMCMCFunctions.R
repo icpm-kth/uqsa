@@ -243,7 +243,7 @@ checkFitWithPreviousExperiments <- function(modelName, draws, experiments, parMa
 	}
 
 	output_yy <- runModel(experiments, modelName, t(draws), parMap, nCores)
-	scores <- mclapply(seq(length(output_yy)),function(k) getScore(output_yy[[k]], experiments[[(k %/% nDraws)+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
+	scores <- mclapply(seq(length(output_yy)),function(k) getScore(output_yy[[k]], experiments[[((k-1) %/% nDraws)+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
 	scores <- unlist(scores)
 	dim(scores) <- c(nDraws,numExperiments)
 	acceptable <- apply(scores <= delta,1,all)
