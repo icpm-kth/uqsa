@@ -31,17 +31,12 @@
 #' @param nSims requested sample size
 #' @param Sigma0 multivariate normal covariance of Markov chain transition kernel
 #' @param delta ABC acceptance threshold
-#' @param U sampled values for marginal distribution
-#' @param Z (CDE) marginal cumulative probability density estimate
-#' @param Y (PDE) marginal probability density estimate
-#' @param copula An RVineMatrix() as returned by RVineStructureSelect
-#' @param ll lower limit of model parameters
-#' @param ul upper limit of model parameters
+#' @param dprior a function that returns prior probability density values
 #' @param getScore a function(model_output,experiment) that returns scores
 #' @param nCores setting for multicore package
 #' @param environment (string) "R" or "C", selects solvers
 #' @return a sample matrix
-ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, delta, U, Z, Y, copula, ll, ul, getScore, nCores=detectCores()){
+ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, delta, dprior, getScore, nCores=detectCores()){
   cat("Started chain.\n")
   Sigma1 <- 0.25*diag(diag(Sigma0))
   curDelta <- Inf
@@ -69,7 +64,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
     curDelta <- Inf
   }
 
-  curPrior <- dprior(curPar, U, Z, Y, copula, ll, ul)
+  curPrior <- dprior(curPar)
   draws <- matrix(0, nSims,np)
 
   n <- 0
@@ -103,41 +98,6 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
   }
   cat("Finished chain.\n")
   return(draws)
-}
-
-#' Prior Probability Density Value from Copula Fit
-#'
-#' This function calculates a probability density value of an argument value x (vector) given a copula
-#' obtained from a sample from the prior (from preceding data sets).
-#'
-#' Returns PDF(x)
-#'
-#' @export
-#' @param inx PDF argument (value of random variable)
-#' @param U samples of marginal distributions
-#' @param Z (CDE) cumulative density estimates of U
-#' @param Y (PDE) probability density estimates of U
-#' @param copula as returned by copula estimator
-#' @param ll lower limit of inx
-#' @param ul upper limit of inx
-#' @return probability density function value
-dprior <- function(inx, U, Z, Y, copula, ll, ul){
-  if(all(!is.na(inx))){
-    np <- length(inx)
-    ed <- sapply(1:np, function(i) approx(U[,i], Z[,i], xout=inx[i])$y)
-    mpdf <- sapply(1:np, function(i) approx(U[,i], Y[,i], xout=inx[i])$y)
-
-    if(any(is.na(ed)) || any(is.na(mpdf))){ # outside of copula defined limits
-      jpdf <- 0
-    }else if(!(all(inx >=ll) && all(inx<=ul))){ # outside of prior
-      jpdf <- 0
-    }else{
-      jpdf <- RVinePDF(ed, copula, verbose = TRUE)*prod(mpdf)
-    }
-  } else {
-    jpdf <- 0
-  }
-  return(jpdf)
 }
 
 #' Updates Parameter Values
@@ -191,7 +151,7 @@ parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, 
       cat("\n*** [ABCMCMC] canDelta is NA. Replacing it with Inf ***")
       canDelta <- Inf
     }
-    canPrior <- dprior(canPar, U, Z, Y, copula, ll, ul)
+    canPrior <- dprior(canPar)
   }
 
   if (canDelta <= max(delta,curDelta)){

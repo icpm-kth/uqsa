@@ -132,7 +132,7 @@ checkModel <- function(modelName,modelFile=NULL){
 		modelFile <- modelFile[1]
 	}
 	if (grepl('.c$',modelFile,useBytes=TRUE)){
-		message('building a shared library from c source, and using GSL odeiv2 as backend.')
+		message('building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).')
 		LIBS <- "`pkg-config --libs gsl`"
 		CFLAGS <- "-shared -fPIC -Wall -O2 `pkg-config --cflags gsl`"
 		so <- sprintf("%s.so",modelName)

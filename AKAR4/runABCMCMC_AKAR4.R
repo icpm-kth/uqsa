@@ -75,19 +75,17 @@ for (i in seq(length(chunks))){
 	## If First Experimental Setting, Create an Independente Colupla
 	if(i==1){
 		cat(sprintf("-Fitting independent Copula \n"))
-		out <- makeIndepCopula(ll, ul)
+		priorPDF <- copulaPrior(makeIndepCopula(ll, ul))
+		rprior <- rCopulaPrior(makeIndepCopula(ll, ul))
 		## Otherwise, Take Copula from the Previous Exp Setting and Use as a Prior
 	} else {
 		cat(sprintf("-Fitting Copula based on previous MCMC runs\n"))
-		out <- fitCopula(draws, ll, ul)
+		priorPDF <- copulaPrior(fitCopula(draws, ll, ul))
+		rprior <- rCopulaPrior(fitCopula(ll, ul))
 	}
-	copula <- out$copula
-	U <- out$U
-	Z <- out$Z
-	Y <- out$Y
 	## Run Pre-Calibration Sampling
 	cat(sprintf("-Precalibration \n"))
-	out1 <- preCalibration(experiments[expInd], modelName, parVal, parMap, npc, copula, U, Z, getScore)
+	out1 <- preCalibration(experiments[expInd], modelName, parVal, parMap, npc, rprior, getScore)
 	sfactor <- 0.1 # scaling factor
 	## Get Starting Parameters from Pre-Calibration
 	out2 <- getMCMCPar(out1$prePar, out1$preDelta, p, sfactor, delta)
@@ -95,7 +93,7 @@ for (i in seq(length(chunks))){
 	startPar <- out2$startPar
 	## Run ABC-MCMC Sampling
 	cat(sprintf("-Running MCMC\n"))
-	draws <- ABCMCMC(experiments[expInd], modelName, startPar, parMap, ns, Sigma, delta, U, Z, Y, copula, ll, ul, getScore)
+	draws <- ABCMCMC(experiments[expInd], modelName, startPar, parMap, ns, Sigma, delta, dprior=priorPDF, getScore)
 
 	pick <- !apply(draws, 1, function(rw) all(rw==0))
 	draws <- draws[pick,]

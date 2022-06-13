@@ -8,6 +8,26 @@ The UQ folder contains R scripts to run the uncertainty quantification method (A
 
 Th SA folder contains MATLAB scripts to run global sensitivity analysis. A version of MATLAB later than 2014a is required. The main script to run is called get_predictions_do_SA.m and requires access to the file Draws-Phenotype123-Scale1000.mat which is available in the UQ folder. 
 
+## Model File
+
+The simulations performed in the examples can use one of two ODE solver-packages:
+
+1. [deSolve](https://cran.r-project.org/package=deSolve)
+2. [gsl odeiv2](https://www.gnu.org/software/gsl/doc/html/ode-initval.html)
+
+the gsl solver is used if the model is provided as a gsl compatible
+set of c-functions is provided in a file (user written, or
+auto-generated from SBtab). The C sources have to be compiled into a
+shared object (dynamic library) to be loaded by R. Compiling a C model
+requires the GNU Scientific Library (gsl) to be installed on the
+system. The program `pkg-config` is used by us to find the right
+header include folder (etc.) at compile time of the model (so
+pkg-config needs to be installed as well). Alternatively, the user can
+just compile the C sources into a shared object manually (by knowing
+where the right gsl headers are). If the headers are in a common
+enough folder, then these linker flags will suffice: `-lgsl -lgslcblas
+-lm`.
+
 ### Full ODE-model
 
 The full ODE-model correponding to all phenotypes can be recieved from the correponding authors upon request.

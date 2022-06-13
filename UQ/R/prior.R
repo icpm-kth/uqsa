@@ -37,4 +37,23 @@ copulaPrior <- function(Copula){
 	return(priorPDF)
 }
 
-
+#' rCopulaPrior returns a function that generates random values from the copula model
+#'
+#' @export
+#' @param Copula the return value of fitCopula()
+#' @return a matrix of random values
+rCopulaPrior <- function(Copula){
+	copula <- Copula$copula
+	Z <- Copula$Z
+	U <- Copula$U
+	np <- ncol(Z)
+	rprior <- function(npc){
+		R <- RVineSim(npc, copula)
+		prePar <- matrix(0, npc, np)
+		for(i in 1:np){
+			prePar[,i] = spline(Z[,i],U[,i],xout=R[,i])$y
+		}
+		return(prePar)
+	}
+	return(rprior)
+}
