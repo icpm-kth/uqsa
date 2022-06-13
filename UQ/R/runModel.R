@@ -137,7 +137,7 @@ checkModel <- function(modelName,modelFile=NULL){
 		CFLAGS <- "-shared -fPIC -Wall -O2 `pkg-config --cflags gsl`"
 		so <- sprintf("%s.so",modelName)
 		command_args <- sprintf("%s -o %s %s %s",CFLAGS,so,modelFile,LIBS)
-		print(paste("cc",command_args))
+		message(paste("cc",command_args))
 		system2("cc",command_args)
 		stopifnot(file.exists(so))
 		comment(modelName)<-so
