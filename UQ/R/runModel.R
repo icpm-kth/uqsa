@@ -133,8 +133,8 @@ checkModel <- function(modelName,modelFile=NULL){
 	}
 	if (grepl('.c$',modelFile,useBytes=TRUE)){
 		message('building a shared library from c source, and using GSL odeiv2 as backend.')
-		LIBS <- "-lgsl -lgslcblas -lm"
-		CFLAGS <- "-shared -fPIC -Wall -O2"
+		LIBS <- "`pkg-config --libs gsl`"
+		CFLAGS <- "-shared -fPIC -Wall -O2 `pkg-config --cflags gsl`"
 		so <- sprintf("%s.so",modelName)
 		system2("cc",sprintf("%s -o %s %s %s",CFLAGS,so,modelFile,LIBS))
 		stopifnot(file.exists(so))
