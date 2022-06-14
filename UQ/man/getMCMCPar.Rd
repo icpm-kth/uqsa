@@ -4,7 +4,7 @@
 \alias{getMCMCPar}
 \title{Selects MCMC scheme specific setup parameters}
 \usage{
-getMCMCPar(prePar, preDelta, p, sfactor, delta, num = 1)
+getMCMCPar(prePar, preDelta, p = 0.05, sfactor = 0.1, delta = 0.01, num = 1)
 }
 \arguments{
 \item{prePar}{a sample of parameters from pre-Calibration}

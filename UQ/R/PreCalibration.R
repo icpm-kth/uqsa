@@ -69,7 +69,7 @@ preCalibration <- function(experiments, modelName, parMap=identity, npc=1000, rp
 #' @param delta ABC threshold
 #' @param num number of different starting oarameter vectors.
 #' @return Sigma and startPar (matrix with `num` rows) as a list
-getMCMCPar <- function(prePar, preDelta, p, sfactor, delta, num=1){
+getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1){
   prePar <- prePar[!is.na(preDelta),]
   preDelta <- preDelta[!is.na(preDelta)]
   nk <- nrow(prePar)*p
