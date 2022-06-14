@@ -16,25 +16,28 @@
 #' Performs and Approximate Bayesian Computation Sampling of Model Parameters
 #'
 #' Given a set of simulation experiments (list), a model, parameter
-#' boundaries, this function will sample the parameters to
-#' characterize the Bayesian posterior probability for the given problem
+#' boundaries, this function will draw a sample of parameters from the
+#' posterior probability density of the given problem.
 #'
 #' Initially this function performs a similar job as an optimizer, and
 #' then transitions to MCMC sampling.
 #'
 #' @export
 #' @param experiments a list of experiments
-#' @param modelName model functions will be assumed to have this prefix
+#' @param modelName model functions will be assumed to have this
+#'     prefix (comment(modelName) can contain a file-name)
 #' @param startPar starting value for the parameter vector
-#' @param parIdx re-mapping between the MCMC variables and model parameters
-#' @param parDefVal default values for parameters, useful when some are not subject to estimation
+#' @param parMap re-mapping function between the ABC MCMC variables and model
+#'     parameters
 #' @param nSims requested sample size
-#' @param Sigma0 multivariate normal covariance of Markov chain transition kernel
+#' @param Sigma0 multivariate normal covariance of Markov chain
+#'     transition kernel
 #' @param delta ABC acceptance threshold
-#' @param dprior a function that returns prior probability density values
-#' @param getScore a function(model_output,experiment) that returns scores
+#' @param dprior a function that returns prior probability density
+#'     values
+#' @param getScore a function(model_output,experiment) that returns
+#'     scores
 #' @param nCores setting for multicore package
-#' @param environment (string) "R" or "C", selects solvers
 #' @return a sample matrix
 ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, delta, dprior, getScore, nCores=detectCores()){
   cat("Started chain.\n")
@@ -42,13 +45,9 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
   curDelta <- Inf
   np <- length(startPar)
   scount <- 1
-
   curPar  <- startPar
-
   numExperiments <- length(experiments)
-
   out <- runModel(experiments, modelName, curPar, parMap, nCores)
-
   curDelta <- mclapply(1:length(out),
                        function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]),
                        mc.preschedule = FALSE,
@@ -63,12 +62,9 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
     cat("\n*** [parUpdate] curDelta is NA. Replacing it with Inf ***\n")
     curDelta <- Inf
   }
-
   curPrior <- dprior(curPar)
   draws <- matrix(0, nSims,np)
-
   n <- 0
-
   while (n < nSims){
     if(runif(1)<=0.95){
       canPar <- mvrnorm(n=1, curPar, Sigma0)
@@ -79,9 +75,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
     curPar <- out$curPar
     curDelta <- out$curDelta
     curPrior <- out$curPrior
-
     scount <- ifelse(!all(curPar == canPar), scount+1, 1)
-
     if(!is.na(curDelta <= delta & all(curPar == canPar))){
       if (curDelta <= delta & all(curPar == canPar)){
         n=n+1
@@ -109,10 +103,8 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
 #' @param experiments list of simulation experiments
 #' @param modelName (characters), this will be used to find the model
 #'     file and the functions in that file
-#' @param parIdx remapping index set for passing parameters to the
-#'     model
-#' @param parDefVal default values for the parameters (for cases in
-#'     which some never change)
+#' @param parMap optional remapping function set for passing parameters to the
+#'     model: parModel<-parMap(parABC)
 #' @param curPar current parameter values (as ABC samples them)
 #' @param canPar candidate parameter values (for MCMC)
 #' @param curDelta current distance between data and simulation, if
@@ -121,15 +113,8 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
 #'     current state for the chain.
 #' @param curPrior current Prior values given curPar
 #' @param delta distance threshold for ABC
-#' @param U sampled marginal parameter values
-#' @param Z (CDE) cumulative probability estimate of U
-#' @param Y (PDE) probability density estimate values of U
-#' @param copula as returned by copula estimators
-#' @param ll lower limit of parameters
-#' @param ul upper limit of parameters
+#' @param dprior prior probability density function
 #' @param getScore a scoring function
-#' @param environment "C" selects GSL solvers, "R" selects the deSolve
-#'     as backend
 #' @param nCores number of cores to use in mclapply().
 #' @return updated values for curPar, curDelta, and curPrior
 parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, curPrior, delta, dprior, getScore, environment, nCores=detectCores()){
@@ -177,20 +162,21 @@ parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, 
 #' checked against old data.
 #'
 #' @export
-#' @param currentExpSet an index, all experiments before that index
-#'     will be evaluated for scores and acceptance.
-#' @param experimentsIndices can be used to filter simulation
-#'     experiments (to exclude some), e.g. 2:4, to exclude 1.
-#' @param modelName name (prefix), is used to find the file and model functions therein.
+#' @param modelName name, is used to find the file and model functions
+#'     therein (comment(modelName) can contain a file-name if it
+#'     differs from `modelName.R`).
 #' @param draws matrix of sampled values (to be filtered).
-#' @param experiments a list of experiments (all of them, or up to currentExpSet).
-#' @param parVal not used other than for size?
-#' @param parIdx remapping index passed to runModel().
+#' @param experiments a list of experiments (all of them, or up to
+#'     currentExpSet).
+#' @param parMap optional remapping function:
+#'     parModel<-parMap(parABC); the ABC variables will be transformed
+#'     to make the parameter vector acceptable to the model. This is
+#'     necessary whenever ABC sampling happens in a different space
+#'     than the model parameter domain for whatever reason.
 #' @param getScore scoring function.
 #' @param delta the acceptance threshold.
-#' @param environment passed to runModel(), selects solver.
-#' @param nCores number of cores to use in mclapply() calls.
-#' @param nChains number of parallel Markov chains (unused?).
+#' @param nCores number of cores to use in parallel::mclapply() calls.
+#' @return a filtered subset of acceptable parameter draws
 checkFitWithPreviousExperiments <- function(modelName, draws, experiments, parMap=identity(), getScore, delta, nCores=detectCores()){
 	numExperiments <- length(experiments)
 	cat("-Checking fit with previous data\n")

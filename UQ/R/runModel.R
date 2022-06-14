@@ -22,17 +22,13 @@
 #' modelName.so, if it doesn't already exist.
 #'
 #' @export
-#' @param y0 Initial values: y'=f(t,y,p), y(t=0)=y0
+#' @param experiments list of experiments to simulate
 #' @param modelName used to find model files and functions within the
 #'     file (a prefix)
 #' @param parABC a matrix of column vectors; each column
 #'     contains a vector of both normal parameters (e.g. kinetic
 #'     params like kf and kr) and input_parameters (concatenated in
 #'     that order). With N columns, N simulations will be performed.
-#' @param outputTimes_list a list of output time vectors, one per
-#'     simulation experiment.
-#' @param outputFunctions_list a list of vector valued output functions
-#' @param environment "C" selects GSL solvers, "R" (default) selects deSolve as backend
 #' @param mc.cores number of cores to use (defaults to 8)
 #' @return output function values
 runModel <- function(experiments, modelName,  parABC, parMap=identity(), mc.cores = detectCores()){
@@ -106,23 +102,26 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity(), mc.core
 
 #' checkModel tries to establish the simulation file for a given model
 #'
-#' This function returns the model name, with some additional comments about the file
+#' This function returns the model name, with some additional comments
+#' about the file
 #'
 #' As an alternative to this function, it is sufficient to write
 #' modelName <- "test_ode_model"             # or some other model name
 #' comment(modelName) <- "test_ode_model.so" # or .R
 #'
 #' This function will not attempt to find a model file, other than in
-#' the current directory. But, checkModel will compile a GSL compatible C source file into
-#' a shared object if modelFile ends with `.c` and stop if that doesn't work.
+#' the current directory. But, checkModel will compile a GSL
+#' compatible C source file into a shared object if modelFile ends
+#' with `.c` and stop if that doesn't work.
 #'
-#' In any case, this function stops execution if the model file doesn't exist.
+#' In any case, this function stops execution if the model file
+#' doesn't exist.
 #'
 #' @export
 #' @param modelName a string
 #' @param modelFile a string, if the model file is different from
-#'     "modelName.R", if the string ends in .c, the c source will be
-#'     compiled to a shared library.#'
+#'     "modelName.R". If the file name ends in .c, the c source will be
+#'     compiled to a shared library.
 #' @return modelName with an additional comment about which file to use for simulations
 checkModel <- function(modelName,modelFile=NULL){
 	if (is.null(modelFile)) {
