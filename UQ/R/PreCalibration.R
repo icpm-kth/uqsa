@@ -32,9 +32,8 @@
 #' @param nCores number of processor cores to use in mclapply().
 #' @param environment "C" selects GSL solvers, "R" (default) selects deSolve.
 #' @return list with entries preDelta and prePar, final values of calibration run
-preCalibration <- function(experiments, modelName, parDefVal, parMap=identity, npc=1000, rprior, getScore, nCores=detectCores()){
+preCalibration <- function(experiments, modelName, parMap=identity, npc=1000, rprior, getScore, nCores=detectCores()){
 	numExperiments <- length(experiments)
-	np <- ncol(Z)
 	nu <- length(experiments[[1]][['input']])
 	ny <- length(experiments[[1]][['initialState']])
 	prePar <- rprior(npc)

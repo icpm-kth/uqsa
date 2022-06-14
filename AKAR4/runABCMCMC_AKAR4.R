@@ -75,17 +75,17 @@ for (i in seq(length(chunks))){
 	## If First Experimental Setting, Create an Independente Colupla
 	if(i==1){
 		cat(sprintf("-Fitting independent Copula \n"))
-		priorPDF <- copulaPrior(makeIndepCopula(ll, ul))
-		rprior <- rCopulaPrior(makeIndepCopula(ll, ul))
+		priorPDF <- dUniformPrior(ll, ul)
+		rprior <- rUniformPrior(ll, ul)
 		## Otherwise, Take Copula from the Previous Exp Setting and Use as a Prior
 	} else {
 		cat(sprintf("-Fitting Copula based on previous MCMC runs\n"))
-		priorPDF <- copulaPrior(fitCopula(draws, ll, ul))
-		rprior <- rCopulaPrior(fitCopula(ll, ul))
+		priorPDF <- dCopulaPrior(fitCopula(draws, ll, ul))
+		rprior <- rCopulaPrior(fitCopula(draws,ll, ul))
 	}
 	## Run Pre-Calibration Sampling
 	cat(sprintf("-Precalibration \n"))
-	out1 <- preCalibration(experiments[expInd], modelName, parVal, parMap, npc, rprior, getScore)
+	out1 <- preCalibration(experiments[expInd], modelName, parMap, npc, rprior, getScore)
 	sfactor <- 0.1 # scaling factor
 	## Get Starting Parameters from Pre-Calibration
 	out2 <- getMCMCPar(out1$prePar, out1$preDelta, p, sfactor, delta)
@@ -108,7 +108,7 @@ for (i in seq(length(chunks))){
 	timeStr <- gsub(" ","_", timeStr)
 	outFileR <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
 	if (require("R.matlab")){
-		outFileM <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),,"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
+		outFileM <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
 	}
 	save(draws, parNames, file=outFileR)
 	#writeMat(outFileM, samples=10^draws)

@@ -12,12 +12,7 @@ ABCMCMC(
   nSims,
   Sigma0,
   delta,
-  U,
-  Z,
-  Y,
-  copula,
-  ll,
-  ul,
+  dprior,
   getScore,
   nCores = detectCores()
 )
@@ -35,17 +30,7 @@ ABCMCMC(
 
 \item{delta}{ABC acceptance threshold}
 
-\item{U}{sampled values for marginal distribution}
-
-\item{Z}{(CDE) marginal cumulative probability density estimate}
-
-\item{Y}{(PDE) marginal probability density estimate}
-
-\item{copula}{An RVineMatrix() as returned by RVineStructureSelect}
-
-\item{ll}{lower limit of model parameters}
-
-\item{ul}{upper limit of model parameters}
+\item{dprior}{a function that returns prior probability density values}
 
 \item{getScore}{a function(model_output,experiment) that returns scores}
 

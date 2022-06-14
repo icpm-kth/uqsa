@@ -26,7 +26,7 @@
 #'     probability samples, Z are cummulative density values for U,
 #'     and Y are the probability density values of U.
 fitCopula <- function(X,ll,ul, nCores=detectCores()){
-
+  stopifnot(is.matrix(X))
   ncx <- ncol(X)
   ns <- nrow(X)
   eps <- 0.1

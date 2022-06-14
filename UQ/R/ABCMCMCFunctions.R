@@ -75,7 +75,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
     }else{
       canPar <- mvrnorm(n=1, curPar, Sigma1)
     }
-    out <- parUpdate(experiments, modelName, parMap, curPar, canPar, curDelta, curPrior, delta, U, Z, Y, copula, ll, ul, getScore, nCores)
+    out <- parUpdate(experiments, modelName, parMap, curPar, canPar, curDelta, curPrior, delta, dprior, getScore, nCores)
     curPar <- out$curPar
     curDelta <- out$curDelta
     curPrior <- out$curPrior
@@ -132,7 +132,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
 #'     as backend
 #' @param nCores number of cores to use in mclapply().
 #' @return updated values for curPar, curDelta, and curPrior
-parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, curPrior, delta, U, Z, Y, copula, ll, ul, getScore, environment, nCores=detectCores()){
+parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, curPrior, delta, dprior, getScore, environment, nCores=detectCores()){
   numExperiments <- length(experiments)
   invisible(capture.output(out <- runModel(experiments, modelName, parABC=canPar, parMap, mc.cores=nCores)))
 

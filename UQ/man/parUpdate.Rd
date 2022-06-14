@@ -13,12 +13,7 @@ parUpdate(
   curDelta,
   curPrior,
   delta,
-  U,
-  Z,
-  Y,
-  copula,
-  ll,
-  ul,
+  dprior,
   getScore,
   environment,
   nCores = detectCores()
@@ -43,18 +38,6 @@ current state for the chain.}
 
 \item{delta}{distance threshold for ABC}
 
-\item{U}{sampled marginal parameter values}
-
-\item{Z}{(CDE) cumulative probability estimate of U}
-
-\item{Y}{(PDE) probability density estimate values of U}
-
-\item{copula}{as returned by copula estimators}
-
-\item{ll}{lower limit of parameters}
-
-\item{ul}{upper limit of parameters}
-
 \item{getScore}{a scoring function}
 
 \item{environment}{"C" selects GSL solvers, "R" selects the deSolve
@@ -67,6 +50,18 @@ model}
 
 \item{parDefVal}{default values for the parameters (for cases in
 which some never change)}
+
+\item{U}{sampled marginal parameter values}
+
+\item{Z}{(CDE) cumulative probability estimate of U}
+
+\item{Y}{(PDE) probability density estimate values of U}
+
+\item{copula}{as returned by copula estimators}
+
+\item{ll}{lower limit of parameters}
+
+\item{ul}{upper limit of parameters}
 }
 \value{
 updated values for curPar, curDelta, and curPrior
