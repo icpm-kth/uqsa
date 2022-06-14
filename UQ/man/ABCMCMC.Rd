@@ -20,35 +20,36 @@ ABCMCMC(
 \arguments{
 \item{experiments}{a list of experiments}
 
-\item{modelName}{model functions will be assumed to have this prefix}
+\item{modelName}{model functions will be assumed to have this
+prefix (comment(modelName) can contain a file-name)}
 
 \item{startPar}{starting value for the parameter vector}
 
+\item{parMap}{re-mapping function between the ABC MCMC variables and model
+parameters}
+
 \item{nSims}{requested sample size}
 
-\item{Sigma0}{multivariate normal covariance of Markov chain transition kernel}
+\item{Sigma0}{multivariate normal covariance of Markov chain
+transition kernel}
 
 \item{delta}{ABC acceptance threshold}
 
-\item{dprior}{a function that returns prior probability density values}
+\item{dprior}{a function that returns prior probability density
+values}
 
-\item{getScore}{a function(model_output,experiment) that returns scores}
+\item{getScore}{a function(model_output,experiment) that returns
+scores}
 
 \item{nCores}{setting for multicore package}
-
-\item{parIdx}{re-mapping between the MCMC variables and model parameters}
-
-\item{parDefVal}{default values for parameters, useful when some are not subject to estimation}
-
-\item{environment}{(string) "R" or "C", selects solvers}
 }
 \value{
 a sample matrix
 }
 \description{
 Given a set of simulation experiments (list), a model, parameter
-boundaries, this function will sample the parameters to
-characterize the Bayesian posterior probability for the given problem
+boundaries, this function will draw a sample of parameters from the
+posterior probability density of the given problem.
 }
 \details{
 Initially this function performs a similar job as an optimizer, and

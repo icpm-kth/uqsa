@@ -13,6 +13,8 @@ runModel(
 )
 }
 \arguments{
+\item{experiments}{list of experiments to simulate}
+
 \item{modelName}{used to find model files and functions within the
 file (a prefix)}
 
@@ -22,15 +24,6 @@ params like kf and kr) and input_parameters (concatenated in
 that order). With N columns, N simulations will be performed.}
 
 \item{mc.cores}{number of cores to use (defaults to 8)}
-
-\item{y0}{Initial values: y'=f(t,y,p), y(t=0)=y0}
-
-\item{outputTimes_list}{a list of output time vectors, one per
-simulation experiment.}
-
-\item{outputFunctions_list}{a list of vector valued output functions}
-
-\item{environment}{"C" selects GSL solvers, "R" (default) selects deSolve as backend}
 }
 \value{
 output function values

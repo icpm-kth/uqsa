@@ -15,31 +15,29 @@ checkFitWithPreviousExperiments(
 )
 }
 \arguments{
-\item{modelName}{name (prefix), is used to find the file and model functions therein.}
+\item{modelName}{name, is used to find the file and model functions
+therein (comment(modelName) can contain a file-name if it
+differs from `modelName.R`).}
 
 \item{draws}{matrix of sampled values (to be filtered).}
 
-\item{experiments}{a list of experiments (all of them, or up to currentExpSet).}
+\item{experiments}{a list of experiments (all of them, or up to
+currentExpSet).}
+
+\item{parMap}{optional remapping function:
+parModel<-parMap(parABC); the ABC variables will be transformed
+to make the parameter vector acceptable to the model. This is
+necessary whenever ABC sampling happens in a different space
+than the model parameter domain for whatever reason.}
 
 \item{getScore}{scoring function.}
 
 \item{delta}{the acceptance threshold.}
 
-\item{nCores}{number of cores to use in mclapply() calls.}
-
-\item{currentExpSet}{an index, all experiments before that index
-will be evaluated for scores and acceptance.}
-
-\item{experimentsIndices}{can be used to filter simulation
-experiments (to exclude some), e.g. 2:4, to exclude 1.}
-
-\item{parVal}{not used other than for size?}
-
-\item{parIdx}{remapping index passed to runModel().}
-
-\item{environment}{passed to runModel(), selects solver.}
-
-\item{nChains}{number of parallel Markov chains (unused?).}
+\item{nCores}{number of cores to use in parallel::mclapply() calls.}
+}
+\value{
+a filtered subset of acceptable parameter draws
 }
 \description{
 The prior probability density model using copulas and vines is not

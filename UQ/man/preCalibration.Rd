@@ -15,31 +15,30 @@ preCalibration(
 )
 }
 \arguments{
-\item{experiments}{a list of simulation experiments.}
+\item{experiments}{a list of simulation experiments. Same as for
+ABCMCMC.}
 
 \item{modelName}{this name will be used to find the file and
-functions within the file according to naming conventions.}
+functions within the file according to naming conventions (the
+model name and file can differ, the file-name can be attached
+to the name as a comment).}
 
-\item{parMap}{a remapping function that takes ABC sampling variables and returns valid model parameters}
+\item{parMap}{a remapping function that takes ABC sampling
+variables and returns valid model parameters}
 
 \item{npc}{sample size of pre-calibration.}
 
-\item{getScore}{a function that maps the model's output values to ABC score values (in comparison to data).}
+\item{rprior}{a function that generates random ABC variables,
+distributed according to the prior.}
+
+\item{getScore}{a function that maps the model's output values to
+ABC score values (in comparison to data).}
 
 \item{nCores}{number of processor cores to use in mclapply().}
-
-\item{parDefVal}{default values for the parameters (without inputs).}
-
-\item{copula}{the result of copula estimation.}
-
-\item{U}{sample of marginal (1D) values for the copula.}
-
-\item{Z}{(CDE) cummulative density estimate values of U.}
-
-\item{environment}{"C" selects GSL solvers, "R" (default) selects deSolve.}
 }
 \value{
-list with entries preDelta and prePar, final values of calibration run
+list with entries preDelta and prePar, final values of
+    calibration run
 }
 \description{
 In ABC settings a model solution is compared to data with an

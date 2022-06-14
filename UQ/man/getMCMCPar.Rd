@@ -11,13 +11,13 @@ getMCMCPar(prePar, preDelta, p = 0.05, sfactor = 0.1, delta = 0.01, num = 1)
 
 \item{preDelta}{distance values (scores) for those parameters}
 
-\item{p}{fraction (top scoring) of sampled points to base Sigma on}
+\item{p}{fraction (top scoring) of sampled points to base Sigma on [default 0.05]}
 
-\item{sfactor}{scales Sigma up or down}
+\item{sfactor}{scales Sigma up or down [default 0.1]}
 
-\item{delta}{ABC threshold}
+\item{delta}{ABC threshold [default 1e-2]}
 
-\item{num}{number of different starting oarameter vectors.}
+\item{num}{number of different starting parameter vectors [default 1].}
 }
 \value{
 Sigma and startPar (matrix with `num` rows) as a list
