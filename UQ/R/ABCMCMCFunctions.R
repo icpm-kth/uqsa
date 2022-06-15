@@ -127,7 +127,6 @@ parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, 
   }else{
     canDelta <- mclapply(1:length(out), function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
     canDelta <- unlist(canDelta)
-
     #Similarly to what we did in the preCalibration and in ABCMCMC, we average the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
     #As in preCalibration and ABCMCMC, we can use - for instance - the sum of squares
     canDelta <- mean(canDelta)
@@ -140,19 +139,13 @@ parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, 
   }
 
   if (canDelta <= max(delta,curDelta)){
-    if (canPrior==0){
-      h <- 0
-    }else{
-      h <- min(1,canPrior/curPrior)
-    }
-
-    if (runif(1) <= h){
+    if (runif(1) <= canPrior/curPrior){
       curDelta <- canDelta
       curPrior <- canPrior
       curPar <- canPar
     }
   }
-  list(curPar=curPar, curDelta=curDelta, curPrior=curPrior)
+  return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior))
 }
 
 #' ABC acceptance of currently sampled values given old data (Prior)
