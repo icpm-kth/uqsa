@@ -19,66 +19,37 @@
 #' to adjust this delta value.
 #'
 #' @export
-#' @param experiments a list of simulation experiments.
+#' @param experiments a list of simulation experiments. Same as for
+#'     ABCMCMC.
 #' @param modelName this name will be used to find the file and
-#'     functions within the file according to naming conventions.
-#' @param parDefVal default values for the parameters (without inputs).
-#' @param parIdx a remapping index set, the model will be simulated with, e.g.: p[parIdx] <- parDefVal.
+#'     functions within the file according to naming conventions (the
+#'     model name and file can differ, the file-name can be attached
+#'     to the name as a comment).
+#' @param parMap a remapping function that takes ABC sampling
+#'     variables and returns valid model parameters
 #' @param npc sample size of pre-calibration.
-#' @param copula the result of copula estimation.
-#' @param U sample of marginal (1D) values for the copula.
-#' @param Z (CDE) cummulative density estimate values of U.
-#' @param getScore a function that maps the model's output values to ABC score values (in comparison to data).
+#' @param rprior a function that generates random ABC variables,
+#'     distributed according to the prior.
+#' @param getScore a function that maps the model's output values to
+#'     ABC score values (in comparison to data).
 #' @param nCores number of processor cores to use in mclapply().
-#' @param environment "C" selects GSL solvers, "R" (default) selects deSolve.
-#' @return list with entries preDelta and prePar, final values of calibration run
-preCalibration <- function(experiments, modelName, parDefVal, parIdx, npc, copula, U, Z, getScore, nCores, environment){
-
-  numExperiments <- length(experiments)
-  np <- length(parIdx)
-
-  R <- RVineSim(npc, copula)
-  prePar <- matrix(0, npc, np)
-  for(i in 1:np){
-    prePar[,i] = spline(Z[,i],U[,i],xout=R[,i])$y
-  }
-
-  tmp_list <- mclapply(experiments,
-											 function(x) replicate(npc, c(parDefVal,x[["input"]])),
-											 mc.preschedule = FALSE,
-											 mc.cores = nCores)
-  params_inputs <- do.call(cbind, tmp_list)
-  params_inputs[parIdx,] <- 10^t(prePar)
-
-  tmp_list <- mclapply(experiments,
-											 function(x) replicate(npc, x[["initialState"]]),
-											 mc.preschedule = FALSE,
-											 mc.cores = nCores)
-  y0 <- do.call(cbind, tmp_list)
-
-  outputTimes_list <- list()
-  outputFunctions_list <- list()
-  for(i in 1:numExperiments){
-    outputTimes_list <- c(outputTimes_list, replicate(npc, list(experiments[[i]][["outputTimes"]])))
-    outputFunctions_list <- c(outputFunctions_list, replicate(npc, list(experiments[[i]][["outputFunction"]])))
-  }
-
-
-  output_yy <- runModel(y0, modelName, params_inputs, outputTimes_list, outputFunctions_list, environment, nCores)
-  preDelta <- mclapply(1:length(output_yy), function(i) getScore(output_yy[[i]], experiments[[(i-1)%/%npc+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
-  preDelta <- unlist(preDelta)
-
-  #preDelta is a vector of length npc*numExperiments.
-  #It is obtained using npc different parameter vectors, each of them tested on all the experiment.
-  #In particular, parameter i (in 1:npc) was used in the generation of preDelta[i+j*npc] (j in 0:numExperiments-1)
-  #Hence, to get an estimate of the delta that sums up the goodness of a certain parameter on the chosen experiments, we can use - for instance - the mean
-
-  #preDelta <- sapply(1:npc, function(i) sum((preDelta[i+seq(0,npc*(numExperiments-1), npc)]))/numExperiments)
-  if(any(is.na(preDelta))){
-    cat("*** [preCalibration] Some of the preDelta is NA. Replacing with Inf ***")
-    preDelta[is.na(preDelta)] <- Inf
-  }
-  return(list(preDelta=preDelta, prePar=prePar))
+#' @return list with entries preDelta and prePar, final values of
+#'     calibration run
+preCalibration <- function(experiments, modelName, parMap=identity, npc=1000, rprior, getScore, nCores=detectCores()){
+	numExperiments <- length(experiments)
+	nu <- length(experiments[[1]][['input']])
+	ny <- length(experiments[[1]][['initialState']])
+	prePar <- rprior(npc)
+	output_yy <- runModel(experiments, modelName, t(prePar), parMap, nCores)
+	preDelta <- mclapply(1:length(output_yy), function(i) getScore(output_yy[[i]], experiments[[(i-1)%/%npc+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
+	preDelta <- unlist(preDelta)
+  dim(preDelta)<-c(npc,numExperiments)
+	preDelta <- apply(preDelta,1,max)
+	if(any(is.na(preDelta))){
+		cat("*** [preCalibration] Some of the preDelta is NA. Replacing with Inf ***")
+		preDelta[is.na(preDelta),] <- Inf
+	}
+	return(list(preDelta=preDelta, prePar=prePar))
 }
 
 #' Selects MCMC scheme specific setup parameters
@@ -90,13 +61,12 @@ preCalibration <- function(experiments, modelName, parDefVal, parIdx, npc, copul
 #' @export
 #' @param prePar a sample of parameters from pre-Calibration
 #' @param preDelta distance values (scores) for those parameters
-#' @param p fraction (top scoring) of sampled points to base Sigma on
-#' @param sfactor scales Sigma up or down
-#' @param delta ABC threshold
-#' @param nChains number of mcmc chains to use later, affects the
-#'     returned set of starting parameters.
-#' @return Sigma and startPar as a list
-getMCMCPar <- function(prePar, preDelta, p, sfactor, delta, nChains=1){
+#' @param p fraction (top scoring) of sampled points to base Sigma on [default 0.05]
+#' @param sfactor scales Sigma up or down [default 0.1]
+#' @param delta ABC threshold [default 1e-2]
+#' @param num number of different starting parameter vectors [default 1].
+#' @return Sigma and startPar (matrix with `num` rows) as a list
+getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1){
   prePar <- prePar[!is.na(preDelta),]
   preDelta <- preDelta[!is.na(preDelta)]
   nk <- nrow(prePar)*p
@@ -111,7 +81,7 @@ getMCMCPar <- function(prePar, preDelta, p, sfactor, delta, nChains=1){
   diag(Scorr) <- 1
   sdv <- apply(prePar[pick,], 2, sd)
   Sigma <- sfactor * Scorr * tcrossprod(sdv)
-  startPar <- prePar[sample(pick, nChains, replace = FALSE),]
+  startPar <- prePar[sample(pick, num, replace = FALSE),]
   list(Sigma=Sigma, startPar=startPar)
 }
 

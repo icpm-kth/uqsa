@@ -4,24 +4,23 @@
 \alias{getMCMCPar}
 \title{Selects MCMC scheme specific setup parameters}
 \usage{
-getMCMCPar(prePar, preDelta, p, sfactor, delta, nChains)
+getMCMCPar(prePar, preDelta, p = 0.05, sfactor = 0.1, delta = 0.01, num = 1)
 }
 \arguments{
 \item{prePar}{a sample of parameters from pre-Calibration}
 
 \item{preDelta}{distance values (scores) for those parameters}
 
-\item{p}{fraction (top scoring) of sampled points to base Sigma on}
+\item{p}{fraction (top scoring) of sampled points to base Sigma on [default 0.05]}
 
-\item{sfactor}{scales Sigma up or down}
+\item{sfactor}{scales Sigma up or down [default 0.1]}
 
-\item{delta}{ABC threshold}
+\item{delta}{ABC threshold [default 1e-2]}
 
-\item{nChains}{number of mcmc chains to use later, affects the
-returned set of starting parameters.}
+\item{num}{number of different starting parameter vectors [default 1].}
 }
 \value{
-Sigma and startPar as a list
+Sigma and startPar (matrix with `num` rows) as a list
 }
 \description{
 The MCMC scheme uses a transition kernel. This function returns the

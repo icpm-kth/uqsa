@@ -4,7 +4,7 @@
 \alias{fitCopula}
 \title{Makes a Probability Density Estimate (from a sample)}
 \usage{
-fitCopula(X, ll, ul, nCores)
+fitCopula(X, ll, ul, nCores = detectCores())
 }
 \arguments{
 \item{X}{sample that characterizes the traget distribution (rows)}

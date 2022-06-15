@@ -43,4 +43,4 @@ The Journal of Biological Chemistry 264:9344–9351.
 ```
 
 ### Acknowledgements
-This open source software code was developed in part within the Human Brain Project, funded from the European Union’s Horizon 2020 Framework Programme for Research and Innovation under Specific Grant Agreements No. 720270, No. 785907 and No 945539 (Human Brain Project SGA1, SGA2 and SGA3); the Swedish Research Council VR-M-2017-02806 and VR-M-2020-01652; and Governmental grants for strategic research areas (Swedish e-Science Research Center; Digital Futures).
+This open source software code was developed in part or in the Human Brain Project, funded from the European Union’s Horizon 2020 Framework Programme for Research and Innovation under Specific Grant Agreements No. 720270 and No. 785907 (Human Brain Project SGA1 and SGA2).

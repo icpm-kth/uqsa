@@ -5,32 +5,23 @@
 \title{Simulate an Experiment using the named ODE Model}
 \usage{
 runModel(
-  y0,
+  experiments,
   modelName,
-  params_inputs,
-  outputTimes_list,
-  outputFunctions_list,
-  environment = "R",
-  mc.cores = 8
+  parABC,
+  parMap = identity(),
+  mc.cores = detectCores()
 )
 }
 \arguments{
-\item{y0}{Initial values: y'=f(t,y,p), y(t=0)=y0}
+\item{experiments}{list of experiments to simulate}
 
 \item{modelName}{used to find model files and functions within the
 file (a prefix)}
 
-\item{params_inputs}{a matrix of column vectors; each column
+\item{parABC}{a matrix of column vectors; each column
 contains a vector of both normal parameters (e.g. kinetic
 params like kf and kr) and input_parameters (concatenated in
 that order). With N columns, N simulations will be performed.}
-
-\item{outputTimes_list}{a list of output time vectors, one per
-simulation experiment.}
-
-\item{outputFunctions_list}{a list of vector valued output functions}
-
-\item{environment}{"C" selects GSL solvers, "R" (default) selects deSolve as backend}
 
 \item{mc.cores}{number of cores to use (defaults to 8)}
 }

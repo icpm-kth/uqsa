@@ -8,64 +8,48 @@ ABCMCMC(
   experiments,
   modelName,
   startPar,
-  parIdx,
-  parDefVal,
+  parMap,
   nSims,
   Sigma0,
   delta,
-  U,
-  Z,
-  Y,
-  copula,
-  ll,
-  ul,
+  dprior,
   getScore,
-  nCores,
-  environment
+  nCores = detectCores()
 )
 }
 \arguments{
 \item{experiments}{a list of experiments}
 
-\item{modelName}{model functions will be assumed to have this prefix}
+\item{modelName}{model functions will be assumed to have this
+prefix (comment(modelName) can contain a file-name)}
 
 \item{startPar}{starting value for the parameter vector}
 
-\item{parIdx}{re-mapping between the MCMC variables and model parameters}
-
-\item{parDefVal}{default values for parameters, useful when some are not subject to estimation}
+\item{parMap}{re-mapping function between the ABC MCMC variables and model
+parameters}
 
 \item{nSims}{requested sample size}
 
-\item{Sigma0}{multivariate normal covariance of Markov chain transition kernel}
+\item{Sigma0}{multivariate normal covariance of Markov chain
+transition kernel}
 
 \item{delta}{ABC acceptance threshold}
 
-\item{U}{sampled values for marginal distribution}
+\item{dprior}{a function that returns prior probability density
+values}
 
-\item{Z}{(CDE) marginal cumulative probability density estimate}
-
-\item{Y}{(PDE) marginal probability density estimate}
-
-\item{copula}{An RVineMatrix() as returned by RVineStructureSelect}
-
-\item{ll}{lower limit of model parameters}
-
-\item{ul}{upper limit of model parameters}
-
-\item{getScore}{a function(model_output,experiment) that returns scores}
+\item{getScore}{a function(model_output,experiment) that returns
+scores}
 
 \item{nCores}{setting for multicore package}
-
-\item{environment}{(string) "R" or "C", selects solvers}
 }
 \value{
 a sample matrix
 }
 \description{
 Given a set of simulation experiments (list), a model, parameter
-boundaries, this function will sample the parameters to
-characterize the Bayesian posterior probability for the given problem
+boundaries, this function will draw a sample of parameters from the
+posterior probability density of the given problem.
 }
 \details{
 Initially this function performs a similar job as an optimizer, and

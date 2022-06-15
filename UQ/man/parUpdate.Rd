@@ -7,22 +7,16 @@
 parUpdate(
   experiments,
   modelName,
-  parIdx,
-  parDefVal,
+  parMap,
   curPar,
   canPar,
   curDelta,
   curPrior,
   delta,
-  U,
-  Z,
-  Y,
-  copula,
-  ll,
-  ul,
+  dprior,
   getScore,
   environment,
-  nCores
+  nCores = detectCores()
 )
 }
 \arguments{
@@ -31,11 +25,8 @@ parUpdate(
 \item{modelName}{(characters), this will be used to find the model
 file and the functions in that file}
 
-\item{parIdx}{remapping index set for passing parameters to the
-model}
-
-\item{parDefVal}{default values for the parameters (for cases in
-which some never change)}
+\item{parMap}{optional remapping function set for passing parameters to the
+model: parModel<-parMap(parABC)}
 
 \item{curPar}{current parameter values (as ABC samples them)}
 
@@ -50,22 +41,9 @@ current state for the chain.}
 
 \item{delta}{distance threshold for ABC}
 
-\item{U}{sampled marginal parameter values}
-
-\item{Z}{(CDE) cumulative probability estimate of U}
-
-\item{Y}{(PDE) probability density estimate values of U}
-
-\item{copula}{as returned by copula estimators}
-
-\item{ll}{lower limit of parameters}
-
-\item{ul}{upper limit of parameters}
+\item{dprior}{prior probability density function}
 
 \item{getScore}{a scoring function}
-
-\item{environment}{"C" selects GSL solvers, "R" selects the deSolve
-as backend}
 
 \item{nCores}{number of cores to use in mclapply().}
 }
