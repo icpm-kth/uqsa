@@ -121,7 +121,7 @@ rUniformPrior <- function(ll,ul){
 	np <- length(ll)
 	stopifnot(np==length(ul))
 	rprior <- function(n){
-		r <- matrix(runif(n,min=ll,max=ul),n,np,byrow=TRUE)
+		r <- matrix(runif(n*np,min=ll,max=ul),n,np,byrow=TRUE)
 		return(r)
 	}
 	return(rprior)
