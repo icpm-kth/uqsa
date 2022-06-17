@@ -81,7 +81,7 @@ for (i in 1:length(experimentsIndices)){
 	draws <- ABCMCMC(experiments[expInd], modelName, M$startPar, parMap, ns, M$Sigma, delta, dprior, getScore, nCores)
 
 	if (i>1){
-		precursors <- experimentIndices[1:(i-1)]
+		precursors <- experimentsIndices[1:(i-1)]
 		draws <- checkFitWithPreviousExperiments(modelName, draws, experiments[precursors], parMap, getScore, delta, nCores)
 	}
 	# Save Resulting Samples to MATLAB and R files.
