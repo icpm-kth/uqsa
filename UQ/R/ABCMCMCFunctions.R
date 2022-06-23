@@ -63,7 +63,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
     curDelta <- Inf
   }
   curPrior <- dprior(curPar)
-  draws <- matrix(0, nSims,np)
+  draws <- matrix(NA, nSims,np)
   n <- 0
   while (n < nSims){
     if(runif(1)<=0.95){
@@ -75,19 +75,13 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
     curPar <- out$curPar
     curDelta <- out$curDelta
     curPrior <- out$curPrior
-    scount <- ifelse(!all(curPar == canPar), scount+1, 1)
-    if(!is.na(curDelta <= delta & all(curPar == canPar))){
-      if (curDelta <= delta & all(curPar == canPar)){
-        n=n+1
-        draws[n,] = curPar
-      }
-    } else {
-      cat('NA when evaluating: "curDelta <= delta & all(curPar == canPar)"')
-    }
+    scount <- scount + out$acceptance
+    n <- n+1
+    draws[n,]  <- curPar
 
     if(scount>500){ #terminate chain if stuck
       cat('Aborted chain.\n')
-      return(draws)
+      return(draws[1:n,])
     }
   }
   cat("Finished chain.\n")
@@ -120,7 +114,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
 parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, curPrior, delta, dprior, getScore, environment, nCores=detectCores()){
   numExperiments <- length(experiments)
   invisible(capture.output(out <- runModel(experiments, modelName, parABC=canPar, parMap, mc.cores=nCores)))
-
+	acceptance <- 0
   if(is.null(out)){
     canDelta <- Inf
     canPrior <- 0
@@ -143,9 +137,10 @@ parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, 
       curDelta <- canDelta
       curPrior <- canPrior
       curPar <- canPar
+			acceptance <- 1
     }
   }
-  return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior))
+  return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior,acceptance=acceptance))
 }
 
 #' ABC acceptance of currently sampled values given old data (Prior)
