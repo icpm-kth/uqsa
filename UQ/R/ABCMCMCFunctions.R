@@ -75,7 +75,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
     curPar <- out$curPar
     curDelta <- out$curDelta
     curPrior <- out$curPrior
-    scount <- scount + out$acceptance
+    scount <- ifelse(out$acceptance, 1, scount + 1) #scount counts the number of times we are in the same value for curPar. If we accept a new canPar, then we reset the count to 1.
     n <- n+1
     draws[n,]  <- curPar
 
