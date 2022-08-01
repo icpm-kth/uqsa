@@ -59,7 +59,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
   curDelta <- mean(curDelta)
 
   if(is.na(curDelta)){
-    cat("\n*** [parUpdate] curDelta is NA. Replacing it with Inf ***\n")
+    cat("*** [ABCMCMC] curDelta is NA. Replacing it with Inf ***\n")
     curDelta <- Inf
   }
   curPrior <- dprior(curPar)
@@ -126,7 +126,7 @@ parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, 
     canDelta <- mean(canDelta)
     if(is.na(canDelta))
     {
-      cat("\n*** [ABCMCMC] canDelta is NA. Replacing it with Inf ***")
+      cat("*** [parUpdate] canDelta is NA. Replacing it with Inf ***\n")
       canDelta <- Inf
     }
     canPrior <- dprior(canPar)
