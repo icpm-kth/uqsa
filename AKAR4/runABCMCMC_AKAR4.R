@@ -63,6 +63,8 @@ getScore	<- function(yy_sim, yy_exp){
 	return(distance)
 }
 
+Obj <- makeObjective(experiments,modelName,getScore,parMap)
+
 # Loop through the Different Experimental Settings
 start_time = Sys.time()
 
@@ -74,29 +76,32 @@ for (i in seq(length(chunks))){
 	cat("#####Starting run for Experiments ", expInd, "######\n")
 	## If First Experimental Setting, Create an Independente Colupla
 	if(i==1){
-		cat(sprintf("-Fitting independent Copula \n"))
+		cat(sprintf("- Starting with uniform prior \n"))
 		priorPDF <- dUniformPrior(ll, ul)
 		rprior <- rUniformPrior(ll, ul)
 		## Otherwise, Take Copula from the Previous Exp Setting and Use as a Prior
 	} else {
-		cat(sprintf("-Fitting Copula based on previous MCMC runs\n"))
-		priorPDF <- dCopulaPrior(fitCopula(draws, ll, ul))
-		rprior <- rCopulaPrior(fitCopula(draws,ll, ul))
+		cat(sprintf("- Fitting Copula based on previous MCMC runs\n"))
+		C<-fitCopula(draws)
+		priorPDF <- dCopulaPrior(C)
+		rprior <- rCopulaPrior(C)
 	}
 	## Run Pre-Calibration Sampling
-	cat(sprintf("-Precalibration \n"))
+	cat(sprintf("- Precalibration \n"))
+	par <- rprior(1)
+	opt <- optim(par,Obj,lower=ll,upper=ul)
+	startPar <- opt$par
+	
 	out1 <- preCalibration(experiments[expInd], modelName, parMap, npc, rprior, getScore)
 	sfactor <- 0.1 # scaling factor
 	## Get Starting Parameters from Pre-Calibration
 	out2 <- getMCMCPar(out1$prePar, out1$preDelta, p, sfactor, delta)
 	Sigma <- out2$Sigma
-	startPar <- out2$startPar
+	#startPar <- out2$startPar
 	## Run ABC-MCMC Sampling
-	cat(sprintf("-Running MCMC\n"))
+	cat(sprintf("- Running MCMC\n"))
 	draws <- ABCMCMC(experiments[expInd], modelName, startPar, parMap, ns, Sigma, delta, dprior=priorPDF, getScore)
 
-	pick <- !apply(draws, 1, function(rw) all(rw==0))
-	draws <- draws[pick,]
 	if (i>1){
 	 draws <- checkFitWithPreviousExperiments(modelName, draws, experiments[unlist(chunks[1:i-1])], parMap, getScore, delta)
 	}

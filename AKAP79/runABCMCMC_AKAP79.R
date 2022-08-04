@@ -31,11 +31,11 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- c(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 500 # no of samples required from each ABC-MCMC chain
-npc <- 500 # pre-calibration
+ns <- 7000 # no of samples required from each ABC-MCMC chain
+npc <- 7000 # pre-calibration
 
 # Define ABC-MCMC Settings
-delta <- 0.01
+delta <- 0.5
 
 # Define the number of Cores for the parallelization
 nCores <- parallel::detectCores() %/% 2
@@ -66,7 +66,7 @@ for (i in 1:length(experimentsIndices)){
 		## Otherwise, Take Copula from the Previous Exp Setting and Use as a Prior
 	} else {
 		message("- New Prior: fitting Copula based on previous MCMC runs")
-		C <- fitCopula(draws, ll, ul, nCores)
+		C <- fitCopula(draws, nCores)
 		rprior <- rCopulaPrior(C)
 		dprior <- dCopulaPrior(C)
 	}
@@ -80,10 +80,10 @@ for (i in 1:length(experimentsIndices)){
 	# run outer loop
 	draws <- ABCMCMC(experiments[expInd], modelName, M$startPar, parMap, ns, M$Sigma, delta, dprior, getScore, nCores)
 
-	if (i>1){
-		precursors <- experimentsIndices[1:(i-1)]
-		draws <- checkFitWithPreviousExperiments(modelName, draws, experiments[precursors], parMap, getScore, delta, nCores)
-	}
+	#if (i>1){
+	#	precursors <- experimentsIndices[1:(i-1)]
+	#	draws <- checkFitWithPreviousExperiments(modelName, draws, experiments[precursors], parMap, getScore, delta, nCores)
+	#}
 	# Save Resulting Samples to MATLAB and R files.
 	cat("-Saving sample \n")
 	outFile <- paste(experimentsIndices[1:i], collapse="_")

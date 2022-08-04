@@ -4,16 +4,16 @@
 \alias{fitCopula}
 \title{Makes a Probability Density Estimate (from a sample)}
 \usage{
-fitCopula(X, ll, ul, nCores = detectCores())
+fitCopula(X, nCores = detectCores())
 }
 \arguments{
 \item{X}{sample that characterizes the traget distribution (rows)}
 
+\item{nCores}{passed to parallel::mclapply()}
+
 \item{ll}{lower limit of x values (rows in X)}
 
 \item{ul}{upper limit of x values (rows in X)}
-
-\item{nCores}{passed to parallel::mclapply()}
 }
 \value{
 as list: vineCop, U, Z, and Y where U are marginal

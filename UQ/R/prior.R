@@ -15,18 +15,14 @@ dCopulaPrior <- function(Copula){
 	Y <- Copula$Y
 	Z <- Copula$Z
 	copula <- Copula$copula
-	ll <- apply(U,2,min)
-	ul <- apply(U,2,max)
-	np  <- length(ll)
+	np  <- ncol(U)
 	priorPDF<-function(inx){
 		if(all(!is.na(inx))){
 			ed <- sapply(1:np, function(i) approx(U[,i], Z[,i], xout=inx[i])$y)
 			mpdf <- sapply(1:np, function(i) approx(U[,i], Y[,i], xout=inx[i])$y)
 			if(any(is.na(ed)) || any(is.na(mpdf))){ # outside of copula defined limits
 				jpdf <- 0
-			}else if(!(all(inx >=ll) && all(inx<=ul))){ # outside of prior
-				jpdf <- 0
-			}else{
+			} else {
 				jpdf <- RVinePDF(ed, copula, verbose = TRUE)*prod(mpdf)
 			}
 		} else {

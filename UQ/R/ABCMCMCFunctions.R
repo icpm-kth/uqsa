@@ -79,8 +79,9 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
     n <- n+1
     draws[n,]  <- curPar
 
-    if(scount>500){ #terminate chain if stuck
+    if(n>100 && scount < n*0.05){ #terminate chain if stuck
       cat('Aborted chain.\n')
+			stopifnot(n>1)
       return(draws[1:n,])
     }
   }
@@ -113,34 +114,31 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
 #' @return updated values for curPar, curDelta, and curPrior
 parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, curPrior, delta, dprior, getScore, environment, nCores=detectCores()){
   numExperiments <- length(experiments)
+	stopifnot(curPrior>0)
   invisible(capture.output(out <- runModel(experiments, modelName, parABC=canPar, parMap, mc.cores=nCores)))
-	acceptance <- 0
   if(is.null(out)){
-    canDelta <- Inf
-    canPrior <- 0
-  }else{
-    canDelta <- mclapply(1:length(out), function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
-    canDelta <- unlist(canDelta)
-    #Similarly to what we did in the preCalibration and in ABCMCMC, we average the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
-    #As in preCalibration and ABCMCMC, we can use - for instance - the sum of squares
-    canDelta <- mean(canDelta)
-    if(is.na(canDelta))
-    {
-      cat("\n*** [ABCMCMC] canDelta is NA. Replacing it with Inf ***")
-      canDelta <- Inf
-    }
-    canPrior <- dprior(canPar)
+		acceptance <- FALSE
+		return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior, acceptance=acceptance))
   }
-
+	
+  canDelta <- mean(unlist(mclapply(1:length(out), function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)))
+  if(is.na(canDelta)){
+    cat("\n*** [ABCMCMC] canDelta is NA. Replacing it with Inf ***")
+    canDelta <- Inf
+  }
+	canPrior <- dprior(canPar)
   if (canDelta <= max(delta,curDelta)){
-    if (runif(1) <= canPrior/curPrior){
+		acceptance <- (runif(1) <= canPrior/curPrior)
+    if (acceptance){
       curDelta <- canDelta
       curPrior <- canPrior
       curPar <- canPar
-			acceptance <- 1
     }
-  }
-  return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior,acceptance=acceptance))
+  } else {
+		# curPar, curDelta, and curPrior remain unchanged
+		acceptance <- FALSE
+	}
+  return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior, acceptance=acceptance))
 }
 
 #' ABC acceptance of currently sampled values given old data (Prior)
