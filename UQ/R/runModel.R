@@ -153,3 +153,25 @@ checkModel <- function(modelName,modelFile=NULL){
 	}
 	return(modelName)
 }
+
+#' creates Objective functions from ingredients
+#'
+#' the returned objective function has only one argument (the ABC
+#' parameters)
+#' 
+#' @export
+#' @param experiments a list of simulation experiments
+#' @param modelName and model storage file as comment
+#' @param getScore a function that calculates ABC scores
+#' @param parMap a function that transforms ABC variables into acceptable model parameters
+#' @param mc.cores number of cores to use
+#' @return an objective function
+makeObjective <- function(experiments,modelName,getScore,parMap=identity,mc.cores=detectCores())
+{
+	Objective <- function(parABC){
+		out <- runModel(experiments, modelName,  parABC, parMap, mc.cores)
+		S <- mean(unlist(mclapply(1:length(out), function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]),mc.preschedule = FALSE,mc.cores = mc.cores)))
+		return(S)
+	}
+	return(Objective)
+}

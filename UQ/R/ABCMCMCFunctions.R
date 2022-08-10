@@ -53,11 +53,11 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
                        mc.preschedule = FALSE,
                        mc.cores = nCores)
   curDelta <- unlist(curDelta)
-  
+
   #Similarly to what we did in the preCalibration, we average the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
   #As in preCalibration, we can use - for instance - the sum of squares
   curDelta <- mean(curDelta)
-  
+
   if(is.na(curDelta)){
     cat("*** [ABCMCMC] curDelta is NA. Replacing it with Inf ***\n")
     curDelta <- Inf
@@ -131,34 +131,31 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
 #' @return updated values for curPar, curDelta, and curPrior
 parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, curPrior, delta, dprior, getScore, environment, nCores=detectCores()){
   numExperiments <- length(experiments)
+  stopifnot(curPrior>0)
   invisible(capture.output(out <- runModel(experiments, modelName, parABC=canPar, parMap, mc.cores=nCores)))
-  acceptance <- 0
   if(is.null(out)){
-    canDelta <- Inf
-    canPrior <- 0
-  }else{
-    canDelta <- mclapply(1:length(out), function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
-    canDelta <- unlist(canDelta)
-    #Similarly to what we did in the preCalibration and in ABCMCMC, we average the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
-    #As in preCalibration and ABCMCMC, we can use - for instance - the sum of squares
-    canDelta <- mean(canDelta)
-    if(is.na(canDelta))
-    {
-      cat("*** [parUpdate] canDelta is NA. Replacing it with Inf ***\n")
-      canDelta <- Inf
-    }
-    canPrior <- dprior(canPar)
+	acceptance <- FALSE
+	return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior, acceptance=acceptance))
   }
-  
+	
+  canDelta <- mean(unlist(mclapply(1:length(out), function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)))
+  if(is.na(canDelta)){
+    cat("\n*** [parUpdate] canDelta is NA. Replacing it with Inf ***")
+    canDelta <- Inf
+  }
+  canPrior <- dprior(canPar)
   if (canDelta <= max(delta,curDelta)){
-    if (runif(1) <= canPrior/curPrior){
+    acceptance <- (runif(1) <= canPrior/curPrior)
+    if (acceptance){
       curDelta <- canDelta
       curPrior <- canPrior
       curPar <- canPar
-      acceptance <- 1
     }
+  } else {
+	# curPar, curDelta, and curPrior remain unchanged
+	acceptance <- FALSE
   }
-  return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior,acceptance=acceptance))
+  return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior, acceptance=acceptance))
 }
 
 #' ABC acceptance of currently sampled values given old data (Prior)

@@ -1,16 +1,8 @@
-#remotes::install_github("a-kramer/rgsl", ref="OpenMP")
-#remotes::install_github("a-kramer/SBtabVFGEN")
+remotes::install_github("a-kramer/rgsl")
+remotes::install_github("a-kramer/SBtabVFGEN")
 library(rgsl)
 library(SBtabVFGEN)
 library(UQ)
-library(parallel)
-library(VineCopula)
-library(MASS)
-library(ks)
-library(R.utils)
-library(deSolve)
-library(reshape2)
-library(ggplot2)
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
@@ -74,7 +66,7 @@ for (i in 1:length(experimentsIndices)){
 		## Otherwise, Take Copula from the Previous Exp Setting and Use as a Prior
 	} else {
 		message("- New Prior: fitting Copula based on previous MCMC runs")
-		C <- fitCopula(draws, ll, ul, nCores)
+		C <- fitCopula(draws, nCores)
 		rprior <- rCopulaPrior(C)
 		dprior <- dCopulaPrior(C)
 	}
@@ -96,7 +88,7 @@ for (i in 1:length(experimentsIndices)){
 		precursors <- experimentsIndices[1:(i-1)]
 		draws <- checkFitWithPreviousExperiments(modelName, draws, experiments[precursors], parMap, getScore, delta, nCores)
 	}
-	#Save Resulting Samples to MATLAB and R files.
+	# Save Resulting Samples to MATLAB and R files.
 	cat("-Saving sample \n")
 	outFile <- paste(experimentsIndices[1:i], collapse="_")
 	timeStr <- Sys.time()

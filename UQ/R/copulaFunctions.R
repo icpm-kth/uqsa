@@ -25,7 +25,7 @@
 #' @return as list: vineCop, U, Z, and Y where U are marginal
 #'     probability samples, Z are cummulative density values for U,
 #'     and Y are the probability density values of U.
-fitCopula <- function(X,ll,ul, nCores=detectCores()){
+fitCopula <- function(X,nCores=detectCores()){
   stopifnot(is.matrix(X))
   ncx <- ncol(X)
   ns <- nrow(X)
@@ -49,8 +49,8 @@ fitCopula <- function(X,ll,ul, nCores=detectCores()){
   for(i in 1:ncx){
     minx <- min(X[,i])
     maxx <- max(X[,i])
-    ls <- max(ll[i],minx-eps)
-    us <- min(ul[i],maxx+eps)
+    ls <- minx-eps
+    us <- maxx+eps
     U[,i] <- X[I,i]
     Z[,i] = kcde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
     Y[,i] = kde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
