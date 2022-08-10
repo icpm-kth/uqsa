@@ -166,11 +166,11 @@ checkModel <- function(modelName,modelFile=NULL){
 #' @param parMap a function that transforms ABC variables into acceptable model parameters
 #' @param mc.cores number of cores to use
 #' @return an objective function
-makeObjective <- function(experiments,modelName,getScore,parMap=identity,mc.cores=detectCores())
+makeObjective <- function(experiments,modelName,distance,parMap=identity,mc.cores=detectCores())
 {
 	Objective <- function(parABC){
 		out <- runModel(experiments, modelName,  parABC, parMap, mc.cores)
-		S <- mean(unlist(mclapply(1:length(out), function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]),mc.preschedule = FALSE,mc.cores = mc.cores)))
+		S <- mean(unlist(mclapply(1:length(out), function(i) distance(out[[i]], experiments[[i]][["outputValues"]]),mc.preschedule = FALSE,mc.cores = mc.cores)))
 		return(S)
 	}
 	return(Objective)
