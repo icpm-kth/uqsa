@@ -3,6 +3,14 @@
 library(rgsl)
 library(SBtabVFGEN)
 library(UQ)
+library(parallel)
+library(VineCopula)
+library(MASS)
+library(ks)
+library(R.utils)
+library(deSolve)
+library(reshape2)
+library(ggplot2)
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
@@ -31,8 +39,8 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- c(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 500 # no of samples required from each ABC-MCMC chain
-npc <- 500 # pre-calibration
+ns <- 5000 # no of samples required from each ABC-MCMC chain
+npc <- 5000 # pre-calibration
 
 # Define ABC-MCMC Settings
 delta <- 0.01
@@ -75,27 +83,31 @@ for (i in 1:length(experimentsIndices)){
 	pC <- preCalibration(experiments[expInd], modelName, parMap, npc, rprior, getScore, nCores)
 	## Get Starting Parameters from Pre-Calibration
 	M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta)
+	stopifnot(dprior(M$startPar)>0)
 	## Run ABC-MCMC Sampling
 	cat(sprintf("-Running MCMC chains \n"))
 	# run outer loop
-	draws <- ABCMCMC(experiments[expInd], modelName, M$startPar, parMap, ns, M$Sigma, delta, dprior, getScore, nCores)
+	out_ABCMCMC <- ABCMCMC(experiments[expInd], modelName, M$startPar, parMap, ns, M$Sigma, delta, dprior, getScore, nCores)
 
+	draws <- out_ABCMCMC$draws
+	scores <- out_ABCMCMC$scores
+	
 	if (i>1){
 		precursors <- experimentsIndices[1:(i-1)]
 		draws <- checkFitWithPreviousExperiments(modelName, draws, experiments[precursors], parMap, getScore, delta, nCores)
 	}
-	# Save Resulting Samples to MATLAB and R files.
+	#Save Resulting Samples to MATLAB and R files.
 	cat("-Saving sample \n")
 	outFile <- paste(experimentsIndices[1:i], collapse="_")
 	timeStr <- Sys.time()
 	timeStr <- gsub(":","_", timeStr)
 	timeStr <- gsub(" ","_", timeStr)
 	outFileR <- paste("../PosteriorSamples/Draws",modelName,"ns",ns,"npc",npc,outFile,timeStr,".RData",collapse="_",sep="_")
-	save(draws, parNames, file=outFileR)
-	if (require(R.matlab)){
-		outFileM <- paste("../PosteriorSamples/Draws",modelName,"ns",ns,"npc",npc,outFile,timeStr,".mat",collapse="_",sep="_")
-		writeMat(outFileM, samples=10^draws)
-	}
+	#save(draws, parNames, file=outFileR)
+	#if (require(R.matlab)){
+	#	outFileM <- paste("../PosteriorSamples/Draws",modelName,"ns",ns,"npc",npc,outFile,timeStr,".mat",collapse="_",sep="_")
+	#	writeMat(outFileM, samples=10^draws)
+	#}
 }
 end_time = Sys.time()
 time_ = end_time - start_time

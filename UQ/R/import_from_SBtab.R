@@ -76,6 +76,7 @@ import_experiments <- function(modelName=NULL, SBtabDir){
   
   n_experiments <- dim(SBtab[["Experiments"]])[1]
   experiments <- vector("list", length = n_experiments)
+  names(experiments) <- SBtab[["Experiments"]][["!Name"]]
   
   inputs_and_initState_ids <- colnames(SBtab[["Experiments"]])
   inputs_and_initState_ids <- inputs_and_initState_ids[startsWith(inputs_and_initState_ids, '>')]

@@ -38,7 +38,7 @@
 #' @param getScore a function(model_output,experiment) that returns
 #'     scores
 #' @param nCores setting for multicore package
-#' @return a sample matrix
+#' @return a list containing a sample matrix and a vector of scores (values of delta for each sample)
 ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, delta, dprior, getScore, nCores=detectCores()){
   cat("Started chain.\n")
   Sigma1 <- 0.25*diag(diag(Sigma0))
@@ -53,19 +53,40 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
                        mc.preschedule = FALSE,
                        mc.cores = nCores)
   curDelta <- unlist(curDelta)
-
+  
   #Similarly to what we did in the preCalibration, we average the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
   #As in preCalibration, we can use - for instance - the sum of squares
   curDelta <- mean(curDelta)
-
+  
   if(is.na(curDelta)){
     cat("*** [ABCMCMC] curDelta is NA. Replacing it with Inf ***\n")
     curDelta <- Inf
   }
   curPrior <- dprior(curPar)
   draws <- matrix(NA, nSims,np)
+  scores <- rep(NA, nSims)
+  
   n <- 0
+  nRegularizations <- 0
   while (n < nSims){
+    if(scount>100){
+      nRegularizations <- nRegularizations + 1
+      if(nRegularizations >= 3){
+        timeStr <- Sys.time()
+        timeStr <- gsub(":","_", timeStr)
+        timeStr <- gsub(" ","_", timeStr)
+        save(draws, file = paste0("AbortedChainAfterRegularization_",timeStr,".RData"))
+        stop(paste0("Stuck chain (nRegularizations = ", nRegularizations,")"))
+      }
+      disp(paste0("Regularization of proposal covariance matrix (nRegularizations = ", nRegularizations,")"))
+      
+      Sigma0 <- solve(solve(Sigma0)+solve(0.1*norm(Sigma0)*diag(1,np,np)))
+      Sigma1 <- 0.25*diag(diag(Sigma0))
+      draws <- matrix(NA, nSims,np)
+      scores <- rep(NA, nSims)
+      scount <- 1
+      n <- 0
+    }
     if(runif(1)<=0.95){
       canPar <- mvrnorm(n=1, curPar, Sigma0)
     }else{
@@ -76,16 +97,13 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
     curDelta <- out$curDelta
     curPrior <- out$curPrior
     scount <- ifelse(out$acceptance, 1, scount + 1) #scount counts the number of times we are in the same value for curPar. If we accept a new canPar, then we reset the count to 1.
+    
     n <- n+1
     draws[n,]  <- curPar
-
-    if(scount>500){ #terminate chain if stuck
-      cat('Aborted chain.\n')
-      return(draws[1:n,])
-    }
+    scores[n] <- curDelta
   }
   cat("Finished chain.\n")
-  return(draws)
+  return(list(draws = draws, scores = scores))
 }
 
 #' Updates Parameter Values
@@ -114,7 +132,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
 parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, curPrior, delta, dprior, getScore, environment, nCores=detectCores()){
   numExperiments <- length(experiments)
   invisible(capture.output(out <- runModel(experiments, modelName, parABC=canPar, parMap, mc.cores=nCores)))
-	acceptance <- 0
+  acceptance <- 0
   if(is.null(out)){
     canDelta <- Inf
     canPrior <- 0
@@ -131,13 +149,13 @@ parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, 
     }
     canPrior <- dprior(canPar)
   }
-
+  
   if (canDelta <= max(delta,curDelta)){
     if (runif(1) <= canPrior/curPrior){
       curDelta <- canDelta
       curPrior <- canPrior
       curPar <- canPar
-			acceptance <- 1
+      acceptance <- 1
     }
   }
   return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior,acceptance=acceptance))
@@ -166,30 +184,30 @@ parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, 
 #' @param nCores number of cores to use in parallel::mclapply() calls.
 #' @return a filtered subset of acceptable parameter draws
 checkFitWithPreviousExperiments <- function(modelName, draws, experiments, parMap=identity(), getScore, delta, nCores=detectCores()){
-	numExperiments <- length(experiments)
-	cat("-Checking fit with previous data\n")
-	nDraws = dim(draws)[1]
-	outputTimes_list <- list()
-	outputFunctions_list <- list()
-	for(k in 1:numExperiments){
-		outputTimes_list <- c(outputTimes_list, replicate(nDraws, list(experiments[[k]][["outputTimes"]])))
-		outputFunctions_list <- c(outputFunctions_list,replicate(nDraws, list(experiments[[k]][["outputFunction"]])))
-	}
-
-	output_yy <- runModel(experiments, modelName, t(draws), parMap, nCores)
-	scores <- mclapply(seq(length(output_yy)),function(k) getScore(output_yy[[k]], experiments[[((k-1) %/% nDraws)+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
-	scores <- unlist(scores)
-	dim(scores) <- c(nDraws,numExperiments)
-	acceptable <- apply(scores <= delta,1,all)
-	stopifnot(length(acceptable)==nDraws)
-	if (any(acceptable)){
-		draws <- draws[acceptable,]
-		nPickedDraws <- nrow(draws)
-		nonFits <- nDraws - nPickedDraws;
-		cat("-- ", nonFits, " samples  did not fit previous datasets")
-	} else {
-		print(scores)
-		warning("none of the draws have been accepted.")
-	}
-	return(draws)
+  numExperiments <- length(experiments)
+  cat("-Checking fit with previous data\n")
+  nDraws = dim(draws)[1]
+  outputTimes_list <- list()
+  outputFunctions_list <- list()
+  for(k in 1:numExperiments){
+    outputTimes_list <- c(outputTimes_list, replicate(nDraws, list(experiments[[k]][["outputTimes"]])))
+    outputFunctions_list <- c(outputFunctions_list,replicate(nDraws, list(experiments[[k]][["outputFunction"]])))
+  }
+  
+  output_yy <- runModel(experiments, modelName, t(draws), parMap, nCores)
+  scores <- mclapply(seq(length(output_yy)),function(k) getScore(output_yy[[k]], experiments[[((k-1) %/% nDraws)+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
+  scores <- unlist(scores)
+  dim(scores) <- c(nDraws,numExperiments)
+  acceptable <- apply(scores <= delta,1,all)
+  stopifnot(length(acceptable)==nDraws)
+  if (any(acceptable)){
+    draws <- draws[acceptable,]
+    nPickedDraws <- nrow(draws)
+    nonFits <- nDraws - nPickedDraws;
+    cat("-- ", nonFits, " samples  did not fit previous datasets")
+  } else {
+    print(scores)
+    warning("none of the draws have been accepted.")
+  }
+  return(draws)
 }

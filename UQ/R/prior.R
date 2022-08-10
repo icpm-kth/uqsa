@@ -11,30 +11,30 @@
 #' prior_pdf(runif(3))
 #' 0.125
 dCopulaPrior <- function(Copula){
-	U <- Copula$U
-	Y <- Copula$Y
-	Z <- Copula$Z
-	copula <- Copula$copula
-	ll <- apply(U,2,min)
-	ul <- apply(U,2,max)
-	np  <- length(ll)
-	priorPDF<-function(inx){
-		if(all(!is.na(inx))){
-			ed <- sapply(1:np, function(i) approx(U[,i], Z[,i], xout=inx[i])$y)
-			mpdf <- sapply(1:np, function(i) approx(U[,i], Y[,i], xout=inx[i])$y)
-			if(any(is.na(ed)) || any(is.na(mpdf))){ # outside of copula defined limits
-				jpdf <- 0
-			}else if(!(all(inx >=ll) && all(inx<=ul))){ # outside of prior
-				jpdf <- 0
-			}else{
-				jpdf <- RVinePDF(ed, copula, verbose = TRUE)*prod(mpdf)
-			}
-		} else {
-			jpdf <- 0
-		}
-		return(jpdf)
-	}
-	return(priorPDF)
+  U <- Copula$U
+  Y <- Copula$Y
+  Z <- Copula$Z
+  copula <- Copula$copula
+  ll <- apply(U,2,min)
+  ul <- apply(U,2,max)
+  np  <- length(ll)
+  priorPDF<-function(inx){
+    if(all(!is.na(inx))){
+      ed <- sapply(1:np, function(i) approx(unique(U[,i]), unique(Z[,i]), xout=inx[i])$y)
+      mpdf <- sapply(1:np, function(i) approx(unique(U[,i]), unique(Y[,i]), xout=inx[i])$y)
+      if(any(is.na(ed)) || any(is.na(mpdf))){ # outside of copula defined limits
+        jpdf <- 0
+      }else if(!(all(inx >=ll) && all(inx<=ul))){ # outside of prior
+        jpdf <- 0
+      }else{
+        jpdf <- RVinePDF(ed, copula, verbose = TRUE)*prod(mpdf)
+      }
+    } else {
+      jpdf <- 0
+    }
+    return(jpdf)
+  }
+  return(priorPDF)
 }
 
 #' rCopulaPrior returns a function that generates random values from the copula model
@@ -50,19 +50,19 @@ dCopulaPrior <- function(Copula){
 #' # this returns a matrix of random values, the first column has values between 0 and 1
 #' # the second column has values between 1 and 2, etc.
 rCopulaPrior <- function(Copula){
-	copula <- Copula$copula
-	Z <- Copula$Z
-	U <- Copula$U
-	np <- ncol(Z)
-	rprior <- function(npc){
-		R <- RVineSim(npc, copula)
-		prePar <- matrix(0, npc, np)
-		for(i in 1:np){
-			prePar[,i] = spline(Z[,i],U[,i],xout=R[,i])$y
-		}
-		return(prePar)
-	}
-	return(rprior)
+  copula <- Copula$copula
+  Z <- Copula$Z
+  U <- Copula$U
+  np <- ncol(Z)
+  rprior <- function(npc){
+    R <- RVineSim(npc, copula)
+    prePar <- matrix(0, npc, np)
+    for(i in 1:np){
+      prePar[,i] = spline(unique(Z[,i]),unique(U[,i]),xout=R[,i])$y
+    }
+    return(prePar)
+  }
+  return(rprior)
 }
 
 #' dUniformPrior creates a uniform density function 
@@ -80,10 +80,10 @@ rCopulaPrior <- function(Copula){
 #' dup(c(0.5,1.5,2.5))
 #' [1] 1
 dUniformPrior <- function(ll,ul){
-	dprior <- function(x){
-		return(prod(dunif(x,min=ll,max=ul)))
-	}
-	return(dprior)
+  dprior <- function(x){
+    return(prod(dunif(x,min=ll,max=ul)))
+  }
+  return(dprior)
 }
 
 
@@ -118,11 +118,11 @@ dUniformPrior <- function(ll,ul){
 #' [11,] 0.6644920 1.257256 2.764870
 #' [12,] 0.3470803 1.524026 2.715229
 rUniformPrior <- function(ll,ul){
-	np <- length(ll)
-	stopifnot(np==length(ul))
-	rprior <- function(n){
-		r <- matrix(runif(n*np,min=ll,max=ul),n,np,byrow=TRUE)
-		return(r)
-	}
-	return(rprior)
+  np <- length(ll)
+  stopifnot(np==length(ul))
+  rprior <- function(n){
+    r <- matrix(runif(n*np,min=ll,max=ul),n,np,byrow=TRUE)
+    return(r)
+  }
+  return(rprior)
 }
