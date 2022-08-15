@@ -8,6 +8,7 @@ SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
 #modelName <- checkModel(comment(model),paste0(comment(model),'.R'))
 modelName <- checkModel(comment(model),paste0(comment(model),'_gvf.c'))
+modelName <- checkModel(comment(model),"/Users/fedmil/Desktop/AKAP79_gvf.c")
 
 #source(paste(SBtabDir,"/",modelName,".R",sep=""))
 
