@@ -31,8 +31,8 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- c(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 5000 # no of samples required from each ABC-MCMC chain
-npc <- 5000 # pre-calibration
+ns <- 50 # no of samples required from each ABC-MCMC chain
+npc <- 500 # pre-calibration
 
 # Define ABC-MCMC Settings
 delta <- 0.01

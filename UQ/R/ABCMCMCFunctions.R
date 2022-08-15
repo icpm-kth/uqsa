@@ -57,7 +57,6 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
   #Similarly to what we did in the preCalibration, we average the score obtained with (the same) startPar applied to all the simulations (corresponding to different experiments setup)
   #As in preCalibration, we can use - for instance - the sum of squares
   curDelta <- mean(curDelta)
-
   if(is.na(curDelta)){
     cat("*** [ABCMCMC] curDelta is NA. Replacing it with Inf ***\n")
     curDelta <- Inf
@@ -87,12 +86,15 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
       scount <- 1
       n <- 0
     }
+    
     if(runif(1)<=0.95){
       canPar <- mvrnorm(n=1, curPar, Sigma0)
     }else{
       canPar <- mvrnorm(n=1, curPar, Sigma1)
     }
+    
     out <- parUpdate(experiments, modelName, parMap, curPar, canPar, curDelta, curPrior, delta, dprior, getScore, nCores)
+    
     curPar <- out$curPar
     curDelta <- out$curDelta
     curPrior <- out$curPrior
@@ -132,18 +134,23 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
 parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, curPrior, delta, dprior, getScore, environment, nCores=detectCores()){
   numExperiments <- length(experiments)
   stopifnot(curPrior>0)
+  
   invisible(capture.output(out <- runModel(experiments, modelName, parABC=canPar, parMap, mc.cores=nCores)))
+  
   if(is.null(out)){
-	acceptance <- FALSE
-	return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior, acceptance=acceptance))
+	  acceptance <- FALSE
+	  return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior, acceptance=acceptance))
   }
-	
+  
   canDelta <- mean(unlist(mclapply(1:length(out), function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)))
+  
   if(is.na(canDelta)){
     cat("\n*** [parUpdate] canDelta is NA. Replacing it with Inf ***")
     canDelta <- Inf
   }
+  
   canPrior <- dprior(canPar)
+  
   if (canDelta <= max(delta,curDelta)){
     acceptance <- (runif(1) <= canPrior/curPrior)
     if (acceptance){

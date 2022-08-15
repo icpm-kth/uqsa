@@ -46,7 +46,7 @@ preCalibration <- function(experiments, modelName, parMap=identity, npc=1000, rp
   dim(preDelta)<-c(npc,numExperiments)
 	preDelta <- apply(preDelta,1,max)
 	if(any(is.na(preDelta))){
-		cat("*** [preCalibration] Some of the preDelta is NA. Replacing with Inf ***")
+		cat("*** [preCalibration] Some of the preDelta is NA. Replacing with Inf ***\n")
 		preDelta[is.na(preDelta),] <- Inf
 	}
 	return(list(preDelta=preDelta, prePar=prePar))
