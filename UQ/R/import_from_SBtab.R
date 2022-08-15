@@ -71,6 +71,7 @@ import_experiments <- function(modelName=NULL, SBtabDir){
   
   outputNames <- SBtab[["Output"]][["!Name"]]
   outputId <- SBtab[["Output"]][["!ID"]]
+  errorNames <- SBtab[["Output"]][["!ErrorNames"]]
   source(paste(SBtabDir, "/", modelName, ".R", sep = ""))
   vectorialOutputFunction <- eval(as.name(paste(modelName,"_", outputNames[1], sep="")))
   
@@ -102,13 +103,21 @@ import_experiments <- function(modelName=NULL, SBtabDir){
     tabOutputId <- substring(tabOutputId, 2)
     match_output <- match(tabOutputId, outputId)
     match_output <- match_output[!is.na(match_output)]
-    experiments[[i]][["outputNames"]] <- outputId[match_output]
+    experiments[[i]][["outputNames"]] <- outputNames[match_output]
     experiments[[i]][["outputId"]] <- outputId[match_output]
     experiments[[i]][["outputValues"]] <- as.matrix(experiment_table[paste(">", outputId[match_output], sep = "")])
     notNAidx <- apply(!is.na(experiments[[i]][["outputValues"]]) & experiments[[i]][["outputTimes"]]>0, 1, prod)
     experiments[[i]][["outputValues"]] <- experiments[[i]][["outputValues"]][as.logical(notNAidx),]
     experiments[[i]][["outputTimes"]] <- experiments[[i]][["outputTimes"]][as.logical(notNAidx)]
     experiments[[i]][["outputFunction"]] <- function(yy) {vectorialOutputFunction(0.0, yy, 0)[match_output]}
+    
+    
+    match_errorNames <- match(tabOutputId, errorNames)
+    match_errorNames <- match_errorNames[!is.na(match_errorNames)]
+    experiments[[i]][["errorNames"]] <- errorNames[match_errorNames]
+    experiments[[i]][["errorValues"]] <- as.matrix(experiment_table[paste(">", errorNames[match_errorNames], sep = "")])
+    experiments[[i]][["errorValues"]] <- experiments[[i]][["errorValues"]][as.logical(notNAidx),]
+    
   }
   
   return(experiments)

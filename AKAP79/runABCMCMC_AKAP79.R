@@ -8,7 +8,6 @@ SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
 #modelName <- checkModel(comment(model),paste0(comment(model),'.R'))
 modelName <- checkModel(comment(model),paste0(comment(model),'_gvf.c'))
-modelName <- checkModel(comment(model),"/Users/fedmil/Desktop/AKAP79_gvf.c")
 
 #source(paste(SBtabDir,"/",modelName,".R",sep=""))
 
@@ -32,8 +31,8 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- c(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 50 # no of samples required from each ABC-MCMC chain
-npc <- 500 # pre-calibration
+ns <- 500 # no of samples required from each ABC-MCMC chain
+npc <- 5000 # pre-calibration
 
 # Define ABC-MCMC Settings
 delta <- 0.01
@@ -44,10 +43,10 @@ nCores <- parallel::detectCores() %/% 2
 set.seed(7619201)
 
 # Define the score function to compare simulated data with experimental data
-getScore	<- function(yy_sim, yy_exp){
+getScore	<- function(yy_sim, yy_exp, yy_expErr){
 	yy_sim <- (yy_sim-0)/(0.2-0.0)
 	ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-100)/(171.67-100), Inf)
-	distance <- mean((yy_sim-yy_exp)^2)
+	distance <- mean(((yy_sim-yy_exp)/yy_expErr)^2)
 	return(distance)
 }
 

@@ -49,7 +49,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
   numExperiments <- length(experiments)
   out <- runModel(experiments, modelName, curPar, parMap, nCores)
   curDelta <- mclapply(1:length(out),
-                       function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]),
+                       function(i) getScore(out[[i]], experiments[[i]][["outputValues"]], experiments[[i]][["errorValues"]]),
                        mc.preschedule = FALSE,
                        mc.cores = nCores)
   curDelta <- unlist(curDelta)
@@ -142,7 +142,7 @@ parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, 
 	  return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior, acceptance=acceptance))
   }
   
-  canDelta <- mean(unlist(mclapply(1:length(out), function(i) getScore(out[[i]], experiments[[i]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)))
+  canDelta <- mean(unlist(mclapply(1:length(out), function(i) getScore(out[[i]], experiments[[i]][["outputValues"]], experiments[[i]][["errorValues"]]), mc.preschedule = FALSE, mc.cores = nCores)))
   
   if(is.na(canDelta)){
     cat("\n*** [parUpdate] canDelta is NA. Replacing it with Inf ***")
@@ -199,7 +199,7 @@ checkFitWithPreviousExperiments <- function(modelName, draws, experiments, parMa
   }
   
   output_yy <- runModel(experiments, modelName, t(draws), parMap, nCores)
-  scores <- mclapply(seq(length(output_yy)),function(k) getScore(output_yy[[k]], experiments[[((k-1) %/% nDraws)+1]][["outputValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
+  scores <- mclapply(seq(length(output_yy)),function(k) getScore(output_yy[[k]], experiments[[((k-1) %/% nDraws)+1]][["outputValues"]], experiments[[((k-1) %/% nDraws)+1]][["errorValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
   scores <- unlist(scores)
   dim(scores) <- c(nDraws,numExperiments)
   acceptable <- apply(scores <= delta,1,all)
