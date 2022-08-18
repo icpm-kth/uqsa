@@ -31,7 +31,7 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- c(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 500 # no of samples required from each ABC-MCMC chain
+ns <- 5000 # no of samples required from each ABC-MCMC chain
 npc <- 5000 # pre-calibration
 
 # Define ABC-MCMC Settings
@@ -46,7 +46,7 @@ set.seed(7619201)
 getScore	<- function(yy_sim, yy_exp, yy_expErr){
 	yy_sim <- (yy_sim-0)/(0.2-0.0)
 	ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-100)/(171.67-100), Inf)
-	distance <- mean(((yy_sim-yy_exp)/yy_expErr)^2)
+	distance <- mean(((yy_sim-yy_exp)/(yy_expErr/(171.67-100)))^2)
 	return(distance)
 }
 

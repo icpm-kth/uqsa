@@ -68,7 +68,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
   n <- 0
   nRegularizations <- 0
   while (n < nSims){
-    if(scount>100){
+    if(scount>500){
       nRegularizations <- nRegularizations + 1
       if(nRegularizations >= 3){
         timeStr <- Sys.time()
