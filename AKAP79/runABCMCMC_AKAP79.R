@@ -31,11 +31,11 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- c(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 5000 # no of samples required from each ABC-MCMC chain
-npc <- 5000 # pre-calibration
+ns <- 500 # no of samples required from each ABC-MCMC chain
+npc <- 500 # pre-calibration
 
 # Define ABC-MCMC Settings
-delta <- 0.01
+delta <- 8 #0.01
 
 # Define the number of Cores for the parallelization
 nCores <- parallel::detectCores() %/% 2
@@ -47,6 +47,9 @@ getScore	<- function(yy_sim, yy_exp, yy_expErr){
 	yy_sim <- (yy_sim-0)/(0.2-0.0)
 	ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-100)/(171.67-100), Inf)
 	distance <- mean(((yy_sim-yy_exp)/(yy_expErr/(171.67-100)))^2)
+	
+	#When output function is fixed:
+	#distance <- mean((yy_sim-yy_exp)/(yy_expErr)^2)
 	return(distance)
 }
 

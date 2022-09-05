@@ -68,7 +68,7 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
   n <- 0
   nRegularizations <- 0
   while (n < nSims){
-    if(scount>500){
+    if(scount>max(nSims/100, 500)){
       nRegularizations <- nRegularizations + 1
       if(nRegularizations >= 3){
         timeStr <- Sys.time()
@@ -86,7 +86,6 @@ ABCMCMC <- function(experiments, modelName, startPar, parMap, nSims, Sigma0, del
       scount <- 1
       n <- 0
     }
-    
     if(runif(1)<=0.95){
       canPar <- mvrnorm(n=1, curPar, Sigma0)
     }else{
@@ -148,7 +147,6 @@ parUpdate <- function(experiments, modelName, parMap, curPar, canPar, curDelta, 
     cat("\n*** [parUpdate] canDelta is NA. Replacing it with Inf ***")
     canDelta <- Inf
   }
-  
   canPrior <- dprior(canPar)
   
   if (canDelta <= max(delta,curDelta)){

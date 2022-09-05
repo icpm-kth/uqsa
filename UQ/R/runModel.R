@@ -93,6 +93,8 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity(), mc.core
     yy_gsl<-r_gsl_odeiv2(modelName, as.double(outputTimes), y0, modelPar)
     yy_gsl_as_list <- mclapply(seq(dim(yy_gsl)[3]), function(x) yy_gsl[ , , x], mc.preschedule = FALSE, mc.cores = mc.cores)
     output_yy <- mclapply(1:N, function(i) apply(yy_gsl_as_list[[i]],2,outputFunctions_list[[i]]), mc.preschedule = FALSE, mc.cores = mc.cores)
+    
+    #output_yy <- r_gsl_odeiv2_outer(modelName, experiments, modelPar)
   } else if (grepl('.[Rr]$',modelFile)) {
     stopifnot(file.exists(modelFile))
     source(modelFile)
