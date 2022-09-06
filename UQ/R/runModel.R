@@ -91,8 +91,7 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity(), mc.core
     so <- modelFile
     outputTimes <- outputTimes_list[[1]] ##TO CHANGE WHEN WE WILL HAVE A MORE GENERAL r_gsl_odeiv2 THAT ACCEPTS DIFFERENT OUTPUTTIMES FOR EACH PARAMETER/INPUT SET
     yy_gsl<-r_gsl_odeiv2(modelName, as.double(outputTimes), y0, modelPar)
-    yy_gsl_as_list <- mclapply(seq(dim(yy_gsl)[3]), function(x) yy_gsl[ , , x], mc.preschedule = FALSE, mc.cores = mc.cores)
-    output_yy <- mclapply(1:N, function(i) apply(yy_gsl_as_list[[i]],2,outputFunctions_list[[i]]), mc.preschedule = FALSE, mc.cores = mc.cores)
+    output_yy <- mclapply(1:N, function(i) apply(yy_gsl[ , , i], 2, outputFunctions_list[[i]]), mc.preschedule = FALSE, mc.cores = mc.cores)
     
     #output_yy <- r_gsl_odeiv2_outer(modelName, experiments, modelPar)
   } else if (grepl('.[Rr]$',modelFile)) {
@@ -172,8 +171,9 @@ makeObjective <- function(experiments,modelName,distance,parMap=identity,mc.core
 {
   Objective <- function(parABC){
     out <- runModel(experiments, modelName,  parABC, parMap, mc.cores)
-    S <- mean(unlist(mclapply(1:length(out), function(i) distance(out[[i]], experiments[[i]][["outputValues"]]),mc.preschedule = FALSE,mc.cores = mc.cores)))
-    return(S)
+    npc <- length(out)/length(experiments)
+    S <- unlist(mclapply(1:length(out), function(i) distance(out[[i]], experiments[[(i-1)%/%npc+1]][["outputValues"]], experiments[[(i-1)%/%npc+1]][["errorValues"]]), mc.preschedule = FALSE, mc.cores = mc.cores))
+     return(S)
   }
   return(Objective)
 }

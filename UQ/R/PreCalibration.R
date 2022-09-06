@@ -35,15 +35,10 @@
 #' @param nCores number of processor cores to use in mclapply().
 #' @return list with entries preDelta and prePar, final values of
 #'     calibration run
-preCalibration <- function(experiments, modelName, parMap=identity, npc=1000, rprior, getScore, nCores=detectCores()){
-	numExperiments <- length(experiments)
-	nu <- length(experiments[[1]][['input']])
-	ny <- length(experiments[[1]][['initialState']])
+preCalibration <- function(objectiveFunction, npc=1000, rprior){
 	prePar <- rprior(npc)
-	output_yy <- runModel(experiments, modelName, t(prePar), parMap, nCores)
-	preDelta <- mclapply(1:length(output_yy), function(i) getScore(output_yy[[i]], experiments[[(i-1)%/%npc+1]][["outputValues"]], experiments[[(i-1)%/%npc+1]][["errorValues"]]), mc.preschedule = FALSE, mc.cores = nCores)
-	preDelta <- unlist(preDelta)
-  dim(preDelta)<-c(npc,numExperiments)
+	preDelta <- objectiveFunction(t(prePar))
+	dim(preDelta)<-c(npc, length(preDelta)/npc)
 	preDelta <- apply(preDelta,1,max)
 	if(any(is.na(preDelta))){
 		cat("*** [preCalibration] Some of the preDelta is NA. Replacing with Inf ***\n")

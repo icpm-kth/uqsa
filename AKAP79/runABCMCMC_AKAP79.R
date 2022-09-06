@@ -31,8 +31,8 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- c(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 500 # no of samples required from each ABC-MCMC chain
-npc <- 500 # pre-calibration
+ns <- 50 # no of samples required from each ABC-MCMC chain
+npc <- 5000 # pre-calibration
 
 # Define ABC-MCMC Settings
 delta <- 8 #0.01
@@ -86,10 +86,12 @@ for (i in 1:length(experimentsIndices)){
 	## Run ABC-MCMC Sampling
 	cat(sprintf("-Running MCMC chains \n"))
 	# run outer loop
-	out_ABCMCMC <- ABCMCMC(experiments[expInd], modelName, M$startPar, parMap, ns, M$Sigma, delta, dprior, getScore, nCores)
-
+	out_ABCMCMC <- ABCMCMC(M$startPar, ns, M$Sigma, delta, dprior)
+	
 	draws <- out_ABCMCMC$draws
 	scores <- out_ABCMCMC$scores
+	acceptanceRate <- out_ABCMCMC$acceptanceRate
+	nRegularizations <- out_ABCMCMC$nRegularizations
 	
 	if (i>1){
 		precursors <- experimentsIndices[1:(i-1)]
