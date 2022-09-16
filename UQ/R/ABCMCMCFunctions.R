@@ -39,7 +39,7 @@
 #'     scores
 #' @param nCores setting for multicore package
 #' @return a list containing a sample matrix and a vector of scores (values of delta for each sample)
-ABCMCMC <- function(startPar, nSims, Sigma0, delta, dprior){
+ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior){
   cat("Started chain.\n")
   Sigma1 <- 0.25*diag(diag(Sigma0))
   curDelta <- Inf
