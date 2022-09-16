@@ -86,7 +86,7 @@ for (i in 1:length(experimentsIndices)){
 	## Run ABC-MCMC Sampling
 	cat(sprintf("-Running MCMC chains \n"))
 	# run outer loop
-	out_ABCMCMC <- ABCMCMC(M$startPar, ns, M$Sigma, delta, dprior)
+	out_ABCMCMC <- ABCMCMC(objectiveFunction, M$startPar, ns, M$Sigma, delta, dprior)
 	
 	draws <- out_ABCMCMC$draws
 	scores <- out_ABCMCMC$scores
