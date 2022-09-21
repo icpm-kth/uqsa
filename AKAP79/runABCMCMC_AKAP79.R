@@ -3,6 +3,12 @@ remotes::install_github("a-kramer/SBtabVFGEN")
 library(rgsl)
 library(SBtabVFGEN)
 library(UQ)
+source("../UQ/R/ABCMCMCFunctions.R")
+source("../UQ/R/copulaFunctions.R")
+source("../UQ/R/import_from_SBtab.R")
+source("../UQ/R/PreCalibration.R")
+source("../UQ/R/prior.R")
+source("../UQ/R/runModel.R")
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
@@ -31,85 +37,107 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- c(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 50 # no of samples required from each ABC-MCMC chain
+ns <- 250 # no of samples required from each ABC-MCMC chain
 npc <- 5000 # pre-calibration
 
 # Define ABC-MCMC Settings
-delta <- 8 #0.01
+delta <- 7 #0.01
 
 # Define the number of Cores for the parallelization
-nCores <- parallel::detectCores() %/% 2
+nCores <- parallel::detectCores() - 1 #%/% 2
 
 set.seed(7619201)
 
 # Define the score function to compare simulated data with experimental data
 getScore	<- function(yy_sim, yy_exp, yy_expErr){
-	yy_sim <- (yy_sim-0)/(0.2-0.0)
-	ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-100)/(171.67-100), Inf)
-	distance <- mean(((yy_sim-yy_exp)/(yy_expErr/(171.67-100)))^2)
-	
-	#When output function is fixed:
-	#distance <- mean((yy_sim-yy_exp)/(yy_expErr)^2)
-	return(distance)
+  yy_sim <- (yy_sim-0)/(0.2-0.0)
+  ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-100)/(171.67-100), Inf)
+  distance <- mean(((yy_sim-yy_exp)/(yy_expErr/(171.67-100)))^2)
+  
+  #When output function is fixed:
+  #distance <- mean((yy_sim-yy_exp)/(yy_expErr)^2)
+  return(distance)
 }
 
 parMap <- function(parABC){
-	return(10^parABC)
+  return(10^parABC)
 }
-  
-  
+
+nChains <- 4
+
 start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
   
-	expInd <- experimentsIndices[i]
-	objectiveFunction <- makeObjective(experiments[expInd], modelName, getScore, parMap)
-	
-	cat("#####Starting run for Experiments ", expInd, "######\n")
-	## If First Experimental Setting, Create an Independente Colupla
-	if(i==1){
-		message("- Initial Prior: uniform product distribution")
-		rprior <- rUniformPrior(ll, ul)
-		dprior <- dUniformPrior(ll, ul)
-		## Otherwise, Take Copula from the Previous Exp Setting and Use as a Prior
-	} else {
-		message("- New Prior: fitting Copula based on previous MCMC runs")
-		C <- fitCopula(draws, nCores)
-		rprior <- rCopulaPrior(C)
-		dprior <- dCopulaPrior(C)
-	}
-	## Run Pre-Calibration Sampling
-	message("- Precalibration")
-	pC <- preCalibration(objectiveFunction, npc, rprior)
-	## Get Starting Parameters from Pre-Calibration
-	M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta)
-	stopifnot(dprior(M$startPar)>0)
-	## Run ABC-MCMC Sampling
-	cat(sprintf("-Running MCMC chains \n"))
-	# run outer loop
-	out_ABCMCMC <- ABCMCMC(objectiveFunction, M$startPar, ns, M$Sigma, delta, dprior)
-	
-	draws <- out_ABCMCMC$draws
-	scores <- out_ABCMCMC$scores
-	acceptanceRate <- out_ABCMCMC$acceptanceRate
-	nRegularizations <- out_ABCMCMC$nRegularizations
-	
-	if (i>1){
-		precursors <- experimentsIndices[1:(i-1)]
-		objectiveFunction <- makeObjective(experiments[precursors], modelName, getScore, parMap, nCores)
-		draws <- checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
-	}
-	# Save Resulting Samples to MATLAB and R files.
-	cat("-Saving sample \n")
-	outFile <- paste(experimentsIndices[1:i], collapse="_")
-	timeStr <- Sys.time()
-	timeStr <- gsub(":","_", timeStr)
-	timeStr <- gsub(" ","_", timeStr)
-	outFileR <- paste("../PosteriorSamples/Draws",modelName,"ns",ns,"npc",npc,outFile,timeStr,".RData",collapse="_",sep="_")
-	#save(draws, parNames, file=outFileR)
-	#if (require(R.matlab)){
-	#	outFileM <- paste("../PosteriorSamples/Draws",modelName,"ns",ns,"npc",npc,outFile,timeStr,".mat",collapse="_",sep="_")
-	#	writeMat(outFileM, samples=10^draws)
-	#}
+  expInd <- experimentsIndices[i]
+  objectiveFunction <- makeObjective(experiments[expInd], modelName, getScore, parMap)
+  
+  cat("#####Starting run for Experiments ", expInd, "######\n")
+  ## If First Experimental Setting, Create an Independente Colupla
+  if(i==1){
+    message("- Initial Prior: uniform product distribution")
+    rprior <- rUniformPrior(ll, ul)
+    dprior <- dUniformPrior(ll, ul)
+    ## Otherwise, Take Copula from the Previous Exp Setting and Use as a Prior
+  } else {
+    message("- New Prior: fitting Copula based on previous MCMC runs")
+    C <- fitCopula(draws, nCores)
+    rprior <- rCopulaPrior(C)
+    dprior <- dCopulaPrior(C)
+  }
+  ## Run Pre-Calibration Sampling
+  message("- Precalibration")
+  pC <- preCalibration(objectiveFunction, npc, rprior)
+  ## Get Starting Parameters from Pre-Calibration
+  M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta, num = nChains)
+  
+  for(i in 1 : nChains){
+    stopifnot(dprior(M$startPar[i,])>0)
+  }
+  
+  ## Run ABC-MCMC Sampling
+  cat(sprintf("-Running MCMC chains \n"))
+  # run outer loop
+  
+  if(nChains > 1){
+    cl <- makeForkCluster(detectCores() - 1)
+    clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
+    out_ABCMCMC <- parLapply(cl, 1:nChains, function(i) ABCMCMC(objectiveFunction, M$startPar[i,], ns, M$Sigma, delta, dprior))
+    stopCluster(cl)
+    draws <- c()
+    scores <- c()
+    acceptanceRate <- c()
+    nRegularizations <- c()
+    for(i in 1:nChains){
+      draws <- rbind(draws, out_ABCMCMC[[i]]$draws)
+      scores <- c(scores, out_ABCMCMC[[i]]$scores)
+      acceptanceRate <- c(acceptanceRate, out_ABCMCMC[[i]]$acceptanceRate)
+      nRegularizations <- c(nRegularizations, out_ABCMCMC[[i]]$nRegularizations)
+    }
+  } else {
+    out_ABCMCMC <- ABCMCMC(objectiveFunction, M$startPar, ns, M$Sigma, delta, dprior)
+    draws <- out_ABCMCMC$draws
+    scores <- out_ABCMCMC$scores
+    acceptanceRate <- out_ABCMCMC$acceptanceRate
+    nRegularizations <- out_ABCMCMC$nRegularizations
+  }
+  
+  if (i>1){
+    precursors <- experimentsIndices[1:(i-1)]
+    objectiveFunction <- makeObjective(experiments[precursors], modelName, getScore, parMap, nCores)
+    draws <- checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
+  }
+  # Save Resulting Samples to MATLAB and R files.
+  cat("-Saving sample \n")
+  outFile <- paste(experimentsIndices[1:i], collapse="_")
+  timeStr <- Sys.time()
+  timeStr <- gsub(":","_", timeStr)
+  timeStr <- gsub(" ","_", timeStr)
+  outFileR <- paste("../PosteriorSamples/Draws",modelName,"ns",ns,"npc",npc,outFile,timeStr,".RData",collapse="_",sep="_")
+  #save(draws, parNames, file=outFileR)
+  #if (require(R.matlab)){
+  #	outFileM <- paste("../PosteriorSamples/Draws",modelName,"ns",ns,"npc",npc,outFile,timeStr,".mat",collapse="_",sep="_")
+  #	writeMat(outFileM, samples=10^draws)
+  #}
 }
 end_time = Sys.time()
 time_ = end_time - start_time
