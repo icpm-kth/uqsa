@@ -1,0 +1,7 @@
+!!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableType='QuantityMatrix' TableName='Stemmer1993Fig1tr' TableTitle='[Nair 2014 Figure 12.3C upper] CaN activation by Ca with 300 nM CaM Figure E' 
+!ID	>Ca_set	>ActivePP2B	SD_ActivePP2B
+E3D0	446.7	10.47	34.908
+E3D1	676.1	36.99	34.908
+E3D2	1023.3	67.89	34.908
+E3D3	1479.1	88.41	34.908
+E3D4	3090.3	97.74	34.908

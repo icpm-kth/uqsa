@@ -68,8 +68,8 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity, mc.cores 
 
   if (grepl('.so$',modelFile,useBytes=TRUE)){
     so <- modelFile
-    output_yy <- r_gsl_odeiv2_outer(modelName, experiments, modelPar)
-  } else if (grepl('.[Rr]$',modelFile)) {
+    output_yy <- r_gsl_odeiv2_outer(modelName, experiments, matrix(modelPar,np))
+  } else if (grepl('.[Rr]$', modelFile)) {
 	# densely repeat the model parameters npc times
 	modelPar <- matrix(modelPar,np,npc*numExperiments)
   
@@ -95,8 +95,19 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity, mc.cores 
     stopifnot(file.exists(modelFile))
     source(modelFile)
     func <- eval(as.name(modelName))
-    yy <- mclapply(1:N, function(i) matrix(t(lsode(y0[,i], c(0,outputTimes_list[[i]]), func=func, parms=modelPar[,i])[-1, -1]), ncol=length(outputTimes_list[[i]])), mc.preschedule = FALSE, mc.cores = mc.cores)
-    output_yy <- mclapply(1:N, function(i) apply(yy[[i]],2,outputFunctions_list[[i]]), mc.preschedule = FALSE, mc.cores = mc.cores)
+    yy <- mclapply(1:N, function(i) matrix(t(lsode(y0[,i], c(0,outputTimes_list[[i]]), func=func, parms=modelPar[,i])[-1, -1]), ncol=length(outputTimes_list[[i]])), mc.cores = mc.cores)
+
+    out_yy <- mclapply(1:N, function(i) apply(yy[[i]],2,outputFunctions_list[[i]]), mc.cores = mc.cores)
+    
+    fun <- function(yy_, out_yy_){
+      out_state <- do.call(cbind, yy_)
+      dim(out_state) <- c(dim(yy_[[1]]), length(yy_))
+      
+      out_func <- do.call(cbind, out_yy_)
+      dim(out_func) <- c(length(out_func)/(dim(out_state)[2]*npc), dim(out_state)[2], npc)
+      return(list(state = out_state, func = out_func))
+    } 
+    output_yy <- mclapply(1:numExperiments, function(i) fun(yy[1:npc + npc*(i-1)], out_yy[1:npc + npc*(i-1)]))
   }
   return(output_yy)
 }
@@ -168,9 +179,11 @@ makeObjective <- function(experiments,modelName,distance,parMap=identity,mc.core
 {
   Objective <- function(parABC){
     out <- runModel(experiments, modelName,  parABC, parMap, mc.cores)
-    npc <- length(out)/length(experiments)
-    S <- unlist(mclapply(1:length(out), function(i) distance(out[[i]], experiments[[(i-1)%/%npc+1]][["outputValues"]], experiments[[(i-1)%/%npc+1]][["errorValues"]]), mc.preschedule = FALSE, mc.cores = mc.cores))
-     return(S)
+    S <- c()
+    for(i in 1:length(experiments)){
+      S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) distance(out[[i]]$func[1,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues), mc.cores = mc.cores)))
+    }
+    return(S)
   }
   return(Objective)
 }

@@ -1,0 +1,23 @@
+!!SBtab	TableName='Compound' TableType='Compound' TableTitle='CaMKIIs Compounds' SBtabVersion='1.0' Document='CaMKIIs'  Document='CaMKIIs'
+!ID	!Name	!Unit	!InitialValue	!IsConstant	!Type	!Location
+S0	CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
+S1	CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse
+S2	CaM_Ca3	micromole/litre	0	FALSE	kinetic	synapse
+S3	CaM_Ca4	micromole/litre	0	FALSE	kinetic	synapse
+S4	PP2B_CaM	micromole/litre	0	FALSE	kinetic	synapse
+S5	PP2B_CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
+S6	PP2B_CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse
+S7	PP2B_CaM_Ca3	micromole/litre	0	FALSE	kinetic	synapse
+S8	PP2B_CaM_Ca4	micromole/litre	0	FALSE	kinetic	synapse
+S9	CaMKII_CaM	micromole/litre	0	FALSE	kinetic	synapse
+S10	CaMKII_CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
+S11	CaMKII_CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse
+S12	CaMKII_CaM_Ca3	micromole/litre	0	FALSE	kinetic	synapse
+S13	CaMKII_CaM_Ca4	micromole/litre	0	FALSE	kinetic	synapse
+S14	pCaMKII_CaM_Ca4	micromole/litre	0	FALSE	kinetic	synapse
+S15	pCaMKIIa	micromole/litre	0	FALSE	kinetic	synapse
+S16	pCaMKII_CaM_Ca3	micromole/litre	0	FALSE	kinetic	synapse
+S17	pCaMKII_CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse
+S18	pCaMKII_CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
+S19	pCaMKII_CaM	micromole/litre	0	FALSE	kinetic	synapse
+S20	PP1__pCaMKIIa	micromole/litre	0	FALSE	kinetic	synapse

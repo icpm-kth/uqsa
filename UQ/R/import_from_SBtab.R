@@ -106,7 +106,8 @@ import_experiments <- function(modelName=NULL, SBtabDir){
     experiments[[i]][["outputNames"]] <- outputNames[match_output]
     experiments[[i]][["outputId"]] <- outputId[match_output]
     experiments[[i]][["outputValues"]] <- as.matrix(experiment_table[paste(">", outputId[match_output], sep = "")])
-    notNAidx <- apply(!is.na(experiments[[i]][["outputValues"]]) & experiments[[i]][["outputTimes"]]>0, 1, prod)
+    #notNAidx <- apply(!is.na(experiments[[i]][["outputValues"]]) & experiments[[i]][["outputTimes"]]>0, 1, prod)
+    notNAidx <- experiments[[i]][["outputTimes"]]>=0
     experiments[[i]][["outputValues"]] <- experiments[[i]][["outputValues"]][as.logical(notNAidx),]
     experiments[[i]][["outputTimes"]] <- experiments[[i]][["outputTimes"]][as.logical(notNAidx)]
     experiments[[i]][["outputFunction"]] <- function(yy) {vectorialOutputFunction(0.0, yy, 0)[match_output]}
