@@ -4,17 +4,14 @@
 \alias{preCalibration}
 \title{Determine a starting value for ABC's delta}
 \usage{
-preCalibration(
-  experiments,
-  modelName,
-  parMap = identity,
-  npc = 1000,
-  rprior,
-  getScore,
-  nCores = detectCores()
-)
+preCalibration(objectiveFunction, npc = 1000, rprior)
 }
 \arguments{
+\item{npc}{sample size of pre-calibration.}
+
+\item{rprior}{a function that generates random ABC variables,
+distributed according to the prior.}
+
 \item{experiments}{a list of simulation experiments. Same as for
 ABCMCMC.}
 
@@ -25,11 +22,6 @@ to the name as a comment).}
 
 \item{parMap}{a remapping function that takes ABC sampling
 variables and returns valid model parameters}
-
-\item{npc}{sample size of pre-calibration.}
-
-\item{rprior}{a function that generates random ABC variables,
-distributed according to the prior.}
 
 \item{getScore}{a function that maps the model's output values to
 ABC score values (in comparison to data).}

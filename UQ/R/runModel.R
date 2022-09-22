@@ -34,7 +34,7 @@
 #'     that order). With N columns, N simulations will be performed.
 #' @param mc.cores number of cores to use (defaults to 8)
 #' @return output function values
-runModel <- function(experiments, modelName,  parABC, parMap=identity(), mc.cores = detectCores()){
+runModel <- function(experiments, modelName,  parABC, parMap=identity, mc.cores = detectCores()){
   if (is.matrix(parABC)){
     npc <- ncol(parABC)
   } else {
@@ -59,28 +59,6 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity(), mc.core
   } else {
     nu <- 0
   }
-  # densely repeat the model parameters npc times
-  modelPar <- matrix(modelPar,np,npc*numExperiments)
-  
-  # create a matrix that has all experimental inputs, repeated (densely) npc times per experiment
-  if (nu>0){
-    V <- vapply(experiments,function(E) matrix(E[['input']],nu,npc),FUN.VALUE=matrix(0,nu,npc))
-    dim(V) <- c(nu,npc*numExperiments)
-    modelPar <- rbind(modelPar,V)
-  }
-  stopifnot(ncol(modelPar)==N)
-  # create a matrix of initial states, repeated npc times per experiment, as with the inputs and parameters
-  ny <- length(experiments[[1]][['initialState']])
-  y0 <- vapply(experiments, function(E) matrix(E[['initialState']],ny,npc), FUN.VALUE=matrix(0,ny,npc))
-  dim(y0) <- c(ny,npc*numExperiments)
-
-  outputTimes_list <- list()
-  outputFunctions_list <- list()
-  for(i in 1:numExperiments){
-    outputTimes_list <- c(outputTimes_list, replicate(npc, list(experiments[[i]][["outputTimes"]])))
-    outputFunctions_list <- c(outputFunctions_list, replicate(npc, list(experiments[[i]][["outputFunction"]])))
-  }
-
   if (is.null(comment(modelName))) {
     modelFile <- sprintf("%s.R",modelName)
   } else {
@@ -89,12 +67,30 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity(), mc.core
 
   if (grepl('.so$',modelFile,useBytes=TRUE)){
     so <- modelFile
-    outputTimes <- outputTimes_list[[1]] ##TO CHANGE WHEN WE WILL HAVE A MORE GENERAL r_gsl_odeiv2 THAT ACCEPTS DIFFERENT OUTPUTTIMES FOR EACH PARAMETER/INPUT SET
-    yy_gsl<-r_gsl_odeiv2(modelName, as.double(outputTimes), y0, modelPar)
-    output_yy <- mclapply(1:N, function(i) apply(yy_gsl[ , , i], 2, outputFunctions_list[[i]]), mc.preschedule = FALSE, mc.cores = mc.cores)
-
-    #output_yy <- r_gsl_odeiv2_outer(modelName, experiments, modelPar)
+    output_yy <- r_gsl_odeiv2_outer(modelName, experiments, modelPar)
   } else if (grepl('.[Rr]$',modelFile)) {
+	# densely repeat the model parameters npc times
+	modelPar <- matrix(modelPar,np,npc*numExperiments)
+  
+	# create a matrix that has all experimental inputs, repeated (densely) npc times per experiment
+	if (nu>0){
+		V <- vapply(experiments,function(E) matrix(E[['input']],nu,npc),FUN.VALUE=matrix(0,nu,npc))
+		dim(V) <- c(nu,npc*numExperiments)
+		modelPar <- rbind(modelPar,V)
+	}
+	stopifnot(ncol(modelPar)==N)
+	# create a matrix of initial states, repeated npc times per experiment, as with the inputs and parameters
+	ny <- length(experiments[[1]][['initialState']])
+	y0 <- vapply(experiments, function(E) matrix(E[['initialState']],ny,npc), FUN.VALUE=matrix(0,ny,npc))
+	dim(y0) <- c(ny,npc*numExperiments)
+
+	outputTimes_list <- list()
+	outputFunctions_list <- list()
+	for(i in 1:numExperiments){
+		outputTimes_list <- c(outputTimes_list, replicate(npc, list(experiments[[i]][["outputTimes"]])))
+		outputFunctions_list <- c(outputFunctions_list, replicate(npc, list(experiments[[i]][["outputFunction"]])))
+	}
+
     stopifnot(file.exists(modelFile))
     source(modelFile)
     func <- eval(as.name(modelName))

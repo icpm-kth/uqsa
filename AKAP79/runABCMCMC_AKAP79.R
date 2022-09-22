@@ -1,5 +1,5 @@
-remotes::install_github("a-kramer/rgsl")
-remotes::install_github("a-kramer/SBtabVFGEN")
+#remotes::install_github("a-kramer/rgsl")
+#remotes::install_github("a-kramer/SBtabVFGEN")
 library(rgsl)
 library(SBtabVFGEN)
 library(UQ)
@@ -12,10 +12,16 @@ modelName <- checkModel(comment(model),paste0(comment(model),'_gvf.c'))
 #source(paste(SBtabDir,"/",modelName,".R",sep=""))
 
 parVal <- model[["Parameter"]][["!DefaultValue"]]
+names(parVal)<-model[["Parameter"]][["!Name"]]
 parNames <- model[["Parameter"]][["!Name"]]
 
 # load experiments
 experiments <- import_experiments(modelName, SBtabDir)
+
+# test simulation
+print(experiments[[1]][['input']])
+print(parVal)
+out <- runModel(experiments,modelName,as.matrix(parVal))
 
 # scale to determine prior values
 defRange <- 1000
@@ -92,7 +98,7 @@ for (i in 1:length(experimentsIndices)){
 	scores <- out_ABCMCMC$scores
 	acceptanceRate <- out_ABCMCMC$acceptanceRate
 	nRegularizations <- out_ABCMCMC$nRegularizations
-	
+
 	if (i>1){
 		precursors <- experimentsIndices[1:(i-1)]
 		objectiveFunction <- makeObjective(experiments[precursors], modelName, getScore, parMap, nCores)

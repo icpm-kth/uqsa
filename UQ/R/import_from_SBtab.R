@@ -97,7 +97,7 @@ import_experiments <- function(modelName=NULL, SBtabDir){
     experiments[[i]][["input"]][match_input[!is.na(match_input)]]  <- inputs_and_initState_vals[!is.na(match_input)]
     
     experiment_table <- SBtab[[experiments_names[i]]]
-    experiments[[i]][["outputTimes"]] <- experiment_table[["!Time"]]
+    experiments[[i]][["outputTimes"]] <- as.numeric(experiment_table[["!Time"]])
     tabColnames <- colnames(experiment_table)
     tabOutputId <- tabColnames[startsWith(tabColnames,'>')]
     tabOutputId <- substring(tabOutputId, 2)

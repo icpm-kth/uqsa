@@ -4,22 +4,16 @@
 \alias{checkFitWithPreviousExperiments}
 \title{ABC acceptance of currently sampled values given old data (Prior)}
 \usage{
-checkFitWithPreviousExperiments(
-  modelName,
-  draws,
-  experiments,
-  parMap = identity(),
-  getScore,
-  delta,
-  nCores = detectCores()
-)
+checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
 }
 \arguments{
+\item{draws}{matrix of sampled values (to be filtered).}
+
+\item{delta}{the acceptance threshold.}
+
 \item{modelName}{name, is used to find the file and model functions
 therein (comment(modelName) can contain a file-name if it
 differs from `modelName.R`).}
-
-\item{draws}{matrix of sampled values (to be filtered).}
 
 \item{experiments}{a list of experiments (all of them, or up to
 currentExpSet).}
@@ -31,8 +25,6 @@ necessary whenever ABC sampling happens in a different space
 than the model parameter domain for whatever reason.}
 
 \item{getScore}{scoring function.}
-
-\item{delta}{the acceptance threshold.}
 
 \item{nCores}{number of cores to use in parallel::mclapply() calls.}
 }
