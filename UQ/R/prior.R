@@ -18,8 +18,8 @@ dCopulaPrior <- function(Copula){
 	np  <- ncol(U)
 	priorPDF<-function(inx){
 		if(all(!is.na(inx))){
-		  lbU <- sapply(1:np, function(i) min(U[,i]) - 0.05*c(-1,1) %*% range(U[,i]))
-		  ubU <- sapply(1:np, function(i) max(U[,i]) + 0.05*c(-1,1) %*% range(U[,i]))
+		  lbU <- sapply(1:np, function(i) min(U[,i]) - 0.5*c(-1,1) %*% range(U[,i]))
+		  ubU <- sapply(1:np, function(i) max(U[,i]) + 0.5*c(-1,1) %*% range(U[,i]))
 			ed <- sapply(1:np, function(i) approx(c(unique(U[,i]), lbU[i], ubU[i]), c(unique(Z[,i]), 0, 1), xout=inx[i])$y)
 			mpdf <- sapply(1:np, function(i) approx(c(unique(U[,i]), lbU[i], ubU[i]), c(unique(Y[,i]), 0, 0), xout=inx[i])$y)
 			if(any(is.na(ed)) || any(is.na(mpdf))){ # outside of copula defined limits
