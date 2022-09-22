@@ -63,7 +63,7 @@ import_experiments <- function(modelName=NULL, SBtabDir){
 	}
   compoundNames <- SBtab[["Compound"]][["!Name"]]
   compoundId <- SBtab[["Compound"]][["!ID"]]
-  default_y0 <- SBtab[["Compound"]][["!InitialValue"]]
+  default_y0 <- as.numeric(SBtab[["Compound"]][["!InitialValue"]])
   
   inputNames <- SBtab[["Input"]][["!Name"]]
   inputId <- SBtab[["Input"]][["!ID"]]
