@@ -17,6 +17,7 @@
 
 int AKAP79_vf(double t, const double y_[], double f_[], void *params)
 {
+    if (!y_ || !f_) return 16;
     double Rii, cAMP, RiiP, Rii_C, RiiP_cAMP, RiiP_C, RiiP_C_cAMP, C, Rii_cAMP, Rii_C_cAMP, CaN, RiiP_CaN, RiiP_cAMP_CaN, AKAR4, AKAR4_C, AKAR4p;
     double kf_Rii_C__RiiP_C, kf_RiiP_CxcAMP__RiiP_C_cAMP, kf_RiiP_cAMPxC__RiiP_C_cAMP, kb_RiiP_cAMPxC__RiiP_C_cAMP, kb_RiiPXcAMP__RiiP_cAMP, kf_RiiPXcAMP__RiiP_cAMP, kf_RiiPxC__RiiP_C, kb_RiiPxC__RiiP_C, kf_cAMPxRii__Rii_cAMP, kb_cAMPxRii__Rii_cAMP, kf_Rii_CxcAMP__Rii_C_cAMP, kb_Rii_CxcAMP__Rii_C_cAMP, kf_RiixC__Rii_C, kf_Rii_cAMPxC__Rii_C_cAMP, kb_Rii_cAMPxC__Rii_C_cAMP, kf_Rii_C_cAMP__RiiP_C_cAMP, kb_RiixC__Rii_C, AKAPoff_1, AKAPoff_3, AKAPon_1, AKAPon_3, kf_C_AKAR4, kb_C_AKAR4, kcat_AKARp, kmOFF, kmON, KD_T, b_AKAP;
     double kf_RiiP_cAMP_CaN__CaNXRii_cAMP, kb_RiiPxCaN__RiiP_CaN, kf_RiiP_CaN__RiixCaN, kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN, kf_RiiPxCaN__RiiP_CaN, kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN, kb_RiiP_CxcAMP__RiiP_C_cAMP, reaction_51, reaction_14, reaction_12, reaction_43, reaction_23, reaction_78, reaction_56, reaction_76, reaction_62, reaction_58, reaction_44_, reaction_33_, reaction_4_8, reaction_3_7, reaction_1, reaction_2;
