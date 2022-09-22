@@ -59,6 +59,7 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity, mc.cores 
   } else {
     nu <- 0
   }
+
   if (is.null(comment(modelName))) {
     modelFile <- sprintf("%s.R",modelName)
   } else {

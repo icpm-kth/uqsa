@@ -59,9 +59,9 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior){
   n <- 0
   acceptedSamples <- 0
   nRegularizations <- 0
-  sampleFrequency <- 100 #50
+  sampleFrequency <- 50 #100
   while (n/sampleFrequency < nSims){
-    if(scount>max(nSims/1, 500)){
+    if(scount>max(nSims, 500)){
       nRegularizations <- nRegularizations + 1
       if(nRegularizations >= 3){
         timeStr <- Sys.time()
