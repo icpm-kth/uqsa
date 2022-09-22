@@ -4,30 +4,9 @@
 \alias{parUpdate}
 \title{Updates Parameter Values}
 \usage{
-parUpdate(
-  experiments,
-  modelName,
-  parMap,
-  curPar,
-  canPar,
-  curDelta,
-  curPrior,
-  delta,
-  dprior,
-  getScore,
-  environment,
-  nCores = detectCores()
-)
+parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
 }
 \arguments{
-\item{experiments}{list of simulation experiments}
-
-\item{modelName}{(characters), this will be used to find the model
-file and the functions in that file}
-
-\item{parMap}{optional remapping function set for passing parameters to the
-model: parModel<-parMap(parABC)}
-
 \item{curPar}{current parameter values (as ABC samples them)}
 
 \item{canPar}{candidate parameter values (for MCMC)}
@@ -42,6 +21,14 @@ current state for the chain.}
 \item{delta}{distance threshold for ABC}
 
 \item{dprior}{prior probability density function}
+
+\item{experiments}{list of simulation experiments}
+
+\item{modelName}{(characters), this will be used to find the model
+file and the functions in that file}
+
+\item{parMap}{optional remapping function set for passing parameters to the
+model: parModel<-parMap(parABC)}
 
 \item{getScore}{a scoring function}
 

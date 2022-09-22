@@ -7,7 +7,7 @@
 makeObjective(
   experiments,
   modelName,
-  getScore,
+  distance,
   parMap = identity,
   mc.cores = detectCores()
 )
@@ -17,11 +17,11 @@ makeObjective(
 
 \item{modelName}{and model storage file as comment}
 
-\item{getScore}{a function that calculates ABC scores}
-
 \item{parMap}{a function that transforms ABC variables into acceptable model parameters}
 
 \item{mc.cores}{number of cores to use}
+
+\item{getScore}{a function that calculates ABC scores}
 }
 \value{
 an objective function

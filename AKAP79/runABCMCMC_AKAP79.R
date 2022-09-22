@@ -3,12 +3,6 @@ remotes::install_github("a-kramer/SBtabVFGEN")
 library(rgsl)
 library(SBtabVFGEN)
 library(UQ)
-source("../UQ/R/ABCMCMCFunctions.R")
-source("../UQ/R/copulaFunctions.R")
-source("../UQ/R/import_from_SBtab.R")
-source("../UQ/R/PreCalibration.R")
-source("../UQ/R/prior.R")
-source("../UQ/R/runModel.R")
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
@@ -18,10 +12,16 @@ modelName <- checkModel(comment(model),paste0(comment(model),'_gvf.c'))
 #source(paste(SBtabDir,"/",modelName,".R",sep=""))
 
 parVal <- model[["Parameter"]][["!DefaultValue"]]
+names(parVal)<-model[["Parameter"]][["!Name"]]
 parNames <- model[["Parameter"]][["!Name"]]
 
 # load experiments
 experiments <- import_experiments(modelName, SBtabDir)
+
+# test simulation
+print(experiments[[1]][['input']])
+print(parVal)
+out <- runModel(experiments,modelName,as.matrix(parVal))
 
 # scale to determine prior values
 defRange <- 1000
@@ -44,7 +44,7 @@ npc <- 5000 # pre-calibration
 delta <- 7 #0.01
 
 # Define the number of Cores for the parallelization
-nCores <- parallel::detectCores() - 1 #%/% 2
+nCores <- parallel::detectCores() %/% 2
 
 set.seed(7619201)
 
@@ -60,11 +60,10 @@ getScore	<- function(yy_sim, yy_exp, yy_expErr){
 }
 
 parMap <- function(parABC){
-  return(10^parABC)
+	return(10^parABC)
 }
-
-nChains <- 4
-
+  
+  
 start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
   
