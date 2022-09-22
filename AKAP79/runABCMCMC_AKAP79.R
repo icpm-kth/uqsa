@@ -52,10 +52,10 @@ set.seed(7619201)
 getScore	<- function(yy_sim, yy_exp, yy_expErr){
   yy_sim <- (yy_sim-0)/(0.2-0.0)
   ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-100)/(171.67-100), Inf)
-  distance <- mean(((yy_sim-yy_exp)/(yy_expErr/(171.67-100)))^2)
+  distance <- mean(((yy_sim-yy_exp)/(yy_expErr/(171.67-100)))^2, na.rm=TRUE)
   
   #When output function is fixed:
-  #distance <- mean((yy_sim-yy_exp)/(yy_expErr)^2)
+  #distance <- mean((yy_sim-yy_exp)/(yy_expErr)^2, na.rm=TRUE)
   return(distance)
 }
 
@@ -99,7 +99,7 @@ for (i in 1:length(experimentsIndices)){
   # run outer loop
   
   if(nChains > 1){
-    cl <- makeForkCluster(detectCores() - 1)
+    cl <- makeForkCluster(detectCores())
     clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
     out_ABCMCMC <- parLapply(cl, 1:nChains, function(i) ABCMCMC(objectiveFunction, M$startPar[i,], ns, M$Sigma, delta, dprior))
     stopCluster(cl)
