@@ -68,7 +68,8 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior){
         timeStr <- gsub(":","_", timeStr)
         timeStr <- gsub(" ","_", timeStr)
         save(draws, file = paste0("AbortedChainAfterRegularization_",timeStr,".RData"))
-        stop(paste0("Stuck chain (nRegularizations = ", nRegularizations,")"))
+        warning(paste0("Stuck chain (nRegularizations = ", nRegularizations,")"))
+        return(list(draws = c(), scores = c(), acceptanceRate = c(), nRegularizations = nRegularizations))
       }
       disp(paste0("Regularization of proposal covariance matrix (nRegularizations = ", nRegularizations,")"))
       
@@ -172,7 +173,7 @@ parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, del
 #' @param nCores number of cores to use in parallel::mclapply() calls.
 #' @return a filtered subset of acceptable parameter draws
 checkFitWithPreviousExperiments <- function(draws, objectiveFunction, delta){
-  cat("-Checking fit with previous data\n")
+  cat("\n-Checking fit with previous data\n")
   nDraws = dim(draws)[1]
   
   scores <- objectiveFunction(t(draws))
