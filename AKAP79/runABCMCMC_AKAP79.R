@@ -104,15 +104,6 @@ for (i in 1:length(experimentsIndices)){
     print(Sys.time()-start_time_fitCopula)
   }
   
-  parMap <- function(parABC){
-    return(10^parABC)
-  }
-  
-  # test simulation
-  print(experiments[[1]][['input']])
-  print(parVal)
-  out <- runModel(experiments, modelName, as.matrix(parVal), parMap)
-  
   ## Run Pre-Calibration Sampling
   message("- Precalibration")
   start_time_preCalibration <- Sys.time()
