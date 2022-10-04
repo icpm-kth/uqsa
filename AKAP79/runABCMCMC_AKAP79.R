@@ -23,8 +23,8 @@ source("../UQ/R/runModel.R")
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
 #modelName <- checkModel(comment(model),paste0(comment(model),'.R'))
-modelName <- checkModel(comment(model),paste0(comment(model),'_gvf.c'))
-
+#modelName <- checkModel(comment(model),paste0(comment(model),'_gvf.c'))
+modelName<-"AKAP79"
 #source(paste(SBtabDir,"/",modelName,".R",sep=""))
 
 parVal <- model[["Parameter"]][["!DefaultValue"]]
@@ -114,8 +114,8 @@ for (i in 1:length(experimentsIndices)){
   ## Get Starting Parameters from Pre-Calibration
   M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta, num = nChains)
   M$startPar <- matrix(M$startPar, nChains)
-  for(i in 1 : nChains){
-    stopifnot(dprior(M$startPar[i,])>0)
+  for(j in 1 : nChains){
+    stopifnot(dprior(M$startPar[j,])>0)
   }
   
   
@@ -125,17 +125,17 @@ for (i in 1:length(experimentsIndices)){
   start_time_ABC = Sys.time()
   cl <- makeForkCluster(detectCores())
   clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
-  out_ABCMCMC <- parLapply(cl, 1:nChains, function(i) ABCMCMC(objectiveFunction, M$startPar[i,], ns, M$Sigma, delta, dprior))
+  out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior))
   stopCluster(cl)
   draws <- c()
   scores <- c()
   acceptanceRate <- c()
   nRegularizations <- c()
-  for(i in 1:nChains){
-    draws <- rbind(draws, out_ABCMCMC[[i]]$draws)
-    scores <- c(scores, out_ABCMCMC[[i]]$scores)
-    acceptanceRate <- c(acceptanceRate, out_ABCMCMC[[i]]$acceptanceRate)
-    nRegularizations <- c(nRegularizations, out_ABCMCMC[[i]]$nRegularizations)
+  for(j in 1:nChains){
+    draws <- rbind(draws, out_ABCMCMC[[j]]$draws)
+    scores <- c(scores, out_ABCMCMC[[j]]$scores)
+    acceptanceRate <- c(acceptanceRate, out_ABCMCMC[[j]]$acceptanceRate)
+    nRegularizations <- c(nRegularizations, out_ABCMCMC[[j]]$nRegularizations)
   }
   end_time = Sys.time()
   time_ = end_time - start_time_ABC
