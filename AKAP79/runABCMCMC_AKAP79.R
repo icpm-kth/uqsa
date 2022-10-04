@@ -104,7 +104,14 @@ for (i in 1:length(experimentsIndices)){
     print(Sys.time()-start_time_fitCopula)
   }
   
-  beep(5)
+  parMap <- function(parABC){
+    return(10^parABC)
+  }
+  
+  # test simulation
+  print(experiments[[1]][['input']])
+  print(parVal)
+  out <- runModel(experiments, modelName, as.matrix(parVal), parMap)
   
   ## Run Pre-Calibration Sampling
   message("- Precalibration")
@@ -112,8 +119,6 @@ for (i in 1:length(experimentsIndices)){
   pC <- preCalibration(objectiveFunction, npc, rprior)
   cat("\nPreCalibration:")
   print(Sys.time()-start_time_preCalibration)
-  
-  beep(3)
   
   ## Get Starting Parameters from Pre-Calibration
   M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta, num = nChains)
@@ -153,14 +158,11 @@ for (i in 1:length(experimentsIndices)){
   cat("\nRegularizations:", nRegularizations)
   cat("\nAcceptance rate:", acceptanceRate)  
   
-  beep(8)
-  
 if (i>1){
   precursors <- experimentsIndices[1:(i-1)]
   objectiveFunction <- makeObjective(experiments[precursors], modelName, getScore, parMap, nCores)
   draws <- checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
 }
-  beep(1)
   
   cat("\nNumber of draws after fitting with previous experiments:",dim(draws)[1])
 
