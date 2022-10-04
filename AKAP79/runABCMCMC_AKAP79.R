@@ -64,7 +64,7 @@ npc <- 5000 # pre-calibration
 delta <- 7 #0.01
 
 # Define the number of Cores for the parallelization
-nCores <- parallel::detectCores() %/% 2
+nCores <- 20 #parallel::detectCores() %/% 2
 
 nChains <- 4
 
