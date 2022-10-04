@@ -113,20 +113,15 @@ for (i in 1:length(experimentsIndices)){
   
   ## Get Starting Parameters from Pre-Calibration
   M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta, num = nChains)
-  
   M$startPar <- matrix(M$startPar, nChains)
-  
   for(i in 1 : nChains){
     stopifnot(dprior(M$startPar[i,])>0)
   }
   
   
+  gc()
   ## Run ABC-MCMC Sampling
   cat(sprintf("-Running MCMC chains \n"))
-  # run outer loop
-  
-  gc()
-  
   start_time_ABC = Sys.time()
   cl <- makeForkCluster(detectCores())
   clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
