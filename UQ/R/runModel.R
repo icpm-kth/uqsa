@@ -145,7 +145,7 @@ checkModel <- function(modelName,modelFile=NULL){
   if (grepl('.c$',modelFile,useBytes=TRUE)){
     message('building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).')
     LIBS <- "`pkg-config --libs gsl`"
-    CFLAGS <- "-shared -fPIC -Wall -O2 `pkg-config --cflags gsl`"
+    CFLAGS <- "-shared -fPIC `pkg-config --cflags gsl`"
     so <- sprintf("%s.so",modelName)
     command_args <- sprintf("%s -o %s %s %s",CFLAGS,so,modelFile,LIBS)
     message(paste("cc",command_args))
@@ -186,4 +186,17 @@ makeObjective <- function(experiments,modelName,distance,parMap=identity,mc.core
     return(S)
   }
   return(Objective)
+}
+
+makeAcceptanceProbability <- function(experiments, modelName, getAcceptanceProbability, parMap=identity, mc.cores=detectCores())
+{
+  acceptanceProbability <- function(parABC){
+    out <- runModel(experiments, modelName,  parABC, parMap, mc.cores)
+    S <- c()
+    for(i in 1:length(experiments)){
+      S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) getAcceptanceProbability(out[[i]]$func[1,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues), mc.cores = mc.cores)))
+    }
+    return(S)
+  }
+  return(acceptanceProbability)
 }

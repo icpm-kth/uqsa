@@ -2,6 +2,7 @@ remotes::install_github("a-kramer/rgsl")
 remotes::install_github("a-kramer/SBtabVFGEN")
 library(rgsl)
 library(SBtabVFGEN)
+
 library(parallel)
 library(VineCopula)
 library(MASS)
@@ -24,7 +25,7 @@ SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
 #modelName <- checkModel(comment(model),paste0(comment(model),'.R'))
 #modelName <- checkModel(comment(model),paste0(comment(model),'_gvf.c'))
-modelName<-"AKAP79"
+modelName <- checkModel(comment(model),paste0(comment(model),'.so'))
 #source(paste(SBtabDir,"/",modelName,".R",sep=""))
 
 parVal <- model[["Parameter"]][["!DefaultValue"]]
@@ -57,7 +58,7 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- c(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 500 # no of samples required from each ABC-MCMC chain
+ns <- 250 # no of samples required from each ABC-MCMC chain
 npc <- 5000 # pre-calibration
 
 # Define ABC-MCMC Settings
@@ -81,11 +82,20 @@ getScore	<- function(yy_sim, yy_exp, yy_expErr){
   return(distance)
 }
 
+getAcceptanceProbability <- function(yy_sim, yy_exp, yy_expErr){
+  yy_sim <- (yy_sim-0)/(0.2-0.0)
+  ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-100)/(171.67-100), Inf)
+  yy_expErr <- yy_expErr/(171.67-100)
+  
+  return(exp(-sum((yy_sim-yy_exp)^2/(2*yy_expErr),na.rm = TRUE)))
+}
+
 start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
   
   expInd <- experimentsIndices[i]
   objectiveFunction <- makeObjective(experiments[expInd], modelName, getScore, parMap)
+  acceptanceProbability <- makeAcceptanceProbability(experiments[expInd], modelName, getAcceptanceProbability, parMap)
   
   cat("#####Starting run for Experiments ", expInd, "######\n")
   ## If First Experimental Setting, Create an Independente Colupla
@@ -124,8 +134,8 @@ for (i in 1:length(experimentsIndices)){
   cat(sprintf("-Running MCMC chains \n"))
   start_time_ABC = Sys.time()
   cl <- makeForkCluster(detectCores())
-  clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
-  out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior))
+  clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
+  out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior, acceptanceProbability))
   stopCluster(cl)
   draws <- c()
   scores <- c()
@@ -144,26 +154,26 @@ for (i in 1:length(experimentsIndices)){
   cat("\nRegularizations:", nRegularizations)
   cat("\nAcceptance rate:", acceptanceRate)  
   
-if (i>1){
-  precursors <- experimentsIndices[1:(i-1)]
-  objectiveFunction <- makeObjective(experiments[precursors], modelName, getScore, parMap, nCores)
-  draws <- checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
-}
+  if (i>1){
+    precursors <- experimentsIndices[1:(i-1)]
+    objectiveFunction <- makeObjective(experiments[precursors], modelName, getScore, parMap, nCores)
+    draws <- checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
+  }
   
   cat("\nNumber of draws after fitting with previous experiments:",dim(draws)[1])
-
-# Save Resulting Samples to MATLAB and R files.
-cat("\n-Saving sample \n")
-outFile <- paste(experimentsIndices[1:i], collapse="_")
-timeStr <- Sys.time()
-timeStr <- gsub(":","_", timeStr)
-timeStr <- gsub(" ","_", timeStr)
-outFileR <- paste("../PosteriorSamples/Draws",modelName,"nChains",nChains,"ns",ns,"npc",npc,outFile,timeStr,".RData",collapse="_",sep="_")
-save(draws, parNames, file=outFileR)
-#if (require(R.matlab)){
-#	outFileM <- paste("../PosteriorSamples/Draws",modelName,"ns",ns,"npc",npc,outFile,timeStr,".mat",collapse="_",sep="_")
-#	writeMat(outFileM, samples=10^draws)
-#}
+  
+  # Save Resulting Samples to MATLAB and R files.
+  cat("\n-Saving sample \n")
+  outFile <- paste(experimentsIndices[1:i], collapse="_")
+  timeStr <- Sys.time()
+  timeStr <- gsub(":","_", timeStr)
+  timeStr <- gsub(" ","_", timeStr)
+  outFileR <- paste("../PosteriorSamples/Draws",modelName,"nChains",nChains,"ns",ns,"npc",npc,outFile,timeStr,".RData",collapse="_",sep="_")
+  save(draws, parNames, file=outFileR)
+  #if (require(R.matlab)){
+  #	outFileM <- paste("../PosteriorSamples/Draws",modelName,"ns",ns,"npc",npc,outFile,timeStr,".mat",collapse="_",sep="_")
+  #	writeMat(outFileM, samples=10^draws)
+  #}
 }
 end_time = Sys.time()
 time_ = end_time - start_time

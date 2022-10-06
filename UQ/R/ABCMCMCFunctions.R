@@ -39,7 +39,7 @@
 #'     scores
 #' @param nCores setting for multicore package
 #' @return a list containing a sample matrix and a vector of scores (values of delta for each sample)
-ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior){
+ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, acceptanceProbability){
   cat("Started chain.\n")
   Sigma1 <- 0.25*diag(diag(Sigma0))
   curDelta <- Inf
@@ -79,6 +79,7 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior){
       scores <- rep(NA, nSims)
       scount <- 1
       n <- 0
+      acceptedSamples <- 0
     }
     if(runif(1)<=0.95){
       canPar <- mvrnorm(n=1, curPar, Sigma0)
@@ -86,10 +87,11 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior){
       canPar <- mvrnorm(n=1, curPar, Sigma1)
     }
     
-    out <- parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
+    #out <- parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
+    out <- parUpdate_ProbabilisticAcceptance(acceptanceProbability, curPar, canPar, curPrior, dprior)
     
     curPar <- out$curPar
-    curDelta <- out$curDelta
+    #curDelta <- out$curDelta
     curPrior <- out$curPrior
     scount <- ifelse(out$acceptance, 1, scount + 1) #scount counts the number of times we are in the same value for curPar. If we accept a new canPar, then we reset the count to 1.
     acceptedSamples <- acceptedSamples + out$acceptance
@@ -97,7 +99,7 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior){
     n <- n+1
     if(n %% sampleFrequency == 0){
       draws[n/sampleFrequency,]  <- curPar
-      scores[n/sampleFrequency] <- curDelta
+      #scores[n/sampleFrequency] <- curDelta
     }
   }
   cat("Finished chain.\n")
@@ -148,6 +150,18 @@ parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, del
 	  acceptance <- FALSE
   }
   return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior, acceptance=acceptance))
+}
+
+
+
+parUpdate_ProbabilisticAcceptance <- function(acceptanceProbability, curPar, canPar, curPrior, dprior){
+  canPrior <- dprior(canPar)
+  acceptance <- (runif(1) <= acceptanceProbability(canPar)*min(1,canPrior/curPrior))
+  if (acceptance){
+    curPrior <- canPrior
+    curPar <- canPar
+  }
+  return(list(curPar=curPar, curPrior=curPrior, acceptance=acceptance))
 }
 
 #' ABC acceptance of currently sampled values given old data (Prior)
