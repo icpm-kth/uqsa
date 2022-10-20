@@ -1,5 +1,3 @@
-remotes::install_github("a-kramer/rgsl")
-remotes::install_github("a-kramer/SBtabVFGEN")
 library(rgsl)
 library(SBtabVFGEN)
 
@@ -11,15 +9,7 @@ library(ks)
 library(deSolve)
 #library(reshape2)
 #library(ggplot2)
-#library(UQ)
-
-
-source("../UQ/R/ABCMCMCFunctions.R")
-source("../UQ/R/copulaFunctions.R")
-source("../UQ/R/import_from_SBtab.R")
-source("../UQ/R/PreCalibration.R")
-source("../UQ/R/prior.R")
-source("../UQ/R/runModel.R")
+library(UQ)
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)

@@ -8,7 +8,7 @@ runModel(
   experiments,
   modelName,
   parABC,
-  parMap = identity(),
+  parMap = identity,
   mc.cores = detectCores()
 )
 }
