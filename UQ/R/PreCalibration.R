@@ -37,6 +37,7 @@
 #'     calibration run
 preCalibration <- function(objectiveFunction, npc=1000, rprior){
 	prePar <- rprior(npc)
+	
 	preDelta <- objectiveFunction(t(prePar))
 	dim(preDelta)<-c(npc, length(preDelta)/npc)
 	preDelta <- apply(preDelta,1,max)

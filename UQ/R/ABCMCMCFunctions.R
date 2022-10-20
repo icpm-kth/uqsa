@@ -39,12 +39,11 @@
 #'     scores
 #' @param nCores setting for multicore package
 #' @return a list containing a sample matrix and a vector of scores (values of delta for each sample)
-ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, acceptanceProbability){
+ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, acceptanceProbability=NULL){
   cat("Started chain.\n")
   Sigma1 <- 0.25*diag(diag(Sigma0))
   curDelta <- Inf
   np <- length(startPar)
-  scount <- 1
   curPar  <- startPar
   curDelta <- mean(objectiveFunction(curPar))
   
@@ -61,9 +60,9 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, a
   nRegularizations <- 0
   sampleFrequency <- 50 #100
   while (n/sampleFrequency < nSims){
-    if(scount>max(nSims, 500)){
+    if(n %% 100 == 0 && acceptedSamples<0.0005*n){
       nRegularizations <- nRegularizations + 1
-      if(nRegularizations >= 3){
+      if(nRegularizations >= 4){
         timeStr <- Sys.time()
         timeStr <- gsub(":","_", timeStr)
         timeStr <- gsub(" ","_", timeStr)
@@ -77,29 +76,31 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, a
       Sigma1 <- 0.25*diag(diag(Sigma0))
       draws <- matrix(NA, nSims,np)
       scores <- rep(NA, nSims)
-      scount <- 1
       n <- 0
       acceptedSamples <- 0
-    }
+    } 
+    #else if (n %% 100 == 0 && acceptedSamples > 0.1*n) {
+    #  delta <- delta * .9
+    #}
+    
     if(runif(1)<=0.95){
       canPar <- mvrnorm(n=1, curPar, Sigma0)
     }else{
       canPar <- mvrnorm(n=1, curPar, Sigma1)
     }
     
-    #out <- parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
-    out <- parUpdate_ProbabilisticAcceptance(acceptanceProbability, curPar, canPar, curPrior, dprior)
+    out <- parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
+    #out <- parUpdate_ProbabilisticAcceptance(acceptanceProbability, curPar, canPar, curPrior, dprior)
     
     curPar <- out$curPar
-    #curDelta <- out$curDelta
+    curDelta <- out$curDelta
     curPrior <- out$curPrior
-    scount <- ifelse(out$acceptance, 1, scount + 1) #scount counts the number of times we are in the same value for curPar. If we accept a new canPar, then we reset the count to 1.
     acceptedSamples <- acceptedSamples + out$acceptance
       
     n <- n+1
     if(n %% sampleFrequency == 0){
       draws[n/sampleFrequency,]  <- curPar
-      #scores[n/sampleFrequency] <- curDelta
+      scores[n/sampleFrequency] <- curDelta
     }
   }
   cat("Finished chain.\n")
