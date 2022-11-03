@@ -67,5 +67,5 @@
  <StateVariable Name="AKAR4" Description="compound AKAR4" DefaultInitialCondition="0.2" Formula="-reaction_1"/>
  <StateVariable Name="AKAR4_C" Description="compound AKAR4_C" DefaultInitialCondition="0" Formula="+reaction_1-reaction_2"/>
  <StateVariable Name="AKAR4p" Description="compound AKAR4p" DefaultInitialCondition="0" Formula="+reaction_2"/>
- <Function Name="AKAR4pOUT" Description="output AKAR4pOUT" Formula="AKAR4p"/>
+ <Function Name="AKAR4pOUT" Description="output AKAR4pOUT" Formula="(AKAR4p*5)*71.67+100"/>
 </VectorField>

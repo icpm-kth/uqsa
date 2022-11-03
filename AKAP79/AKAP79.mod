@@ -1,7 +1,7 @@
 TITLE AKAP79
 COMMENT
 	automatically generated from an SBtab file
-	date: Thu Oct 20 13:27:46 2022
+	date: Thu Nov  3 13:58:09 2022
 ENDCOMMENT
 NEURON {
 	SUFFIX AKAP79 : OR perhaps POINT_PROCESS ?
@@ -176,5 +176,5 @@ DERIVATIVE ode {
 	AKAR4p' = reaction_2 : affects compound with ID AKAR4p
 }
 PROCEDURE observables_func() {
-	AKAR4pOUT = AKAR4p : Output ID AKAR4pOUT
+	AKAR4pOUT = (AKAR4p*5)*71.67+100 : Output ID AKAR4pOUT
 }
