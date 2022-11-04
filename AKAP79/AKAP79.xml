@@ -287,7 +287,16 @@
       </assignmentRule>
       <assignmentRule variable="AKAR4pOUT">
         <math xmlns="http://www.w3.org/1998/Math/MathML">
-          <ci> AKAR4p </ci>
+          <apply>
+            <plus/>
+            <apply>
+              <times/>
+              <ci> AKAR4p </ci>
+              <cn type="integer"> 5 </cn>
+              <cn> 71.67 </cn>
+            </apply>
+            <cn type="integer"> 100 </cn>
+          </apply>
         </math>
       </assignmentRule>
     </listOfRules>

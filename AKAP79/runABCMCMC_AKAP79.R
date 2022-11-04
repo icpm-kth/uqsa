@@ -46,28 +46,34 @@ ul = log10(ul) # log10-scale
 
 # Define the experiments that have to be considered in each iteration of the for loop to compare simulations with experimental data
 experimentsIndices <- c(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
+
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 20000 # no of samples required from each ABC-MCMC chain
-npc <- 50000 # pre-calibration
+ns <- 250 # no of samples required from each ABC-MCMC chain
+npc <- 5000 # pre-calibration
 
 # Define ABC-MCMC Settings
-delta <- 6 #0.01
+delta <- 7 #0.01
 
 # Define the number of Cores for the parallelization
-nCores <- parallel::detectCores()
+nCores <- 20 #parallel::detectCores() %/% 2
 
 nChains <- 4
 
 set.seed(7619201)
 
-# Define the score function to compare simulated data with experimental data
-getScore	<- function(yy_sim, yy_exp, yy_expErr){
-  yy_sim <- (yy_sim-0)/(0.2-0.0)
-  ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-100)/(171.67-100), Inf)
-  distance <- mean(((yy_sim-yy_exp)/(yy_expErr/(171.67-100)))^2, na.rm=TRUE)
-  
-  #When output function is fixed:
-  #distance <- mean((yy_sim-yy_exp)/(yy_expErr)^2, na.rm=TRUE)
+## ## Define the score function to compare simulated data with experimental data
+## ## in this function, both simulation and data are normalized to be between 0 and 1
+## getScore	<- function(yy_sim, yy_exp, yy_expErr){
+##   yy_sim <- (yy_sim-0)/(0.2-0.0)
+##   ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-100)/(171.67-100), Inf)
+##   distance <- mean(((yy_sim-yy_exp)/(yy_expErr/(171.67-100)))^2, na.rm=TRUE)
+##   #When output function is fixed:
+##   #distance <- mean((yy_sim-yy_exp)/(yy_expErr)^2, na.rm=TRUE)
+##   return(distance)
+## }
+
+getScore	<- function(yy_sim, yy_exp=Inf, yy_expErr=Inf){
+  distance <- mean(((yy_sim-yy_exp)/yy_expErr)^2, na.rm=TRUE)
   return(distance)
 }
 
@@ -76,16 +82,15 @@ getAcceptanceProbability <- function(yy_sim, yy_exp, yy_expErr){
   ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-100)/(171.67-100), Inf)
   yy_expErr <- yy_expErr/(171.67-100)
   
-  return(exp(-sum((yy_sim-yy_exp)^2/(2*yy_expErr^2),na.rm = TRUE)))
+  return(exp(-sum((yy_sim-yy_exp)^2/(2*yy_expErr),na.rm = TRUE)))
 }
 
 start_time = Sys.time()
-#for (i in 1:length(experimentsIndices)){
-for(i in 1:2){  
+for (i in 1:length(experimentsIndices)){
+
   expInd <- experimentsIndices[i]
-  #expInd <- experimentsIndices
   objectiveFunction <- makeObjective(experiments[expInd], modelName, getScore, parMap)
-  #acceptanceProbability <- makeAcceptanceProbability(experiments[expInd], modelName, getAcceptanceProbability, parMap)
+  acceptanceProbability <- makeAcceptanceProbability(experiments[expInd], modelName, getAcceptanceProbability, parMap)
   
   cat("#####Starting run for Experiments ", expInd, "######\n")
   ## If First Experimental Setting, Create an Independente Colupla
@@ -112,7 +117,7 @@ for(i in 1:2){
   print(Sys.time()-start_time_preCalibration)
   
   ## Get Starting Parameters from Pre-Calibration
-  M <- getMCMCPar(pC$prePar, pC$preDelta, p=0.01, delta=delta, num = nChains)
+  M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta, num = nChains)
   M$startPar <- matrix(M$startPar, nChains)
   for(j in 1 : nChains){
     stopifnot(dprior(M$startPar[j,])>0)
@@ -124,18 +129,15 @@ for(i in 1:2){
   cat(sprintf("-Running MCMC chains \n"))
   start_time_ABC = Sys.time()
   cl <- makeForkCluster(detectCores())
-  #clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
-  clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
+  clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
   out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior, acceptanceProbability))
   stopCluster(cl)
   draws <- c()
-  drawsSecondHalf <- c()
   scores <- c()
   acceptanceRate <- c()
   nRegularizations <- c()
   for(j in 1:nChains){
     draws <- rbind(draws, out_ABCMCMC[[j]]$draws)
-    drawsSecondHalf <- rbind(drawsSecondHalf, out_ABCMCMC[[j]]$draws[((ns%/%2)+1):ns,])
     scores <- c(scores, out_ABCMCMC[[j]]$scores)
     acceptanceRate <- c(acceptanceRate, out_ABCMCMC[[j]]$acceptanceRate)
     nRegularizations <- c(nRegularizations, out_ABCMCMC[[j]]$nRegularizations)
@@ -146,7 +148,6 @@ for(i in 1:2){
   print(time_)
   cat("\nRegularizations:", nRegularizations)
   cat("\nAcceptance rate:", acceptanceRate)  
-  #beep(8)
   
   if (i>1){
     precursors <- experimentsIndices[1:(i-1)]
