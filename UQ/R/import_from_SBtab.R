@@ -93,7 +93,7 @@ import_experiments <- function(modelName=NULL, SBtabDir){
     experiments[[i]][["initialState"]] <- default_y0
     experiments[[i]][["initialState"]][match_initState[!is.na(match_initState)]] <- inputs_and_initState_vals[!is.na(match_initState)]
 
-    experiments[[i]][["input"]] <- defaultInputs
+    experiments[[i]][["input"]] <- default_input
     experiments[[i]][["input"]][match_input[!is.na(match_input)]]  <- inputs_and_initState_vals[!is.na(match_input)]
 
     experiment_table <- SBtab[[experiments_names[i]]]
