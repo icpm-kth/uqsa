@@ -87,55 +87,55 @@ AKAP79_vf <- function(t, state, parameters)
 	f_[14] <- -reaction_1
 	f_[15] <- +reaction_1-reaction_2
 	f_[16] <- +reaction_2
-	return(f_);
+	return(list(f_));
 }
 # ode Jacobian df(t,y;p)/dy
 AKAP79_jac<-function(t, state, parameters)
 {
-	kf_Rii_C__RiiP_C <- parameters[0]
-	kf_RiiP_CxcAMP__RiiP_C_cAMP <- parameters[1]
-	kf_RiiP_cAMPxC__RiiP_C_cAMP <- parameters[2]
-	kb_RiiP_cAMPxC__RiiP_C_cAMP <- parameters[3]
-	kb_RiiPXcAMP__RiiP_cAMP <- parameters[4]
-	kf_RiiPXcAMP__RiiP_cAMP <- parameters[5]
-	kf_RiiPxC__RiiP_C <- parameters[6]
-	kb_RiiPxC__RiiP_C <- parameters[7]
-	kf_cAMPxRii__Rii_cAMP <- parameters[8]
-	kb_cAMPxRii__Rii_cAMP <- parameters[9]
-	kf_Rii_CxcAMP__Rii_C_cAMP <- parameters[10]
-	kb_Rii_CxcAMP__Rii_C_cAMP <- parameters[11]
-	kf_RiixC__Rii_C <- parameters[12]
-	kf_Rii_cAMPxC__Rii_C_cAMP <- parameters[13]
-	kb_Rii_cAMPxC__Rii_C_cAMP <- parameters[14]
-	kf_Rii_C_cAMP__RiiP_C_cAMP <- parameters[15]
-	kb_RiixC__Rii_C <- parameters[16]
-	AKAPoff_1 <- parameters[17]
-	AKAPoff_3 <- parameters[18]
-	AKAPon_1 <- parameters[19]
-	AKAPon_3 <- parameters[20]
-	kf_C_AKAR4 <- parameters[21]
-	kb_C_AKAR4 <- parameters[22]
-	kcat_AKARp <- parameters[23]
-	kmOFF <- parameters[24]
-	kmON <- parameters[25]
-	KD_T <- parameters[26]
-	b_AKAP <- parameters[27]
-	Rii <- state[0]
-	cAMP <- state[1]
-	RiiP <- state[2]
-	Rii_C <- state[3]
-	RiiP_cAMP <- state[4]
-	RiiP_C <- state[5]
-	RiiP_C_cAMP <- state[6]
-	C <- state[7]
-	Rii_cAMP <- state[8]
-	Rii_C_cAMP <- state[9]
-	CaN <- state[10]
-	RiiP_CaN <- state[11]
-	RiiP_cAMP_CaN <- state[12]
-	AKAR4 <- state[13]
-	AKAR4_C <- state[14]
-	AKAR4p <- state[15]
+	kf_Rii_C__RiiP_C <- parameters[1]
+	kf_RiiP_CxcAMP__RiiP_C_cAMP <- parameters[2]
+	kf_RiiP_cAMPxC__RiiP_C_cAMP <- parameters[3]
+	kb_RiiP_cAMPxC__RiiP_C_cAMP <- parameters[4]
+	kb_RiiPXcAMP__RiiP_cAMP <- parameters[5]
+	kf_RiiPXcAMP__RiiP_cAMP <- parameters[6]
+	kf_RiiPxC__RiiP_C <- parameters[7]
+	kb_RiiPxC__RiiP_C <- parameters[8]
+	kf_cAMPxRii__Rii_cAMP <- parameters[9]
+	kb_cAMPxRii__Rii_cAMP <- parameters[10]
+	kf_Rii_CxcAMP__Rii_C_cAMP <- parameters[11]
+	kb_Rii_CxcAMP__Rii_C_cAMP <- parameters[12]
+	kf_RiixC__Rii_C <- parameters[13]
+	kf_Rii_cAMPxC__Rii_C_cAMP <- parameters[14]
+	kb_Rii_cAMPxC__Rii_C_cAMP <- parameters[15]
+	kf_Rii_C_cAMP__RiiP_C_cAMP <- parameters[16]
+	kb_RiixC__Rii_C <- parameters[17]
+	AKAPoff_1 <- parameters[18]
+	AKAPoff_3 <- parameters[19]
+	AKAPon_1 <- parameters[20]
+	AKAPon_3 <- parameters[21]
+	kf_C_AKAR4 <- parameters[22]
+	kb_C_AKAR4 <- parameters[23]
+	kcat_AKARp <- parameters[24]
+	kmOFF <- parameters[25]
+	kmON <- parameters[26]
+	KD_T <- parameters[27]
+	b_AKAP <- parameters[28]
+	Rii <- state[1]
+	cAMP <- state[2]
+	RiiP <- state[3]
+	Rii_C <- state[4]
+	RiiP_cAMP <- state[5]
+	RiiP_C <- state[6]
+	RiiP_C_cAMP <- state[7]
+	C <- state[8]
+	Rii_cAMP <- state[9]
+	Rii_C_cAMP <- state[10]
+	CaN <- state[11]
+	RiiP_CaN <- state[12]
+	RiiP_cAMP_CaN <- state[13]
+	AKAR4 <- state[14]
+	AKAR4_C <- state[15]
+	AKAR4p <- state[16]
 	kf_RiiP_cAMP_CaN__CaNXRii_cAMP <- b_AKAP * AKAPon_1 + (1 - b_AKAP) * AKAPoff_1
 	kb_RiiPxCaN__RiiP_CaN <- b_AKAP*AKAPon_3  +  (1 - b_AKAP)* AKAPoff_3
 	kf_RiiP_CaN__RiixCaN <- b_AKAP * AKAPon_1 + (1 - b_AKAP) * AKAPoff_1
@@ -789,12 +789,14 @@ AKAP79_func<-function(t, state, parameters)
 	reaction_3_7 <- kf_RiiP_cAMP_CaN__CaNXRii_cAMP*RiiP_cAMP_CaN
 	reaction_1 <- kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C
 	reaction_2 <- kcat_AKARp*AKAR4_C
-	func_[1] <- (AKAR4p*5)*71.67+100
+	func_ <- vector(1)
+	func_[1] <- AKAR4pOUT#(AKAR4p*5)*71.67+100
 	return(func_);
 }
 # ode default parameters; can depend on constants, and time  of initialization
 AKAP79_default<-function(t)
 {
+	parameters <- vector(28)
 	parameters[1] <- 33
 	parameters[2] <- 0.496
 	parameters[3] <- 0.00545
@@ -811,7 +813,7 @@ AKAP79_default<-function(t)
 	parameters[14] <- 0.2984
 	parameters[15] <- 0.018
 	parameters[16] <- 33
-	parameters[17] <- 3e-04
+	parameters[17] <- 0.0003
 	parameters[18] <- 2.6
 	parameters[19] <- 20
 	parameters[20] <- 0.45

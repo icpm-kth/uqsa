@@ -67,13 +67,13 @@ import_experiments <- function(modelName=NULL, SBtabDir){
 	default_par <- as.numeric(SBtab[["Parameter"]][["!DefaultValue"]])
   inputNames <- SBtab[["Input"]][["!Name"]]
   inputId <- SBtab[["Input"]][["!ID"]]
-  defaultInputs <- SBtab[["Input"]][["!DefaultValue"]]
+  default_input <- SBtab[["Input"]][["!DefaultValue"]]
 
   outputNames <- SBtab[["Output"]][["!Name"]]
   outputId <- SBtab[["Output"]][["!ID"]]
   errorNames <- SBtab[["Output"]][["!ErrorNames"]]
   source(paste(SBtabDir, "/", modelName, ".R", sep = ""))
-  vectorialOutputFunction <- eval(as.name(paste(modelName,"_func", sep="")))
+  vectorialOutputFunction <- eval(as.name(paste0(modelName,"_func")))
 
   n_experiments <- dim(SBtab[["Experiments"]])[1]
   experiments <- vector("list", length = n_experiments)

@@ -804,7 +804,7 @@ int AKAP79_func(double t, const double y_[], double *func_, void *par)
 	double reaction_3_7=kf_RiiP_cAMP_CaN__CaNXRii_cAMP*RiiP_cAMP_CaN;
 	double reaction_1=kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C;
 	double reaction_2=kcat_AKARp*AKAR4_C;
-	func_[0] = (AKAR4p*5)*71.67+100;
+	func_[0] = (AKAR4p*5)*71.67+100; /* AKAR4pOUT */
 	return GSL_SUCCESS;
 }
 /* ode default parameters */
@@ -828,7 +828,7 @@ int AKAP79_default(double t, void *par)
 	p_[13] = 0.2984;
 	p_[14] = 0.018;
 	p_[15] = 33;
-	p_[16] = 3e-04;
+	p_[16] = 0.0003;
 	p_[17] = 2.6;
 	p_[18] = 20;
 	p_[19] = 0.45;
