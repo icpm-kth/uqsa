@@ -1,6 +1,6 @@
 MODEL = AKAP79
 CC = gcc
-CFLAGS = -O2 -Wall `pkg-config --cflags gsl`
+CFLAGS = -O2 `pkg-config --cflags gsl`
 LIBS = `pkg-config --libs gsl`
 ODE = ode
 
