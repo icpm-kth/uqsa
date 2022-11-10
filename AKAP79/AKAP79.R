@@ -87,7 +87,7 @@ AKAP79_vf <- function(t, state, parameters)
 	f_[14] <- -reaction_1
 	f_[15] <- +reaction_1-reaction_2
 	f_[16] <- +reaction_2
-	return(f_);
+	return(list(f_));
 }
 # ode Jacobian df(t,y;p)/dy
 AKAP79_jac<-function(t, state, parameters)
@@ -789,12 +789,14 @@ AKAP79_func<-function(t, state, parameters)
 	reaction_3_7 <- kf_RiiP_cAMP_CaN__CaNXRii_cAMP*RiiP_cAMP_CaN
 	reaction_1 <- kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C
 	reaction_2 <- kcat_AKARp*AKAR4_C
-	func_[1] <- (AKAR4p*5)*71.67+100
+	func_ <- vector(1)
+	func_[1] <- AKAR4pOUT#(AKAR4p*5)*71.67+100
 	return(func_);
 }
 # ode default parameters; can depend on constants, and time  of initialization
 AKAP79_default<-function(t)
 {
+	parameters <- vector(28)
 	parameters[1] <- 33
 	parameters[2] <- 0.496
 	parameters[3] <- 0.00545
@@ -811,7 +813,7 @@ AKAP79_default<-function(t)
 	parameters[14] <- 0.2984
 	parameters[15] <- 0.018
 	parameters[16] <- 33
-	parameters[17] <- 3e-04
+	parameters[17] <- 0.0003
 	parameters[18] <- 2.6
 	parameters[19] <- 20
 	parameters[20] <- 0.45
