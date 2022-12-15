@@ -27,7 +27,7 @@
 import_from_SBtab <- function(SBtabDir){
   tsvList <- dir(path = SBtabDir, pattern = ".*[.]tsv$")
   sbtab_model <- SBtabVFGEN::sbtab_from_tsv(paste(SBtabDir,"/",tsvList,sep=""))
-
+  
   if(length(dir(path = SBtabDir, pattern = ".*[.]vf$")) == 0){
     SBtabVFGEN::sbtab_to_vfgen(sbtab_model, cla = FALSE)		#this function creates a .vf file (located in the tsvDirectory) from the SBtab model
     vfFileName <- dir(path = SBtabDir, pattern = ".*[.]vf$")
@@ -56,46 +56,46 @@ import_from_SBtab <- function(SBtabDir){
 #' @param SBtabDir (string) a local directory that contains tsv files (with SBtab content)
 #' @return list of simulation experiments (and the data corresponding to that simulation)
 import_experiments <- function(modelName=NULL, SBtabDir){
-
+  
   SBtab <- import_from_SBtab(SBtabDir)
   if (is.null(modelName)) {
-		modelName <- comment(SBtab)
-	}
+    modelName <- comment(SBtab)
+  }
   compoundNames <- SBtab[["Compound"]][["!Name"]]
   compoundId <- SBtab[["Compound"]][["!ID"]]
   default_y0 <- as.numeric(SBtab[["Compound"]][["!InitialValue"]])
-	default_par <- as.numeric(SBtab[["Parameter"]][["!DefaultValue"]])
+  default_par <- as.numeric(SBtab[["Parameter"]][["!DefaultValue"]])
   inputNames <- SBtab[["Input"]][["!Name"]]
   inputId <- SBtab[["Input"]][["!ID"]]
   default_input <- SBtab[["Input"]][["!DefaultValue"]]
-
+  
   outputNames <- SBtab[["Output"]][["!Name"]]
   outputId <- SBtab[["Output"]][["!ID"]]
   errorNames <- SBtab[["Output"]][["!ErrorNames"]]
   source(paste(SBtabDir, "/", modelName, ".R", sep = ""))
   vectorialOutputFunction <- eval(as.name(paste0(modelName,"_func")))
-
+  
   n_experiments <- dim(SBtab[["Experiments"]])[1]
   experiments <- vector("list", length = n_experiments)
   names(experiments) <- SBtab[["Experiments"]][["!Name"]]
-
+  
   inputs_and_initState_ids <- colnames(SBtab[["Experiments"]])
   inputs_and_initState_ids <- inputs_and_initState_ids[startsWith(inputs_and_initState_ids, '>')]
   inputs_and_initState_ids <- substring(inputs_and_initState_ids, 2)
   match_input <-  match(inputs_and_initState_ids, inputId)
   match_initState <- match(inputs_and_initState_ids, compoundId)
-
+  
   experiments_names <- SBtab[["Experiments"]][[1]]
-
+  
   for(i in 1:n_experiments){
     inputs_and_initState_vals <- unlist(SBtab[["Experiments"]][i, paste(">",inputs_and_initState_ids,sep="")])
-
+    
     experiments[[i]][["initialState"]] <- default_y0
     experiments[[i]][["initialState"]][match_initState[!is.na(match_initState)]] <- inputs_and_initState_vals[!is.na(match_initState)]
-
+    
     experiments[[i]][["input"]] <- default_input
     experiments[[i]][["input"]][match_input[!is.na(match_input)]]  <- inputs_and_initState_vals[!is.na(match_input)]
-
+    
     experiment_table <- SBtab[[experiments_names[i]]]
     experiments[[i]][["outputTimes"]] <- as.numeric(experiment_table[["!Time"]])
     tabColnames <- colnames(experiment_table)
@@ -111,15 +111,15 @@ import_experiments <- function(modelName=NULL, SBtabDir){
     experiments[[i]][["outputValues"]] <- experiments[[i]][["outputValues"]][as.logical(notNAidx),]
     experiments[[i]][["outputTimes"]] <- experiments[[i]][["outputTimes"]][as.logical(notNAidx)]
     experiments[[i]][["outputFunction"]] <- function(yy,par=c(default_par,default_input)) {vectorialOutputFunction(0.0, yy, par)}
-
-
-    match_errorNames <- match(tabOutputId, errorNames)
-    match_errorNames <- match_errorNames[!is.na(match_errorNames)]
-    experiments[[i]][["errorNames"]] <- errorNames[match_errorNames]
-    experiments[[i]][["errorValues"]] <- as.matrix(experiment_table[paste(">", errorNames[match_errorNames], sep = "")])
-    experiments[[i]][["errorValues"]] <- experiments[[i]][["errorValues"]][as.logical(notNAidx),]
-
+    
+    if(!is.null(errorNames)){
+      match_errorNames <- match(tabOutputId, errorNames)
+      match_errorNames <- match_errorNames[!is.na(match_errorNames)]
+      experiments[[i]][["errorNames"]] <- errorNames[match_errorNames]
+      experiments[[i]][["errorValues"]] <- as.matrix(experiment_table[paste(">", errorNames[match_errorNames], sep = "")])
+      experiments[[i]][["errorValues"]] <- experiments[[i]][["errorValues"]][as.logical(notNAidx),]
+    }
   }
-
+  
   return(experiments)
 }
