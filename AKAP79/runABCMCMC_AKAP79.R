@@ -1,21 +1,23 @@
 library(rgsl)
 library(SBtabVFGEN)
+remotes::install_github("icpm-kth/uqsa@subsampler",subdir=c("UQ"))
+library(UQ)
 
-library(parallel)
-library(VineCopula)
-library(MASS)
-library(R.utils)
-library(ks)
-library(deSolve)
+#library(parallel)
+#library(VineCopula)
+#library(MASS)
+#library(R.utils)
+#library(ks)
+#library(deSolve)
 #library(reshape2)
 #library(ggplot2)
-library(UQ)
+
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
 #modelName <- checkModel(comment(model),paste0(comment(model),'.R'))
-#modelName <- checkModel(comment(model),paste0(comment(model),'_gvf.c'))
-modelName <- checkModel(comment(model),paste0(comment(model),'.so'))
+modelName <- checkModel(comment(model),paste0(comment(model),'_gvf.c'))
+#modelName <- checkModel(comment(model),paste0(comment(model),'.so'))
 #source(paste(SBtabDir,"/",modelName,".R",sep=""))
 
 parVal <- model[["Parameter"]][["!DefaultValue"]]
@@ -25,14 +27,14 @@ parNames <- model[["Parameter"]][["!Name"]]
 # load experiments
 experiments <- import_experiments(modelName, SBtabDir)
 
-parMap <- function(parABC){
+parMap <- function(parABC){ 
   return(10^parABC)
 }
 
 # test simulation
 print(experiments[[1]][['input']])
 print(parVal)
-out <- runModel(experiments, modelName, as.matrix(parVal), parMap)
+out <- runModel(experiments, modelName, as.matrix(parVal), parMap=identity)
 
 # scale to determine prior values
 defRange <- 1000
@@ -45,7 +47,7 @@ ul = log10(ul) # log10-scale
 
 
 # Define the experiments that have to be considered in each iteration of the for loop to compare simulations with experimental data
-experimentsIndices <- c(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
+experimentsIndices <- list(c(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7))
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
 ns <- 250 # no of samples required from each ABC-MCMC chain
@@ -88,7 +90,7 @@ getAcceptanceProbability <- function(yy_sim, yy_exp, yy_expErr){
 start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
 
-  expInd <- experimentsIndices[i]
+  expInd <- experimentsIndices[[i]]
   objectiveFunction <- makeObjective(experiments[expInd], modelName, getScore, parMap)
   acceptanceProbability <- makeAcceptanceProbability(experiments[expInd], modelName, getAcceptanceProbability, parMap)
   
