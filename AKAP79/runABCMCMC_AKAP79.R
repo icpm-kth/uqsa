@@ -38,18 +38,18 @@ testRunParallelExperiments <-function(n=1){
 	return(out)
 }
 
-testRunParallelParameters <- function(n=1){	
+testRunParallelParameters <- function(n=4){
 	lp <- length(parVal)
 	le <- length(experiments)
 	## any number of parameterizations that is larger than the number of experiments will do
-	RM <- matrix(rnorm(lp*le*4,0,0.01),nrow=lp)
+	RM <- matrix(rnorm(lp*le*n,0,0.01),nrow=lp)
 	p <- parVal+RM
 	out <- runModel(experiments, modelName, p, parMap)
 	return(out)
 }
 
-out<-testRunParallelParameters()
-stop()
+outP<-testRunParallelParameters()
+outE<-testRunParallelExperiments()
 
 # scale to determine prior values
 defRange <- 1000
@@ -62,11 +62,11 @@ ul = log10(ul) # log10-scale
 
 
 # Define the experiments that have to be considered in each iteration of the for loop to compare simulations with experimental data
-experimentsIndices <- c(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
+experimentsIndices <- list(c(3, 12, 18, 9, 2, 11),c( 17, 8, 1, 10, 16, 7))
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 250 # no of samples required from each ABC-MCMC chain
-npc <- 5000 # pre-calibration
+ns <- 10000 # no of samples required from each ABC-MCMC chain
+npc <- 10000 # pre-calibration
 
 # Define ABC-MCMC Settings
 delta <- 7 #0.01
@@ -139,11 +139,11 @@ for (i in 1:length(experimentsIndices)){
   }
 
 
-  gc()
+  #gc()
   ## Run ABC-MCMC Sampling
   cat(sprintf("-Running MCMC chains \n"))
   start_time_ABC = Sys.time()
-  cl <- makeForkCluster(detectCores())
+  cl <- makeForkCluster(nCores)
   clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
   out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior, acceptanceProbability))
   stopCluster(cl)

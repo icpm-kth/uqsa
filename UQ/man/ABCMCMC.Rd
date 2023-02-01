@@ -11,7 +11,7 @@ ABCMCMC(
   Sigma0,
   delta,
   dprior,
-  acceptanceProbability
+  acceptanceProbability = NULL
 )
 }
 \arguments{
