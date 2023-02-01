@@ -1054,7 +1054,7 @@ AKAP79_func<-function(t, state, parameters)
 	reaction_1 <- kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C
 	reaction_2 <- kcat_AKARp*AKAR4_C
 	func_ <- vector(mode='numeric',len=1)
-	func_[1] <- AKAR4pOUT#(AKAR4p*5)*71.67+100
+	func_[1] <- (AKAR4p*5)*71.67+100 #AKAR4pOUT
 	return(func_);
 }
 # ode default parameters; can depend on constants, and time  of initialization

@@ -65,8 +65,8 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(c(3, 12, 18, 9, 2, 11),c( 17, 8, 1, 10, 16, 7))
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 10000 # no of samples required from each ABC-MCMC chain
-npc <- 10000 # pre-calibration
+ns <- 250 # no of samples required from each ABC-MCMC chain
+npc <- 5000 # pre-calibration
 
 # Define ABC-MCMC Settings
 delta <- 7 #0.01
@@ -143,7 +143,7 @@ for (i in 1:length(experimentsIndices)){
   ## Run ABC-MCMC Sampling
   cat(sprintf("-Running MCMC chains \n"))
   start_time_ABC = Sys.time()
-  cl <- makeForkCluster(nCores)
+  cl <- makeForkCluster(nChains)
   clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
   out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior, acceptanceProbability))
   stopCluster(cl)
