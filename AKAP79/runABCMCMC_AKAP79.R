@@ -107,7 +107,7 @@ for (i in 1:length(experimentsIndices)){
   expInd <- experimentsIndices[i]
   objectiveFunction <- makeObjective(experiments[expInd], modelName, getScore, parMap)
   acceptanceProbability <- makeAcceptanceProbability(experiments[expInd], modelName, getAcceptanceProbability, parMap)
-  cat("#####Starting run for Experiments ", expInd, "######\n")
+  cat("#####Starting run for Experiments ", paste(expInd), "######\n")
   ## If First Experimental Setting, Create an Independente Colupla
   if(i==1){
     message("- Initial Prior: uniform product distribution")
