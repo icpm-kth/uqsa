@@ -16,7 +16,6 @@ Depends:
 	VineCopula,
 	MASS,
 	R.utils,
-	reshape2,
 	ks
 Suggests:
 	deSolve,

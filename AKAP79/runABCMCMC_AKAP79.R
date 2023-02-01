@@ -20,10 +20,27 @@ parMap <- function(parABC){
   return(10^parABC)
 }
 
-# test simulation
-# print(experiments[[1]][['input']])
-# print(parVal)
-# out <- runModel(experiments, modelName, as.matrix(parVal), parMap)
+testRunParallelExperiments <-function(n=1){
+	## test simulation, with one parameter vector
+	print(experiments[[1]][['input']])
+	print(parVal)
+	## this will be parallel in *experiments*
+	out <- runModel(experiments, modelName, as.matrix(parVal), parMap)
+	return(out)
+}
+
+testRunParallelParameters <- function(n=4){
+	lp <- length(parVal)
+	le <- length(experiments)
+	## any number of parameterizations that is larger than the number of experiments will do
+	RM <- matrix(rnorm(lp*le*n,0,0.01),nrow=lp)
+	p <- parVal+RM
+	out <- runModel(experiments, modelName, p, parMap)
+	return(out)
+}
+
+outP<-testRunParallelParameters()
+outE<-testRunParallelExperiments()
 
 # scale to determine prior values
 defRange <- 1000
@@ -45,6 +62,7 @@ npc <- 50000 # pre-calibration
 delta <- 7 #0.01
 
 # Define the number of Cores for the parallelization
+
 nChains <- 4
 nCores <- parallel::detectCores() %/% nChains
 
