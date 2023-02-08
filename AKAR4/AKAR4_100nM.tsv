@@ -1,4 +1,4 @@
-!!SBtab Document='AKAR4' Version='1.0' TableName='AKAR4_100nM' TableType='QuantityMatrix'		
+!!SBtab Document='AKAR4' Version='1.0' TableName='AKAR4_100nM' TableType='QuantityMatrix' DataSource='Figure 3—figure supplement 1 in https://doi.org/10.7554/eLife.68164 (gray)'
 !TimePoint	!Time	>AKAR4pOUT
 E100T001	-15	109.6
 E100T002	-10	109.775
