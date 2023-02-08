@@ -1,4 +1,4 @@
-!!SBtab Document='AKAR4' Version='1.0' TableName='AKAR4_400nM' TableType='QuantityMatrix'		
+!!SBtab Document='AKAR4' Version='1.0' TableName='AKAR4_400nM' TableType='QuantityMatrix' DataSource='Figure 3—figure supplement 1 in https://doi.org/10.7554/eLife.68164 (dark blue)'
 !TimePoint	!Time	>AKAR4pOUT
 E400T001	-15	108.6
 E400T002	-10	111.35
