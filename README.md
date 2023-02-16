@@ -1,5 +1,23 @@
-# uqsa
-Uncertainty Quantification (UQ) and Sensitivity Analysis (SA)
+# Uncertainty Quantification (UQ) and Sensitivity Analysis (SA)
+
+This is an R package that performs *parameter estimation*,
+*uncertainty quantification*, and *global sensitivity analysis* using
+Bayesian methods and ABC-MCMC sampling.
+
+## Installation
+
+```R
+# requires the 'remotes' package
+remotes::install_github("icpm-kth/uqsa")
+```
+
+Alternatively, download a release `tar.gz` or `zip` file and run
+
+```sh
+R CMD INSTALL uqsa*.{tar.gz,zip}
+```
+
+## Original Work
 
 This repository (https://github.com/icpm-kth/uqsa) is a continued development of the methodology presented in the paper:
 ```
@@ -21,6 +39,7 @@ The UQ folder contains R scripts to run the uncertainty quantification method (A
 The SA folder will soon contain the code for the global sensitivity analysis, meanwhile we refer to https://github.com/alexjau/uqsa.
 
 ### Data references
+
 The experimental data for the AKAP79 and AKAR4 models are from the publication:
 ```
 Church, Timothy W., et al. "AKAP79 enables calcineurin to directly suppress protein kinase A activity." 
@@ -29,6 +48,7 @@ Elife 10 (2021): e68164.
 and described in detail in the SBtab files of the AKAP79 and AKAR4 model folders.
 
 ### Model references
+
 The AKAP79 model is from
 ```
 Church, Timothy W., et al. "AKAP79 enables calcineurin to directly suppress protein kinase A activity." 
@@ -42,5 +62,6 @@ activity. Long-term activation of the kinase and its possible relevance to learn
 The Journal of Biological Chemistry 264:9344–9351.
 ```
 
-### Acknowledgements
+## Acknowledgements
+
 This open source software code was developed in part or in the Human Brain Project, funded from the European Union’s Horizon 2020 Framework Programme for Research and Innovation under Specific Grant Agreements No. 720270 and No. 785907 (Human Brain Project SGA1 and SGA2).

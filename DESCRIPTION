@@ -1,12 +1,13 @@
-Package: UQ
+Package: uqsa
 Type: Package
-Title: Uncertainty Quanitification via ABC sampling
-Version: 0.1.0
-Authors@R: c(person("Alexandra","Jauhiainen",email="Alexandra.Jauhiainen@astrazeneca.com",role="aut"),
+Title: Uncertainty Quanitification and Global Sensitivity Analysis via ABC sampling
+Version: 0.1.1
+Authors@R: c(person("Alexandra","Jauhiainen",email="Alexandra.Jauhiainen@astrazeneca.com",role=c("cre","aut")),
              person("Olivia","Eriksson",email="olivia@mech.kth.se",role=c("aut","cre")),
-	     person("Federica","Milinanni",email="fedmil@kth.se",role="aut"))
+	     person("Federica","Milinanni",email="fedmil@kth.se",role="aut"),
+	     person("Andrei","Kramer",email="andreikr@kth.se",role=c("aut","ctb")))
 Description: This package will solve an initial value problem (given an ordinary differential equation)
-  given a list of simulation experiments. The simulations will be compared to data, repeatedly.
+  for a list of simulation experiments. The simulations will be compared to data, repeatedly.
   The package can sample the parameters of the model via ABC (approximate Bayesian computation) and by doing so quantify the uncertainty that remains within the model even after considering the data. Experiments are evaluated in a sequence, intermediate probability densities are modeled using the VineCopua package.
 License: GPL (>=3)
 Encoding: UTF-8
