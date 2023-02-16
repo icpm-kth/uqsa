@@ -9,7 +9,7 @@
 #library(MASS)
 #library(ks)
 #library(R.utils)
-library(UQ)
+library(uqsa)
 library(rgsl)
 library(SBtabVFGEN)
 SBtabDir <- getwd()

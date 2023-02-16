@@ -1,6 +1,6 @@
 library(rgsl)
 library(SBtabVFGEN)
-library(UQ)
+library(uqsa)
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
