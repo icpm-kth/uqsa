@@ -1,13 +1,10 @@
 library(rgsl)
 library(SBtabVFGEN)
-library(UQ)
+library(uqsa)
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
-#modelName <- checkModel(comment(model),paste0(comment(model),'.R'))
 modelName <- checkModel(comment(model),paste0(comment(model),'_gvf.c'))
-#modelName <- checkModel(comment(model),paste0(comment(model),'.so'))
-#source(paste(SBtabDir,"/",modelName,".R",sep=""))
 
 parVal <- model[["Parameter"]][["!DefaultValue"]]
 names(parVal)<-model[["Parameter"]][["!Name"]]
@@ -19,28 +16,6 @@ experiments <- import_experiments(modelName, SBtabDir)
 parMap <- function(parABC){
   return(10^parABC)
 }
-
-testRunParallelExperiments <-function(n=1){
-	## test simulation, with one parameter vector
-	print(experiments[[1]][['input']])
-	print(parVal)
-	## this will be parallel in *experiments*
-	out <- runModel(experiments, modelName, as.matrix(parVal), parMap)
-	return(out)
-}
-
-testRunParallelParameters <- function(n=4){
-	lp <- length(parVal)
-	le <- length(experiments)
-	## any number of parameterizations that is larger than the number of experiments will do
-	RM <- matrix(rnorm(lp*le*n,0,0.01),nrow=lp)
-	p <- parVal+RM
-	out <- runModel(experiments, modelName, p, parMap)
-	return(out)
-}
-
-outP<-testRunParallelParameters()
-outE<-testRunParallelExperiments()
 
 # scale to determine prior values
 defRange <- 1000
@@ -55,8 +30,9 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(c(3, 12,18, 9, 2, 11, 17, 8, 1, 10, 16, 7))
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 2500 # no of samples required from each ABC-MCMC chain
-npc <- 50000 # pre-calibration
+ns <- 25000 # Size of the sub-sample from each chain
+npc <- 5000 # pre-calibration sample size
+n <- ns*nChains
 
 # Define ABC-MCMC Settings
 delta <- 7 #0.01
@@ -68,17 +44,6 @@ nCores <- parallel::detectCores() %/% nChains
 
 set.seed(7619201)
 
-## ## Define the score function to compare simulated data with experimental data
-## ## in this function, both simulation and data are normalized to be between 0 and 1
-## getScore	<- function(yy_sim, yy_exp, yy_expErr){
-##   yy_sim <- (yy_sim-0)/(0.2-0.0)
-##   ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-100)/(171.67-100), Inf)
-##   distance <- mean(((yy_sim-yy_exp)/(yy_expErr/(171.67-100)))^2, na.rm=TRUE)
-##   #When output function is fixed:
-##   #distance <- mean((yy_sim-yy_exp)/(yy_expErr)^2, na.rm=TRUE)
-##   return(distance)
-## }
-
 getScore	<- function(yy_sim, yy_exp=Inf, yy_expErr=Inf){
   distance <- mean(((yy_sim-yy_exp)/yy_expErr)^2, na.rm=TRUE)
   return(distance)
@@ -88,7 +53,7 @@ getAcceptanceProbability <- function(yy_sim, yy_exp, yy_expErr){
   yy_sim <- (yy_sim-0)/(0.2-0.0)
   ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-100)/(171.67-100), Inf)
   yy_expErr <- yy_expErr/(171.67-100)
-  
+
   return(exp(-sum((yy_sim-yy_exp)^2/(2*yy_expErr),na.rm = TRUE)))
 }
 
@@ -98,7 +63,7 @@ for (i in 1:length(experimentsIndices)){
   expInd <- experimentsIndices[[i]]
   objectiveFunction <- makeObjective(experiments[expInd], modelName, getScore, parMap)
   acceptanceProbability <- makeAcceptanceProbability(experiments[expInd], modelName, getAcceptanceProbability, parMap)
-  
+
   cat("#####Starting run for Experiments ", expInd, "######\n")
   ## If First Experimental Setting, Create an Independente Colupla
   if(i==1){
@@ -115,22 +80,21 @@ for (i in 1:length(experimentsIndices)){
     cat("\nFitting copula:")
     print(Sys.time()-start_time_fitCopula)
   }
-  
+
   ## Run Pre-Calibration Sampling
   message("- Precalibration")
   start_time_preCalibration <- Sys.time()
   pC <- preCalibration(objectiveFunction, npc, rprior)
   cat("\nPreCalibration:")
   print(Sys.time()-start_time_preCalibration)
-  
+
   ## Get Starting Parameters from Pre-Calibration
   M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta, num = nChains)
   M$startPar <- matrix(M$startPar, nChains)
   for(j in 1 : nChains){
     stopifnot(dprior(M$startPar[j,])>0)
   }
-  
-  
+
   ## Run ABC-MCMC Sampling
   cat(sprintf("-Running MCMC chains \n"))
   start_time_ABC = Sys.time()
@@ -153,29 +117,23 @@ for (i in 1:length(experimentsIndices)){
   cat("\nABCMCMC for experimental set",i,":")
   print(time_)
   cat("\nRegularizations:", nRegularizations)
-  cat("\nAcceptance rate:", acceptanceRate)  
-  
+  cat("\nAcceptance rate:", acceptanceRate)
   # if (i>1){
   #   precursors <- experimentsIndices[1:(i-1)]
   #   objectiveFunction <- makeObjective(experiments[precursors], modelName, getScore, parMap, nCores)
   #   draws <- checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
   # }
-  
+
   cat("\nNumber of draws after fitting with previous experiments:",dim(draws)[1])
-  
+
   # Save Resulting Samples to MATLAB and R files.
   cat("\n-Saving sample \n")
-  #outFile <- paste(experimentsIndices[1:i], collapse="_")
   outFile <- paste(experimentsIndices[[1]], collapse="_")
   timeStr <- Sys.time()
   timeStr <- gsub(":","_", timeStr)
   timeStr <- gsub(" ","_", timeStr)
   outFileR <- paste("../PosteriorSamples/Draws",modelName,"nChains",nChains,"ns",ns,"npc",npc,outFile,timeStr,".RData",collapse="_",sep="_")
   save(draws, parNames, file=outFileR)
-  #if (require(R.matlab)){
-  #	outFileM <- paste("../PosteriorSamples/Draws",modelName,"ns",ns,"npc",npc,outFile,timeStr,".mat",collapse="_",sep="_")
-  #	writeMat(outFileM, samples=10^draws)
-  #}
 }
 end_time = Sys.time()
 time_ = end_time - start_time

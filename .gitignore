@@ -2,3 +2,8 @@
 *.RData
 *.log
 *.txt
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
