@@ -94,7 +94,7 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity, mc.cores 
 
     stopifnot(file.exists(modelFile))
     source(modelFile)
-    func <- eval(as.name(modelName))
+    func <- eval(as.name(paste0(modelName,"_vf")))
     yy <- mclapply(1:N, function(i) matrix(t(lsode(y0[,i], c(0,outputTimes_list[[i]]), func=func, parms=modelPar[,i])[-1, -1]), ncol=length(outputTimes_list[[i]])), mc.cores = mc.cores)
 
     out_yy <- mclapply(1:N, function(i) apply(yy[[i]],2,outputFunctions_list[[i]]), mc.cores = mc.cores)
@@ -188,6 +188,18 @@ makeObjective <- function(experiments,modelName,distance,parMap=identity,mc.core
   return(Objective)
 }
 
+#' Ths function Creates an acceptanceProbability function
+#'
+#' The returned closure needs only the sampling variables (parABC) as
+#' inputand calculates a probability of accepting Markov chainmoves.
+#'
+#' @export
+#' @param experiments a list of experiments
+#' @param modelName an annotated string, with the model name and model file as comment
+#' @param getAcceptanceProbability an R function that mape the results of a simulation and experimental data to an acceptance probability
+#' @param parMap an optional mapping between sampling parameters (parABC) and model parameters (e.g. rescaling,re-ordering).
+#' @param mc.cores number of cores to use
+#' @return a function that calculates probabilities given only parABC as input; it implicitly uses all the argiments to this function.
 makeAcceptanceProbability <- function(experiments, modelName, getAcceptanceProbability, parMap=identity, mc.cores=detectCores())
 {
   acceptanceProbability <- function(parABC){

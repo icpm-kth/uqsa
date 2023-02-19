@@ -1,15 +1,4 @@
-## source('../UQ/copulaFunctions.R')
-## source('../UQ/runModel.R')
-## source('../UQ/PreCalibration.R')
-## source('../UQ/ABCMCMCFunctions.R')
-## source('../UQ/ScoringFunction.R')
-
-#library(parallel)
-#library(VineCopula)
-#library(MASS)
-#library(ks)
-#library(R.utils)
-library(UQ)
+library(uqsa)
 library(rgsl)
 library(SBtabVFGEN)
 SBtabDir <- getwd()
@@ -56,7 +45,7 @@ set.seed(2022)
 maxVal <- max(unlist(lapply(experiments, function(x) max(x[["outputValues"]]))))
 minVal <- min(unlist(lapply(experiments, function(x) min(x[["outputValues"]]))))
 
-getScore	<- function(yy_sim, yy_exp){
+getScore	<- function(yy_sim, yy_exp, errorValues = NULL){
 	yy_sim <- (yy_sim-0)/(0.2-0.0)
 	ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-minVal)/(maxVal-minVal), Inf)
 	distance <- mean((yy_sim-yy_exp)^2)
@@ -74,6 +63,7 @@ chunks <- list(c(1,2),3)
 for (i in seq(length(chunks))){
 	expInd <- chunks[[i]]
 	cat("#####Starting run for Experiments ", expInd, "######\n")
+	Obj <- makeObjective(experiments[expInd],modelName,getScore,parMap)
 	## If First Experimental Setting, Create an Independente Colupla
 	if(i==1){
 		cat(sprintf("- Starting with uniform prior \n"))
@@ -89,18 +79,16 @@ for (i in seq(length(chunks))){
 	## Run Pre-Calibration Sampling
 	cat(sprintf("- Precalibration \n"))
 	par <- rprior(1)
-	opt <- optim(par,Obj,lower=ll,upper=ul)
-	startPar <- opt$par
 	
-	out1 <- preCalibration(experiments[expInd], modelName, parMap, npc, rprior, getScore)
+	out1 <- preCalibration(Obj, npc, rprior)
 	sfactor <- 0.1 # scaling factor
 	## Get Starting Parameters from Pre-Calibration
 	out2 <- getMCMCPar(out1$prePar, out1$preDelta, p, sfactor, delta)
 	Sigma <- out2$Sigma
-	#startPar <- out2$startPar
+	startPar <- out2$startPar
 	## Run ABC-MCMC Sampling
 	cat(sprintf("- Running MCMC\n"))
-	draws <- ABCMCMC(experiments[expInd], modelName, startPar, parMap, ns, Sigma, delta, dprior=priorPDF, getScore)
+	draws <- ABCMCMC(Obj, startPar, ns, Sigma, delta, priorPDF)
 
 	if (i>1){
 	 draws <- checkFitWithPreviousExperiments(modelName, draws, experiments[unlist(chunks[1:i-1])], parMap, getScore, delta)

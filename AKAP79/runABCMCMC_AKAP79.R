@@ -1,22 +1,10 @@
 library(rgsl)
 library(SBtabVFGEN)
-
-library(parallel)
-library(VineCopula)
-library(MASS)
-library(R.utils)
-library(ks)
-library(deSolve)
-#library(reshape2)
-#library(ggplot2)
-library(UQ)
+library(uqsa)
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
-#modelName <- checkModel(comment(model),paste0(comment(model),'.R'))
-#modelName <- checkModel(comment(model),paste0(comment(model),'_gvf.c'))
-modelName <- checkModel(comment(model),paste0(comment(model),'.so'))
-#source(paste(SBtabDir,"/",modelName,".R",sep=""))
+modelName <- checkModel(comment(model),paste0(comment(model),'_gvf.c'))
 
 parVal <- model[["Parameter"]][["!DefaultValue"]]
 names(parVal)<-model[["Parameter"]][["!Name"]]
@@ -29,12 +17,6 @@ parMap <- function(parABC){
   return(10^parABC)
 }
 
-# test simulation
-print(experiments[[1]][['input']])
-print(parVal)
-out <- runModel(experiments, modelName, as.matrix(parVal), parMap)
-print(out)
-
 # scale to determine prior values
 defRange <- 1000
 
@@ -44,40 +26,28 @@ ul <- c(parVal[1:19]*defRange, parVal[20]*1.9, parVal[21]*defRange, parVal[22:24
 ll = log10(ll) # log10-scale
 ul = log10(ul) # log10-scale
 
-
 # Define the experiments that have to be considered in each iteration of the for loop to compare simulations with experimental data
-experimentsIndices <- c(3, 12, 18, 9, 2, 11, 17, 8, 1, 10, 16, 7)
+experimentsIndices <- list(c(3, 12,18, 9, 2, 11, 17, 8, 1, 10, 16, 7))
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 250 # no of samples required from each ABC-MCMC chain
-npc <- 5000 # pre-calibration
+ns <- 25000 # Size of the sub-sample from each chain
+npc <- 5000 # pre-calibration sample size
+n <- ns*nChains
 
 # Define ABC-MCMC Settings
 delta <- 7 #0.01
 
 # Define the number of Cores for the parallelization
-nCores <- 20 #parallel::detectCores() %/% 2
 
 nChains <- 4
+nCores <- parallel::detectCores() %/% nChains
 
 set.seed(7619201)
-
-## ## Define the score function to compare simulated data with experimental data
-## ## in this function, both simulation and data are normalized to be between 0 and 1
-## getScore	<- function(yy_sim, yy_exp, yy_expErr){
-##   yy_sim <- (yy_sim-0)/(0.2-0.0)
-##   ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-100)/(171.67-100), Inf)
-##   distance <- mean(((yy_sim-yy_exp)/(yy_expErr/(171.67-100)))^2, na.rm=TRUE)
-##   #When output function is fixed:
-##   #distance <- mean((yy_sim-yy_exp)/(yy_expErr)^2, na.rm=TRUE)
-##   return(distance)
-## }
 
 getScore	<- function(yy_sim, yy_exp=Inf, yy_expErr=Inf){
   distance <- mean(((yy_sim-yy_exp)/yy_expErr)^2, na.rm=TRUE)
   return(distance)
 }
-
 
 getAcceptanceProbability <- function(yy_sim, yy_exp, yy_expErr){
   yy_sim <- (yy_sim-0)/(0.2-0.0)
@@ -90,7 +60,7 @@ getAcceptanceProbability <- function(yy_sim, yy_exp, yy_expErr){
 start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
 
-  expInd <- experimentsIndices[i]
+  expInd <- experimentsIndices[[i]]
   objectiveFunction <- makeObjective(experiments[expInd], modelName, getScore, parMap)
   acceptanceProbability <- makeAcceptanceProbability(experiments[expInd], modelName, getAcceptanceProbability, parMap)
 
@@ -125,12 +95,10 @@ for (i in 1:length(experimentsIndices)){
     stopifnot(dprior(M$startPar[j,])>0)
   }
 
-
-  gc()
   ## Run ABC-MCMC Sampling
   cat(sprintf("-Running MCMC chains \n"))
   start_time_ABC = Sys.time()
-  cl <- makeForkCluster(detectCores())
+  cl <- makeForkCluster(nChains)
   clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
   out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior, acceptanceProbability))
   stopCluster(cl)
@@ -150,27 +118,22 @@ for (i in 1:length(experimentsIndices)){
   print(time_)
   cat("\nRegularizations:", nRegularizations)
   cat("\nAcceptance rate:", acceptanceRate)
-
-  if (i>1){
-    precursors <- experimentsIndices[1:(i-1)]
-    objectiveFunction <- makeObjective(experiments[precursors], modelName, getScore, parMap, nCores)
-    draws <- checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
-  }
+  # if (i>1){
+  #   precursors <- experimentsIndices[1:(i-1)]
+  #   objectiveFunction <- makeObjective(experiments[precursors], modelName, getScore, parMap, nCores)
+  #   draws <- checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
+  # }
 
   cat("\nNumber of draws after fitting with previous experiments:",dim(draws)[1])
 
   # Save Resulting Samples to MATLAB and R files.
   cat("\n-Saving sample \n")
-  outFile <- paste(experimentsIndices[1:i], collapse="_")
+  outFile <- paste(experimentsIndices[[1]], collapse="_")
   timeStr <- Sys.time()
   timeStr <- gsub(":","_", timeStr)
   timeStr <- gsub(" ","_", timeStr)
   outFileR <- paste("../PosteriorSamples/Draws",modelName,"nChains",nChains,"ns",ns,"npc",npc,outFile,timeStr,".RData",collapse="_",sep="_")
   save(draws, parNames, file=outFileR)
-  #if (require(R.matlab)){
-  #	outFileM <- paste("../PosteriorSamples/Draws",modelName,"ns",ns,"npc",npc,outFile,timeStr,".mat",collapse="_",sep="_")
-  #	writeMat(outFileM, samples=10^draws)
-  #}
 }
 end_time = Sys.time()
 time_ = end_time - start_time

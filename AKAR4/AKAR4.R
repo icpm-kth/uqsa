@@ -13,7 +13,7 @@
 #
 # The vector field function
 #
-AKAR4 <- function(t, state, parameters) {
+AKAR4_vf <- function(t, state, parameters) {
     AKAR4      <- state[1]
     AKAR4_C    <- state[2]
     AKAR4p     <- state[3]
@@ -103,4 +103,21 @@ AKAR4_AKAR4pOUT <- function(t, state, parameters) {
     reaction_2 <- kcat_AKARp*AKAR4_C
     r_ <- AKAR4p;
     return(r_)
+}
+
+
+AKAR4_func <- function(t, state, parameters) {
+    AKAR4      <- state[1]
+    AKAR4_C    <- state[2]
+    AKAR4p     <- state[3]
+    C          <- state[4]
+    kf_C_AKAR4 <- parameters[1]
+    kb_C_AKAR4 <- parameters[2]
+    kcat_AKARp <- parameters[3]
+    reaction_1 <- -kb_C_AKAR4*AKAR4_C+AKAR4*C*kf_C_AKAR4
+    reaction_2 <- kcat_AKARp*AKAR4_C
+    r_ <- AKAR4p;
+    func_ <- vector(mode='numeric',len=1)
+    func_[1] <- (AKAR4p*5)*71.67+100
+    return(func_);
 }
