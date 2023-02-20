@@ -52,7 +52,7 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity, mc.cores 
     N <- 1
   }
   N <- N*numExperiments
-  
+
   # an experiment can have an optional input
   if ('input' %in% names(experiments[[1]])){
     nu <- length(experiments[[1]][['input']])
@@ -72,7 +72,7 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity, mc.cores 
   } else if (grepl('.[Rr]$', modelFile)) {
 	# densely repeat the model parameters npc times
 	modelPar <- matrix(modelPar,np,npc*numExperiments)
-  
+
 	# create a matrix that has all experimental inputs, repeated (densely) npc times per experiment
 	if (nu>0){
 		V <- vapply(experiments,function(E) matrix(E[['input']],nu,npc),FUN.VALUE=matrix(0,nu,npc))
@@ -98,11 +98,11 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity, mc.cores 
     yy <- mclapply(1:N, function(i) matrix(t(lsode(y0[,i], c(0,outputTimes_list[[i]]), func=func, parms=modelPar[,i])[-1, -1]), ncol=length(outputTimes_list[[i]])), mc.cores = mc.cores)
 
     out_yy <- mclapply(1:N, function(i) apply(yy[[i]],2,outputFunctions_list[[i]]), mc.cores = mc.cores)
-    
+
     fun <- function(yy_, out_yy_){
       out_state <- do.call(cbind, yy_)
       dim(out_state) <- c(dim(yy_[[1]]), length(yy_))
-      
+
       out_func <- do.call(cbind, out_yy_)
       dim(out_func) <- c(length(out_func)/(dim(out_state)[2]*npc), dim(out_state)[2], npc)
       return(list(state = out_state, func = out_func))

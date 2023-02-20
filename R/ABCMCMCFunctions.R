@@ -46,7 +46,7 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, a
   np <- length(startPar)
   curPar  <- startPar
   curDelta <- mean(objectiveFunction(curPar))
-  
+
   if(is.na(curDelta)){
     cat("*** [ABCMCMC] curDelta is NA. Replacing it with Inf ***\n")
     curDelta <- Inf
@@ -54,7 +54,7 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, a
   curPrior <- dprior(curPar)
   draws <- matrix(NA, nSims,np)
   scores <- rep(NA, nSims)
-  
+
   n <- 0
   acceptedSamples <- 0
   nRegularizations <- 0
@@ -71,32 +71,32 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, a
         return(list(draws = c(), scores = c(), acceptanceRate = c(), nRegularizations = nRegularizations))
       }
       disp(paste0("Regularization of proposal covariance matrix (nRegularizations = ", nRegularizations,")"))
-      
+
       Sigma0 <- solve(solve(Sigma0)+solve(0.1*norm(Sigma0)*diag(1,np,np)))
       Sigma1 <- 0.25*diag(diag(Sigma0))
       draws <- matrix(NA, nSims,np)
       scores <- rep(NA, nSims)
       n <- 0
       acceptedSamples <- 0
-    } 
+    }
     #else if (n %% 100 == 0 && acceptedSamples > 0.1*n) {
     #  delta <- delta * .9
     #}
-    
+
     if(runif(1)<=0.95){
       canPar <- mvrnorm(n=1, curPar, Sigma0)
     }else{
       canPar <- mvrnorm(n=1, curPar, Sigma1)
     }
-    
+
     out <- parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
     #out <- parUpdate_ProbabilisticAcceptance(acceptanceProbability, curPar, canPar, curPrior, dprior)
-    
+
     curPar <- out$curPar
     curDelta <- out$curDelta
     curPrior <- out$curPrior
     acceptedSamples <- acceptedSamples + out$acceptance
-      
+
     n <- n+1
     if(n %% sampleFrequency == 0){
       draws[n/sampleFrequency,]  <- curPar
@@ -132,13 +132,13 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, a
 #' @return updated values for curPar, curDelta, and curPrior
 parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior){
   canDelta <- mean(objectiveFunction(canPar))
-  
+
   if(is.na(canDelta)){
     cat("\n*** [parUpdate] canDelta is NA. Replacing it with Inf ***")
     canDelta <- Inf
   }
   canPrior <- dprior(canPar)
-  
+
   if (canDelta <= max(delta, curDelta)){
     acceptance <- (runif(1) <= canPrior/curPrior)
     if (acceptance){
@@ -190,9 +190,9 @@ parUpdate_ProbabilisticAcceptance <- function(acceptanceProbability, curPar, can
 checkFitWithPreviousExperiments <- function(draws, objectiveFunction, delta){
   cat("\n-Checking fit with previous data\n")
   nDraws = dim(draws)[1]
-  
+
   scores <- objectiveFunction(t(draws))
-  
+
   dim(scores) <- c(nDraws,length(scores)/nDraws)
   acceptable <- apply(scores <= delta,1,all)
   stopifnot(length(acceptable)==nDraws)
