@@ -103,7 +103,7 @@ for (i in seq(length(chunks))){
 	if (require("R.matlab")){
 		outFileM <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
 	}
-	save(draws, parNames, file=outFileR)
+	#save(draws, parNames, file=outFileR)
 	#writeMat(outFileM, samples=10^draws)
 }
 end_time = Sys.time()

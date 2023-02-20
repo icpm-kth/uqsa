@@ -30,8 +30,9 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(c(3, 12,18, 9, 2, 11, 17, 8, 1, 10, 16, 7))
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 25000 # Size of the sub-sample from each chain
+ns <- 250 # Size of the sub-sample from each chain
 npc <- 5000 # pre-calibration sample size
+nChains <- 4
 n <- ns*nChains
 
 # Define ABC-MCMC Settings
@@ -39,7 +40,7 @@ delta <- 7 #0.01
 
 # Define the number of Cores for the parallelization
 
-nChains <- 4
+
 nCores <- parallel::detectCores() %/% nChains
 
 set.seed(7619201)
