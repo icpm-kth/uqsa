@@ -19,8 +19,6 @@
 #'
 #' @export
 #' @param X sample that characterizes the traget distribution (rows)
-#' @param ll lower limit of x values (rows in X)
-#' @param ul upper limit of x values (rows in X)
 #' @param nCores passed to parallel::mclapply()
 #' @return as list: vineCop, U, Z, and Y where U are marginal
 #'     probability samples, Z are cummulative density values for U,

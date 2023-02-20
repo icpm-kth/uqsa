@@ -39,4 +39,5 @@ Experiments.sim <-function() {
     for (i in 1:length(sb$Experiments)){
         plot(t,Y[ny,,i],ylab=N[i],xlab='time')
     }
+    return(Y)
 }
