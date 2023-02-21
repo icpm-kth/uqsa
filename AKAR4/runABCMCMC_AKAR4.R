@@ -31,7 +31,7 @@ ll = log10(ll) # log10-scale
 ul = log10(ul) # log10-scale
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 1000 # no of samples required from each ABC-MCMC chain
+ns <- 100 # no of samples required from each ABC-MCMC chain
 npc <- 500 # pre-calibration
 
 # Define ABC-MCMC Settings
@@ -72,15 +72,19 @@ for (i in seq(length(chunks))){
 		## Otherwise, Take Copula from the Previous Exp Setting and Use as a Prior
 	} else {
 		cat(sprintf("- Fitting Copula based on previous MCMC runs\n"))
-		C<-fitCopula(draws)
+		C<-fitCopula(draws$draws)
 		priorPDF <- dCopulaPrior(C)
 		rprior <- rCopulaPrior(C)
 	}
 	## Run Pre-Calibration Sampling
 	cat(sprintf("- Precalibration \n"))
-	par <- rprior(1)
 	
+	time_pC <- Sys.time()
 	out1 <- preCalibration(Obj, npc, rprior)
+	time_pC <- Sys.time() - time_pC
+	cat(sprintf("- time for precalibration: \n"))
+	print(time_pC)
+	
 	sfactor <- 0.1 # scaling factor
 	## Get Starting Parameters from Pre-Calibration
 	out2 <- getMCMCPar(out1$prePar, out1$preDelta, p, sfactor, delta)
@@ -88,10 +92,14 @@ for (i in seq(length(chunks))){
 	startPar <- out2$startPar
 	## Run ABC-MCMC Sampling
 	cat(sprintf("- Running MCMC\n"))
+	time_ABC <- Sys.time()
 	draws <- ABCMCMC(Obj, startPar, ns, Sigma, delta, priorPDF)
-
+	time_ABC <- Sys.time() - time_ABC
+  cat(sprintf("- time for ABCMCMC: \n"))
+  print(time_ABC)
+	
 	if (i>1){
-	 draws <- checkFitWithPreviousExperiments(modelName, draws, experiments[unlist(chunks[1:i-1])], parMap, getScore, delta)
+	 draws$draws <- checkFitWithPreviousExperiments(draws$draws, Obj, delta)
 	}
 	# Save Resulting Samples to MATLAB and R files.
 	cat("-Saving sample \n")
@@ -104,7 +112,6 @@ for (i in seq(length(chunks))){
 		outFileM <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
 	}
 	#save(draws, parNames, file=outFileR)
-	#writeMat(outFileM, samples=10^draws)
 }
 end_time = Sys.time()
 time_ = end_time - start_time
@@ -112,14 +119,14 @@ time_ = end_time - start_time
 #### PLOT RESTULTS FOR AKAR4
 par(mfrow=c(2,3))
 for(i in 1:3){
-	 hist(draws[,i], main=parNames[i], xlab = "Value in log scale")
+	 hist(draws$draws[,i], main=parNames[i], xlab = "Value in log scale")
 }
 combinePar <- list(c(1,2), c(1,3), c(2,3))
 for(i in combinePar){
-	 plot(draws[,i[1]], draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
+	 plot(draws$draws[,i[1]], draws$draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
 }
-
+# 
 # library(plotly)
-# df = as.data.frame(draws)
+# df = as.data.frame(draws$draws)
 # colnames(df) <- parNames
 # plot_ly(dat = df, x = ~kf_C_AKAR4, y = ~kb_C_AKAR4, z = ~kcat_AKARp, type="scatter3d", mode="markers", marker=list(size = 1, color = "red"))
