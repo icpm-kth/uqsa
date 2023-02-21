@@ -53,8 +53,7 @@ importReactionsSSA <- function(model){
 }
 
 
-#possible input: compiled_reactions, Phi
-#Can maybe remove: modelName
+# Function that creates the objective function that given a parameter computes the distance between experimental data and simulated data (coresponding to the parameter in input)
 makeObjectiveSSA <- function(experiments, parNames, distance, parMap=identity, Phi, reactions, mc.cores=detectCores(), nStochSim = 1){
 
   
