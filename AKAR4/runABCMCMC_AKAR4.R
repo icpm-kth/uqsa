@@ -31,7 +31,7 @@ ll = log10(ll) # log10-scale
 ul = log10(ul) # log10-scale
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 100 # no of samples required from each ABC-MCMC chain
+ns <- 1000 # no of samples required from each ABC-MCMC chain
 npc <- 500 # pre-calibration
 
 # Define ABC-MCMC Settings
