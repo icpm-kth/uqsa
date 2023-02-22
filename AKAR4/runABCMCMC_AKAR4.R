@@ -1,15 +1,4 @@
-## source('../UQ/copulaFunctions.R')
-## source('../UQ/runModel.R')
-## source('../UQ/PreCalibration.R')
-## source('../UQ/ABCMCMCFunctions.R')
-## source('../UQ/ScoringFunction.R')
-
-#library(parallel)
-#library(VineCopula)
-#library(MASS)
-#library(ks)
-#library(R.utils)
-library(UQ)
+library(uqsa)
 library(rgsl)
 library(SBtabVFGEN)
 SBtabDir <- getwd()
@@ -56,12 +45,14 @@ set.seed(2022)
 maxVal <- max(unlist(lapply(experiments, function(x) max(x[["outputValues"]]))))
 minVal <- min(unlist(lapply(experiments, function(x) min(x[["outputValues"]]))))
 
-getScore	<- function(yy_sim, yy_exp){
+getScore	<- function(yy_sim, yy_exp, errorValues = NULL){
 	yy_sim <- (yy_sim-0)/(0.2-0.0)
 	ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-minVal)/(maxVal-minVal), Inf)
 	distance <- mean((yy_sim-yy_exp)^2)
 	return(distance)
 }
+
+Obj <- makeObjective(experiments,modelName,getScore,parMap)
 
 # Loop through the Different Experimental Settings
 start_time = Sys.time()
@@ -72,33 +63,43 @@ chunks <- list(c(1,2),3)
 for (i in seq(length(chunks))){
 	expInd <- chunks[[i]]
 	cat("#####Starting run for Experiments ", expInd, "######\n")
+	Obj <- makeObjective(experiments[expInd],modelName,getScore,parMap)
 	## If First Experimental Setting, Create an Independente Colupla
 	if(i==1){
-		cat(sprintf("-Fitting independent Copula \n"))
+		cat(sprintf("- Starting with uniform prior \n"))
 		priorPDF <- dUniformPrior(ll, ul)
 		rprior <- rUniformPrior(ll, ul)
 		## Otherwise, Take Copula from the Previous Exp Setting and Use as a Prior
 	} else {
-		cat(sprintf("-Fitting Copula based on previous MCMC runs\n"))
-		priorPDF <- dCopulaPrior(fitCopula(draws, ll, ul))
-		rprior <- rCopulaPrior(fitCopula(draws,ll, ul))
+		cat(sprintf("- Fitting Copula based on previous MCMC runs\n"))
+		C<-fitCopula(draws$draws)
+		priorPDF <- dCopulaPrior(C)
+		rprior <- rCopulaPrior(C)
 	}
 	## Run Pre-Calibration Sampling
-	cat(sprintf("-Precalibration \n"))
-	out1 <- preCalibration(experiments[expInd], modelName, parMap, npc, rprior, getScore)
+	cat(sprintf("- Precalibration \n"))
+	
+	time_pC <- Sys.time()
+	out1 <- preCalibration(Obj, npc, rprior)
+	time_pC <- Sys.time() - time_pC
+	cat(sprintf("- time for precalibration: \n"))
+	print(time_pC)
+	
 	sfactor <- 0.1 # scaling factor
 	## Get Starting Parameters from Pre-Calibration
 	out2 <- getMCMCPar(out1$prePar, out1$preDelta, p, sfactor, delta)
 	Sigma <- out2$Sigma
 	startPar <- out2$startPar
 	## Run ABC-MCMC Sampling
-	cat(sprintf("-Running MCMC\n"))
-	draws <- ABCMCMC(experiments[expInd], modelName, startPar, parMap, ns, Sigma, delta, dprior=priorPDF, getScore)
-
-	pick <- !apply(draws, 1, function(rw) all(rw==0))
-	draws <- draws[pick,]
+	cat(sprintf("- Running MCMC\n"))
+	time_ABC <- Sys.time()
+	draws <- ABCMCMC(Obj, startPar, ns, Sigma, delta, priorPDF)
+	time_ABC <- Sys.time() - time_ABC
+  cat(sprintf("- time for ABCMCMC: \n"))
+  print(time_ABC)
+	
 	if (i>1){
-	 draws <- checkFitWithPreviousExperiments(modelName, draws, experiments[unlist(chunks[1:i-1])], parMap, getScore, delta)
+	 draws$draws <- checkFitWithPreviousExperiments(draws$draws, Obj, delta)
 	}
 	# Save Resulting Samples to MATLAB and R files.
 	cat("-Saving sample \n")
@@ -110,8 +111,7 @@ for (i in seq(length(chunks))){
 	if (require("R.matlab")){
 		outFileM <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
 	}
-	save(draws, parNames, file=outFileR)
-	#writeMat(outFileM, samples=10^draws)
+	#save(draws, parNames, file=outFileR)
 }
 end_time = Sys.time()
 time_ = end_time - start_time
@@ -119,14 +119,14 @@ time_ = end_time - start_time
 #### PLOT RESTULTS FOR AKAR4
 par(mfrow=c(2,3))
 for(i in 1:3){
-	 hist(draws[,i], main=parNames[i], xlab = "Value in log scale")
+	 hist(draws$draws[,i], main=parNames[i], xlab = "Value in log scale")
 }
 combinePar <- list(c(1,2), c(1,3), c(2,3))
 for(i in combinePar){
-	 plot(draws[,i[1]], draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
+	 plot(draws$draws[,i[1]], draws$draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
 }
-
+# 
 # library(plotly)
-# df = as.data.frame(draws)
+# df = as.data.frame(draws$draws)
 # colnames(df) <- parNames
 # plot_ly(dat = df, x = ~kf_C_AKAR4, y = ~kb_C_AKAR4, z = ~kcat_AKARp, type="scatter3d", mode="markers", marker=list(size = 1, color = "red"))

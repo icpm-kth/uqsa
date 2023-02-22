@@ -1,0 +1,6 @@
+!!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableType='Quantity' TableName='Output' TableTitle='Model output functions' 
+!ID	!Name	!ErrorName	!ErrorType	!Type	!Unit	!Formula
+CaPerCaM	MolCaPerMolCaM	SD_CaPerCaM	standard deviation	ratio	1	BoundCa / (s + Total_CaM)
+AutoCaMKII	AutoCamkiiPercentage	SD_AutoCaMKII	standard deviation	ratio	1	100*(Total_pCaMKII / (s + totalCaMKII))
+CaMPerPP2B	MolCaMPerMolPP2B	SD_CaMPerPP2B	standard deviation	ratio	1	Total_PP2B_CaM_CaX / (s + PP2B + Total_PP2B_CaM_CaX)
+ActivePP2B	ActivePP2BPercentage	SD_ActivePP2B	standard deviation	ratio	1	100 * (PP2B_CaM_Ca4 / (s + PP2B + Total_PP2B_CaM_CaX))

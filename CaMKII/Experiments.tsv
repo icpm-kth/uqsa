@@ -1,0 +1,8 @@
+!!SBtab	SBtabVersion='1.0'  Document='CaMKIIs' TableType='QuantityMatrix'  TableName='Experiments' TableTitle='Model Inputs and Measurement Mapping. A negative value indicates that this input varies in the dose response curve' 
+!ID	!Name	!Type	>Ca_set	>PP1_0	>CaMKII_0	>CaM_0	>PP2B_0	Dose Variable	!Time	!Comment	!Citation
+Bradshaw2003Fig2E	Nair2014FigE	Dose Response	-1	0	200	2000	0	U0	600	Figure 2E	https://doi.org/10.1073/pnas.1932759100
+Shifman2006Fig1Bsq	Nair2014FigD	Dose Response	-1	0	5000	5000	0	U0	600	Figure 1B filled squares	https://dx.doi.org/10.1073%2Fpnas.0606433103
+ODonnel2010Fig3Co	Nair2014FigB	Dose Response	0	0	0	-1	100	U3	600	Figure 3C empty circles	https://doi.org/10.1002/prot.22917
+Stemmer1993Fig1tr	Nair2014FigCu	Dose Response	-1	0	0	300	3	U0	600	Figure 1 triangles	https://doi.org/10.1021/bi00188a015
+Stemmer1993Fig1fc	Nair2014FigCl	Dose Response	-1	0	0	30	3	U0	600	Figure 1 circle	https://doi.org/10.1021/bi00188a015
+Stemmer1993Fig2Afc	Nair2014FigA	Dose Response	-1	0	0	25000	0	U0	600	Figure 2A filled circle	https://doi.org/10.1021/bi00188a015

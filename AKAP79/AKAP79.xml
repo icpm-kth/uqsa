@@ -1,0 +1,740 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" version="4">
+  <model id="AKAP79">
+    <listOfUnitDefinitions>
+      <unitDefinition id="time">
+        <listOfUnits>
+          <unit kind="second" exponent="1" scale="-3" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="substance">
+        <listOfUnits>
+          <unit kind="mole" exponent="1" scale="-3" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="volume">
+        <listOfUnits>
+          <unit kind="litre" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="area">
+        <listOfUnits>
+          <unit kind="metre" exponent="2" scale="-9" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="length">
+        <listOfUnits>
+          <unit kind="metre" exponent="1" scale="-9" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="dimensionless">
+        <listOfUnits>
+          <unit kind="dimensionless" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="micromole_per_liter">
+        <listOfUnits>
+          <unit kind="mole" exponent="1" scale="-6" multiplier="1"/>
+          <unit kind="litre" exponent="-1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="one_over_second">
+        <listOfUnits>
+          <unit kind="dimensionless" exponent="1" scale="0" multiplier="1"/>
+          <unit kind="second" exponent="-1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="one_over_micromolarity_second">
+        <listOfUnits>
+          <unit kind="dimensionless" exponent="1" scale="0" multiplier="1"/>
+          <unit kind="mole" exponent="-1" scale="-6" multiplier="1"/>
+          <unit kind="litre" exponent="1" scale="0" multiplier="1"/>
+          <unit kind="second" exponent="-1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="liter">
+        <listOfUnits>
+          <unit kind="litre" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment id="Compartment" name="Compartment" size="1" units="liter"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="Rii" name="Rii" compartment="Compartment" initialConcentration="6.3" substanceUnits="substance"/>
+      <species id="cAMP" name="cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
+      <species id="RiiP" name="RiiP" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
+      <species id="Rii_C" name="Rii_C" compartment="Compartment" initialConcentration="0.63" substanceUnits="substance"/>
+      <species id="RiiP_cAMP" name="RiiP_cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
+      <species id="RiiP_C" name="RiiP_C" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
+      <species id="RiiP_C_cAMP" name="RiiP_C_cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
+      <species id="C" name="C" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
+      <species id="Rii_cAMP" name="Rii_cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
+      <species id="Rii_C_cAMP" name="Rii_C_cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
+      <species id="CaN" name="CaN" compartment="Compartment" initialConcentration="1.5" substanceUnits="substance"/>
+      <species id="RiiP_CaN" name="RiiP_CaN" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
+      <species id="RiiP_cAMP_CaN" name="RiiP_cAMP_CaN" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
+      <species id="AKAR4" name="AKAR4" compartment="Compartment" initialConcentration="0.2" substanceUnits="substance"/>
+      <species id="AKAR4_C" name="AKAR4_C" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
+      <species id="AKAR4p" name="AKAR4p" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
+      <species id="kf_RiiP_cAMP_CaN__CaNXRii_cAMP" name="kf_RiiP_cAMP_CaN__CaNXRii_cAMP" compartment="Compartment" boundaryCondition="true"/>
+      <species id="kb_RiiPxCaN__RiiP_CaN" name="kb_RiiPxCaN__RiiP_CaN" compartment="Compartment" boundaryCondition="true"/>
+      <species id="kf_RiiP_CaN__RiixCaN" name="kf_RiiP_CaN__RiixCaN" compartment="Compartment" boundaryCondition="true"/>
+      <species id="kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN" name="kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN" compartment="Compartment" boundaryCondition="true"/>
+      <species id="kf_RiiPxCaN__RiiP_CaN" name="kf_RiiPxCaN__RiiP_CaN" compartment="Compartment" boundaryCondition="true"/>
+      <species id="kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN" name="kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN" compartment="Compartment" boundaryCondition="true"/>
+      <species id="kb_RiiP_CxcAMP__RiiP_C_cAMP" name="kb_RiiP_CxcAMP__RiiP_C_cAMP" compartment="Compartment" boundaryCondition="true"/>
+      <species id="AKAR4pOUT" name="AKAR4pOUT" compartment="Compartment" initialConcentration="0" substanceUnits="substance" boundaryCondition="true"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter id="kf_Rii_C__RiiP_C" name="kf_Rii_C__RiiP_C" value="33" units="one_over_second"/>
+      <parameter id="kf_RiiP_CxcAMP__RiiP_C_cAMP" name="kf_RiiP_CxcAMP__RiiP_C_cAMP" value="0.496" units="one_over_micromolarity_second"/>
+      <parameter id="kf_RiiP_cAMPxC__RiiP_C_cAMP" name="kf_RiiP_cAMPxC__RiiP_C_cAMP" value="0.00545" units="one_over_micromolarity_second"/>
+      <parameter id="kb_RiiP_cAMPxC__RiiP_C_cAMP" name="kb_RiiP_cAMPxC__RiiP_C_cAMP" value="0.0156" units="one_over_second"/>
+      <parameter id="kb_RiiPXcAMP__RiiP_cAMP" name="kb_RiiPXcAMP__RiiP_cAMP" value="0.0016" units="one_over_second"/>
+      <parameter id="kf_RiiPXcAMP__RiiP_cAMP" name="kf_RiiPXcAMP__RiiP_cAMP" value="0.015" units="one_over_micromolarity_second"/>
+      <parameter id="kf_RiiPxC__RiiP_C" name="kf_RiiPxC__RiiP_C" value="0.038" units="one_over_micromolarity_second"/>
+      <parameter id="kb_RiiPxC__RiiP_C" name="kb_RiiPxC__RiiP_C" value="0.0026" units="one_over_second"/>
+      <parameter id="kf_cAMPxRii__Rii_cAMP" name="kf_cAMPxRii__Rii_cAMP" value="0.015" units="one_over_micromolarity_second"/>
+      <parameter id="kb_cAMPxRii__Rii_cAMP" name="kb_cAMPxRii__Rii_cAMP" value="0.0016" units="one_over_second"/>
+      <parameter id="kf_Rii_CxcAMP__Rii_C_cAMP" name="kf_Rii_CxcAMP__Rii_C_cAMP" value="0.496" units="one_over_micromolarity_second"/>
+      <parameter id="kb_Rii_CxcAMP__Rii_C_cAMP" name="kb_Rii_CxcAMP__Rii_C_cAMP" value="1.413" units="one_over_second"/>
+      <parameter id="kf_RiixC__Rii_C" name="kf_RiixC__Rii_C" value="2.1" units="one_over_micromolarity_second"/>
+      <parameter id="kf_Rii_cAMPxC__Rii_C_cAMP" name="kf_Rii_cAMPxC__Rii_C_cAMP" value="0.2984" units="one_over_micromolarity_second"/>
+      <parameter id="kb_Rii_cAMPxC__Rii_C_cAMP" name="kb_Rii_cAMPxC__Rii_C_cAMP" value="0.018" units="one_over_second"/>
+      <parameter id="kf_Rii_C_cAMP__RiiP_C_cAMP" name="kf_Rii_C_cAMP__RiiP_C_cAMP" value="33" units="one_over_second"/>
+      <parameter id="kb_RiixC__Rii_C" name="kb_RiixC__Rii_C" value="0.0003" units="one_over_second"/>
+      <parameter id="AKAPoff_1" name="AKAPoff_1" value="2.6" units="one_over_second"/>
+      <parameter id="AKAPoff_3" name="AKAPoff_3" value="20" units="one_over_second"/>
+      <parameter id="AKAPon_1" name="AKAPon_1" value="0.45" units="one_over_second"/>
+      <parameter id="AKAPon_3" name="AKAPon_3" value="2" units="one_over_second"/>
+      <parameter id="kf_C_AKAR4" name="kf_C_AKAR4" value="0.018" units="one_over_micromolarity_second"/>
+      <parameter id="kb_C_AKAR4" name="kb_C_AKAR4" value="0.106" units="one_over_second"/>
+      <parameter id="kcat_AKARp" name="kcat_AKARp" value="10.2" units="one_over_second"/>
+      <parameter id="kmOFF" name="kmOFF" value="100" units="one_over_second"/>
+      <parameter id="kmON" name="kmON" value="1" units="one_over_second"/>
+      <parameter id="KD_T" name="KD_T" value="0.7" units="one_over_second"/>
+      <parameter id="b_AKAP" name="b_AKAP" value="0" units="dimensionless"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="kf_RiiP_cAMP_CaN__CaNXRii_cAMP">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <apply>
+              <times/>
+              <ci> b_AKAP </ci>
+              <ci> AKAPon_1 </ci>
+            </apply>
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <cn type="integer"> 1 </cn>
+                <ci> b_AKAP </ci>
+              </apply>
+              <ci> AKAPoff_1 </ci>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="kb_RiiPxCaN__RiiP_CaN">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <apply>
+              <times/>
+              <ci> b_AKAP </ci>
+              <ci> AKAPon_3 </ci>
+            </apply>
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <cn type="integer"> 1 </cn>
+                <ci> b_AKAP </ci>
+              </apply>
+              <ci> AKAPoff_3 </ci>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="kf_RiiP_CaN__RiixCaN">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <apply>
+              <times/>
+              <ci> b_AKAP </ci>
+              <ci> AKAPon_1 </ci>
+            </apply>
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <cn type="integer"> 1 </cn>
+                <ci> b_AKAP </ci>
+              </apply>
+              <ci> AKAPoff_1 </ci>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <apply>
+              <times/>
+              <ci> b_AKAP </ci>
+              <ci> AKAPon_3 </ci>
+            </apply>
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <cn type="integer"> 1 </cn>
+                <ci> b_AKAP </ci>
+              </apply>
+              <ci> AKAPoff_3 </ci>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="kf_RiiPxCaN__RiiP_CaN">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <apply>
+              <times/>
+              <ci> b_AKAP </ci>
+              <apply>
+                <divide/>
+                <apply>
+                  <plus/>
+                  <ci> kb_RiiPxCaN__RiiP_CaN </ci>
+                  <ci> kf_RiiP_cAMP_CaN__CaNXRii_cAMP </ci>
+                </apply>
+                <ci> kmON </ci>
+              </apply>
+            </apply>
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <apply>
+                  <minus/>
+                  <cn type="integer"> 1 </cn>
+                  <ci> b_AKAP </ci>
+                </apply>
+                <apply>
+                  <plus/>
+                  <ci> kb_RiiPxCaN__RiiP_CaN </ci>
+                  <ci> kf_RiiP_cAMP_CaN__CaNXRii_cAMP </ci>
+                </apply>
+              </apply>
+              <ci> kmOFF </ci>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <apply>
+              <times/>
+              <ci> b_AKAP </ci>
+              <apply>
+                <divide/>
+                <apply>
+                  <plus/>
+                  <ci> kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN </ci>
+                  <ci> kf_RiiP_CaN__RiixCaN </ci>
+                </apply>
+                <ci> kmON </ci>
+              </apply>
+            </apply>
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <apply>
+                  <minus/>
+                  <cn type="integer"> 1 </cn>
+                  <ci> b_AKAP </ci>
+                </apply>
+                <apply>
+                  <plus/>
+                  <ci> kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN </ci>
+                  <ci> kf_RiiP_CaN__RiixCaN </ci>
+                </apply>
+              </apply>
+              <ci> kmOFF </ci>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="kb_RiiP_CxcAMP__RiiP_C_cAMP">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <ci> kf_RiiP_CxcAMP__RiiP_C_cAMP </ci>
+            <ci> KD_T </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="AKAR4pOUT">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <apply>
+              <times/>
+              <ci> AKAR4p </ci>
+              <cn type="integer"> 5 </cn>
+              <cn> 71.67 </cn>
+            </apply>
+            <cn type="integer"> 100 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="reaction_51" name="reaction_51" reversible="false">
+        <listOfReactants>
+          <speciesReference species="Rii_C"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="RiiP_C"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> kf_Rii_C__RiiP_C </ci>
+              <ci> Rii_C </ci>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_14" name="reaction_14" reversible="true">
+        <listOfReactants>
+          <speciesReference species="RiiP"/>
+          <speciesReference species="C"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="RiiP_C"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> kf_RiiPxC__RiiP_C </ci>
+                  <ci> RiiP </ci>
+                  <ci> C </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> kb_RiiPxC__RiiP_C </ci>
+                  <ci> RiiP_C </ci>
+                </apply>
+              </apply>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_12" name="reaction_12" reversible="true">
+        <listOfReactants>
+          <speciesReference species="RiiP_C"/>
+          <speciesReference species="cAMP"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="RiiP_C_cAMP"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> kf_RiiP_CxcAMP__RiiP_C_cAMP </ci>
+                  <ci> RiiP_C </ci>
+                  <ci> cAMP </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> kb_RiiP_CxcAMP__RiiP_C_cAMP </ci>
+                  <ci> RiiP_C_cAMP </ci>
+                </apply>
+              </apply>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_43" name="reaction_43" reversible="true">
+        <listOfReactants>
+          <speciesReference species="cAMP"/>
+          <speciesReference species="RiiP"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="RiiP_cAMP"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> kf_RiiPXcAMP__RiiP_cAMP </ci>
+                  <ci> cAMP </ci>
+                  <ci> RiiP </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> kb_RiiPXcAMP__RiiP_cAMP </ci>
+                  <ci> RiiP_cAMP </ci>
+                </apply>
+              </apply>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_23" name="reaction_23" reversible="true">
+        <listOfReactants>
+          <speciesReference species="RiiP_cAMP"/>
+          <speciesReference species="C"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="RiiP_C_cAMP"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> kf_RiiP_cAMPxC__RiiP_C_cAMP </ci>
+                  <ci> RiiP_cAMP </ci>
+                  <ci> C </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> kb_RiiP_cAMPxC__RiiP_C_cAMP </ci>
+                  <ci> RiiP_C_cAMP </ci>
+                </apply>
+              </apply>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_78" name="reaction_78" reversible="true">
+        <listOfReactants>
+          <speciesReference species="cAMP"/>
+          <speciesReference species="Rii"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="Rii_cAMP"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> kf_cAMPxRii__Rii_cAMP </ci>
+                  <ci> cAMP </ci>
+                  <ci> Rii </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> kb_cAMPxRii__Rii_cAMP </ci>
+                  <ci> Rii_cAMP </ci>
+                </apply>
+              </apply>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_56" name="reaction_56" reversible="true">
+        <listOfReactants>
+          <speciesReference species="Rii_C"/>
+          <speciesReference species="cAMP"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="Rii_C_cAMP"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> kf_Rii_CxcAMP__Rii_C_cAMP </ci>
+                  <ci> Rii_C </ci>
+                  <ci> cAMP </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> kb_Rii_CxcAMP__Rii_C_cAMP </ci>
+                  <ci> Rii_C_cAMP </ci>
+                </apply>
+              </apply>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_76" name="reaction_76" reversible="true">
+        <listOfReactants>
+          <speciesReference species="Rii_cAMP"/>
+          <speciesReference species="C"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="Rii_C_cAMP"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> kf_Rii_cAMPxC__Rii_C_cAMP </ci>
+                  <ci> Rii_cAMP </ci>
+                  <ci> C </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> kb_Rii_cAMPxC__Rii_C_cAMP </ci>
+                  <ci> Rii_C_cAMP </ci>
+                </apply>
+              </apply>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_62" name="reaction_62" reversible="false">
+        <listOfReactants>
+          <speciesReference species="Rii_C_cAMP"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="RiiP_C_cAMP"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> kf_Rii_C_cAMP__RiiP_C_cAMP </ci>
+              <ci> Rii_C_cAMP </ci>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_58" name="reaction_58" reversible="true">
+        <listOfReactants>
+          <speciesReference species="Rii"/>
+          <speciesReference species="C"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="Rii_C"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> kf_RiixC__Rii_C </ci>
+                  <ci> Rii </ci>
+                  <ci> C </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> kb_RiixC__Rii_C </ci>
+                  <ci> Rii_C </ci>
+                </apply>
+              </apply>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_44_" name="reaction_44_" reversible="true">
+        <listOfReactants>
+          <speciesReference species="RiiP"/>
+          <speciesReference species="CaN"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="RiiP_CaN"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> kf_RiiPxCaN__RiiP_CaN </ci>
+                  <ci> RiiP </ci>
+                  <ci> CaN </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> kb_RiiPxCaN__RiiP_CaN </ci>
+                  <ci> RiiP_CaN </ci>
+                </apply>
+              </apply>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_33_" name="reaction_33_" reversible="true">
+        <listOfReactants>
+          <speciesReference species="CaN"/>
+          <speciesReference species="RiiP_cAMP"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="RiiP_cAMP_CaN"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN </ci>
+                  <ci> CaN </ci>
+                  <ci> RiiP_cAMP </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN </ci>
+                  <ci> RiiP_cAMP_CaN </ci>
+                </apply>
+              </apply>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_4_8" name="reaction_4_8" reversible="false">
+        <listOfReactants>
+          <speciesReference species="RiiP_CaN"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="Rii"/>
+          <speciesReference species="CaN"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> kf_RiiP_CaN__RiixCaN </ci>
+              <ci> RiiP_CaN </ci>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_3_7" name="reaction_3_7" reversible="false">
+        <listOfReactants>
+          <speciesReference species="RiiP_cAMP_CaN"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="CaN"/>
+          <speciesReference species="Rii_cAMP"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> kf_RiiP_cAMP_CaN__CaNXRii_cAMP </ci>
+              <ci> RiiP_cAMP_CaN </ci>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_1" name="reaction_1" reversible="true">
+        <listOfReactants>
+          <speciesReference species="C"/>
+          <speciesReference species="AKAR4"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="AKAR4_C"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> kf_C_AKAR4 </ci>
+                  <ci> C </ci>
+                  <ci> AKAR4 </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> kb_C_AKAR4 </ci>
+                  <ci> AKAR4_C </ci>
+                </apply>
+              </apply>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_2" name="reaction_2" reversible="false">
+        <listOfReactants>
+          <speciesReference species="AKAR4_C"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="AKAR4p"/>
+          <speciesReference species="C"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> kcat_AKARp </ci>
+              <ci> AKAR4_C </ci>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

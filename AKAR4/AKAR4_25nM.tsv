@@ -1,4 +1,4 @@
-!!SBtab Document='AKAR4' Version='1.0' TableName='AKAR4_25nM' TableType='QuantityMatrix'  DataSource='Figure 3—figure supplement 1 in https://doi.org/10.7554/eLife.68164 (light blue)'
+!!SBtab Document='AKAR4' Version='1.0' TableName='AKAR4_25nM' TableType='QuantityMatrix'	DataSource='Figure 3—figure supplement 1 in https://doi.org/10.7554/eLife.68164 (light blue)'		
 !TimePoint	!Time	>AKAR4pOUT
 E25T001	-15	109.8
 E25T002	-10	109.225
