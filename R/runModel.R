@@ -106,7 +106,7 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity, mc.cores 
       out_func <- do.call(cbind, out_yy_)
       dim(out_func) <- c(length(out_func)/(dim(out_state)[2]*npc), dim(out_state)[2], npc)
       return(list(state = out_state, func = out_func))
-    } 
+    }
     output_yy <- mclapply(1:numExperiments, function(i) fun(yy[1:npc + npc*(i-1)], out_yy[1:npc + npc*(i-1)]))
   }
   return(output_yy)
@@ -137,17 +137,18 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity, mc.cores 
 #' @return modelName with an additional comment about which file to use for simulations
 checkModel <- function(modelName,modelFile=NULL){
   if (is.null(modelFile)) {
-    modelFile <- paste0(modelName,'.R','_gvf.c','.so');
-    modelFile <- file.exists(modelFile)
+    modelFile <- paste0(modelName,c('.R','_gvf.c','.so'));
+    modelFile <- modelFile[file.exists(modelFile)]
     stopifnot(length(modelFile)>0)
     modelFile <- modelFile[1]
   }
   if (grepl('.c$',modelFile,useBytes=TRUE)){
+    stopifnot(file.exists(modelFile))
     message('building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).')
     LIBS <- "`pkg-config --libs gsl`"
     CFLAGS <- "-shared -fPIC `pkg-config --cflags gsl`"
     so <- sprintf("%s.so",modelName)
-    command_args <- sprintf("%s -o %s %s %s",CFLAGS,so,modelFile,LIBS)
+    command_args <- sprintf("%s -o ./%s %s %s",CFLAGS,so,modelFile,LIBS)
     message(paste("cc",command_args))
     system2("cc",command_args)
     stopifnot(file.exists(so))
@@ -167,7 +168,7 @@ checkModel <- function(modelName,modelFile=NULL){
 #'
 #' the returned objective function has only one argument (the ABC
 #' parameters)
-#' 
+#'
 #' @export
 #' @param experiments a list of simulation experiments
 #' @param modelName and model storage file as comment

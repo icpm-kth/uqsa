@@ -4,6 +4,7 @@
 #' makeIndepCopula() and creates a density function from it.
 #'
 #' @export
+#' @importFrom VineCopula RVinePDF
 #' @param Copula a list, as returned by fitCopula() or makeIndepCopula
 #' @return a function that maps parameters (a vector) to probability density values (scalar)
 #' @examples
@@ -38,7 +39,8 @@ dCopulaPrior <- function(Copula){
 #' rCopulaPrior returns a function that generates random values from the copula model
 #'
 #' The returned function generates n random vectors, as rows of a matrix.
-#' 
+#'
+#' @importFrom VineCopula RVineSim
 #' @export
 #' @param Copula the return value of fitCopula()
 #' @return a matrix of random values
@@ -63,7 +65,7 @@ rCopulaPrior <- function(Copula){
   return(rprior)
 }
 
-#' dUniformPrior creates a uniform density function 
+#' dUniformPrior creates a uniform density function
 #'
 #' The returned denisty function takes vectors of the same size as ll
 #' and ul. It returns the product of the component's one-dimensional

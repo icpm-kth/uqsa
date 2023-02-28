@@ -4,7 +4,8 @@ library(uqsa)
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
-modelName <- checkModel(comment(model),paste0(comment(model),'_gvf.c'))
+print(comment(model))
+modelName <- checkModel(comment(model),paste0(SBtabDFir,'/',comment(model),'_gvf.c'))
 
 parVal <- model[["Parameter"]][["!DefaultValue"]]
 names(parVal)<-model[["Parameter"]][["!Name"]]

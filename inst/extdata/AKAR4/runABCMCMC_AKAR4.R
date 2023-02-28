@@ -1,10 +1,11 @@
 library(uqsa)
 library(rgsl)
 library(SBtabVFGEN)
-SBtabDir <- getwd()
-model = import_from_SBtab(SBtabDir)
+
+SBtabDir <- uqsa_example("AKAR4")
+model <- import_from_SBtab(SBtabDir)
 print(comment(model)) # this should be the name of the model, if everything works
-modelName <- checkModel(comment(model),"./AKAR4_gvf.c")
+modelName <- checkModel(comment(model),paste0(SBtabDir,"/AKAR4_gvf.c"))
 #modelName <- checkModel(comment(model),"./AKAR4.R")
 
 source(paste(SBtabDir,"/",modelName,".R",sep=""))
@@ -78,13 +79,13 @@ for (i in seq(length(chunks))){
 	}
 	## Run Pre-Calibration Sampling
 	cat(sprintf("- Precalibration \n"))
-	
+
 	time_pC <- Sys.time()
 	out1 <- preCalibration(Obj, npc, rprior)
 	time_pC <- Sys.time() - time_pC
 	cat(sprintf("- time for precalibration: \n"))
 	print(time_pC)
-	
+
 	sfactor <- 0.1 # scaling factor
 	## Get Starting Parameters from Pre-Calibration
 	out2 <- getMCMCPar(out1$prePar, out1$preDelta, p, sfactor, delta)
@@ -95,9 +96,9 @@ for (i in seq(length(chunks))){
 	time_ABC <- Sys.time()
 	draws <- ABCMCMC(Obj, startPar, ns, Sigma, delta, priorPDF)
 	time_ABC <- Sys.time() - time_ABC
-  cat(sprintf("- time for ABCMCMC: \n"))
-  print(time_ABC)
-	
+	cat(sprintf("- time for ABCMCMC: \n"))
+	print(time_ABC)
+
 	if (i>1){
 	 draws$draws <- checkFitWithPreviousExperiments(draws$draws, Obj, delta)
 	}
@@ -125,7 +126,7 @@ combinePar <- list(c(1,2), c(1,3), c(2,3))
 for(i in combinePar){
 	 plot(draws$draws[,i[1]], draws$draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
 }
-# 
+#
 # library(plotly)
 # df = as.data.frame(draws$draws)
 # colnames(df) <- parNames
