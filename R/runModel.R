@@ -35,81 +35,84 @@
 #' @param mc.cores number of cores to use (defaults to 8)
 #' @return output function values
 runModel <- function(experiments, modelName,  parABC, parMap=identity, mc.cores = detectCores()){
-  if (is.matrix(parABC)){
-    npc <- ncol(parABC)
-  } else {
-    npc <- 1
-  }
-  numExperiments <- length(experiments)
-  # transform the ABC parameters if necessary (parMap is a user supplied function),
-  # then determine the effective number of parameters, after transformation
-  modelPar <- parMap(parABC)
-  if (is.matrix(modelPar)) {
-    np <- nrow(modelPar)
-    N <- ncol(modelPar)
-  } else {
-    np <- length(modelPar)
-    N <- 1
-  }
-  N <- N*numExperiments
-
-  # an experiment can have an optional input
-  if ('input' %in% names(experiments[[1]])){
-    nu <- length(experiments[[1]][['input']])
-  } else {
-    nu <- 0
-  }
-
-  if (is.null(comment(modelName))) {
-    modelFile <- sprintf("%s.R",modelName)
-  } else {
-    modelFile <- comment(modelName)
-  }
-
-  if (grepl('.so$',modelFile,useBytes=TRUE)){
-    so <- modelFile
-    output_yy <- r_gsl_odeiv2_outer(modelName, experiments, matrix(modelPar,np))
-  } else if (grepl('.[Rr]$', modelFile)) {
-	# densely repeat the model parameters npc times
-	modelPar <- matrix(modelPar,np,npc*numExperiments)
-
-	# create a matrix that has all experimental inputs, repeated (densely) npc times per experiment
-	if (nu>0){
-		V <- vapply(experiments,function(E) matrix(E[['input']],nu,npc),FUN.VALUE=matrix(0,nu,npc))
-		dim(V) <- c(nu,npc*numExperiments)
-		modelPar <- rbind(modelPar,V)
+	if (is.matrix(parABC)){
+		npc <- ncol(parABC)
+	} else {
+		npc <- 1
 	}
-	stopifnot(ncol(modelPar)==N)
-	# create a matrix of initial states, repeated npc times per experiment, as with the inputs and parameters
-	ny <- length(experiments[[1]][['initialState']])
-	y0 <- vapply(experiments, function(E) matrix(E[['initialState']],ny,npc), FUN.VALUE=matrix(0,ny,npc))
-	dim(y0) <- c(ny,npc*numExperiments)
+	numExperiments <- length(experiments)
+	# transform the ABC parameters if necessary (parMap is a user supplied function),
+	# then determine the effective number of parameters, after transformation
+	modelPar <- parMap(parABC)
+	if (is.matrix(modelPar)) {
+		np <- nrow(modelPar)
+		N <- ncol(modelPar)
+	} else {
+		np <- length(modelPar)
+		N <- 1
+	}
+	N <- N*numExperiments
 
-	outputTimes_list <- list()
-	outputFunctions_list <- list()
-	for(i in 1:numExperiments){
-		outputTimes_list <- c(outputTimes_list, replicate(npc, list(experiments[[i]][["outputTimes"]])))
-		outputFunctions_list <- c(outputFunctions_list, replicate(npc, list(experiments[[i]][["outputFunction"]])))
+	# an experiment can have an optional input
+	if ('input' %in% names(experiments[[1]])){
+		nu <- length(experiments[[1]][['input']])
+	} else {
+		nu <- 0
 	}
 
-    stopifnot(file.exists(modelFile))
-    source(modelFile)
-    func <- eval(as.name(paste0(modelName,"_vf")))
-    yy <- mclapply(1:N, function(i) matrix(t(lsode(y0[,i], c(0,outputTimes_list[[i]]), func=func, parms=modelPar[,i])[-1, -1]), ncol=length(outputTimes_list[[i]])), mc.cores = mc.cores)
+	if (is.null(comment(modelName))) {
+		modelFile <- sprintf("%s.R",modelName)
+		stopifnot(file.exists(modelFile))
+	} else {
+		modelFile <- comment(modelName)
+	}
 
-    out_yy <- mclapply(1:N, function(i) apply(yy[[i]],2,outputFunctions_list[[i]]), mc.cores = mc.cores)
+	if (grepl('.so$',modelFile,useBytes=TRUE) && requireNamespace("rgsl")){
+		so <- modelFile
+		output_yy <- rgsl::r_gsl_odeiv2_outer(modelName, experiments, matrix(modelPar,np))
+	} else if (grepl('.[Rr]$', modelFile) && requireNamespace("deSolve")) {
+		## densely repeat the model parameters npc times
+		modelPar <- matrix(modelPar,np,npc*numExperiments)
 
-    fun <- function(yy_, out_yy_){
-      out_state <- do.call(cbind, yy_)
-      dim(out_state) <- c(dim(yy_[[1]]), length(yy_))
+		## create a matrix that has all experimental inputs, repeated (densely) npc times per experiment
+		if (nu>0){
+			V <- vapply(experiments,function(E) matrix(E[['input']],nu,npc),FUN.VALUE=matrix(0,nu,npc))
+			dim(V) <- c(nu,npc*numExperiments)
+			modelPar <- rbind(modelPar,V)
+		}
+		stopifnot(ncol(modelPar)==N)
+		## create a matrix of initial states, repeated npc times per experiment, as with the inputs and parameters
+		ny <- length(experiments[[1]][['initialState']])
+		y0 <- vapply(experiments, function(E) matrix(E[['initialState']],ny,npc), FUN.VALUE=matrix(0,ny,npc))
+		dim(y0) <- c(ny,npc*numExperiments)
 
-      out_func <- do.call(cbind, out_yy_)
-      dim(out_func) <- c(length(out_func)/(dim(out_state)[2]*npc), dim(out_state)[2], npc)
-      return(list(state = out_state, func = out_func))
-    }
-    output_yy <- mclapply(1:numExperiments, function(i) fun(yy[1:npc + npc*(i-1)], out_yy[1:npc + npc*(i-1)]))
-  }
-  return(output_yy)
+		outputTimes_list <- list()
+		outputFunctions_list <- list()
+		for(i in 1:numExperiments){
+			outputTimes_list <- c(outputTimes_list, replicate(npc, list(experiments[[i]][["outputTimes"]])))
+			outputFunctions_list <- c(outputFunctions_list, replicate(npc, list(experiments[[i]][["outputFunction"]])))
+		}
+
+		stopifnot(file.exists(modelFile))
+		source(modelFile)
+		func <- eval(as.name(paste0(modelName,"_vf")))
+		yy <- mclapply(1:N, function(i) matrix(t(lsode(y0[,i], c(0,outputTimes_list[[i]]), func=func, parms=modelPar[,i])[-1, -1]), ncol=length(outputTimes_list[[i]])), mc.cores = mc.cores)
+
+		out_yy <- mclapply(1:N, function(i) apply(yy[[i]],2,outputFunctions_list[[i]]), mc.cores = mc.cores)
+
+		fun <- function(yy_, out_yy_){
+		  out_state <- do.call(cbind, yy_)
+		  dim(out_state) <- c(dim(yy_[[1]]), length(yy_))
+
+		  out_func <- do.call(cbind, out_yy_)
+		  dim(out_func) <- c(length(out_func)/(dim(out_state)[2]*npc), dim(out_state)[2], npc)
+		  return(list(state = out_state, func = out_func))
+		}
+		output_yy <- mclapply(1:numExperiments, function(i) fun(yy[1:npc + npc*(i-1)], out_yy[1:npc + npc*(i-1)]))
+	} else {
+		stop("one of the two solvers must be installed: rgsl, deSolve")
+	}
+	return(output_yy)
 }
 
 #' checkModel tries to establish the simulation file for a given model
@@ -136,32 +139,32 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity, mc.cores 
 #'     compiled to a shared library.
 #' @return modelName with an additional comment about which file to use for simulations
 checkModel <- function(modelName,modelFile=NULL){
-  if (is.null(modelFile)) {
-    modelFile <- paste0(modelName,c('.R','_gvf.c','.so'));
-    modelFile <- modelFile[file.exists(modelFile)]
-    stopifnot(length(modelFile)>0)
-    modelFile <- modelFile[1]
-  }
-  if (grepl('.c$',modelFile,useBytes=TRUE)){
-    stopifnot(file.exists(modelFile))
-    message('building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).')
-    LIBS <- "`pkg-config --libs gsl`"
-    CFLAGS <- "-shared -fPIC `pkg-config --cflags gsl`"
-    so <- sprintf("%s.so",modelName)
-    command_args <- sprintf("%s -o ./%s %s %s",CFLAGS,so,modelFile,LIBS)
-    message(paste("cc",command_args))
-    system2("cc",command_args)
-    stopifnot(file.exists(so))
-    comment(modelName)<-so
-  } else if (grepl('.so$',modelFile,useBytes=TRUE)) {
-    stopifnot(file.exists(modelFile))
-    message(sprintf('Will use pre-existing %s for simulations.',modelFile))
-    comment(modelName) <- modelFile
-  } else if (grepl('.R$',modelFile,useBytes=TRUE)){
-    message(sprintf('will use the %s for simulations (deSolve backend)',modelFile))
-    comment(modelName) <- modelFile
-  }
-  return(modelName)
+	if (is.null(modelFile)) {
+		modelFile <- paste0(modelName,c('.R','_gvf.c','.so'));
+		modelFile <- modelFile[file.exists(modelFile)]
+		stopifnot(length(modelFile)>0)
+		modelFile <- modelFile[1]
+	}
+	if (grepl('.c$',modelFile,useBytes=TRUE)){
+		stopifnot(file.exists(modelFile))
+		message('building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).')
+		LIBS <- "`pkg-config --libs gsl`"
+		CFLAGS <- "-shared -fPIC `pkg-config --cflags gsl`"
+		so <- sprintf("%s.so",modelName)
+		command_args <- sprintf("%s -o ./%s %s %s",CFLAGS,so,modelFile,LIBS)
+		message(paste("cc",command_args))
+		system2("cc",command_args)
+		stopifnot(file.exists(so))
+		comment(modelName)<-so
+	} else if (grepl('.so$',modelFile,useBytes=TRUE)) {
+		stopifnot(file.exists(modelFile))
+		message(sprintf('Will use pre-existing %s for simulations.',modelFile))
+		comment(modelName) <- modelFile
+	} else if (grepl('.R$',modelFile,useBytes=TRUE)){
+		message(sprintf('will use the %s for simulations (deSolve backend)',modelFile))
+		comment(modelName) <- modelFile
+	}
+	return(modelName)
 }
 
 #' creates Objective functions from ingredients
@@ -178,15 +181,15 @@ checkModel <- function(modelName,modelFile=NULL){
 #' @return an objective function
 makeObjective <- function(experiments,modelName,distance,parMap=identity,mc.cores=detectCores())
 {
-  Objective <- function(parABC){
-    out <- runModel(experiments, modelName,  parABC, parMap, mc.cores)
-    S <- c()
-    for(i in 1:length(experiments)){
-      S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) distance(out[[i]]$func[1,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues), mc.cores = mc.cores)))
-    }
-    return(S)
-  }
-  return(Objective)
+	Objective <- function(parABC){
+		out <- runModel(experiments, modelName,  parABC, parMap, mc.cores)
+		S <- c()
+		for(i in 1:length(experiments)){
+		  S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) distance(out[[i]]$func[1,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues), mc.cores = mc.cores)))
+		}
+		return(S)
+	}
+	return(Objective)
 }
 
 #' Ths function Creates an acceptanceProbability function
@@ -203,13 +206,13 @@ makeObjective <- function(experiments,modelName,distance,parMap=identity,mc.core
 #' @return a function that calculates probabilities given only parABC as input; it implicitly uses all the argiments to this function.
 makeAcceptanceProbability <- function(experiments, modelName, getAcceptanceProbability, parMap=identity, mc.cores=detectCores())
 {
-  acceptanceProbability <- function(parABC){
-    out <- runModel(experiments, modelName,  parABC, parMap, mc.cores)
-    S <- c()
-    for(i in 1:length(experiments)){
-      S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) getAcceptanceProbability(out[[i]]$func[1,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues), mc.cores = mc.cores)))
-    }
-    return(S)
-  }
-  return(acceptanceProbability)
+	acceptanceProbability <- function(parABC){
+		out <- runModel(experiments, modelName,  parABC, parMap, mc.cores)
+		S <- c()
+		for(i in 1:length(experiments)){
+		  S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) getAcceptanceProbability(out[[i]]$func[1,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues), mc.cores = mc.cores)))
+		}
+		return(S)
+	}
+	return(acceptanceProbability)
 }

@@ -109,10 +109,10 @@ for (i in seq(length(chunks))){
 	timeStr <- gsub(":","_", timeStr)
 	timeStr <- gsub(" ","_", timeStr)
 	outFileR <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
-	if (require("R.matlab")){
+	if (requireNamespace("R.matlab")){
 		outFileM <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
 	}
-	#save(draws, parNames, file=outFileR)
+	save(draws, parNames, file=outFileR)
 }
 end_time = Sys.time()
 time_ = end_time - start_time
