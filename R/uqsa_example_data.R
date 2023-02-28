@@ -6,7 +6,8 @@
 #'
 #' @param modelName name of model, e.g.: "AKAR4", "AKAP79", "CaMKII";
 #'     if empty, this function lists all available examples.
-#' @return list of files that belong to the named example model
+#' @return The location of the example's directory (where the model is
+#'     stored).
 #' @export
 uqsa_example<-function(modelName=NULL) {
 	if (is.null(modelName)) {
