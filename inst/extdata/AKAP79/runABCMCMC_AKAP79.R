@@ -1,5 +1,5 @@
-library(rgsl)
-library(SBtabVFGEN)
+require(rgsl)
+require(SBtabVFGEN)
 library(uqsa)
 
 SBtabDir <- getwd()

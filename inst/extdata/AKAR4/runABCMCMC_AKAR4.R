@@ -1,5 +1,5 @@
-library(uqsa)
-library(rgsl)
+require(uqsa)
+require(rgsl)
 library(SBtabVFGEN)
 
 SBtabDir <- uqsa_example("AKAR4")
