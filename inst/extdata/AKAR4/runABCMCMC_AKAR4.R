@@ -108,6 +108,9 @@ for (i in seq(length(chunks))){
 	timeStr <- Sys.time()
 	timeStr <- gsub(":","_", timeStr)
 	timeStr <- gsub(" ","_", timeStr)
+	if (!dir.exists("./PosteriorSamples")) {
+		dir.create("./PosteriorSamples")
+	}
 	outFileR <- paste0("./PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
 	if (requireNamespace("R.matlab")){
 		outFileM <- paste0("./PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
