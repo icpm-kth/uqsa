@@ -59,7 +59,7 @@ reactions <- importReactionsSSA(model)
 
 AvoNum <- 6.022e23
 unit <- 1e-6
-vol <- 4e-16
+vol <- 4e-15
 Phi <- AvoNum * vol * unit
 
 compiled_reactions <- GillespieSSA2::compile_reactions(
@@ -78,7 +78,7 @@ chunks <- list(c(1,2),3)
 for (i in seq(length(chunks))){
   expInd <- chunks[[i]]
   cat("#####Starting run for Experiments ", expInd, "######\n")
-  Obj <- makeObjectiveSSA(experiments[expInd],parNames,getScore,parMap, Phi, compiled_reactions, mc.cores=detectCores(), nStochSim = 10)
+  Obj <- makeObjectiveSSA(experiments[expInd],parNames,getScore,parMap, Phi, compiled_reactions, mc.cores=detectCores(), nStochSim = 1)
   ## If First Experimental Setting, Create an Independente Colupla
   if(i==1){
     cat(sprintf("- Starting with uniform prior \n"))
