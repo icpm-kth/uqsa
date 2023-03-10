@@ -17,6 +17,8 @@
 #' makes a Copula fit to the source distribution using the VineCopula
 #' package.
 #'
+#' @importFrom VineCopula RVineStructureSelect
+#' @importFrom ks kde kcde
 #' @export
 #' @param X sample that characterizes the traget distribution (rows)
 #' @param nCores passed to parallel::mclapply()
@@ -64,6 +66,7 @@ fitCopula <- function(X,nCores=detectCores()){
 #' Covers the (simpler) special case where the prior(x) is iid uniform.
 #' The return value has the same structure as the value of fitCopula().
 #'
+#' @importFrom VineCopula RVineStructureSelect
 #' @export
 #' @param ll ll[i] is the lower limit of random variable x[i]
 #' @param ul upper limit, analogous to ll.

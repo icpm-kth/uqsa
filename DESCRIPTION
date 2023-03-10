@@ -12,13 +12,13 @@ Description: This package will solve an initial value problem (given an ordinary
 License: GPL (>=3)
 Encoding: UTF-8
 LazyData: true
-Depends:
+Imports:
 	parallel,
 	VineCopula,
 	MASS,
-	R.utils,
 	ks
 Suggests:
+	rgsl,
 	deSolve,
 	ggplot2
 RoxygenNote: 7.2.1

@@ -84,9 +84,9 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, a
     #}
 
     if(runif(1)<=0.95){
-      canPar <- mvrnorm(n=1, curPar, Sigma0)
+      canPar <- MASS::mvrnorm(n=1, curPar, Sigma0)
     }else{
-      canPar <- mvrnorm(n=1, curPar, Sigma1)
+      canPar <- MASS::mvrnorm(n=1, curPar, Sigma1)
     }
 
     out <- parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
