@@ -142,25 +142,25 @@ checkModel <- function(modelName,modelFile=NULL){
 	if (is.null(modelFile)) {
 		modelFile <- paste0(modelName,c('.R','_gvf.c','.so'));
 		modelFile <- modelFile[file.exists(modelFile)]
-		stopifnot(length(modelFile)>0)
+		stopifnot(!is.null(modelFile) && length(modelFile)>0)
 		modelFile <- modelFile[1]
 	}
-	if (grepl('.c$',modelFile,useBytes=TRUE)){
+	if (grepl('[.]c$',modelFile,useBytes=TRUE)){
 		stopifnot(file.exists(modelFile))
 		message('building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).')
 		LIBS <- "`pkg-config --libs gsl`"
 		CFLAGS <- "-shared -fPIC `pkg-config --cflags gsl`"
 		so <- sprintf("%s.so",modelName)
-		command_args <- sprintf("%s -o ./%s %s %s",CFLAGS,so,modelFile,LIBS)
+		command_args <- sprintf("%s -o './%s' '%s' %s",CFLAGS,so,modelFile,LIBS)
 		message(paste("cc",command_args))
 		system2("cc",command_args)
 		stopifnot(file.exists(so))
 		comment(modelName)<-so
-	} else if (grepl('.so$',modelFile,useBytes=TRUE)) {
+	} else if (grepl('[.]so$',modelFile,useBytes=TRUE)) {
 		stopifnot(file.exists(modelFile))
 		message(sprintf('Will use pre-existing %s for simulations.',modelFile))
 		comment(modelName) <- modelFile
-	} else if (grepl('.R$',modelFile,useBytes=TRUE)){
+	} else if (grepl('[.]R$',modelFile,useBytes=TRUE)){
 		message(sprintf('will use the %s for simulations (deSolve backend)',modelFile))
 		comment(modelName) <- modelFile
 	}
