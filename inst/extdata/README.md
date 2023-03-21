@@ -13,5 +13,5 @@ Church, Timothy W., et al. "AKAP79 enables calcineurin to directly suppress prot
 Elife 10 (2021): e68164.
 ```
 
-AKAR4 is a simplification of the model AKAP79 and it does not require intensive computation effort. An example of ``uqsa`` applied to this smaller model (AKAR4) is also available in the Jupyter notebook [AKAR4](https://github.com/icpm-kth/uqsa/blob/master/UQ_AKAR4.ipynb).
+AKAR4 is a submodel obtained from AKAP79 and it does not require intensive computation effort. An example of ``uqsa`` applied to this smaller model (AKAR4) is also available in the Jupyter notebook [AKAR4](https://github.com/icpm-kth/uqsa/blob/master/UQ_AKAR4.ipynb).
 
