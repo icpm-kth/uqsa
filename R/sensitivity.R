@@ -59,7 +59,7 @@ sum.of.bin.variance  <- function(hst,binMeans,totalMean){
 #' @export
 #' @return sensitivity S[i,j] of output[i] with respect to parameter[j]
 sensitivity<-function(parSample,outputSample,nBins="Sturges"){
-  meanOutput <- colMeans(outputSample)
+	meanOutput <- colMeans(outputSample)
 	varOutput <- diag(cov(outputSample))
 	SampleSize <- dim(parSample)
 	outputSize <- dim(outputSample)
