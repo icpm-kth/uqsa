@@ -112,7 +112,7 @@ for (i in seq(length(chunks))){
 		dir.create("./PosteriorSamples")
 	}
 	outFileR <- paste0("./PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
-	if (requireNamespace("R.matlab"),quietly=TRUE){
+	if (requireNamespace("R.matlab",quietly=TRUE)){
 		outFileM <- paste0("./PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
 	}
 	save(draws, parNames, file=outFileR)
