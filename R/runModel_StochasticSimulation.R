@@ -1,3 +1,27 @@
+ftsplit <- function(str,s){
+	return(trimws(unlist(strsplit(str,s,fixed=TRUE))))
+}
+
+parse.formula <- function(reactionFormula){
+	LR <- ftsplit(reactionFormula,"<=>")
+	reactants <- ftsplit(LR[1],"+")
+	products <- ftsplit(LR[2],"+")
+	return(list(reactants=reactants,products=products))
+}
+
+
+makeGillespieModel <- function(SBtab){
+	dR <- dim(SBtab$Reaction)
+	compoundNames <- SBtab[["Compound"]][["!Name"]]
+	for (i in 1:dR[1]){
+		reactionFormula <- model$Reaction[["!ReactionFormula"]][i]
+		r <- parse.formula(reactionFormula)
+		effect <- numeric(length(r$prod))
+		names(effect) <- r$prod
+	}
+}
+
+
 #' Functions to construct and run the stochastic simulation using GillespieSSA2 package
 #'
 #' This translates the Reaction network into the specific form required by GillespieSSA2

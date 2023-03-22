@@ -112,10 +112,22 @@ for (i in seq(length(chunks))){
 		dir.create("./PosteriorSamples")
 	}
 	outFileR <- paste0("./PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
-	if (requireNamespace("R.matlab"),quietly=TRUE){
+	if (requireNamespace("R.matlab",quietly=TRUE)){
 		outFileM <- paste0("./PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
 	}
 	save(draws, parNames, file=outFileR)
+	## this section makes a little sensitivity plot:
+	y<-runModel(experiments,modelName,parABC=t(draws$draws),parMap=parMap)
+	f<-aperm(y[[3]]$func[1,,]) # aperm makes the sample-index (3rd) the first index of f
+	S<-sensitivity(draws$draws,f)
+	S[1,]<-0 # the first index of S is time, and initially sensitivity is 0
+	cuS<-t(apply(S,1,cumsum))
+	plot.new()
+	tm<-experiments[[3]]$outputTimes
+	plot(tm,cuS[,3],type="l")
+	for (si in dim(S)[2]:1){
+		polygon(c(tm,rev(tm)),c(cuS[,si],numeric(length(tm))),col=si+1)
+	}
 }
 end_time = Sys.time()
 time_ = end_time - start_time
