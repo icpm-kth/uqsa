@@ -9,15 +9,45 @@ parse.formula <- function(reactionFormula){
 	return(list(reactants=reactants,products=products))
 }
 
+parse.kinetic <- function(reactionKinetic){
+	if (grepl("^[^-]*-[^-]*$",reactionKinetic)){
+		rates<-ftsplit(reactionKinetic,"-")
+	} else {
+		error("The kinetic formula «%s» should match the pattern: 'A - B', where A is taken the forward rate and B the backward rate. Otherwise it's hard to determine the two.",reactionKinetic)
+	}
+	return(rates)
+}
 
 makeGillespieModel <- function(SBtab){
+	stopifnot("Reaction" %in% names(SBtab))
+	stopifnot("Compound" %in% names(SBtab))
 	dR <- dim(SBtab$Reaction)
 	compoundNames <- SBtab[["Compound"]][["!Name"]]
+	if ("Expression" %in% names(SBtab)){
+		expressionNames <- SBtab[["Expression"]][["!Name"]]
+		expressionFormula <- SBtab[["Expression"]][["!Formula"]]
+		names(expressionFormula)<-expressionNames
+	} else {
+		expressionNames <- NULL
+		expressionFormula <- NULL
+	}
 	for (i in 1:dR[1]){
 		reactionFormula <- model$Reaction[["!ReactionFormula"]][i]
+		reactionKinetic <- model$Reaction[["!ReactionFormula"]][i]
 		r <- parse.formula(reactionFormula)
-		effect <- numeric(length(r$prod))
-		names(effect) <- r$prod
+		rVarNames <- unique(c(r$reactants,r$products))
+		rCompoundNames <- rVarNames[rVarNames %in% compoundNames]
+		rExpressions <- rVarNames[rVarNames %in% expressionNames]
+		effect <- numeric(length(rCompoundNames))
+		names(effect) <- rCompoundNames
+		effect[r$re] <- effect[r$re]-1
+		effect[r$pr] <- effect[r$pr]+1
+		ktc <- parse.kinetic(reactionKinetic)
+		if (!is.null(rExpressions)){
+			propensity<-paste0(sprintf("%s = %s;",rExpressions,expressionFormula[rExpressions]),ktc[1],collapse=" ")
+		} else {
+			propensity<-ktc[1]
+		}
 	}
 }
 
