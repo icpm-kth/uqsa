@@ -1,7 +1,30 @@
+
+#' splits a scalar string into parts
+#'
+#' This function splits a string like strsplit, but it removes
+#' whitespace from the result (on both ends) and the split token is
+#' taken literally
+#'
+#' @param str a string (character vector of length 1)
+#' @param s a split token
+#' @return a character vector of the components without leading or trailing whitespace
+#' @examples ftsplit(" A + 2*B ","+")
+#' returns c("A","2*B")
 ftsplit <- function(str,s){
 	return(trimws(unlist(strsplit(str,s,fixed=TRUE))))
 }
 
+#' Splits a formula into a left and right side
+#'
+#' This function splits a reaction formulka apart into its parts,
+#' removing whitespace on each side: "A + 2*B <=> AB2" will be split
+#' into a list with two entries
+#' list$reactants == c("A","2*B")
+#' list$products == c("AB2")
+#'
+#' @param string - reactionFormula
+#' @return a named list with a forward component and a backward
+#'     component, each entry contains a character vector
 parse.formula <- function(reactionFormula){
 	LR <- ftsplit(reactionFormula,"<=>")
 	reactants <- ftsplit(LR[1],"+")
@@ -9,20 +32,85 @@ parse.formula <- function(reactionFormula){
 	return(list(reactants=reactants,products=products))
 }
 
+#' find the coefficients in a formula
+#'
+#' A reaction formula has reactants and products, separated by <=>,
+#' with reactants on the left and products on the right (by convention).
+#' Each of those is a plus separated list of reacting compounds and
+#' modifiers, with optional coefficients, e.g.: A + 2*B <=> AB2
+#'
+#' Once the formula is split into left and right side, this function
+#' determines the coefficients. For the above example, this function
+#' returns c(1,2) for the left side and 1 for the right side.
+#'
+#' @return coefficients, as a vector
+#' @param chrv a character vector as returned by parse.formula
+match.coefficients <- function(chrv){
+	cf <- numeric(length(chrv))
+	l <- grepl("^[0-9]+",chrv) # leading numbers exist
+	cf[l] <- as.numeric(sub("^([0-9]+)[ ]*[*](.*)$","\\1",chrv[l]))
+	cf[!l] <- 1
+	return(cf)
+}
+
+#' find the variable names in a formula
+#'
+#' A reaction formula has reactants and products, separated by <=>,
+#' with reactants on the left and products on the right (by convention).
+#' Each of those is a plus separated list of reacting compounds and
+#' modifiers, with optional coefficients, e.g.: A + 2*B <=> AB2
+#'
+#' Once the formula is split into left and right side, this function
+#' determines the names. For the above example, this function
+#' returns c("A","B") for the left side and "AB2" for the right side.
+#'
+#' @return coefficients, as a vector
+#' @param chrv a character vector as returned by parse.formula
+match.names <- function(chrv){
+	cf <- character(length(chrv))
+	l <- grepl("^[0-9]+",chrv) # leading numbers exist
+	cf[l] <- sub("^([0-9]+)[ ]*[*](.*)$","\\2",chrv[l])
+	cf[!l] <- chrv[!l]
+	return(cf)
+}
+
 parse.kinetic <- function(reactionKinetic){
 	if (grepl("^[^-]*-[^-]*$",reactionKinetic)){
 		rates<-ftsplit(reactionKinetic,"-")
 	} else {
-		error("The kinetic formula «%s» should match the pattern: 'A - B', where A is taken the forward rate and B the backward rate. Otherwise it's hard to determine the two.",reactionKinetic)
+		rates<-c(reactionKinetic,"0")
 	}
+	names(rates)<-c("forward","backward")
 	return(rates)
 }
 
+#' Create a list of reactions for GillespieSSA2
+#'
+#' This function takes a series of SBtab tables, as returned by
+#' SBtabVFGEN::sbtab_from_tsv() and creates GillespieSSA2 reactions
+#' from them. Reactions arfe made pairwise, as forward and backward
+#' reaction pairs. If a backward reaction doesn't exist, the list item
+#' is NULL. A valid set of reactions can be obtained with `!is.null(reactions)`
+#'
+#' @export
+#' @import GillespieSSA2
+#' @param SBtab a series of tables as returned by `sbtab_from_tsv()`
+#' @return a list of reactions
+#' @examples
+#'  model.tsv<-dir(pattern="[.]tsv$")
+#'  model.sbtab<-SBtabVFGEN::sbtab_from_tsv(model.tsv)
+#'  reactions<-makeGillespieModel(model.sbtab)
+#'  l<-is.null(reactions)
+#'  model.ssa2<-reactions[!l]
 makeGillespieModel <- function(SBtab){
 	stopifnot("Reaction" %in% names(SBtab))
 	stopifnot("Compound" %in% names(SBtab))
 	dR <- dim(SBtab$Reaction)
+	n <- dR[1]
 	compoundNames <- SBtab[["Compound"]][["!Name"]]
+	reactionNames <- SBtab[["Reaction"]][["!Name"]]
+	isReversible <- as.logical(SBtab[["Reaction"]][["!IsReversible"]])
+	SSA2reactions <- vector(mode="list",length=2*n)
 	if ("Expression" %in% names(SBtab)){
 		expressionNames <- SBtab[["Expression"]][["!Name"]]
 		expressionFormula <- SBtab[["Expression"]][["!Formula"]]
@@ -32,23 +120,32 @@ makeGillespieModel <- function(SBtab){
 		expressionFormula <- NULL
 	}
 	for (i in 1:dR[1]){
-		reactionFormula <- model$Reaction[["!ReactionFormula"]][i]
-		reactionKinetic <- model$Reaction[["!ReactionFormula"]][i]
+		reactionFormula <- SBtab$Reaction[["!ReactionFormula"]][i]
+		reactionKinetic <- SBtab$Reaction[["!KineticLaw"]][i]
 		r <- parse.formula(reactionFormula)
-		rVarNames <- unique(c(r$reactants,r$products))
+		num <- sub("^([0-9]+).*$","\\1",r)
+		rVarNames <- unique(c(match.names(r$reactants),match.names(r$products)))
 		rCompoundNames <- rVarNames[rVarNames %in% compoundNames]
 		rExpressions <- rVarNames[rVarNames %in% expressionNames]
 		effect <- numeric(length(rCompoundNames))
 		names(effect) <- rCompoundNames
-		effect[r$re] <- effect[r$re]-1
-		effect[r$pr] <- effect[r$pr]+1
+		effect[r$re] <- effect[r$re]-match.coefficients(r$re)
+		effect[r$pr] <- effect[r$pr]+match.coefficients(r$pr)
 		ktc <- parse.kinetic(reactionKinetic)
+		print(ktc)
+		## forward
+		propensity <- ktc
 		if (!is.null(rExpressions)){
-			propensity<-paste0(sprintf("%s = %s;",rExpressions,expressionFormula[rExpressions]),ktc[1],collapse=" ")
-		} else {
-			propensity<-ktc[1]
+			propensity['forward'] <- paste0(sprintf("%s = %s;",rExpressions,expressionFormula[rExpressions]),ktc['forward'],collapse=" ")
+			propensity['backward'] <- paste0(sprintf("%s = %s;",rExpressions,expressionFormula[rExpressions]),ktc['backward'],collapse=" ")
+		}
+		plain.reaction.name <- sub("[^a-zA-Z0-9_]","_",reactionNames[i])
+		SSA2reactions[[2*(i-1)+1]] <-  GillespieSSA2::reaction(propensity['forward'],effect,sprintf("%s_forward",plain.reaction.name))
+		if (isReversible[i]) {
+			SSA2reactions[[2*(i-1)+2]] <-  GillespieSSA2::reaction(propensity['backward'],-1*effect,sprintf("%s_backward", plain.reaction.name))
 		}
 	}
+	return(SSA2reactions)
 }
 
 
