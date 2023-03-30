@@ -172,20 +172,9 @@ parUpdate_ProbabilisticAcceptance <- function(acceptanceProbability, curPar, can
 #' checked against old data.
 #'
 #' @export
-#' @param modelName name, is used to find the file and model functions
-#'     therein (comment(modelName) can contain a file-name if it
-#'     differs from `modelName.R`).
 #' @param draws matrix of sampled values (to be filtered).
-#' @param experiments a list of experiments (all of them, or up to
-#'     currentExpSet).
-#' @param parMap optional remapping function:
-#'     parModel<-parMap(parABC); the ABC variables will be transformed
-#'     to make the parameter vector acceptable to the model. This is
-#'     necessary whenever ABC sampling happens in a different space
-#'     than the model parameter domain for whatever reason.
-#' @param getScore scoring function.
+#' @param objectiveFunction function that, given a (vectorial) parameter as input, simulated the model and outputs the distance between experimental data and data simulated from the model with the parameter provided in input
 #' @param delta the acceptance threshold.
-#' @param nCores number of cores to use in parallel::mclapply() calls.
 #' @return a filtered subset of acceptable parameter draws
 checkFitWithPreviousExperiments <- function(draws, objectiveFunction, delta){
   cat("\n-Checking fit with previous data\n")
