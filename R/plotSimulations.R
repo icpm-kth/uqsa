@@ -62,7 +62,6 @@ plotSimualtionsFromSBtab <- function(SBtabDir, paramVal, plotDir = NULL, width =
     yy_exp <- experiments[[i]][["outputValues"]]
     dfExp <- data.frame(t = experiments[[i]][["outputTimes"]],y = yy_exp)
     
-    dev.new() # opens a new window
     pl <- ggplot(df, aes(x = t, y = y)) + geom_line(color = "blue") + geom_point(data = na.omit(dfExp), aes(x = t, y = y)) + ggtitle(model$Experiments[["!Name"]])
     print(pl)
     ggsave(paste0(plotDir,"/",modelName,"_PlotExperimentAndSimulation_",model$Experiments[["!Name"]][i],".pdf"), plot = pl, width = width, height = heigth, units = "cm")
