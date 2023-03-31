@@ -2,6 +2,7 @@
 *.RData
 *.log
 *.txt
+*.so
 .Rproj.user
 .Rhistory
 .RData
