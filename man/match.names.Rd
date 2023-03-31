@@ -2,7 +2,7 @@
 % Please edit documentation in R/runModel_StochasticSimulation.R
 \name{match.names}
 \alias{match.names}
-\title{find the variable names in a formula}
+\title{Find the variable names in a formula}
 \usage{
 match.names(chrv)
 }
@@ -22,4 +22,12 @@ modifiers, with optional coefficients, e.g.: A + 2*B <=> AB2
 Once the formula is split into left and right side, this function
 determines the names. For the above example, this function
 returns c("A","B") for the left side and "AB2" for the right side.
+}
+\examples{
+lapply(parse.formula("A + 2*B <=> AB2"),match.names)
+lapply(parse.formula("A + 2*B <=> AB2"),match.names)
+$reactants
+[1] "A" "B"
+$products
+[1] "AB2"
 }

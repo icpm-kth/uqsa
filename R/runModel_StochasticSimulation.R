@@ -1,5 +1,5 @@
 
-#' splits a scalar string into parts
+#' Fixed-token-split a scalar string into parts
 #'
 #' This function splits a string like strsplit, but it removes
 #' whitespace from the result (on both ends) and the split token is
@@ -9,7 +9,17 @@
 #' @param s a split token
 #' @return a character vector of the components without leading or trailing whitespace
 #' @examples ftsplit(" A + 2*B ","+")
-#' returns c("A","2*B")
+#' [1] "A"   "2*B"
+#' @examples x<-c('a+b','c+d','1 + 2'); lapply(x,ftsplit,'+')
+#' [[1]]
+#' [1] "a" "b"
+#' [[2]]
+#' [1] "c" "d"
+#' [[3]]
+#' [1] "1" "2"
+#' @examples this also works, but mixes up the components:
+#' x<-c('a+b','c+d+1','1 / 2'); ftsplit(x,'+')
+#' [1] "a"     "b"     "c"     "d"     "1"     "1 / 2"
 ftsplit <- function(str,s){
 	return(trimws(unlist(strsplit(str,s,fixed=TRUE))))
 }
@@ -45,6 +55,11 @@ parse.formula <- function(reactionFormula){
 #'
 #' @return coefficients, as a vector
 #' @param chrv a character vector as returned by parse.formula
+#' @examples lapply(parse.formula("A + 2*B <=> AB2"),match.coefficients)
+#' $reactants
+#' [1] 1 2
+#' $products
+#' [1] 1
 match.coefficients <- function(chrv){
 	cf <- numeric(length(chrv))
 	l <- grepl("^[0-9]+",chrv) # leading numbers exist
@@ -53,7 +68,7 @@ match.coefficients <- function(chrv){
 	return(cf)
 }
 
-#' find the variable names in a formula
+#' Find the variable names in a formula
 #'
 #' A reaction formula has reactants and products, separated by <=>,
 #' with reactants on the left and products on the right (by convention).
@@ -66,6 +81,12 @@ match.coefficients <- function(chrv){
 #'
 #' @return coefficients, as a vector
 #' @param chrv a character vector as returned by parse.formula
+#' @examples lapply(parse.formula("A + 2*B <=> AB2"),match.names)
+#' lapply(parse.formula("A + 2*B <=> AB2"),match.names)
+#' $reactants
+#' [1] "A" "B"
+#' $products
+#' [1] "AB2"
 match.names <- function(chrv){
 	cf <- character(length(chrv))
 	l <- grepl("^[0-9]+",chrv) # leading numbers exist
@@ -74,6 +95,21 @@ match.names <- function(chrv){
 	return(cf)
 }
 
+#' Find forward and backward component in a reaction kinetic
+#'
+#' a reaction kinetic can be almost any function, and in general it is
+#' not possible to tell apart which part of a kinetic law is which.
+#'
+#' But for mass action kinetics, and positive reaction rate
+#' coefficients, the expressions mostly look like this:
+#'
+#' kf*prod(reactants.concentration) - kb*prod(product.concentrations)
+#'
+#' this functions splits at '-', and if none is present, then the
+#' reaction is assumed to be irreversible.
+#'
+#' In a more general setting (where the '-' split is wrong),
+#' the splitting has to be done by hand or more complex rules.
 parse.kinetic <- function(reactionKinetic){
 	if (grepl("^[^-]*-[^-]*$",reactionKinetic)){
 		rates<-ftsplit(reactionKinetic,"-")
@@ -95,6 +131,10 @@ parse.kinetic <- function(reactionKinetic){
 #' @export
 #' @import GillespieSSA2
 #' @param SBtab a series of tables as returned by `sbtab_from_tsv()`
+#' @param LV is the product of Avogadro's constant L and the system's
+#'     volume V in litres; if missing this information is retrieved
+#'     from the SBtab files, if missing we assume 1µm³ of volume (the
+#'     approximate sizes of a bacteria or synapses)
 #' @return a list of reactions
 #' @examples
 #'  model.tsv<-dir(pattern="[.]tsv$")
@@ -102,11 +142,20 @@ parse.kinetic <- function(reactionKinetic){
 #'  reactions<-makeGillespieModel(model.sbtab)
 #'  l<-is.null(reactions)
 #'  model.ssa2<-reactions[!l]
-makeGillespieModel <- function(SBtab){
+makeGillespieModel <- function(SBtab,LV=NULL){
 	stopifnot("Reaction" %in% names(SBtab))
 	stopifnot("Compound" %in% names(SBtab))
 	dR <- dim(SBtab$Reaction)
 	n <- dR[1]
+	if (is.null(LV) && 'Compartment' %in% names(SBtab) && "!Size" %in% names(SBtab[["Compartment"]])){
+		L <- 6.02214076e+23
+		V <- SBtab[["Compartment"]][["!Size"]] # litres
+		LV <- L*V
+	} else {
+		## L <- 6.02214076e+23
+		## V <- 1e-15 # litres
+		LV <- 6.02214076e+8 # L*V
+	}
 	compoundNames <- SBtab[["Compound"]][["!Name"]]
 	reactionNames <- SBtab[["Reaction"]][["!Name"]]
 	isReversible <- as.logical(SBtab[["Reaction"]][["!IsReversible"]])
@@ -123,7 +172,6 @@ makeGillespieModel <- function(SBtab){
 		reactionFormula <- SBtab$Reaction[["!ReactionFormula"]][i]
 		reactionKinetic <- SBtab$Reaction[["!KineticLaw"]][i]
 		r <- parse.formula(reactionFormula)
-		num <- sub("^([0-9]+).*$","\\1",r)
 		rVarNames <- unique(c(match.names(r$reactants),match.names(r$products)))
 		rCompoundNames <- rVarNames[rVarNames %in% compoundNames]
 		rExpressions <- rVarNames[rVarNames %in% expressionNames]

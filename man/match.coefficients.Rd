@@ -23,3 +23,10 @@ Once the formula is split into left and right side, this function
 determines the coefficients. For the above example, this function
 returns c(1,2) for the left side and 1 for the right side.
 }
+\examples{
+lapply(parse.formula("A + 2*B <=> AB2"),match.coefficients)
+$reactants
+[1] 1 2
+$products
+[1] 1
+}

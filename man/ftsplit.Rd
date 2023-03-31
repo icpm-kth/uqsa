@@ -2,7 +2,7 @@
 % Please edit documentation in R/runModel_StochasticSimulation.R
 \name{ftsplit}
 \alias{ftsplit}
-\title{splits a scalar string into parts}
+\title{Fixed-token-split a scalar string into parts}
 \usage{
 ftsplit(str, s)
 }
@@ -21,5 +21,15 @@ taken literally
 }
 \examples{
 ftsplit(" A + 2*B ","+")
-returns c("A","2*B")
+[1] "A"   "2*B"
+x<-c('a+b','c+d','1 + 2'); lapply(x,ftsplit,'+')
+[[1]]
+[1] "a" "b"
+[[2]]
+[1] "c" "d"
+[[3]]
+[1] "1" "2"
+this also works, but mixes up the components:
+x<-c('a+b','c+d+1','1 / 2'); ftsplit(x,'+')
+[1] "a"     "b"     "c"     "d"     "1"     "1 / 2"
 }
