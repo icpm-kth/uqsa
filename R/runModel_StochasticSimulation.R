@@ -1,4 +1,3 @@
-
 #' Fixed-token-split a scalar string into parts
 #'
 #' This function splits a string like strsplit, but it removes
@@ -23,6 +22,155 @@
 ftsplit <- function(str,s){
 	return(trimws(unlist(strsplit(str,s,fixed=TRUE))))
 }
+
+.unit.kind <- function(kind){
+	stopifnot(is.character(kind) && length(kind)==1)
+	if (grepl("^(l|L|litre|liter)$",kind)){
+		k <- "litre"
+	} else if (grepl("^(mole?)$",kind)) {
+		k <- "mole"
+	} else if (grepl("^(m|meter|metre)$",kind)) {
+		k <- "metre"
+	} else if (grepl("^(kg|kilogram)$",kind)){
+		k <- "kilogram"
+	} else if (grepl("^(g|gram)$",kind)){
+		k <- "gram"
+	} else if (grepl("^(A|ampere)$",kind)){
+		k <- "ampere"
+	} else if (grepl("^(cd|candela)$",kind)){
+		k <- "candela"
+	} else if (grepl("^(s|second)$",kind)){
+		k <- "second"
+	} else if (grepl("^(K|kelvin)$",kind)){
+		k <- "kelvin"
+	} else {
+		k <- "dimensionless"
+	}
+	return(k)
+}
+
+.unit.scale <- function(prefix){
+	stopifnot(is.character(prefix) && length(prefix)==1)
+	if (grepl("^G$|^giga$",prefix)){
+		s <- 9
+	} else if (grepl("^M$|^mega$",prefix)){
+		s <- 6
+	} else if (grepl("^k$|^kilo$",prefix)){
+		s <- 3
+	} else if (grepl("^h$|^hecto$",prefix)){
+		s <- 2
+	} else if (grepl("^d$|^deci$",prefix)){
+		s <- -1
+	} else if (grepl("^c$|^centi$",prefix)){
+		s <- -2
+	} else if (grepl("^m$|^milli$",prefix)){
+		s <- -3
+	} else if (grepl("^u$|^µ$|^micro$",prefix)){
+		s <- -6
+	} else if (grepl("^n$|^nano$",prefix)){
+		s <- -9
+	} else if (grepl("^p$|^pico$",prefix)){
+		s <- -12
+	} else if (grepl("^f$|^femto$",prefix)){
+		s <- -15
+	} else {
+		s <- 0
+	}
+	return(s)
+}
+
+.unit.id.from.string <- function(unit.str,prnt=FALSE){
+	uid <- unit.str
+	uid <- sub("^1$","dimensionless",uid)
+	uid <- gsub("1/","one_over_",uid)
+	uid <- gsub("/","_per_",uid)
+	uid <- gsub("[*[:blank:]]","_",uid)
+	uid <- gsub("[()]","",uid)
+	uid <- gsub("\\^2","_square",uid)
+	uid <- gsub("\\^3","_cube",uid)
+	uid <- gsub("\\^([0-9]+)","_to_the_power_of_\1",uid)
+	uid <- make.names(uid,unique=FALSE)
+	if (prnt){
+		message("units in «!Unit» column:")
+		print(unit.str)
+		message("automatically created sbml unit ids:")
+		print(uid)
+	}
+	return(uid)
+}
+
+#' Unit Interpreter
+#'
+#' This function will try its best to interpret strings like
+#' "liter/(nmol ms)"
+#' rules: 1. only one slash is allowed
+#'        2. M can be mega or mol/l
+#'        3. prefixes and units can be words or single letters
+#'        4. everything after a slash is the denominator
+#'        5. u is an accepted replacement for μ
+#'        6. no parentheses
+#' this retruns a data.frame with components as in the sbml standard:
+#' kind, multiplier, scale and exponent
+#' since there is only one slash,parentheses do nothing
+#' everything after a slash is the denominator, so: l/mol s is the same as (l)/(mol s)
+#' Remark: not all units are understood.
+#' @param unit.str a string that contains a human readable unit
+#' @return data.frame with an interpretation of the unit
+.interpret.unit.from.string <- function(unit.str,verbose=FALSE){
+	stopifnot(length(unit.str)==1)
+	.kind <- NULL
+	.multiplier <- NULL
+	.scale <- NULL
+	.exponent <- NULL
+	if (verbose) message(sprintf("unit: %11s",unit.str))
+	print(unit.str)
+	a <- gsub("[()]","",unit.str)
+	a <- gsub("molarity","mol l^-1",a);
+	if (grepl("/",unit.str)){
+		a <- ftsplit(a,"/")
+		if (verbose) message(sprintf("«%s» is interpreted as:\n\tNumerator «%s»\n\tDenominator: «%s»\n",unit.str,a[1],a[2]))
+	}
+	n <- length(a)
+	stopifnot(n==1 || n==2)
+
+	for (j in 1:n){
+		b <- unlist(strsplit(a[j],split="[* ]"))
+		for (u in b){
+			pat <- paste0("^(G|giga|M|mega|k|kilo|c|centi|m|milli|u|μ|micro|n|nano|p|pico|f|femto)?",
+			              "(l|L|liter|litre|g|gram|mole?|s|second|m|meter|metre|K|kelvin|cd|candela|A|ampere)",
+			              "\\^?([-+]?[0-9]+)?$")
+			r <- regexec(pat,u)
+			if (u == "1"){
+				.u.s <- 0
+				.u.k <- "dimensionless"
+				 x <- 1
+			} else if (r[[1]][1] > 0){
+				m <- unlist(regmatches(u, r))
+				if(verbose) print(m)
+				.u.s <- .unit.scale(m[2])
+				.u.k <- .unit.kind(m[3])
+				if (nchar(m[4])>0){
+					x <- switch(j,as.numeric(m[4]),-as.numeric(m[4]))
+				} else {
+					x <- switch(j,1,-1)
+				}
+			} else {
+				warning(sprintf("unit «%s» didn't match any pre-defined unit, because of «%s». (According to the limited [dumb] rules defined in this R script)",unit.str,u))
+				.u.s <- 0
+				.u.k <- "dimensionless"
+				x <- 1
+			}
+			.multiplier <- c(.multiplier,1.0)
+			.scale <- c(.scale,.u.s)
+			.kind <- c(.kind,.u.k)
+			.exponent <- c(.exponent,x)
+			if (verbose) message(sprintf("«%s» has been interpreted as: (%s×10^(%i))^(%i)",u,.u.k,.u.s,x))
+		}
+	}
+	unit <- data.frame(scale=.scale,multiplier=.multiplier,exponent=.exponent,kind=.kind)
+	return(unit)
+}
+
 
 #' Splits a formula into a left and right side
 #'
@@ -110,6 +258,18 @@ match.names <- function(chrv){
 #'
 #' In a more general setting (where the '-' split is wrong),
 #' the splitting has to be done by hand or more complex rules.
+#' @param reactionKinetic a string with the kinetic law for a reaction
+#' @return a character vector of components named 'forward' and 'backward'
+#' @examples
+#' > parse.kinetic("kf*A*B-kb*C")
+#'  forward backward
+#' "kf*A*B"   "kb*C"
+#' > parse.kinetic("kf*A*B")
+#'  forward backward
+#' "kf*A*B"      "0"
+#' > parse.kinetic("kf*A/(Km+A)")
+#'       forward      backward
+#' "kf*A/(Km+A)"           "0"
 parse.kinetic <- function(reactionKinetic){
 	if (grepl("^[^-]*-[^-]*$",reactionKinetic)){
 		rates<-ftsplit(reactionKinetic,"-")
@@ -118,6 +278,74 @@ parse.kinetic <- function(reactionKinetic){
 	}
 	names(rates)<-c("forward","backward")
 	return(rates)
+}
+
+#' convert ODE parameter to Gillespie parameter
+#'
+#' ODE parameters usually have a different unit of measurement than
+#' the parameters we need for stochastic simulators.  ODEs have
+#' fluxes, which are in multiples of M/s (M is mol/liter), same unit
+#' as the first derivative of the state variables.
+#'
+#' The reaction rate coefficients of mass action kinetics, kf and kb
+#' have units that are compatible with the flux units, depending on
+#' the order of the reaction.
+#'
+#' @param k the ODE reaction rate coefficient (mandatory)
+#' @param n multiplicity of each reactant, if any (order > 0)
+#' @param LV L*V -- product of _Avogadro's number_ and _volume_ [defaults to 6.02214076e+8]
+#' @return rescaled parameter for stochastic simulation with a comment of how to re-scale it
+#' @examples reaction: "2 A + B -> C"
+#' k <- 1.0
+#' attr(k,'unit') <- .interpret.unit.from.string("mM/s")
+#' n <- c(2,1)
+#' reactants <- c('A','B')
+#' convert.parameter(k,n)
+convert.parameter <- function(k, n=NULL, LV=6.02214076e+8){
+	order <- sum(n)
+	unit <- .interpret.unit.from.string(attr(k,'unit'))
+	unit.conversion <- 10^sum(unit$scale*unit$exponent)
+	order.conversion <- switch(order,LV,1.0,1.0/LV)
+	c <- unit.conversion*order.conversion
+	if (order==2 && length(n)==1) c<-2*c
+	propensity.coefficient <- k*c
+	attr(propensity.coefficient,'conversion') <- c
+	return(propensity.coefficient)
+}
+
+parameter.from.kinetic.law <- function(kineticLaw,parValue,parNames,parUnits){
+	i <- parNames %in% ftsplit(kineticLaw,'*')
+	if (any(i)){
+		k<-parValue[i]
+		comment(k)<-parNames[i]
+		attr(k,'unit')<-parUnits[i]
+	} else {
+		k <- 0
+		comment(k) <- ''
+		attr(k,'unit') <- '1'
+	}
+	return(k)
+}
+
+#' propensity creates a propensity formula
+#'
+#' given the custom math expressions needed to calculate a propensity,
+#' the propensity coefficient and the kinetic law of the reaction,
+#' this function makes a string that can be used with GillespieSSA2.
+#'
+#' The propensity coefficient translates between
+#'
+#' @param conv.coeff propensity conversion coefficient: conv.coeff*kinetic.law = propensity function
+#' @param kinetic.law the kinetic law of this reaction (as used with ODEs)
+#' @param rExpressions named math expressions that appear in the kinetic.law of this reaction
+#' @return a string representation of the propensity function
+propensity <- function(conv.coeff,kinetic.law,rExpressions){
+	ex <- ''
+	if (!is.null(rExpressions)){
+		ex <- paste0(sprintf("%s = %s; ",names(rExpressions),rExpressions),collapse='')
+	}
+	p <- sprintf("%s %.10g*%s",ex,conv.coeff,kinetic.law)
+	return(p)
 }
 
 #' Create a list of reactions for GillespieSSA2
@@ -132,9 +360,9 @@ parse.kinetic <- function(reactionKinetic){
 #' @import GillespieSSA2
 #' @param SBtab a series of tables as returned by `sbtab_from_tsv()`
 #' @param LV is the product of Avogadro's constant L and the system's
-#'     volume V in litres; if missing this information is retrieved
+#'     volume V in litres; if unspecified this information is retrieved
 #'     from the SBtab files, if missing we assume 1µm³ of volume (the
-#'     approximate sizes of a bacteria or synapses)
+#'     approximate sizes of bacteria or synapses)
 #' @return a list of reactions
 #' @examples
 #'  model.tsv<-dir(pattern="[.]tsv$")
@@ -156,6 +384,9 @@ makeGillespieModel <- function(SBtab,LV=NULL){
 		## V <- 1e-15 # litres
 		LV <- 6.02214076e+8 # L*V
 	}
+	parValue <- SBtab[["Parameter"]][["!DefaultValue"]]
+	parNames <- SBtab[["Parameter"]][["!Name"]]
+	parUnits <- SBtab[["Parameter"]][["!Unit"]]
 	compoundNames <- SBtab[["Compound"]][["!Name"]]
 	reactionNames <- SBtab[["Reaction"]][["!Name"]]
 	isReversible <- as.logical(SBtab[["Reaction"]][["!IsReversible"]])
@@ -174,23 +405,26 @@ makeGillespieModel <- function(SBtab,LV=NULL){
 		r <- parse.formula(reactionFormula)
 		rVarNames <- unique(c(match.names(r$reactants),match.names(r$products)))
 		rCompoundNames <- rVarNames[rVarNames %in% compoundNames]
-		rExpressions <- rVarNames[rVarNames %in% expressionNames]
+		rExpressionNames <- rVarNames[rVarNames %in% expressionNames]
+		rExpressions <- expressionFormula[rExpressionNames]
+		names(rExpressions) <- rExpressionNames
 		effect <- numeric(length(rCompoundNames))
 		names(effect) <- rCompoundNames
-		effect[r$re] <- effect[r$re]-match.coefficients(r$re)
-		effect[r$pr] <- effect[r$pr]+match.coefficients(r$pr)
+		cf<-list(reactants=match.coefficients(r$re),products=match.coefficients(r$pr))
+		effect[r$re] <- effect[r$re]-cf$re
+		effect[r$pr] <- effect[r$pr]+cf$pr
 		ktc <- parse.kinetic(reactionKinetic)
-		print(ktc)
+		kf <- parameter.from.kinetic.law(ktc[1],parValue,parNames,parUnits)
+		kb <- parameter.from.kinetic.law(ktc[2],parValue,parNames,parUnits)
+		pf <- convert.parameter(kf,cf$re,LV=LV)
+		pb <- convert.parameter(kb,cf$pr,LV=LV)
 		## forward
-		propensity <- ktc
-		if (!is.null(rExpressions)){
-			propensity['forward'] <- paste0(sprintf("%s = %s;",rExpressions,expressionFormula[rExpressions]),ktc['forward'],collapse=" ")
-			propensity['backward'] <- paste0(sprintf("%s = %s;",rExpressions,expressionFormula[rExpressions]),ktc['backward'],collapse=" ")
-		}
-		plain.reaction.name <- sub("[^a-zA-Z0-9_]","_",reactionNames[i])
-		SSA2reactions[[2*(i-1)+1]] <-  GillespieSSA2::reaction(propensity['forward'],effect,sprintf("%s_forward",plain.reaction.name))
+		plain.reaction.name <- sprintf("%s_%s",sub("[^a-zA-Z0-9_]","_",reactionNames[i]),c('forward','backward'))
+		propFormula <- list(f=propensity(attr(pf,'conversion'),ktc[1],rExpressions),b=propensity(attr(pb,'conversion'),ktc[2],rExpressions))
+		print(propFormula)
+		SSA2reactions[[2*(i-1)+1]] <-  GillespieSSA2::reaction(propFormula$f,effect,plain.reaction.name[1])
 		if (isReversible[i]) {
-			SSA2reactions[[2*(i-1)+2]] <-  GillespieSSA2::reaction(propensity['backward'],-1*effect,sprintf("%s_backward", plain.reaction.name))
+			SSA2reactions[[2*(i-1)+2]] <-  GillespieSSA2::reaction(propFormula$b,-1*effect,plain.reaction.name[2])
 		}
 	}
 	return(SSA2reactions)
