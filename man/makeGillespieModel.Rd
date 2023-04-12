@@ -4,10 +4,15 @@
 \alias{makeGillespieModel}
 \title{Create a list of reactions for GillespieSSA2}
 \usage{
-makeGillespieModel(SBtab)
+makeGillespieModel(SBtab, LV = NULL)
 }
 \arguments{
 \item{SBtab}{a series of tables as returned by `sbtab_from_tsv()`}
+
+\item{LV}{is the product of Avogadro's constant L and the system's
+volume V in litres; if unspecified this information is retrieved
+from the SBtab files, if missing we assume 1µm³ of volume (the
+approximate sizes of bacteria or synapses)}
 }
 \value{
 a list of reactions

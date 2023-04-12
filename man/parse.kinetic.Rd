@@ -6,6 +6,12 @@
 \usage{
 parse.kinetic(reactionKinetic)
 }
+\arguments{
+\item{reactionKinetic}{a string with the kinetic law for a reaction}
+}
+\value{
+a character vector of components named 'forward' and 'backward'
+}
 \description{
 a reaction kinetic can be almost any function, and in general it is
 not possible to tell apart which part of a kinetic law is which.
@@ -21,4 +27,17 @@ reaction is assumed to be irreversible.
 
 In a more general setting (where the '-' split is wrong),
 the splitting has to be done by hand or more complex rules.
+}
+\examples{
+> parse.kinetic("kf*A*B-kb*C")
+ forward backward
+"kf*A*B"   "kb*C"
+
+> parse.kinetic("kf*A*B")
+ forward backward
+"kf*A*B"      "0"
+
+> parse.kinetic("kf*A/(Km+A)")
+      forward      backward
+"kf*A/(Km+A)"           "0"
 }

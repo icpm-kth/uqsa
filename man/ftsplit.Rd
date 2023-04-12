@@ -4,12 +4,14 @@
 \alias{ftsplit}
 \title{Fixed-token-split a scalar string into parts}
 \usage{
-ftsplit(str, s)
+ftsplit(str, s, re = FALSE)
 }
 \arguments{
 \item{str}{a string (character vector of length 1)}
 
 \item{s}{a split token}
+
+\item{re}{defaults to FALSE, if TRUE s is treated as a regular expression}
 }
 \value{
 a character vector of the components without leading or trailing whitespace

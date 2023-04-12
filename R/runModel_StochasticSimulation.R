@@ -6,6 +6,7 @@
 #'
 #' @param str a string (character vector of length 1)
 #' @param s a split token
+#' @param re defaults to FALSE, if TRUE s is treated as a regular expression
 #' @return a character vector of the components without leading or trailing whitespace
 #' @examples ftsplit(" A + 2*B ","+")
 #' [1] "A"   "2*B"
@@ -19,8 +20,8 @@
 #' @examples this also works, but mixes up the components:
 #' x<-c('a+b','c+d+1','1 / 2'); ftsplit(x,'+')
 #' [1] "a"     "b"     "c"     "d"     "1"     "1 / 2"
-ftsplit <- function(str,s){
-	return(trimws(unlist(strsplit(str,s,fixed=TRUE))))
+ftsplit <- function(str,s,re=FALSE){
+	return(trimws(unlist(strsplit(str,s,fixed=!re))))
 }
 
 .unit.kind <- function(kind){
@@ -43,6 +44,10 @@ ftsplit <- function(str,s){
 		k <- "second"
 	} else if (grepl("^(K|kelvin)$",kind)){
 		k <- "kelvin"
+	} else if (grepl("^(h|hour)$",kind)){
+		k <- "hour"
+	} else if (grepl("^(M|molarity)$",kind)){
+		k <- "molarity"
 	} else {
 		k <- "dimensionless"
 	}
@@ -104,26 +109,48 @@ ftsplit <- function(str,s){
 #' This function will try its best to interpret strings like
 #' "liter/(nmol ms)"
 #' rules: 1. only one slash is allowed
-#'        2. M can be mega or mol/l
+#'        2. M can be mega or mol/l: writing M for molarity will treat
+#'           molarity as it's own unit kind; writing "molarity"
+#'           will be translated into two SI units (mol and litre)
 #'        3. prefixes and units can be words or single letters
 #'        4. everything after a slash is the denominator
 #'        5. u is an accepted replacement for μ
-#'        6. no parentheses
+#'           (unicode greek mu or unicode micro symbol)
+#'        6. no parentheses (ignored): "(m/s)*kg" will be misinterpreted
+#'
 #' this retruns a data.frame with components as in the sbml standard:
-#' kind, multiplier, scale and exponent
-#' since there is only one slash,parentheses do nothing
-#' everything after a slash is the denominator, so: l/mol s is the same as (l)/(mol s)
-#' Remark: not all units are understood.
+#' kind, multiplier, scale and exponent since there is only one
+#' slash,parentheses do nothing everything after a slash is the
+#' denominator, so: l/mol s is the same as (l)/(mol s) Remark: not all
+#' units are understood.
 #' @param unit.str a string that contains a human readable unit
-#' @return data.frame with an interpretation of the unit
-.interpret.unit.from.string <- function(unit.str,verbose=FALSE){
+#' @param verbose if TRUE, this function prints what it does (to find
+#'     problems)
+#' @return data.frame with an interpretation of the unit (multiplier
+#'     is unused here, but may be used later to deal with units such
+#'     as hours (kind=second, multiplier=60)
+#' @export
+#' @examples
+#' > .interpret.unit.from.string("m/s")
+#'   scale multiplier exponent   kind
+#' 1     0          1        1  metre
+#' 2     0          1       -1 second
+#'
+#' > .interpret.unit.from.string("micromolarity")
+#'   scale multiplier exponent  kind
+#' 1    -6          1        1  mole
+#' 2     0          1       -1 litre
+#'
+#' > .interpret.unit.from.string("µM")
+#'   scale multiplier exponent     kind
+#' 1    -6          1        1 molarity
+unit.from.string <- function(unit.str,verbose=FALSE){
 	stopifnot(length(unit.str)==1)
 	.kind <- NULL
 	.multiplier <- NULL
 	.scale <- NULL
 	.exponent <- NULL
 	if (verbose) message(sprintf("unit: %11s",unit.str))
-	print(unit.str)
 	a <- gsub("[()]","",unit.str)
 	a <- gsub("molarity","mol l^-1",a);
 	if (grepl("/",unit.str)){
@@ -134,12 +161,13 @@ ftsplit <- function(str,s){
 	stopifnot(n==1 || n==2)
 
 	for (j in 1:n){
-		b <- unlist(strsplit(a[j],split="[* ]"))
+		b <- trimws(unlist(strsplit(a[j],split="[* ]")))
 		for (u in b){
-			pat <- paste0("^(G|giga|M|mega|k|kilo|c|centi|m|milli|u|μ|micro|n|nano|p|pico|f|femto)?",
-			              "(l|L|liter|litre|g|gram|mole?|s|second|m|meter|metre|K|kelvin|cd|candela|A|ampere)",
+			pat <- paste0("^(G|giga|M|mega|k|kilo|h|hecto|c|centi|m|milli|u|\xCE\xBC|\xc2\xb5|micro|n|nano|p|pico|f|femto)?",
+			              "(l|L|liter|litre|g|gram|mole?|h|hour|s|second|m|meter|metre|K|kelvin|cd|candela|A|ampere|M|molarity)",
 			              "\\^?([-+]?[0-9]+)?$")
 			r <- regexec(pat,u)
+			if (verbose) {print(pat); print(r)}
 			if (u == "1"){
 				.u.s <- 0
 				.u.k <- "dimensionless"
@@ -264,9 +292,11 @@ match.names <- function(chrv){
 #' > parse.kinetic("kf*A*B-kb*C")
 #'  forward backward
 #' "kf*A*B"   "kb*C"
+#'
 #' > parse.kinetic("kf*A*B")
 #'  forward backward
 #' "kf*A*B"      "0"
+#'
 #' > parse.kinetic("kf*A/(Km+A)")
 #'       forward      backward
 #' "kf*A/(Km+A)"           "0"
@@ -289,7 +319,8 @@ parse.kinetic <- function(reactionKinetic){
 #'
 #' The reaction rate coefficients of mass action kinetics, kf and kb
 #' have units that are compatible with the flux units, depending on
-#' the order of the reaction.
+#' the order of the reaction (the order is related to the reaction's
+#' stoichiometry).
 #'
 #' @param k the ODE reaction rate coefficient (mandatory)
 #' @param n multiplicity of each reactant, if any (order > 0)
@@ -297,14 +328,18 @@ parse.kinetic <- function(reactionKinetic){
 #' @return rescaled parameter for stochastic simulation with a comment of how to re-scale it
 #' @examples reaction: "2 A + B -> C"
 #' k <- 1.0
-#' attr(k,'unit') <- .interpret.unit.from.string("mM/s")
+#' attr(k,'unit') <- "µM/s"
 #' n <- c(2,1)
 #' reactants <- c('A','B')
 #' convert.parameter(k,n)
 convert.parameter <- function(k, n=NULL, LV=6.02214076e+8){
 	order <- sum(n)
-	unit <- .interpret.unit.from.string(attr(k,'unit'))
-	unit.conversion <- 10^sum(unit$scale*unit$exponent)
+	if (!is.null(attr(k,'unit'))){
+		unit <- unit.from.string(attr(k,'unit'))
+		unit.conversion <- 10^sum(unit$scale*unit$exponent)
+	} else {
+		unit.conversion <- 1
+	}
 	order.conversion <- switch(order,LV,1.0,1.0/LV)
 	c <- unit.conversion*order.conversion
 	if (order==2 && length(n)==1) c<-2*c
@@ -377,7 +412,7 @@ makeGillespieModel <- function(SBtab,LV=NULL){
 	n <- dR[1]
 	if (is.null(LV) && 'Compartment' %in% names(SBtab) && "!Size" %in% names(SBtab[["Compartment"]])){
 		L <- 6.02214076e+23
-		V <- SBtab[["Compartment"]][["!Size"]] # litres
+		V <- SBtab[["Compartment"]][["!Size"]][1] # litres?
 		LV <- L*V
 	} else {
 		## L <- 6.02214076e+23
