@@ -4,7 +4,7 @@
 \alias{uqsa_example}
 \title{Load an example model for this package}
 \usage{
-uqsa_example(modelName = NULL)
+uqsa_example(modelName = NULL, full.names = TRUE, pat = "[.]tsv$")
 }
 \arguments{
 \item{modelName}{name of model, e.g.: "AKAR4", "AKAP79", "CaMKII";

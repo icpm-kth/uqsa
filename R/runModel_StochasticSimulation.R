@@ -239,7 +239,7 @@ parse.formula <- function(reactionFormula){
 match.coefficients <- function(chrv){
 	cf <- numeric(length(chrv))
 	l <- grepl("^[0-9]+",chrv) # leading numbers exist
-	cf[l] <- as.numeric(sub("^([0-9]+)[ ]*[*](.*)$","\\1",chrv[l]))
+	cf[l] <- as.numeric(sub("^([0-9]+)\\b","\\1",chrv[l]))
 	cf[!l] <- 1
 	return(cf)
 }
@@ -264,11 +264,11 @@ match.coefficients <- function(chrv){
 #' $products
 #' [1] "AB2"
 match.names <- function(chrv){
-	cf <- character(length(chrv))
+	vn <- character(length(chrv))
 	l <- grepl("^[0-9]+",chrv) # leading numbers exist
-	cf[l] <- sub("^([0-9]+)[ ]*[*](.*)$","\\2",chrv[l])
-	cf[!l] <- chrv[!l]
-	return(cf)
+	vn[l] <- sub("\\b([[:alpha:]]\\w*)$","\\1",chrv[l])
+	vn[!l] <- chrv[!l]
+	return(vn)
 }
 
 #' Find forward and backward component in a reaction kinetic
@@ -453,10 +453,8 @@ makeGillespieModel <- function(SBtab,LV=NULL){
 		kb <- parameter.from.kinetic.law(ktc[2],parValue,parNames,parUnits)
 		pf <- convert.parameter(kf,cf$re,LV=LV)
 		pb <- convert.parameter(kb,cf$pr,LV=LV)
-		## forward
 		plain.reaction.name <- sprintf("%s_%s",sub("[^a-zA-Z0-9_]","_",reactionNames[i]),c('forward','backward'))
 		propFormula <- list(f=propensity(attr(pf,'conversion'),ktc[1],rExpressions),b=propensity(attr(pb,'conversion'),ktc[2],rExpressions))
-		print(propFormula)
 		SSA2reactions[[2*(i-1)+1]] <-  GillespieSSA2::reaction(propFormula$f,effect,plain.reaction.name[1])
 		if (isReversible[i]) {
 			SSA2reactions[[2*(i-1)+2]] <-  GillespieSSA2::reaction(propFormula$b,-1*effect,plain.reaction.name[2])
