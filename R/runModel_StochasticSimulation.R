@@ -323,7 +323,7 @@ parse.kinetic <- function(reactionKinetic){
 #' stoichiometry).
 #'
 #' @param k the ODE reaction rate coefficient (mandatory)
-#' @param n multiplicity of each reactant, if any (order > 0)
+#' @param n multiplicity of each reactant, if any (order > 0); omit for zero-order
 #' @param LV L*V -- product of _Avogadro's number_ and _volume_ [defaults to 6.02214076e+8]
 #' @return rescaled parameter for stochastic simulation with a comment of how to re-scale it
 #' @examples reaction: "2 A + B -> C"
@@ -332,7 +332,7 @@ parse.kinetic <- function(reactionKinetic){
 #' n <- c(2,1)
 #' reactants <- c('A','B')
 #' convert.parameter(k,n)
-convert.parameter <- function(k, n=NULL, LV=6.02214076e+8){
+convert.parameter <- function(k, n=0, LV=6.02214076e+8){
 	order <- sum(n)
 	if (!is.null(attr(k,'unit'))){
 		unit <- unit.from.string(attr(k,'unit'))
@@ -340,7 +340,13 @@ convert.parameter <- function(k, n=NULL, LV=6.02214076e+8){
 	} else {
 		unit.conversion <- 1
 	}
-	order.conversion <- switch(order,LV,1.0,1.0/LV)
+	## zero-order reaction c = LVk
+	## first-order reaction c = k
+	## etc.
+	## switch is 1-based, not 0-based:
+	## switch(0,'a','b') is nothing,
+	## switch(1,'a','b') is 'a'
+	order.conversion <- switch(order+1,LV,1.0,1.0/LV)
 	c <- unit.conversion*order.conversion
 	if (order==2 && length(n)==1) c<-2*c
 	propensity.coefficient <- k*c
