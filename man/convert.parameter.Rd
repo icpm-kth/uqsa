@@ -4,12 +4,12 @@
 \alias{convert.parameter}
 \title{convert ODE parameter to Gillespie parameter}
 \usage{
-convert.parameter(k, n = NULL, LV = 602214076)
+convert.parameter(k, n = 0, LV = 602214076)
 }
 \arguments{
 \item{k}{the ODE reaction rate coefficient (mandatory)}
 
-\item{n}{multiplicity of each reactant, if any (order > 0)}
+\item{n}{multiplicity of each reactant, if any (order > 0); omit for zero-order}
 
 \item{LV}{L*V -- product of _Avogadro's number_ and _volume_ [defaults to 6.02214076e+8]}
 }
