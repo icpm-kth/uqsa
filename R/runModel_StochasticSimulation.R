@@ -24,6 +24,23 @@ ftsplit <- function(str,s,re=FALSE){
 	return(trimws(unlist(strsplit(str,s,fixed=!re))))
 }
 
+#' find unit category
+#'
+#' This function reads a unit, without SI prefix, and returns a string
+#' from a smaller subset of unit kinds, similar to what is defined in
+#' SBML. This normalizes the various ways to write the same unit:
+#' "meter", "m" and "metre".
+#'
+#' The unit kind of "m" is "metre", the kind of "g" is "gram".
+#'
+#' @param kind the unnormalized string that humans use to write a unit
+#'     (but without prefix)
+#' @return normalized category name of the unit kind: litre, mole,
+#'     metre, kilogram, gram, ampere, candela, second, kelvin, hour,
+#'     molarity, dimensionless. defaults to dimensionless.
+#' @examples
+#' >  .unit.kind("meter")
+#' [1] "metre"
 .unit.kind <- function(kind){
 	stopifnot(is.character(kind) && length(kind)==1)
 	if (grepl("^(l|L|litre|liter)$",kind)){
@@ -54,6 +71,18 @@ ftsplit <- function(str,s,re=FALSE){
 	return(k)
 }
 
+#' Unit scale from SI prefix
+#'
+#' This function reads a prefix from a string and returns the exponent
+#' (base-10) that this prefix represents.
+#'
+#' @param prefix a string, e.g.: "M", "mega", "m", "milli", "µ", "micro", etc.
+#' @return an integer that corresponds to the prefix, defaults to 0.
+#' @examples
+#' > .unit.scale("M")
+#' [1] 6
+#' > .unit.scale("µ")
+#' [1] -6
 .unit.scale <- function(prefix){
 	stopifnot(is.character(prefix) && length(prefix)==1)
 	if (grepl("^G$|^giga$",prefix)){
@@ -70,7 +99,7 @@ ftsplit <- function(str,s,re=FALSE){
 		s <- -2
 	} else if (grepl("^m$|^milli$",prefix)){
 		s <- -3
-	} else if (grepl("^u$|^µ$|^micro$",prefix)){
+	} else if (grepl("^u$|^µ$|^\xCE\xBC$|^micro$",prefix)){
 		s <- -6
 	} else if (grepl("^n$|^nano$",prefix)){
 		s <- -9
@@ -84,6 +113,24 @@ ftsplit <- function(str,s,re=FALSE){
 	return(s)
 }
 
+#' Converts a unit to a string that works as an identifier
+#'
+#' Some formats require a name for a unit definition. This functions
+#' creates a name from a unit, converting math/symbols to text. The
+#' returned value should work as an SBML unit id.
+#'
+#' @param unit.str the original string representastion of that unit
+#' @param prnt logical switch: if TRUE, the name will be printed.
+#' @return unit.id string
+#' @examples
+#' > .unit.id.from.string("s^9")
+#' [1] "s_to_the_power_of_9"
+#'
+#' > .unit.id.from.string("cm^2")
+#' [1] "cm_square"
+#'
+#' > .unit.id.from.string("1/s")
+#" [1] "one_over_s"
 .unit.id.from.string <- function(unit.str,prnt=FALSE){
 	uid <- unit.str
 	uid <- sub("^1$","dimensionless",uid)
@@ -93,7 +140,7 @@ ftsplit <- function(str,s,re=FALSE){
 	uid <- gsub("[()]","",uid)
 	uid <- gsub("\\^2","_square",uid)
 	uid <- gsub("\\^3","_cube",uid)
-	uid <- gsub("\\^([0-9]+)","_to_the_power_of_\1",uid)
+	uid <- gsub("\\^([0-9]+)","_to_the_power_of_\\1",uid)
 	uid <- make.names(uid,unique=FALSE)
 	if (prnt){
 		message("units in «!Unit» column:")
@@ -163,6 +210,12 @@ unit.from.string <- function(unit.str,verbose=FALSE){
 	for (j in 1:n){
 		b <- trimws(unlist(strsplit(a[j],split="[* ]")))
 		for (u in b){
+			.u.m <- 1.0
+			if (grepl("^kg$",u)){
+				.u.k <- "kilogram"
+				.u.s <- 0
+				.u.x <- 1
+			} else {
 			pat <- paste0("^(G|giga|M|mega|k|kilo|h|hecto|c|centi|m|milli|u|\xCE\xBC|\xc2\xb5|micro|n|nano|p|pico|f|femto)?",
 			              "(l|L|liter|litre|g|gram|mole?|h|hour|s|second|m|meter|metre|K|kelvin|cd|candela|A|ampere|M|molarity)",
 			              "\\^?([-+]?[0-9]+)?$")
@@ -171,28 +224,33 @@ unit.from.string <- function(unit.str,verbose=FALSE){
 			if (u == "1"){
 				.u.s <- 0
 				.u.k <- "dimensionless"
-				 x <- 1
+				.u.x <- 1
 			} else if (r[[1]][1] > 0){
 				m <- unlist(regmatches(u, r))
 				if(verbose) print(m)
 				.u.s <- .unit.scale(m[2])
 				.u.k <- .unit.kind(m[3])
 				if (nchar(m[4])>0){
-					x <- switch(j,as.numeric(m[4]),-as.numeric(m[4]))
+					.u.x <- switch(j,as.numeric(m[4]),-as.numeric(m[4]))
 				} else {
-					x <- switch(j,1,-1)
+					.u.x <- switch(j,1,-1)
 				}
 			} else {
 				warning(sprintf("unit «%s» didn't match any pre-defined unit, because of «%s». (According to the limited [dumb] rules defined in this R script)",unit.str,u))
 				.u.s <- 0
 				.u.k <- "dimensionless"
-				x <- 1
+				.u.x <- 1
 			}
-			.multiplier <- c(.multiplier,1.0)
+			if (.u.k == "hour") {
+				.u.k  <- .unit.kind("s")
+				.u.m <- 60
+			}
+			}
 			.scale <- c(.scale,.u.s)
 			.kind <- c(.kind,.u.k)
-			.exponent <- c(.exponent,x)
-			if (verbose) message(sprintf("«%s» has been interpreted as: (%s×10^(%i))^(%i)",u,.u.k,.u.s,x))
+			.exponent <- c(.exponent,.u.x)
+			.multiplier <- c(.multiplier,.u.m)
+			if (verbose) message(sprintf("«%s» has been interpreted as: (%g × %s×10^(%i))^(%i)",u,.u.m,.u.k,.u.s,.u.x))
 		}
 	}
 	unit <- data.frame(scale=.scale,multiplier=.multiplier,exponent=.exponent,kind=.kind)
