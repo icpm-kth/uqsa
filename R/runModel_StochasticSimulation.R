@@ -39,31 +39,31 @@ ftsplit <- function(str,s,re=FALSE){
 #'     metre, kilogram, gram, ampere, candela, second, kelvin, hour,
 #'     molarity, dimensionless. defaults to dimensionless.
 #' @examples
-#' >  .unit.kind("meter")
+#' >  unit.kind("meter")
 #' [1] "metre"
-.unit.kind <- function(kind){
+unit.kind <- function(kind){
 	stopifnot(is.character(kind) && length(kind)==1)
 	if (grepl("^(l|L|litre|liter)$",kind)){
 		k <- "litre"
-	} else if (grepl("^(mole?)$",kind)) {
+	} else if (grepl("^([Mm]ole?)$",kind)) {
 		k <- "mole"
-	} else if (grepl("^(m|meter|metre)$",kind)) {
+	} else if (grepl("^(m|[Mm]eter|metre)$",kind)) {
 		k <- "metre"
-	} else if (grepl("^(kg|kilogram)$",kind)){
+	} else if (grepl("^(kg|[Kk]ilogram)$",kind)){
 		k <- "kilogram"
 	} else if (grepl("^(g|gram)$",kind)){
 		k <- "gram"
-	} else if (grepl("^(A|ampere)$",kind)){
+	} else if (grepl("^(A|[Aa]mpere)$",kind)){
 		k <- "ampere"
-	} else if (grepl("^(cd|candela)$",kind)){
+	} else if (grepl("^(cd|[Cc]andela)$",kind)){
 		k <- "candela"
-	} else if (grepl("^(s|second)$",kind)){
+	} else if (grepl("^(s|[Ss]econd)$",kind)){
 		k <- "second"
-	} else if (grepl("^(K|kelvin)$",kind)){
+	} else if (grepl("^(K|[Kk]elvin)$",kind)){
 		k <- "kelvin"
-	} else if (grepl("^(h|hour)$",kind)){
+	} else if (grepl("^(h|[Hh]our)$",kind)){
 		k <- "hour"
-	} else if (grepl("^(M|molarity)$",kind)){
+	} else if (grepl("^(M|[Mm]olarity)$",kind)){
 		k <- "molarity"
 	} else {
 		k <- "dimensionless"
@@ -79,11 +79,11 @@ ftsplit <- function(str,s,re=FALSE){
 #' @param prefix a string, e.g.: "M", "mega", "m", "milli", "µ", "micro", etc.
 #' @return an integer that corresponds to the prefix, defaults to 0.
 #' @examples
-#' > .unit.scale("M")
+#' > unit.scale("M")
 #' [1] 6
-#' > .unit.scale("µ")
+#' > unit.scale("µ")
 #' [1] -6
-.unit.scale <- function(prefix){
+unit.scale <- function(prefix){
 	stopifnot(is.character(prefix) && length(prefix)==1)
 	if (grepl("^G$|^giga$",prefix)){
 		s <- 9
@@ -123,15 +123,15 @@ ftsplit <- function(str,s,re=FALSE){
 #' @param prnt logical switch: if TRUE, the name will be printed.
 #' @return unit.id string
 #' @examples
-#' > .unit.id.from.string("s^9")
+#' > unit.id("s^9")
 #' [1] "s_to_the_power_of_9"
 #'
-#' > .unit.id.from.string("cm^2")
+#' > unit.id("cm^2")
 #' [1] "cm_square"
 #'
-#' > .unit.id.from.string("1/s")
+#' > unit.id("1/s")
 #" [1] "one_over_s"
-.unit.id.from.string <- function(unit.str,prnt=FALSE){
+unit.id <- function(unit.str,prnt=FALSE){
 	uid <- unit.str
 	uid <- sub("^1$","dimensionless",uid)
 	uid <- gsub("1/","one_over_",uid)
@@ -228,8 +228,8 @@ unit.from.string <- function(unit.str,verbose=FALSE){
 			} else if (r[[1]][1] > 0){
 				m <- unlist(regmatches(u, r))
 				if(verbose) print(m)
-				.u.s <- .unit.scale(m[2])
-				.u.k <- .unit.kind(m[3])
+				.u.s <- unit.scale(m[2])
+				.u.k <- unit.kind(m[3])
 				if (nchar(m[4])>0){
 					.u.x <- switch(j,as.numeric(m[4]),-as.numeric(m[4]))
 				} else {
@@ -242,7 +242,7 @@ unit.from.string <- function(unit.str,verbose=FALSE){
 				.u.x <- 1
 			}
 			if (.u.k == "hour") {
-				.u.k  <- .unit.kind("s")
+				.u.k  <- unit.kind("s")
 				.u.m <- 60
 			}
 			}
