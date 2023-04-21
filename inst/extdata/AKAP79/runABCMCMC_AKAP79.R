@@ -1,11 +1,12 @@
 require(rgsl)
 require(SBtabVFGEN)
 library(uqsa)
+library(parallel)
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
 print(comment(model))
-modelName <- checkModel(comment(model),paste0(SBtabDFir,'/',comment(model),'_gvf.c'))
+modelName <- checkModel(comment(model),paste0(SBtabDir,'/',comment(model),'_gvf.c'))
 
 parVal <- model[["Parameter"]][["!DefaultValue"]]
 names(parVal)<-model[["Parameter"]][["!Name"]]
@@ -31,7 +32,7 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(c(3, 12,18, 9, 2, 11, 17, 8, 1, 10, 16, 7))
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 250 # Size of the sub-sample from each chain
+ns <- 25000 # Size of the sub-sample from each chain
 npc <- 5000 # pre-calibration sample size
 nChains <- 4
 n <- ns*nChains
