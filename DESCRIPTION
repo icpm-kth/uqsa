@@ -16,7 +16,8 @@ Imports:
 	parallel,
 	VineCopula,
 	MASS,
-	ks
+	ks,
+	SBtabVFGEN
 Suggests:
 	rgsl,
 	deSolve,

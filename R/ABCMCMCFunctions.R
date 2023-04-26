@@ -70,7 +70,7 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, a
         warning(paste0("Stuck chain (nRegularizations = ", nRegularizations,")"))
         return(list(draws = c(), scores = c(), acceptanceRate = c(), nRegularizations = nRegularizations))
       }
-      disp(paste0("Regularization of proposal covariance matrix (nRegularizations = ", nRegularizations,")"))
+      cat(paste0("Regularization of proposal covariance matrix (nRegularizations = ", nRegularizations,")"))
 
       Sigma0 <- solve(solve(Sigma0)+solve(0.1*norm(Sigma0)*diag(1,np,np)))
       Sigma1 <- 0.25*diag(diag(Sigma0))
