@@ -16,9 +16,12 @@ Imports:
 	parallel,
 	VineCopula,
 	MASS,
-	ks
+	ks,
+	SBtabVFGEN
 Suggests:
-	rgsl,
-	deSolve,
-	ggplot2
+    rgsl,
+    deSolve,
+    ggplot2,
+    testthat (>= 3.0.0)
 RoxygenNote: 7.2.1
+Config/testthat/edition: 3
