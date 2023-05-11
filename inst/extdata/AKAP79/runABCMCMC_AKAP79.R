@@ -32,13 +32,13 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(c(3, 12,18, 9, 2, 11, 17, 8, 1, 10, 16, 7))
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 25000 # Size of the sub-sample from each chain
-npc <- 5000 # pre-calibration sample size
+ns <- 100 # Size of the sub-sample from each chain
+npc <- 500 # pre-calibration sample size
 nChains <- 4
 n <- ns*nChains
 
 # Define ABC-MCMC Settings
-delta <- 7 #0.01
+delta <- 5 #0.01
 
 # Define the number of Cores for the parallelization
 
@@ -105,16 +105,8 @@ for (i in 1:length(experimentsIndices)){
 	clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
 	out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior, acceptanceProbability))
 	stopCluster(cl)
-	draws <- c()
-	scores <- c()
-	acceptanceRate <- c()
-	nRegularizations <- c()
-	for(j in 1:nChains){
-		draws <- rbind(draws, out_ABCMCMC[[j]]$draws)
-		scores <- c(scores, out_ABCMCMC[[j]]$scores)
-		acceptanceRate <- c(acceptanceRate, out_ABCMCMC[[j]]$acceptanceRate)
-		nRegularizations <- c(nRegularizations, out_ABCMCMC[[j]]$nRegularizations)
-	}
+	
+	ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
 	end_time = Sys.time()
 	time_ = end_time - start_time_ABC
 	cat("\nABCMCMC for experimental set",i,":")
