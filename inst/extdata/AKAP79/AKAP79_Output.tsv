@@ -1,3 +1,3 @@
 !!SBtab	Document='AKAP79' SBtabVersion='1.0'	TableName='Output' TableTitle='Output in AKAP79 Model'  TableType='Quantity'	
-!ID	!Name	!Formula	!ErrorNames	!Unit
-AKAR4pOUT	AKAR4pOUT	(AKAR4p*5)*71.67+100	AKAR4pERR	micromole/liter
+!ID	!Name	!Formula	!Unit
+AKAR4pOUT	AKAR4pOUT	(AKAR4p*5)*71.67+100	micromole/liter
