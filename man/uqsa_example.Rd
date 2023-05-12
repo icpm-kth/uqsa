@@ -4,11 +4,19 @@
 \alias{uqsa_example}
 \title{Load an example model for this package}
 \usage{
-uqsa_example(modelName = NULL, full.names = TRUE, pat = "[.]tsv$")
+uqsa_example(modelName = NULL, full.names = TRUE, pat = "[.]tsv$", f = NULL)
 }
 \arguments{
 \item{modelName}{name of model, e.g.: "AKAR4", "AKAP79", "CaMKII";
 if empty, this function lists all available examples.}
+
+\item{full.names}{return full paths to files - defaults to TRUE}
+
+\item{pat}{pattern to find specific files; if NULL, this function
+returns the directory of the example}
+
+\item{f}{alternatively, pat can be set to files ending in f [this
+value]}
 }
 \value{
 The location of the examples in the current environment if
