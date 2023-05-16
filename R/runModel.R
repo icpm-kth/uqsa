@@ -150,8 +150,8 @@ checkModel <- function(modelName,modelFile=NULL){
 		message('building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).')
 		LIBS <- "`pkg-config --libs gsl`"
 		CFLAGS <- "-shared -fPIC `pkg-config --cflags gsl`"
-		so <- sprintf("%s.so",modelName)
-		command_args <- sprintf("%s -o './%s' '%s' %s",CFLAGS,so,modelFile,LIBS)
+		so <- sprintf("./%s.so",modelName)
+		command_args <- sprintf("%s -o '%s' '%s' %s",CFLAGS,so,modelFile,LIBS)
 		message(paste("cc",command_args))
 		system2("cc",command_args)
 		stopifnot(file.exists(so))

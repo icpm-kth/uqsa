@@ -17,6 +17,10 @@ Alternatively, download a release `tar.gz` or `zip` file and run
 R CMD INSTALL uqsa*.{tar.gz,zip}
 ```
 
+## Documentation
+
+A detailed documentation is available in the [wiki](https://github.com/icpm-kth/uqsa/wiki/Documentation).
+
 ## Original Work
 
 This repository (https://github.com/icpm-kth/uqsa) is a continued development of the methodology presented in the paper:
