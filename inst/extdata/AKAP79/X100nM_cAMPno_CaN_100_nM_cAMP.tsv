@@ -1,5 +1,5 @@
 !!SBtab Document='AKAP79' Version='1.0' TableName='X100nM_cAMPno_CaN_100_nM_cAMP' TableType='QuantityMatrix'
-!TimePoint	!Time	>AKAR4pOUT	>AKAR4pERR
+!TimePoint	!Time	>AKAR4pOUT	~AKAR4pOUT
 E0201T001	-15	99.9383	0.689454
 E0201T002	-10	100.71	1.33146
 E0201T003	-5	100.093	1.44634
