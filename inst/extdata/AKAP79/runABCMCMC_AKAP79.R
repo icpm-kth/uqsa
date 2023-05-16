@@ -33,7 +33,7 @@ experimentsIndices <- list(c(3, 12,18, 9, 2, 11, 17, 8, 1, 10, 16, 7))
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
 ns <- 100 # Size of the sub-sample from each chain
-npc <- 500 # pre-calibration sample size
+npc <- 5000 # pre-calibration sample size
 nChains <- 4
 n <- ns*nChains
 
@@ -87,7 +87,11 @@ for (i in 1:length(experimentsIndices)){
 	## Run Pre-Calibration Sampling
 	message("- Precalibration")
 	start_time_preCalibration <- Sys.time()
-	pC <- preCalibration(objectiveFunction, npc, rprior)
+
+	pC <- mclapply(1:parallel::detectCores(), function(x) preCalibration(objectiveFunction, ceil(npc/parallel::detectCores()), rprior), mc.cores = parallel::detectCores())
+	pC <- do.call(Map, c(rbind,pC))
+	pC$preDelta <- c(pC$preDelta)
+	
 	cat("\nPreCalibration:")
 	print(Sys.time()-start_time_preCalibration)
 
@@ -96,6 +100,10 @@ for (i in 1:length(experimentsIndices)){
 	M$startPar <- matrix(M$startPar, nChains)
 	for(j in 1 : nChains){
 		stopifnot(dprior(M$startPar[j,])>0)
+	  cat("Chain", j, "\n")
+	  cat("\tMin distance of starting parameter for chain",j," = ", min(objectiveFunction(M$startPar[j,])),"\n")
+	  cat("\tMean distance of starting parameter for chain",j," = ", mean(objectiveFunction(M$startPar[j,])),"\n")
+	  cat("\tMax distance of starting parameter for chain",j," = ", max(objectiveFunction(M$startPar[j,])),"\n")
 	}
 
 	## Run ABC-MCMC Sampling
