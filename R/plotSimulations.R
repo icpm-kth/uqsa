@@ -67,6 +67,18 @@ plotSimualtionsFromSBtab <- function(SBtabDir, paramVal, plotDir = NULL, width =
     ggsave(paste0(plotDir,"/",modelName,"_PlotExperimentAndSimulation_",model$Experiments[["!Name"]][i],".pdf"), plot = pl, width = width, height = heigth, units = "cm")
     
     plots[[i]] <- pl
+    
+    # lengthState <- dim(output_yy[[i]][["state"]])[1]
+    # nrows <- ceil(sqrt(lengthState))
+    
+    # gtable()
+    # par(mfrow=c(nrows,nrows))
+    # print(pl)
+    # for(j in 1:lengthState){
+    #   df <- as.data.frame(x = list(output_yy[[i]][["state"]][j,,1], experiments[[1]][["outputTimes"]]), col.names = c("y","t"))
+    #   plState <- ggplot(df, aes(x = t, y = y)) + geom_line(color = "blue") + ggtitle(model$Compound[["!Name"]][j])
+    #   print(plState)
+    # }
   }
   
   save(plots, file = paste0(plotDir,"/",modelName,"_PlotsExperimentsAndSimulations.RData"))
@@ -76,7 +88,7 @@ plotSimualtionsFromSBtab <- function(SBtabDir, paramVal, plotDir = NULL, width =
 
 
 
-# # Example 
+# Example
 # paramVal <- c( 5.090291e-01,  1.484507e-01, -2.615819e+00, -2.317419e-01, -7.612798e-01,
 # -3.306151e+00, -2.324251e+00, -3.556083e+00, -2.872133e+00, -7.930016e-05,
 # 1.103114e+00, -3.955432e-01, -7.729774e-01, -4.968397e-01,  7.941385e-01,
@@ -87,4 +99,4 @@ plotSimualtionsFromSBtab <- function(SBtabDir, paramVal, plotDir = NULL, width =
 # SBtabDir <- # path to the directory with the SBtab files
 # 
 # plots <- plotSimualtionsFromSBtab(SBtabDir, paramVal)
-
+# 
