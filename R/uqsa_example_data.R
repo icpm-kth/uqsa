@@ -4,14 +4,44 @@
 #' In the SBtab format, model and data travel together (in different
 #' tables, but the same documents).
 #'
+#' By default this function returns the names of the tsv files
+#' belonging to the named model. If no modelName is provided it
+#' returns possible names (contents of the top-level example
+#' directory).
+#'
 #' @param modelName name of model, e.g.: "AKAR4", "AKAP79", "CaMKII";
 #'     if empty, this function lists all available examples.
-#' @return The location of the example's directory (where the model is
-#'     stored).
+#' @param full.names return full paths to files - defaults to TRUE
+#' @param pat pattern to find specific files; if NULL, this function
+#'     returns the directory of the example
+#' @param f alternatively, pat can be set to files ending in f [this
+#'     value]
+#' @return The location of the examples in the current environment if
+#'     called with no arguments, the paths to the model files if a
+#'     modelName was provided or the full path to the example if the
+#'     file pattern _pat_ is unset
+#' @examples
+#' > uqsa_example()
+#' [1] "AKAP79"    "AKAR4"     "CaMKII"    "README.md"
+#'
+#' This will return all paths to 'tsv' files in the AKAR4 directory:
+#' > uqsa_example("AKAR4")
+#'  [1] "/path/to/AKAR4/AKAR4_100nM.tsv"
+#'  [2] "/path/to/AKAR4/AKAR4_25nM.tsv"
+#'  [3] etc.
+#'
+#' This will just return the path of the example directory:
+#' > uqsa_example("AKAR4",pat=NULL)
+#'  [1] "/path/extdata/AKAR4"
 #' @export
-uqsa_example<-function(modelName=NULL) {
+uqsa_example<-function(modelName=NULL,full.names=TRUE,pat='[.]tsv$',f=NULL) {
+	if (!is.null(f)){
+		pat <- sprintf("[.]%s$",f)
+	}
 	if (is.null(modelName)) {
 		return(dir(system.file("extdata", package = "uqsa")))
+	} else if (!is.null(pat) && is.character(pat)) {
+		return(dir(system.file("extdata", modelName, package = "uqsa", mustWork = TRUE),pattern=pat,full.names=full.names))
 	} else {
 		return(system.file("extdata", modelName, package = "uqsa", mustWork = TRUE))
 	}

@@ -60,7 +60,7 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, a
   nRegularizations <- 0
   sampleFrequency <- 50 #100
   while (n/sampleFrequency < nSims){
-    if(n %% 100 == 0 && acceptedSamples<0.0005*n){
+    if(n %% 100 == 0 && acceptedSamples<0.00005*n){
       nRegularizations <- nRegularizations + 1
       if(nRegularizations >= 4){
         timeStr <- Sys.time()
@@ -70,7 +70,7 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, a
         warning(paste0("Stuck chain (nRegularizations = ", nRegularizations,")"))
         return(list(draws = c(), scores = c(), acceptanceRate = c(), nRegularizations = nRegularizations))
       }
-      disp(paste0("Regularization of proposal covariance matrix (nRegularizations = ", nRegularizations,")"))
+      cat(paste0("Regularization of proposal covariance matrix (nRegularizations = ", nRegularizations,")"))
 
       Sigma0 <- solve(solve(Sigma0)+solve(0.1*norm(Sigma0)*diag(1,np,np)))
       Sigma1 <- 0.25*diag(diag(Sigma0))

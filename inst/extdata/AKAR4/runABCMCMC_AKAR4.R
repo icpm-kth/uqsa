@@ -32,26 +32,45 @@ ll = log10(ll) # log10-scale
 ul = log10(ul) # log10-scale
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 1000 # no of samples required from each ABC-MCMC chain
+ns <- 500 # no of samples required from each ABC-MCMC chain
 npc <- 500 # pre-calibration
 
 # Define ABC-MCMC Settings
 p <- 0.01		 # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
 
-delta <- 0.01
+delta <- 0.002
 
 set.seed(2022)
 
 # Define the score function to compare simulated data with experimental data
-maxVal <- max(unlist(lapply(experiments, function(x) max(x[["outputValues"]]))))
-minVal <- min(unlist(lapply(experiments, function(x) min(x[["outputValues"]]))))
+# maxVal <- max(unlist(lapply(experiments, function(x) max(x[["outputValues"]]))))
+# minVal <- min(unlist(lapply(experiments, function(x) min(x[["outputValues"]]))))
+# 
+# getScore	<- function(yy_sim, yy_exp, errorValues = NULL){
+# 	yy_sim <- (yy_sim-0)/(0.2-0.0)
+# 	ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-minVal)/(maxVal-minVal), Inf)
+# 	distance <- mean((yy_sim-yy_exp)^2)
+# 	return(distance)
+# }
 
-getScore	<- function(yy_sim, yy_exp, errorValues = NULL){
-	yy_sim <- (yy_sim-0)/(0.2-0.0)
-	ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-minVal)/(maxVal-minVal), Inf)
-	distance <- mean((yy_sim-yy_exp)^2)
-	return(distance)
+library(GauPro)
+
+gaussianProcessPrediction <- function(e) {
+  gp <- GauPro(X=e$outputTimes, Z=e$outputValues, parallel=FALSE)
+  e$outputValues<-gp$predict(e$outputTimes)
+  return(e)
 }
+experiments <- lapply(experiments, gaussianProcessPrediction)
+
+maxVal <- 184
+minVal <- 108
+getScore	<- function(yy_sim, yy_exp, errorValues = NULL){
+  yy_sim <- (yy_sim-0)/(0.2-0.0)
+  ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-minVal)/(maxVal-minVal), Inf)
+  distance <- mean((yy_sim-yy_exp)^2)
+  return(distance)
+}
+
 
 Obj <- makeObjective(experiments,modelName,getScore,parMap)
 
@@ -60,6 +79,8 @@ start_time = Sys.time()
 
 # work packages
 chunks <- list(c(1,2),3)
+
+chunks<-list(c(1,2,3))
 
 for (i in seq(length(chunks))){
 	expInd <- chunks[[i]]
@@ -115,7 +136,19 @@ for (i in seq(length(chunks))){
 	if (requireNamespace("R.matlab",quietly=TRUE)){
 		outFileM <- paste0("./PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
 	}
-	save(draws, parNames, file=outFileR)
+	#save(draws, parNames, file=outFileR)
+	## this section makes a little sensitivity plot:
+	y<-runModel(experiments,modelName,parABC=t(draws$draws),parMap=parMap)
+	f<-aperm(y[[3]]$func[1,,]) # aperm makes the sample-index (3rd) the first index of f
+	S<-sensitivity(draws$draws,f)
+	S[1,]<-0 # the first index of S is time, and initially sensitivity is 0
+	cuS<-t(apply(S,1,cumsum))
+	plot.new()
+	tm<-experiments[[3]]$outputTimes
+	plot(tm,cuS[,3],type="l")
+	for (si in dim(S)[2]:1){
+		polygon(c(tm,rev(tm)),c(cuS[,si],numeric(length(tm))),col=si+1)
+	}
 }
 end_time = Sys.time()
 time_ = end_time - start_time
@@ -129,8 +162,28 @@ combinePar <- list(c(1,2), c(1,3), c(2,3))
 for(i in combinePar){
 	 plot(draws$draws[,i[1]], draws$draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
 }
-#
+# 
 # library(plotly)
 # df = as.data.frame(draws$draws)
 # colnames(df) <- parNames
 # plot_ly(dat = df, x = ~kf_C_AKAR4, y = ~kb_C_AKAR4, z = ~kcat_AKARp, type="scatter3d", mode="markers", marker=list(size = 1, color = "red"))
+
+library(parallel)
+library(reshape2)
+library(ggplot2)
+
+for(i in 1:3){
+  experiment <- experiments[i]
+  stopifnot(length(experiment)==1)
+  output_yy <- runModel(experiment, modelName, t(draws$draws), parMap, nCores)
+  df_ <- mclapply(1:dim(output_yy[[1]][["func"]])[3], function(i) as.data.frame(x = list(output_yy[[1]][["func"]][1,,i]/0.2,experiment[[1]][['outputTimes']]), col.names = c("y","t")))
+  
+  df__ <- melt(df_,id=c("t","y"))
+  yy_exp <- (experiments[[i]][["outputValues"]]-minVal)/(maxVal-minVal)
+  dfExpA<- data.frame(t=experiment[[1]][["outputTimes"]], y=yy_exp)
+  ggp <- ggplot(df__,aes(x=t, y=y, group=L1))+
+    geom_line(color="blue")+
+    geom_point(data=dfExpA, aes(x=t, y=y), inherit.aes=FALSE)
+  show(ggp)
+}
+

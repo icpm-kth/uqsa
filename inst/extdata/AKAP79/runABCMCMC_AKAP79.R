@@ -1,11 +1,12 @@
 require(rgsl)
 require(SBtabVFGEN)
 library(uqsa)
+library(parallel)
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
 print(comment(model))
-modelName <- checkModel(comment(model),paste0(SBtabDFir,'/',comment(model),'_gvf.c'))
+modelName <- checkModel(comment(model),paste0(SBtabDir,'/',comment(model),'_gvf.c'))
 
 parVal <- model[["Parameter"]][["!DefaultValue"]]
 names(parVal)<-model[["Parameter"]][["!Name"]]
@@ -31,13 +32,13 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(c(3, 12,18, 9, 2, 11, 17, 8, 1, 10, 16, 7))
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 250 # Size of the sub-sample from each chain
+ns <- 100 # Size of the sub-sample from each chain
 npc <- 5000 # pre-calibration sample size
 nChains <- 4
 n <- ns*nChains
 
 # Define ABC-MCMC Settings
-delta <- 7 #0.01
+delta <- 5 #0.01
 
 # Define the number of Cores for the parallelization
 
@@ -86,7 +87,11 @@ for (i in 1:length(experimentsIndices)){
 	## Run Pre-Calibration Sampling
 	message("- Precalibration")
 	start_time_preCalibration <- Sys.time()
-	pC <- preCalibration(objectiveFunction, npc, rprior)
+
+	pC <- mclapply(1:parallel::detectCores(), function(x) preCalibration(objectiveFunction, ceil(npc/parallel::detectCores()), rprior), mc.cores = parallel::detectCores())
+	pC <- do.call(Map, c(rbind,pC))
+	pC$preDelta <- c(pC$preDelta)
+	
 	cat("\nPreCalibration:")
 	print(Sys.time()-start_time_preCalibration)
 
@@ -95,6 +100,10 @@ for (i in 1:length(experimentsIndices)){
 	M$startPar <- matrix(M$startPar, nChains)
 	for(j in 1 : nChains){
 		stopifnot(dprior(M$startPar[j,])>0)
+	  cat("Chain", j, "\n")
+	  cat("\tMin distance of starting parameter for chain",j," = ", min(objectiveFunction(M$startPar[j,])),"\n")
+	  cat("\tMean distance of starting parameter for chain",j," = ", mean(objectiveFunction(M$startPar[j,])),"\n")
+	  cat("\tMax distance of starting parameter for chain",j," = ", max(objectiveFunction(M$startPar[j,])),"\n")
 	}
 
 	## Run ABC-MCMC Sampling
@@ -104,16 +113,8 @@ for (i in 1:length(experimentsIndices)){
 	clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
 	out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior, acceptanceProbability))
 	stopCluster(cl)
-	draws <- c()
-	scores <- c()
-	acceptanceRate <- c()
-	nRegularizations <- c()
-	for(j in 1:nChains){
-		draws <- rbind(draws, out_ABCMCMC[[j]]$draws)
-		scores <- c(scores, out_ABCMCMC[[j]]$scores)
-		acceptanceRate <- c(acceptanceRate, out_ABCMCMC[[j]]$acceptanceRate)
-		nRegularizations <- c(nRegularizations, out_ABCMCMC[[j]]$nRegularizations)
-	}
+	
+	ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
 	end_time = Sys.time()
 	time_ = end_time - start_time_ABC
 	cat("\nABCMCMC for experimental set",i,":")
