@@ -138,13 +138,7 @@ convert.parameter <- function(k, n=0, LV=6.02214076e+8){
 	} else {
 		unit.conversion <- 1
 	}
-	## zero-order reaction c = LVk
-	## first-order reaction c = k
-	## etc.
-	## switch is 1-based, not 0-based:
-	## switch(0,'a','b') is nothing,
-	## switch(1,'a','b') is 'a'
-	order.conversion <- switch(order+1,LV,1.0,1.0/LV)
+	order.conversion <- LV^(1-order)
 	c <- unit.conversion*order.conversion
 	if (order==2 && length(n)==1) c<-2*c
 	propensity.coefficient <- k*c
@@ -152,17 +146,49 @@ convert.parameter <- function(k, n=0, LV=6.02214076e+8){
 	return(propensity.coefficient)
 }
 
-parameter.from.kinetic.law <- function(kineticLaw,parValue,parNames,parUnits){
-	i <- parNames %in% ftsplit(kineticLaw,'*')
-	if (any(i)){
-		k<-parValue[i]
-		comment(k)<-parNames[i]
-		attr(k,'unit')<-parUnits[i]
+#' Attempt to find multiplicative reaction rate coefficients
+#'
+#' This function assumes that the kinetic Law is mass action
+#' kinetics. This function helps in converting the units of an ODE
+#' into units that work in stochastic simulations. Converting the
+#' units of a general formula (Michaelis Menten, Hill kinetics, etc.)
+#' is difficult and dubious in stochastic simulations.
+#'
+#' For these reasons, this functions assumes: "kf*A*B*[...]" with the
+#' first word "kf" representing the reaction rate coefficient.
+#'
+#' Given an SBtab document, this function finds the value (if any) and
+#' unit of this coefficient. The coefficient itself can be defined as
+#' a fixed constant, a parameter, or an algebraic expression in the
+#' document. The most important attribute here is the unit.
+#'
+#' @param kineticLaw a string with a mathematical formula
+#' @param tab an SBtab document, as returned by SBtabVFGEN::sbtab_from_tsv()
+#' @return a parameter with value, and unit as attribute
+parameter.from.kinetic.law <- function(kineticLaw,tab){
+	if (kineticLaw == "0") return(0)
+	cat("kineticLaw: ", kineticLaw,"\n")
+	kName <- ftsplit(gsub("[-+*/()]"," ",kineticLaw)," ")[1]
+	cat("kName: ",kName,"\n")
+	if (kName %in% tab$Parameter[["!ID"]]){
+		id <- tab$Parameter[["!ID"]]
+		kValue <- tab$Parameter[["!DefaultValue"]][id==kName]
+		kUnit <- tab$Parameter[["!Unit"]][id==kName]
+	} else if ("Expression" %in% names(tab) && kName %in% tab$Expression[["!ID"]]){
+		id <- tab$Expression[["!ID"]]
+		kValue <- NA
+		kUnit  <- tab$Expression[["!Unit"]][id==kName]
+	} else if ("Constant" %in% names(tab) && kName %in% tab$Constant[["!ID"]]){
+		id <- tab$Constant[["!ID"]]
+		kValue <- tab$Constant[["!Value"]][id==kName]
+		kUnit  <- tab$Constant[["!Unit"]][id==kName]
 	} else {
-		k <- 0
-		comment(k) <- ''
-		attr(k,'unit') <- '1'
+		kValue <- 0.0
+		kUnit <- 1
 	}
+	k <- kValue
+	attr(k,'unit') <- kUnit
+	comment(k) <- kName
 	return(k)
 }
 
@@ -179,11 +205,11 @@ parameter.from.kinetic.law <- function(kineticLaw,parValue,parNames,parUnits){
 #' @param rExpressions named math expressions that appear in the kinetic.law of this reaction
 #' @return a string representation of the propensity function
 propensity <- function(conv.coeff,kinetic.law,rExpressions){
-	ex <- ''
 	if (!is.null(rExpressions)){
 		ex <- paste0(sprintf("%s = %s; ",names(rExpressions),rExpressions),collapse='')
 	}
 	p <- sprintf("%s %.10g*%s",ex,conv.coeff,kinetic.law)
+	cat(sprintf("propensity: «%s»\n",p))
 	return(p)
 }
 
@@ -209,7 +235,7 @@ propensity <- function(conv.coeff,kinetic.law,rExpressions){
 #'  reactions<-makeGillespieModel(model.sbtab)
 #'  l<-is.null(reactions)
 #'  model.ssa2<-reactions[!l]
-makeGillespieModel <- function(SBtab,LV=NULL){
+makeGillespieModel <- function(SBtab,LV=NULL,strip.null=TRUE){
 	stopifnot("Reaction" %in% names(SBtab))
 	stopifnot("Compound" %in% names(SBtab))
 	dR <- dim(SBtab$Reaction)
@@ -224,14 +250,14 @@ makeGillespieModel <- function(SBtab,LV=NULL){
 		LV <- 6.02214076e+8 # L*V
 	}
 	parValue <- SBtab[["Parameter"]][["!DefaultValue"]]
-	parNames <- SBtab[["Parameter"]][["!Name"]]
+	parNames <- SBtab[["Parameter"]][["!ID"]]
 	parUnits <- SBtab[["Parameter"]][["!Unit"]]
-	compoundNames <- SBtab[["Compound"]][["!Name"]]
-	reactionNames <- SBtab[["Reaction"]][["!Name"]]
+	compoundNames <- SBtab[["Compound"]][["!ID"]]
+	reactionNames <- SBtab[["Reaction"]][["!ID"]]
 	isReversible <- as.logical(SBtab[["Reaction"]][["!IsReversible"]])
 	SSA2reactions <- vector(mode="list",length=2*n)
 	if ("Expression" %in% names(SBtab)){
-		expressionNames <- SBtab[["Expression"]][["!Name"]]
+		expressionNames <- SBtab[["Expression"]][["!ID"]]
 		expressionFormula <- SBtab[["Expression"]][["!Formula"]]
 		names(expressionFormula)<-expressionNames
 	} else {
@@ -242,7 +268,7 @@ makeGillespieModel <- function(SBtab,LV=NULL){
 		reactionFormula <- SBtab$Reaction[["!ReactionFormula"]][i]
 		reactionKinetic <- SBtab$Reaction[["!KineticLaw"]][i]
 		r <- parse.formula(reactionFormula)
-		rVarNames <- unique(c(match.names(r$reactants),match.names(r$products)))
+		rVarNames <- ftsplit(gsub("[-+*/()]"," ",reactionKinetic)," ")
 		rCompoundNames <- rVarNames[rVarNames %in% compoundNames]
 		rExpressionNames <- rVarNames[rVarNames %in% expressionNames]
 		rExpressions <- expressionFormula[rExpressionNames]
@@ -253,8 +279,8 @@ makeGillespieModel <- function(SBtab,LV=NULL){
 		effect[r$re] <- effect[r$re]-cf$re
 		effect[r$pr] <- effect[r$pr]+cf$pr
 		ktc <- parse.kinetic(reactionKinetic)
-		kf <- parameter.from.kinetic.law(ktc[1],parValue,parNames,parUnits)
-		kb <- parameter.from.kinetic.law(ktc[2],parValue,parNames,parUnits)
+		kf <- parameter.from.kinetic.law(ktc[1],SBtab)
+		kb <- parameter.from.kinetic.law(ktc[2],SBtab)
 		pf <- convert.parameter(kf,cf$re,LV=LV)
 		pb <- convert.parameter(kb,cf$pr,LV=LV)
 		plain.reaction.name <- sprintf("%s_%s",sub("[^a-zA-Z0-9_]","_",reactionNames[i]),c('forward','backward'))
@@ -264,7 +290,12 @@ makeGillespieModel <- function(SBtab,LV=NULL){
 			SSA2reactions[[2*(i-1)+2]] <-  GillespieSSA2::reaction(propFormula$b,-1*effect,plain.reaction.name[2])
 		}
 	}
-	return(SSA2reactions)
+	l <- sapply(SSA2reactions,is.null)
+	if (strip.null){
+		return(SSA2reactions[!l])
+	} else {
+		return(SSA2reactions)
+	}
 }
 
 
@@ -319,7 +350,7 @@ importReactionsSSA <- function(model){
       k <- k + 1
     }
   }
-  
+
   if(k-1 != length(reactions)){
     error("Length of reactions list doesn't match")
   }

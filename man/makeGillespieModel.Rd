@@ -4,7 +4,7 @@
 \alias{makeGillespieModel}
 \title{Create a list of reactions for GillespieSSA2}
 \usage{
-makeGillespieModel(SBtab, LV = NULL)
+makeGillespieModel(SBtab, LV = NULL, strip.null = TRUE)
 }
 \arguments{
 \item{SBtab}{a series of tables as returned by `sbtab_from_tsv()`}
