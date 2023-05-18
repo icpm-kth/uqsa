@@ -35,16 +35,23 @@
 #' @param nCores number of processor cores to use in mclapply().
 #' @return list with entries preDelta and prePar, final values of
 #'     calibration run
-preCalibration <- function(objectiveFunction, npc=1000, rprior){
-	prePar <- rprior(npc)
-	preDelta <- objectiveFunction(t(prePar))
-	dim(preDelta)<-c(npc, length(preDelta)/npc)
-	preDelta <- apply(preDelta,1,max)
-	if(any(is.na(preDelta))){
-		cat("*** [preCalibration] Some of the preDelta is NA. Replacing with Inf ***\n")
-		preDelta[is.na(preDelta),] <- Inf
-	}
-	return(list(preDelta=preDelta, prePar=prePar))
+preCalibration <- function(objectiveFunction, npc=1000, rprior, nCores = parallel::detectCores()){
+  npcPerCore <- pracma::ceil(npc/nCores)
+  prePar <- rprior(npcPerCore*nCores)
+  
+  computeObjectiveFunction <- function(i){
+    preDelta <- objectiveFunction(t(prePar[((i-1)*npcPerCore+1):(i*npcPerCore),]))
+    dim(preDelta)<-c(npcPerCore, length(preDelta)/npcPerCore)
+    preDelta <- apply(preDelta,1,max)
+    if(any(is.na(preDelta))){
+      cat("*** [preCalibration] Some of the preDelta is NA. Replacing with Inf ***\n")
+      preDelta[is.na(preDelta),] <- Inf
+    }
+    return(preDelta)
+  }
+  preDelta <- unlist(mclapply(1:nCores, computeObjectiveFunction, mc.cores = nCores))
+  
+  return(list(preDelta=preDelta, prePar=prePar))
 }
 
 #' Selects MCMC scheme specific setup parameters
