@@ -3,6 +3,8 @@ library(GillespieSSA2)
 library(uqsa)
 library(rgsl)
 library(SBtabVFGEN)
+library(parallel)
+library(pracma)
 
 SBtabDir <- getwd()
 model = import_from_SBtab(SBtabDir)
@@ -78,7 +80,7 @@ chunks <- list(c(1,2),3)
 for (i in seq(length(chunks))){
   expInd <- chunks[[i]]
   cat("#####Starting run for Experiments ", expInd, "######\n")
-  Obj <- makeObjectiveSSA(experiments[expInd],parNames,getScore,parMap, Phi, compiled_reactions, mc.cores=detectCores(), nStochSim = 1)
+  Obj <- makeObjectiveSSA(experiments[expInd],parNames,getScore,parMap, Phi, compiled_reactions, mc.cores=detectCores(), nStochSim = 3)
   ## If First Experimental Setting, Create an Independente Colupla
   if(i==1){
     cat(sprintf("- Starting with uniform prior \n"))
@@ -143,6 +145,45 @@ combinePar <- list(c(1,2), c(1,3), c(2,3))
 for(i in combinePar){
   plot(draws$draws[,i[1]], draws$draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
 }
+
+
+#### PLOT SIMULATIONS FROM DRAWS
+simulateSSA <- function(e, param, nStochSim){
+  avgOutput <- rep(0, length(e[["outputTimes"]]))
+  for(i in 1:nStochSim){
+    out_ssa <- GillespieSSA2::ssa(
+      initial_state = ceil(e[["initialState"]]*Phi),
+      reactions = compiled_reactions,
+      params = c(parMap(param), Phi=Phi),
+      final_time = max(e[["outputTimes"]]),
+      method = ssa_exact(),
+      verbose = FALSE,
+      log_propensity = TRUE,
+      log_firings = TRUE,
+      census_interval = 0.001,
+      sim_name = modelName)
+    
+    # out$state is a matrix of dimension (time points)x(num compounds)
+    output <- apply(out_ssa$state, 1, e[["outputFunction"]])
+    interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
+    interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
+    avgOutput <- avgOutput + interpOutput$y
+  }
+  avgOutput <- avgOutput/nStochSim
+  return(avgOutput/Phi)
+}
+
+
+par(mfrow=c(1,1))
+plot(experiments[[1]][["outputTimes"]],experiments[[1]][["outputValues"]],ylim=c(90,250))
+for(i in 1:ns){
+  param <- draws$draws[1,]
+  names(param) <- parNames
+  sim <- simulateSSA(experiments[[1]], param, 3)
+  points(experiments[[1]][["outputTimes"]],sim*(maxVal-minVal)+minVal, col="blue")
+}
+
+
 
 # library(plotly)
 # df = as.data.frame(draws$draws)

@@ -25,6 +25,6 @@ AKAPon_3	AKAPon_3	2		Normal distribution	linear	1/second
 kf_C_AKAR4	kf_C_AKAR4	0.018		Normal distribution	linear	1/(micromolarity*second)
 kb_C_AKAR4	kb_C_AKAR4	0.106		Normal distribution	linear	1/second
 kcat_AKARp	kcat_AKARp	10.2		Normal distribution	linear	1/second
-kmOFF	kmOFF	100		Normal distribution	linear	1/second
-kmON	kmON	1		Normal distribution	linear	1/second
-KD_T	KD_T	0.7		Normal distribution	linear	1/second
+kmOFF	kmOFF	100		Normal distribution	linear	micromolarity
+kmON	kmON	1		Normal distribution	linear	micromolarity
+KD_T	KD_T	0.7		Normal distribution	linear	micromolarity

@@ -1,4 +1,4 @@
-!!SBtab	"Document='AKAP79' SBtabVersion='1.0'"	"TableName='Compound' TableTitle='Compounds in AKAP79 Model (AKAP5_HUMAN)'  TableType='Compound'"				
+!!SBtab	Document='AKAP79' SBtabVersion='1.0'	TableName='Compound' TableTitle='Compounds in AKAP79 Model (AKAP5_HUMAN)'  TableType='Compound'
 !ID	!Name	!InitialValue	!Unit	!Location	!Identifiers:uniprot	!Comment
 Rii	Rii	6.3	micromole/liter	spine	KAP2_HUMAN	"also KAP3_HUMAN because Rii = RII_alpha+RII_beta"
 cAMP	cAMP	0	micromole/liter	spine	NONE	NONE

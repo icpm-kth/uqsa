@@ -9,24 +9,9 @@ checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
 \arguments{
 \item{draws}{matrix of sampled values (to be filtered).}
 
+\item{objectiveFunction}{function that, given a (vectorial) parameter as input, simulated the model and outputs the distance between experimental data and data simulated from the model with the parameter provided in input}
+
 \item{delta}{the acceptance threshold.}
-
-\item{modelName}{name, is used to find the file and model functions
-therein (comment(modelName) can contain a file-name if it
-differs from `modelName.R`).}
-
-\item{experiments}{a list of experiments (all of them, or up to
-currentExpSet).}
-
-\item{parMap}{optional remapping function:
-parModel<-parMap(parABC); the ABC variables will be transformed
-to make the parameter vector acceptable to the model. This is
-necessary whenever ABC sampling happens in a different space
-than the model parameter domain for whatever reason.}
-
-\item{getScore}{scoring function.}
-
-\item{nCores}{number of cores to use in parallel::mclapply() calls.}
 }
 \value{
 a filtered subset of acceptable parameter draws
