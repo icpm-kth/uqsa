@@ -87,11 +87,7 @@ for (i in 1:length(experimentsIndices)){
 	## Run Pre-Calibration Sampling
 	message("- Precalibration")
 	start_time_preCalibration <- Sys.time()
-
-	pC <- mclapply(1:parallel::detectCores(), function(x) preCalibration(objectiveFunction, ceil(npc/parallel::detectCores()), rprior), mc.cores = parallel::detectCores())
-	pC <- do.call(Map, c(rbind,pC))
-	pC$preDelta <- c(pC$preDelta)
-	
+	pC <- preCalibration(objectiveFunction, npc, rprior)
 	cat("\nPreCalibration:")
 	print(Sys.time()-start_time_preCalibration)
 
