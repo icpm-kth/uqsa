@@ -20,8 +20,8 @@ observable.mean.in.bin <- function(id,outputSample){
 	bin.mean <- matrix(NA,n,d[2])
 	for (i in 1:n){
 		l <- id == i
-		if (sum(as.numeric(l))>1){
-			bin.mean[i,] <- colMeans(outputSample[l,])
+		if (any(l)){
+			bin.mean[i,] <- colMeans(outputSample[l,,drop = FALSE])
 		}
 	}
 	return(bin.mean)
