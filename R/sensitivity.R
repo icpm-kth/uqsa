@@ -17,10 +17,10 @@ observable.mean.in.bin <- function(id,outputSample){
 	d<-dim(outputSample)
 	stopifnot(length(id)==d[1])
 	n<-max(id)
-	bin.mean <- matrix(0,n,d[2])
+	bin.mean <- matrix(NA,n,d[2])
 	for (i in 1:n){
 		l <- id == i
-		if (any(l) && sum(as.numeric(l))>6){
+		if (sum(as.numeric(l))>1){
 			bin.mean[i,] <- colMeans(outputSample[l,])
 		}
 	}
@@ -39,7 +39,7 @@ observable.mean.in.bin <- function(id,outputSample){
 sum.of.bin.variance  <- function(hst,binMeans,totalMean){
 	B <- dim(binMeans) # binning dimensions
 	stopifnot(B[2] == length(totalMean))
-	return(colSums(hst$counts*(t(t(binMeans)-totalMean))^2)/sum(hst$counts))
+	return(colSums(hst$counts*(t(t(binMeans)-totalMean))^2,na.rm=TRUE)/sum(hst$counts))
 }
 
 #' Global Sensitivity Analysis
@@ -73,6 +73,7 @@ sensitivity<-function(parSample,outputSample,nBins="Sturges"){
 	binMeans <- lapply(id,observable.mean.in.bin,outputSample=outputSample)
 	S <- matrix(0,outputSize[2],SampleSize[2])
 	for (i in 1:SampleSize[2]){
+		## hst[[i]]$count[is.na(binMeans[[i]])]<-0
 		Vi <- sum.of.bin.variance(hst[[i]],binMeans[[i]],totalMean=meanOutput)
 		S[,i] <- Vi/varOutput
 	}
