@@ -39,7 +39,7 @@ observable.mean.in.bin <- function(id,outputSample){
 sum.of.bin.variance  <- function(hst,binMeans,totalMean){
 	B <- dim(binMeans) # binning dimensions
 	stopifnot(B[2] == length(totalMean))
-	return(colSums(hst$counts*(t(t(binMeans)-totalMean))^2)/sum(hst$counts))
+	return(colSums(hst$counts*(t(t(binMeans)-totalMean))^2,na.rm=TRUE)/sum(hst$counts))
 }
 
 #' Global Sensitivity Analysis
