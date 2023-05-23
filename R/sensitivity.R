@@ -83,12 +83,13 @@ sensitivity<-function(parSample,outputSample,nBins="Sturges"){
 
 #' plot the sensitivity matrix
 #'
-#' We do a cumulative shaded area plot for the sensitivity matrix.
+#' Produce a cumulative shaded area plot for the sensitivity matrix.
 #'
+#' @export
 #' @param u the values of the x-axis for the plot
 #' @param S the sensitivity matrix as returned by `sensitivity()`
-#' @export
-plot.S<-function(u,S,color=rainbow(dim(S)[2]),do.sort=TRUE,title="Sensitivity"){
+#' @return nothing
+sensitivity.graph <- function(u,S,color=rainbow(dim(S)[2]),do.sort=TRUE,title="Sensitivity"){
 	d <- dim(S)
 	n <- d[2]-1
 	if (do.sort) {
