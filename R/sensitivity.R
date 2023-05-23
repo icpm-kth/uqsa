@@ -76,5 +76,42 @@ sensitivity<-function(parSample,outputSample,nBins="Sturges"){
 		Vi <- sum.of.bin.variance(hst[[i]],binMeans[[i]],totalMean=meanOutput)
 		S[,i] <- Vi/varOutput
 	}
+	colnames(S) <- colnames(parSample)
+	rownames(S) <- colnames(outputSample)
 	return(S)
+}
+
+#' plot the sensitivity matrix
+#'
+#' We do a cumulative shaded area plot for the sensitivity matrix.
+#'
+#' @param u the values of the x-axis for the plot
+#' @param S the sensitivity matrix as returned by `sensitivity()`
+#' @export
+plot.S<-function(u,S,color=rainbow(dim(S)[2]),do.sort=TRUE,title="Sensitivity"){
+	d <- dim(S)
+	n <- d[2]-1
+	if (do.sort) {
+		m <- colMeans(S)
+		I <- order(m,decreasing=TRUE)
+		S <- S[,I]
+		ylabel <- "sorted cumulative sensitivity"
+	} else {
+		ylabel <- "cumulative sensitivity"
+	}
+	C <- t(apply(S,1,cumsum))
+	x <- c(u,rev(u))
+
+	plot(u,C[,1],type='l',ylim=c(0,max(C)*1.1),ylab=ylabel,xlab="output",main=title,axes=FALSE)
+	axis(1,at=u,labels=names(u))
+	axis(2)
+	z <- c(S[,1]*0,rev(S[,1]))
+	polygon(x,z,col=color[1],lty=0)
+	print(n)
+	for (i in 1:n){
+		y <- c(C[,i],rev(C[,i+1]))
+		polygon(x,y,col=color[i+1],lty=0)
+		lines(u,C[,i],col=color[i+1],lwd=2)
+	}
+	legend(x="topright",fill=color[1:d[2]],legend=colnames(S),ncol=2)
 }
