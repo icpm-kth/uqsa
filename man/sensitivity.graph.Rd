@@ -7,15 +7,30 @@
 sensitivity.graph(
   u,
   S,
-  color = rainbow(dim(S)[2]),
+  color = hcl.colors(dim(S)[2]),
+  line.color = hcl.colors(dim(S)[2] + 1),
   do.sort = TRUE,
   title = "Sensitivity"
 )
 }
 \arguments{
-\item{u}{the values of the x-axis for the plot}
+\item{u}{the values of the x-axis for the plot, if named, the names
+are put at the tick-marks}
 
-\item{S}{the sensitivity matrix as returned by `sensitivity()`}
+\item{S}{the sensitivity matrix as returned by `sensitivity()`,
+S[i,j] is with respect to model output i and parameter j}
+
+\item{color}{the list of colors to use for the shaded areas, e.g.:
+rainbow(24)}
+
+\item{line.color}{the color of the lines drawn between the shaded
+areas}
+
+\item{do.sort}{the parameter sensitivities are sorted according to
+the mean over all outputs, the parameter with the most
+sensitivity is plotted first, at the bottom}
+
+\item{title}{string, written above, as a title}
 }
 \value{
 nothing

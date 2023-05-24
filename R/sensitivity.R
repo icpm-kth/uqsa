@@ -86,10 +86,20 @@ sensitivity<-function(parSample,outputSample,nBins="Sturges"){
 #' Produce a cumulative shaded area plot for the sensitivity matrix.
 #'
 #' @export
-#' @param u the values of the x-axis for the plot
-#' @param S the sensitivity matrix as returned by `sensitivity()`
+#' @param u the values of the x-axis for the plot, if named, the names
+#'     are put at the tick-marks
+#' @param S the sensitivity matrix as returned by `sensitivity()`,
+#'     S[i,j] is with respect to model output i and parameter j
+#' @param color the list of colors to use for the shaded areas, e.g.:
+#'     rainbow(24)
+#' @param line.color the color of the lines drawn between the shaded
+#'     areas
+#' @param do.sort the parameter sensitivities are sorted according to
+#'     the mean over all outputs, the parameter with the most
+#'     sensitivity is plotted first, at the bottom
+#' @param title string, written above, as a title
 #' @return nothing
-sensitivity.graph <- function(u,S,color=rainbow(dim(S)[2]),do.sort=TRUE,title="Sensitivity"){
+sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.colors(dim(S)[2]+1),do.sort=TRUE,title="Sensitivity"){
 	d <- dim(S)
 	n <- d[2]-1
 	if (do.sort) {
@@ -103,7 +113,7 @@ sensitivity.graph <- function(u,S,color=rainbow(dim(S)[2]),do.sort=TRUE,title="S
 	C <- t(apply(S,1,cumsum))
 	x <- c(u,rev(u))
 
-	plot(u,C[,1],type='l',ylim=c(0,max(C)*1.1),ylab=ylabel,xlab="output",main=title,axes=FALSE)
+	plot(u,C[,1],type='l',ylim=c(0,max(C)*1.1),ylab=ylabel,xlab="output",main=title,axes=FALSE,col=line.color[1])
 	axis(1,at=u,labels=names(u))
 	axis(2)
 	z <- c(S[,1]*0,rev(S[,1]))
@@ -112,7 +122,7 @@ sensitivity.graph <- function(u,S,color=rainbow(dim(S)[2]),do.sort=TRUE,title="S
 	for (i in 1:n){
 		y <- c(C[,i],rev(C[,i+1]))
 		polygon(x,y,col=color[i+1],lty=0)
-		lines(u,C[,i],col=color[i+1],lwd=2)
+		lines(u,C[,i],col=line.color[i+1],lwd=2)
 	}
 	legend(x="topright",fill=color[1:d[2]],legend=colnames(S),ncol=2)
 }
