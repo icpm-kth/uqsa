@@ -67,7 +67,7 @@ sensitivity<-function(parSample,outputSample,nBins="Sturges"){
 	id <- vector("list",SampleSize[2])
 	for (i in 1:SampleSize[2]){
 		hst[[i]] <- hist(parSample[,i],plot=FALSE,breaks=nBins)
-		id[[i]] <- findInterval(parSample[,i],hst[[i]]$breaks)
+		id[[i]] <- findInterval(parSample[,i],hst[[i]]$breaks,all.inside=TRUE)
 	}
 	# a list, one item per fixed parameter
 	binMeans <- lapply(id,observable.mean.in.bin,outputSample=outputSample)
