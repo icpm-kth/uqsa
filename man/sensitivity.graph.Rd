@@ -10,6 +10,7 @@ sensitivity.graph(
   color = hcl.colors(dim(S)[2]),
   line.color = hcl.colors(dim(S)[2] + 1),
   do.sort = TRUE,
+  decreasing = FALSE,
   title = "Sensitivity"
 )
 }
@@ -29,6 +30,10 @@ areas}
 \item{do.sort}{the parameter sensitivities are sorted according to
 the mean over all outputs, the parameter with the most
 sensitivity is plotted first, at the bottom}
+
+\item{decreasing}{direction of sort, the first item in the sorted
+list (the parameter) will be plotted first, and thus at the
+bottom of the plot}
 
 \item{title}{string, written above, as a title}
 }

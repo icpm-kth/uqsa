@@ -97,14 +97,17 @@ sensitivity<-function(parSample,outputSample,nBins="Sturges"){
 #' @param do.sort the parameter sensitivities are sorted according to
 #'     the mean over all outputs, the parameter with the most
 #'     sensitivity is plotted first, at the bottom
+#' @param decreasing direction of sort, the first item in the sorted
+#'     list (the parameter) will be plotted first, and thus at the
+#'     bottom of the plot
 #' @param title string, written above, as a title
 #' @return nothing
-sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.colors(dim(S)[2]+1),do.sort=TRUE,title="Sensitivity"){
+sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.colors(dim(S)[2]+1),do.sort=TRUE,decreasing=FALSE,title="Sensitivity"){
 	d <- dim(S)
 	n <- d[2]-1
 	if (do.sort) {
 		m <- colMeans(S)
-		I <- order(m,decreasing=TRUE)
+		I <- order(m,decreasing=decreasing)
 		S <- S[,I]
 		ylabel <- "sorted cumulative sensitivity"
 	} else {
