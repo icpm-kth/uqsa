@@ -30,7 +30,7 @@ require(parallel)
 
 Next, we import the model's data tables from the SBtab files:
 
-```r
+```{r read-model, eval=FALSE}
 modelName <- checkModel("AKAP79",uqsa_example("AKAP79",pat="gvf[.]c$"))
 model.tsv <- uqsa_example(modelName,pat="[.]tsv$")
 model <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
@@ -49,7 +49,7 @@ a `list` of `data.frames`. The source files of the model `AKAP79.R`,
 the tables. Because they are tables, we can retrieve default values
 from them.
 
-```r
+```{r defaults, eval=FALSE}
 parVal <- model$Parameter[["!DefaultValue"]]
 
 parMap <- function(parABC){
@@ -63,7 +63,7 @@ is to sample in logarithmic space: the ABC algorithm will sample the
 logarithms of the model parameters. We limit the sampling to ranges,
 as appropriate for each parameter:
 
-```r
+```{r bounds, eval=FALSE}
 defRange <- 1000
 
 # Define Lower and Upper Limits for logUniform prior distribution for the parameters
@@ -95,13 +95,13 @@ next round. This mimics the arrival of data sets in sequence (from the
 lab). The intermediate distributions will be modelled using
 `VineCopula`.
 
-```r
+```{r schedule, eval=FALSE}
 experimentsIndices <- list(c(3, 12,18, 9), c(2, 11, 17, 8), c(1, 10, 16, 7))
 ```
 
 ABC procedure setup:
 
-```r
+```{r sample-size, eval=FALSE}
 ns <- 5000 # Size of the sub-sample from each chain
 npc <- 1000 # pre-calibration sample size
 nChains <- 16
@@ -119,7 +119,8 @@ Score <- function(yy_sim, yy_exp=Inf, yy_expErr=Inf){
 ```
 
 We also setup a convenience function which saves the sampled values to a file:
-```r
+
+```{r save, eval=FALSE}
 save_sample <- function(ind,ABCMCMCoutput){
 	I <- paste(ind, collapse="_")
 	timeStr <- Sys.time()
@@ -135,7 +136,7 @@ save_sample <- function(ind,ABCMCMCoutput){
 
 The sampling loop:
 
-```r
+```{r sample, eval=FALSE}
 start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
 	expInd <- experimentsIndices[[i]]
@@ -164,3 +165,4 @@ time_ = end_time - start_time
 cat("Total time:\n",time_)
 ```
 
+The result is a collection of intermediate samples (2 files) and a final posterior sample (1 file).
