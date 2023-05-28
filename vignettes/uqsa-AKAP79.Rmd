@@ -18,7 +18,7 @@ This example covers the AKAP79 example model and `rgsl` as solver
 backend, alternatively, it is possible to use `deSolve` instead (but
 not covered here).
 
-We use `icpm-kth/SBtabVFGEN` to read the model files, `ispm-kth/rgsl` as an
+We use `icpm-kth/SBtabVFGEN` to read the model files, `icpm-kth/rgsl` as an
 interface to `gsl_odeiv2` solvers (for initial value problems):
 
 ```{r setup}
