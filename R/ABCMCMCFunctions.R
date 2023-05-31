@@ -45,7 +45,7 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, a
   curDelta <- Inf
   np <- length(startPar)
   curPar  <- startPar
-  curDelta <- mean(objectiveFunction(curPar))
+  curDelta <- max(objectiveFunction(curPar))
 
   if(is.na(curDelta)){
     cat("*** [ABCMCMC] curDelta is NA. Replacing it with Inf ***\n")
@@ -131,7 +131,7 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, a
 #' @param nCores number of cores to use in mclapply().
 #' @return updated values for curPar, curDelta, and curPrior
 parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior){
-  canDelta <- mean(objectiveFunction(canPar))
+  canDelta <- max(objectiveFunction(canPar))
 
   if(is.na(canDelta)){
     cat("\n*** [parUpdate] canDelta is NA. Replacing it with Inf ***")
