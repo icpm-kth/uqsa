@@ -32,23 +32,21 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(c(3, 12,18, 9, 2, 11, 17, 8, 1, 10, 16, 7))
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 100 # Size of the sub-sample from each chain
-npc <- 5000 # pre-calibration sample size
+ns <- 10000 # Size of the sub-sample from each chain
+npc <- 50000 # pre-calibration sample size
 nChains <- 4
-n <- ns*nChains
 
 # Define ABC-MCMC Settings
-delta <- 5 #0.01
+delta <- 0.01
 
 # Define the number of Cores for the parallelization
-
-
 nCores <- parallel::detectCores() %/% nChains
 
 set.seed(7619201)
 
 getScore	<- function(yy_sim, yy_exp=Inf, yy_expErr=Inf){
-	distance <- mean(((yy_sim-yy_exp)/yy_expErr)^2, na.rm=TRUE)
+  yy_expErr<-1
+	distance <- mean((1/71.67*(yy_sim-yy_exp)/yy_expErr)^2, na.rm=TRUE)
 	return(distance)
 }
 
@@ -77,7 +75,7 @@ for (i in 1:length(experimentsIndices)){
 	} else {
 		start_time_fitCopula <- Sys.time()
 		message("- New Prior: fitting Copula based on previous MCMC runs")
-		C <- fitCopula(draws, nCores)
+		C <- fitCopula(ABCMCMCoutput$draws, nCores)
 		rprior <- rCopulaPrior(C)
 		dprior <- dCopulaPrior(C)
 		cat("\nFitting copula:")
@@ -87,7 +85,7 @@ for (i in 1:length(experimentsIndices)){
 	## Run Pre-Calibration Sampling
 	message("- Precalibration")
 	start_time_preCalibration <- Sys.time()
-	pC <- preCalibration(objectiveFunction, npc, rprior)
+	pC <- preCalibration(objectiveFunction, npc, rprior, rep = 5)
 	cat("\nPreCalibration:")
 	print(Sys.time()-start_time_preCalibration)
 
@@ -111,19 +109,20 @@ for (i in 1:length(experimentsIndices)){
 	stopCluster(cl)
 	
 	ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
+	ABCMCMCoutput$scores <- as.numeric(t(ABCMCMCoutput$scores))
 	end_time = Sys.time()
 	time_ = end_time - start_time_ABC
 	cat("\nABCMCMC for experimental set",i,":")
 	print(time_)
-	cat("\nRegularizations:", nRegularizations)
-	cat("\nAcceptance rate:", acceptanceRate)
+	cat("\nRegularizations:", ABCMCMCoutput$nRegularizations)
+	cat("\nAcceptance rate:", ABCMCMCoutput$acceptanceRate)
 	# if (i>1){
 	#   precursors <- experimentsIndices[1:(i-1)]
 	#   objectiveFunction <- makeObjective(experiments[precursors], modelName, getScore, parMap, nCores)
 	#   draws <- checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
 	# }
 
-	cat("\nNumber of draws after fitting with previous experiments:",dim(draws)[1])
+	cat("\nNumber of draws after fitting with previous experiments:",ABCMCMCoutput$dim(draws)[1])
 
 	# Save Resulting Samples to MATLAB and R files.
 	cat("\n-Saving sample \n")
