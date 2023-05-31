@@ -17,11 +17,11 @@ observable.mean.in.bin <- function(id,outputSample){
 	d<-dim(outputSample)
 	stopifnot(length(id)==d[1])
 	n<-max(id)
-	bin.mean <- matrix(0,n,d[2])
+	bin.mean <- matrix(NA,n,d[2])
 	for (i in 1:n){
 		l <- id == i
-		if (any(l) && sum(as.numeric(l))>6){
-			bin.mean[i,] <- colMeans(outputSample[l,])
+		if (any(l)){
+			bin.mean[i,] <- colMeans(outputSample[l,,drop=FALSE])
 		}
 	}
 	return(bin.mean)
@@ -39,7 +39,7 @@ observable.mean.in.bin <- function(id,outputSample){
 sum.of.bin.variance  <- function(hst,binMeans,totalMean){
 	B <- dim(binMeans) # binning dimensions
 	stopifnot(B[2] == length(totalMean))
-	return(colSums(hst$counts*(t(t(binMeans)-totalMean))^2)/sum(hst$counts))
+	return(colSums(hst$counts*(t(t(binMeans)-totalMean))^2,na.rm=TRUE)/sum(hst$counts))
 }
 
 #' Global Sensitivity Analysis
@@ -67,7 +67,7 @@ sensitivity<-function(parSample,outputSample,nBins="Sturges"){
 	id <- vector("list",SampleSize[2])
 	for (i in 1:SampleSize[2]){
 		hst[[i]] <- hist(parSample[,i],plot=FALSE,breaks=nBins)
-		id[[i]] <- findInterval(parSample[,i],hst[[i]]$breaks)
+		id[[i]] <- findInterval(parSample[,i],hst[[i]]$breaks,all.inside=TRUE)
 	}
 	# a list, one item per fixed parameter
 	binMeans <- lapply(id,observable.mean.in.bin,outputSample=outputSample)
@@ -76,5 +76,56 @@ sensitivity<-function(parSample,outputSample,nBins="Sturges"){
 		Vi <- sum.of.bin.variance(hst[[i]],binMeans[[i]],totalMean=meanOutput)
 		S[,i] <- Vi/varOutput
 	}
+	colnames(S) <- colnames(parSample)
+	rownames(S) <- colnames(outputSample)
 	return(S)
+}
+
+#' plot the sensitivity matrix
+#'
+#' Produce a cumulative shaded area plot for the sensitivity matrix.
+#'
+#' @export
+#' @param u the values of the x-axis for the plot, if named, the names
+#'     are put at the tick-marks
+#' @param S the sensitivity matrix as returned by `sensitivity()`,
+#'     S[i,j] is with respect to model output i and parameter j
+#' @param color the list of colors to use for the shaded areas, e.g.:
+#'     rainbow(24)
+#' @param line.color the color of the lines drawn between the shaded
+#'     areas
+#' @param do.sort the parameter sensitivities are sorted according to
+#'     the mean over all outputs, the parameter with the most
+#'     sensitivity is plotted first, at the bottom
+#' @param decreasing direction of sort, the first item in the sorted
+#'     list (the parameter) will be plotted first, and thus at the
+#'     bottom of the plot
+#' @param title string, written above, as a title
+#' @return nothing
+sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.colors(dim(S)[2]+1),do.sort=TRUE,decreasing=FALSE,title="Sensitivity"){
+	d <- dim(S)
+	n <- d[2]-1
+	if (do.sort) {
+		m <- colMeans(S)
+		I <- order(m,decreasing=decreasing)
+		S <- S[,I]
+		ylabel <- "sorted cumulative sensitivity"
+	} else {
+		ylabel <- "cumulative sensitivity"
+	}
+	C <- t(apply(S,1,cumsum))
+	x <- c(u,rev(u))
+
+	plot(u,C[,1],type='l',ylim=c(0,max(C)*1.1),ylab=ylabel,xlab="output",main=title,axes=FALSE,col=line.color[1])
+	axis(1,at=u,labels=names(u))
+	axis(2)
+	z <- c(S[,1]*0,rev(S[,1]))
+	polygon(x,z,col=color[1],lty=0)
+	print(n)
+	for (i in 1:n){
+		y <- c(C[,i],rev(C[,i+1]))
+		polygon(x,y,col=color[i+1],lty=0)
+		lines(u,C[,i],col=line.color[i+1],lwd=2)
+	}
+	legend(x="topright",fill=color[1:d[2]],legend=colnames(S),ncol=2)
 }

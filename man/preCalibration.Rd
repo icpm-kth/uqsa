@@ -4,13 +4,20 @@
 \alias{preCalibration}
 \title{Determine a starting value for ABC's delta}
 \usage{
-preCalibration(objectiveFunction, npc = 1000, rprior)
+preCalibration(
+  objectiveFunction,
+  npc = 1000,
+  rprior,
+  nCores = parallel::detectCores()
+)
 }
 \arguments{
 \item{npc}{sample size of pre-calibration.}
 
 \item{rprior}{a function that generates random ABC variables,
 distributed according to the prior.}
+
+\item{nCores}{number of processor cores to use in mclapply().}
 
 \item{experiments}{a list of simulation experiments. Same as for
 ABCMCMC.}
@@ -25,8 +32,6 @@ variables and returns valid model parameters}
 
 \item{getScore}{a function that maps the model's output values to
 ABC score values (in comparison to data).}
-
-\item{nCores}{number of processor cores to use in mclapply().}
 }
 \value{
 list with entries preDelta and prePar, final values of
