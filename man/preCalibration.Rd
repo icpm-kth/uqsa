@@ -8,7 +8,8 @@ preCalibration(
   objectiveFunction,
   npc = 1000,
   rprior,
-  nCores = parallel::detectCores()
+  nCores = parallel::detectCores(),
+  rep = 1
 )
 }
 \arguments{
@@ -18,6 +19,8 @@ preCalibration(
 distributed according to the prior.}
 
 \item{nCores}{number of processor cores to use in mclapply().}
+
+\item{rep}{number of repetitions of the preCalibration process}
 
 \item{experiments}{a list of simulation experiments. Same as for
 ABCMCMC.}

@@ -222,7 +222,6 @@ propensity <- function(conv.coeff,kinetic.law,rExpressions){
 #' is NULL. A valid set of reactions can be obtained with `!is.null(reactions)`
 #'
 #' @export
-#' @import GillespieSSA2
 #' @param SBtab a series of tables as returned by `sbtab_from_tsv()`
 #' @param LV is the product of Avogadro's constant L and the system's
 #'     volume V in litres; if unspecified this information is retrieved
