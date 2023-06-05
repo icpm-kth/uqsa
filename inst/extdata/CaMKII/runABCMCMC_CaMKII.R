@@ -4,7 +4,7 @@ library(uqsa)
 library(parallel)
 
 model.tsv <- uqsa_example("CaMKII")
-model.tab <- sbtab_from_tsv(model.tab)
+model.tab <- sbtab_from_tsv(model.tsv)
 
 # source all R functions for this model
 source(uqsa_example("CaMKII",f="R"))
