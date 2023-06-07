@@ -1,5 +1,5 @@
 !!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableType='QuantityMatrix' TableName='Stemmer1993Fig2Afc' TableTitle='[Nair2014 Figure 12.3A] CaMKII-Autonomy' 
-!ID	>Ca_set	>CaPerCaM	SD_CaPerCaM
+!ID	>Ca_set	>CaPerCaM	~CaPerCaM
 E5D0	457.088	0.166	0.268552
 E5D1	831.763	0.342	0.268552
 E5D2	1122.018	0.528	0.268552

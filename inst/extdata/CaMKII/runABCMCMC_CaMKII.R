@@ -3,11 +3,11 @@ require(SBtabVFGEN)
 library(uqsa)
 library(parallel)
 
-model.tsv <- uqsa_example("CaMKII")
+model.tsv <- uqsa_example("CaMKII",full.names=TRUE)
 model.tab <- sbtab_from_tsv(model.tsv)
 
 # source all R functions for this model
-source(uqsa_example("CaMKII",f="R"))
+source(uqsa_example("CaMKII",pat="^CaMKII.*R$",full.names=TRUE))
 
 experiments <- sbtab.data(model.tab)
 
@@ -31,24 +31,24 @@ ul <- log10(parVal*defRange)
 
 ## Define the experiments that have to be considered in each iteration of the for loop to compare simulations with experimental data
 experimentsIndices <- list(
- which(grepl("^E0",names(datasets))),
- which(grepl("^E1",names(datasets))),
- which(grepl("^E2",names(datasets))),
- which(grepl("^E3",names(datasets))),
- which(grepl("^E4",names(datasets))),
- which(grepl("^E5",names(datasets)))
+ which(startsWith(names(experiments),"E0")),
+ which(startsWith(names(experiments),"E1")),
+ which(startsWith(names(experiments),"E2")),
+ which(startsWith(names(experiments),"E3")),
+ which(startsWith(names(experiments),"E4")),
+ which(startsWith(names(experiments),"E5"))
 )
 
 
 ## Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
 ns <- 10000 # Size of the sub-sample from each chain
 npc <- 50000 # pre-calibration sample size
-nChains <- 4
 
 # Define ABC-MCMC Settings
 delta <- 0.01
 
 # Define the number of Cores for the parallelization
+nChains <- 4
 nCores <- parallel::detectCores() %/% nChains
 
 set.seed(7619201)
@@ -73,7 +73,6 @@ save_sample <- function(ind,ABCMCMCoutput){
 
 start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
-
 	expInd <- experimentsIndices[[i]]
 	objectiveFunction <- makeObjective(experiments[expInd], modelName, Score, parMap)
 	acceptanceProbability <- makeAcceptanceProbability(experiments[expInd], modelName, getAcceptanceProbability, parMap)
