@@ -32,7 +32,7 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(c(3, 12,18, 9, 2, 11, 17, 8, 1, 10, 16, 7))
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 10000 # Size of the sub-sample from each chain
+ns <- 1000 # Size of the sub-sample from each chain
 npc <- 50000 # pre-calibration sample size
 nChains <- 4
 
@@ -69,8 +69,17 @@ for (i in 1:length(experimentsIndices)){
 	## If First Experimental Setting, Create an Independente Colupla
 	if(i==1){
 		message("- Initial Prior: uniform product distribution")
-		rprior <- rUniformPrior(ll, ul)
-		dprior <- dUniformPrior(ll, ul)
+	  
+		#rprior <- rUniformPrior(ll, ul)
+		rprior <- rNormalPrior(mean = (ll+ul)/2, sd = (ul-ll)/5) 
+		# with this choice of sd, each component has 98.8% probability
+		# of being in its interval [ll,ul], 
+		# and the vector has (98.8%)^27 = 71.2% probability of being in the hyperrectangle
+		# defined by ll and ul
+		
+		#dprior <- dUniformPrior(ll, ul)
+		dprior <- dNormalPrior(mean = (ll+ul)/2, sd = (ul-ll)/5)
+		
 		## Otherwise, Take Copula from the Previous Exp Setting and Use as a Prior
 	} else {
 		start_time_fitCopula <- Sys.time()
@@ -116,11 +125,12 @@ for (i in 1:length(experimentsIndices)){
 	print(time_)
 	cat("\nRegularizations:", ABCMCMCoutput$nRegularizations)
 	cat("\nAcceptance rate:", ABCMCMCoutput$acceptanceRate)
-	# if (i>1){
-	#   precursors <- experimentsIndices[1:(i-1)]
-	#   objectiveFunction <- makeObjective(experiments[precursors], modelName, getScore, parMap, nCores)
-	#   draws <- checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
-	# }
+	
+	if (i>1){
+	  precursors <- experimentsIndices[[1]][1:(i-1)]
+	  objectiveFunction <- makeObjective(experiments[precursors], modelName, getScore, parMap, nCores)
+	  draws <- checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
+	}
 
 	cat("\nNumber of draws after fitting with previous experiments:",ABCMCMCoutput$dim(draws)[1])
 
@@ -135,7 +145,7 @@ for (i in 1:length(experimentsIndices)){
 	}
 
 	outFileR <- paste("./PosteriorSamples/Draws",modelName,"nChains",nChains,"ns",ns,"npc",npc,outFile,timeStr,".RData",collapse="_",sep="_")
-	save(draws, parNames, file=outFileR)
+	save(ABCMCMCoutput, parNames, file=outFileR)
 }
 end_time = Sys.time()
 time_ = end_time - start_time

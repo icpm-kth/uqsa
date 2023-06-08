@@ -86,7 +86,6 @@ dUniformPrior <- function(ll,ul){
   return(dprior)
 }
 
-
 #' rUniformPrior returns a random vector generator
 #'
 #' The return value is a function that generates random vectors of the
@@ -126,3 +125,71 @@ rUniformPrior <- function(ll,ul){
   }
   return(rprior)
 }
+
+
+
+#' dNormalPrior creates the density function of a multivariate normal distribution with independent components
+#'
+#' The returned density function takes vectors of the same size as mean and sd.
+#' It returns the product of the components' one-dimensional normal distribution,
+#' with mean "mean" and standard deviation "sd".
+#'
+#' @export
+#' @param mean mean of the random variables (a vector)
+#' @param sd standard deviation of the random variables (same size vector as mean)
+#' @return a probability density function on vectors with the same length as mean and sd.
+#' @examples
+#' dnp<-dNormalPrior(mean=c(0,1,2),sd=c(1,2,3))
+#' dnp(c(0.5,1.5,2.5))
+#' [1] 0.008926651
+dNormalPrior <- function(mean,sd){
+  dprior <- function(x){
+    return(prod(dnorm(x, mean=mean, sd = sd)))
+  }
+  return(dprior)
+}
+
+#' rNormalPrior returns a random vector generator
+#'
+#' The return value is a function that generates random vectors of the
+#' same size as mean and sd from a multivariate normal distribution with 
+#' independent components with mean "mean" and standard deviation "sd".
+#' The random vectors are returned as n
+#' rows of a matrix, where n is the only argument of the returned
+#' function.
+#'
+#' @export
+#' @param mean mean of the random variables (a vector)
+#' @param sd standard deviation of the random variables (same size vector as
+#'     mean)
+#' @return an independentent multivariate normal random vector generating function: rprior(n),
+#'     where n is the requested number of vectors (rows)
+#' @examples
+#' rnp<-rNormalPrior(mean=c(0,1,2),sd=c(1,2,3))
+#' rnp(12)
+#'             [,1]       [,2]       [,3]
+#' [1,]  0.99368106  1.0074638  0.2411801
+#' [2,] -1.39127288  0.3608953 -0.7704979
+#' [3,] -0.23957518 -0.4376285  7.2133888
+#' [4,]  0.55225848 -3.0625581  2.1468860
+#' [5,] -1.74950066 -1.9512875 -0.1923920
+#' [6,]  0.36377999 -0.2222019  4.0832047
+#' [7,]  0.62605893 -0.8562764 -0.2743055
+#' [8,] -0.99829859  2.8863743  7.4753572
+#' [9,] -0.71302121  2.8879101  1.4377714
+#' [10,]  0.04040756 -1.6638517  0.7293233
+#' [11,] -0.04951403  1.9498103  2.1706586
+#' [12,]  0.49326957  2.7241179  7.4083735
+
+rNormalPrior <- function(mean,sd){
+  np <- length(mean)
+  stopifnot(np==length(sd))
+  rprior <- function(n){
+    r <- matrix(rnorm(n*np,mean=mean,sd=sd),n,np,byrow=TRUE)
+    return(r)
+  }
+  return(rprior)
+}
+
+
+
