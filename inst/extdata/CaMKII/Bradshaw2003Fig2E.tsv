@@ -1,5 +1,5 @@
 !!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableType='QuantityMatrix' TableName='Bradshaw2003Fig2E' TableTitle='[Nair 2014 Figure 12.3E] Ca CaM binding hyperbolic' 
-!ID	>Ca_set	>AutoCaMKII	SD_AutoCaMKII
+!ID	>Ca_set	>AutoCaMKII	~AutoCaMKII
 E0D0	175.8	1.04	11.9953
 E0D1	236	1.38	11.9953
 E0D2	313.3	1.04	11.9953
