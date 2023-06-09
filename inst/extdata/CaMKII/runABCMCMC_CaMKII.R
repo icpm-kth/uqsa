@@ -46,7 +46,7 @@ ns <- 10000 # Size of the sub-sample from each chain
 npc <- 50000 # pre-calibration sample size
 
 # Define ABC-MCMC Settings
-delta <- 0.01
+delta <- 0.1
 
 # Define the number of Cores for the parallelization
 nChains <- 4
@@ -55,7 +55,7 @@ nCores <- parallel::detectCores() %/% nChains
 set.seed(7619201)
 
 Score <- function(yy_sim, yy_exp=Inf, yy_expErr=Inf){
-	distance <- mean(((yy_sim-yy_exp)/yy_expErr)^2, na.rm=TRUE)
+	distance <- mean(abs((yy_sim-as.matrix(yy_exp))/as.matrix(yy_expErr)), na.rm=TRUE)
 	return(distance)
 }
 
@@ -98,7 +98,7 @@ for (i in 1:length(experimentsIndices)){
 	## Run Pre-Calibration Sampling
 	message("- Precalibration")
 	start_time_preCalibration <- Sys.time()
-	pC <- preCalibration(objectiveFunction, npc, rprior, rep = 5)
+	pC <- preCalibration(objectiveFunction, npc, rprior)
 	cat("\nPreCalibration:")
 	print(Sys.time()-start_time_preCalibration)
 
@@ -131,6 +131,8 @@ for (i in 1:length(experimentsIndices)){
 
 	cat("\n-Saving sample \n")
 	save_sample(experimentsIndices[[1]],ABCMCMCoutput)
+	cat("memory usage: \n")
+	print(gc())
 }
 end_time = Sys.time()
 time_ = end_time - start_time

@@ -185,7 +185,7 @@ makeObjective <- function(experiments,modelName,distance,parMap=identity,mc.core
 		out <- runModel(experiments, modelName,  parABC, parMap, mc.cores)
 		S <- c()
 		for(i in 1:length(experiments)){
-		  S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) distance(out[[i]]$func[1,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues), mc.cores = mc.cores)))
+		  S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) distance(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues), mc.cores = mc.cores)))
 		}
 		return(S)
 	}
@@ -210,7 +210,7 @@ makeAcceptanceProbability <- function(experiments, modelName, getAcceptanceProba
 		out <- runModel(experiments, modelName,  parABC, parMap, mc.cores)
 		S <- c()
 		for(i in 1:length(experiments)){
-		  S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) getAcceptanceProbability(out[[i]]$func[1,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues), mc.cores = mc.cores)))
+		  S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) getAcceptanceProbability(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues), mc.cores = mc.cores)))
 		}
 		return(S)
 	}
