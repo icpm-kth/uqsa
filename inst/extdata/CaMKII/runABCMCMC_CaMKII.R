@@ -121,7 +121,9 @@ for (i in 1:length(experimentsIndices)){
 	stopCluster(cl)
 
 	ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
-	ABCMCMCoutput$scores <- as.numeric(t(ABCMCMCoutput$scores))
+	if (!is.null(ABCMCMCoutput$scores)){
+		ABCMCMCoutput$scores <- as.numeric(t(ABCMCMCoutput$scores))
+	}
 	end_time = Sys.time()
 	time_ = end_time - start_time_ABC
 	cat("\nABCMCMC for experimental set",i,":")
