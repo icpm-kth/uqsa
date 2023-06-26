@@ -42,11 +42,11 @@ experimentsIndices <- list(
 
 
 ## Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 10000 # Size of the sub-sample from each chain
+ns <- 50000 # Size of the sub-sample from each chain
 npc <- 50000 # pre-calibration sample size
 
 # Define ABC-MCMC Settings
-delta <- 0.1
+delta <- 0.5
 
 # Define the number of Cores for the parallelization
 nChains <- 4
