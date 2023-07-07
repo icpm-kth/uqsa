@@ -25,7 +25,7 @@ modelName <- checkModel(comment(model.tab), uqsa_example("CaMKII",pat="_gvf[.]c$
 ## account and always return the parameters in linear scale. So, if
 ## the SBtab gives us the logarithmic values, this function has the
 ## converted values:
-numPar <- length(model.tab$Parameter[["!ID"]])
+numPar <- nrow(model.tab$Parameter)
 parVal <- model$par()[1:numPar]
 ## There is one caveat: in our SBtab files we make a distinction
 ## between *model parameters* and *input parameters*. The input
@@ -64,8 +64,8 @@ experimentsIndices <- list(
 
 
 ## Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 50000 # Size of the sub-sample from each chain
-npc <- 50000 # pre-calibration sample size
+ns <- 1000 # Size of the sub-sample from each chain
+npc <- 1000 # pre-calibration sample size
 
 # Define ABC-MCMC Settings
 delta <- 0.5
