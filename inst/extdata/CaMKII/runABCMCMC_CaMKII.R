@@ -139,6 +139,9 @@ for (i in 1:length(experimentsIndices)){
 	stopCluster(cl)
 
 	ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
+	if (!is.matrix(ABCMCMCoutput$draws))
+		stop("All chains got stuck.")
+
 	if (!is.null(ABCMCMCoutput$scores)){
 		ABCMCMCoutput$scores <- as.numeric(t(ABCMCMCoutput$scores))
 	}

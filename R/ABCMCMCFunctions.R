@@ -69,7 +69,7 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
   while (n/batchSize < nSims){
     if(n %% batchSize == 0 && acceptedSamples<0.0005*n){
       nRegularizations <- nRegularizations + 1
-      if(nRegularizations >= 1){
+      if(nRegularizations >= 5){
         timeStr <- Sys.time()
         timeStr <- gsub(":","_", timeStr)
         timeStr <- gsub(" ","_", timeStr)
