@@ -212,7 +212,7 @@ makeAcceptanceProbability <- function(experiments, modelName, getAcceptanceProba
 		for(i in 1:length(experiments)){
 		  S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) getAcceptanceProbability(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues), mc.cores = mc.cores)))
 		}
-		return(S)
+		return(min(S))
 	}
 	return(acceptanceProbability)
 }
