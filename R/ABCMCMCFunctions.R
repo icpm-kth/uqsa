@@ -39,18 +39,25 @@
 #'     scores
 #' @param nCores setting for multicore package
 #' @return a list containing a sample matrix and a vector of scores (values of delta for each sample)
-ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, acceptanceProbability=NULL){
+ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dprior, acceptanceProbability=NULL){
+  if(is.null(objectiveFunction) && is.null(acceptanceProbability)){
+    error("Provide objectiveFunction or acceptanceProbability.")
+  }
+  
   cat("Started chain.\n")
   Sigma1 <- 0.25*diag(diag(Sigma0))
   curDelta <- Inf
   np <- length(startPar)
   curPar  <- startPar
-  curDelta <- max(objectiveFunction(curPar))
-
-  if(is.na(curDelta)){
-    cat("*** [ABCMCMC] curDelta is NA. Replacing it with Inf ***\n")
-    curDelta <- Inf
+  curDelta <- NA
+  if(is.null(acceptanceProbability)){
+    curDelta <- max(objectiveFunction(curPar))
+    if(is.na(curDelta)){
+      cat("*** [ABCMCMC] curDelta is NA. Replacing it with Inf ***\n")
+      curDelta <- Inf
+    }
   }
+  
   curPrior <- dprior(curPar)
   draws <- matrix(NA, nSims,np)
   scores <- rep(NA, nSims)
@@ -60,7 +67,7 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, a
   nRegularizations <- 0
   sampleFrequency <- 100
   while (n/sampleFrequency < nSims){
-    if(n %% 100 == 0 && acceptedSamples<0.00005*n){
+    if(n %% 100 == 0 && acceptedSamples<0.000000005*n){
       nRegularizations <- nRegularizations + 1
       if(nRegularizations >= 1){
         timeStr <- Sys.time()
@@ -89,11 +96,15 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, a
       canPar <- MASS::mvrnorm(n=1, curPar, Sigma1)
     }
 
-    out <- parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
-    #out <- parUpdate_ProbabilisticAcceptance(acceptanceProbability, curPar, canPar, curPrior, dprior)
-
+    if(is.null(acceptanceProbability)){
+      out <- parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
+      curDelta <- out$curDelta
+    }
+    else{
+      out <- parUpdate_ProbabilisticAcceptance(acceptanceProbability, curPar, canPar, curPrior, dprior)
+    }
+    
     curPar <- out$curPar
-    curDelta <- out$curDelta
     curPrior <- out$curPrior
     acceptedSamples <- acceptedSamples + out$acceptance
 
