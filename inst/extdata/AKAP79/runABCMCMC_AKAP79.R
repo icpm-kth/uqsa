@@ -4,7 +4,7 @@ library(uqsa)
 library(parallel)
 
 SBtabDir <- getwd()
-model = import_from_SBtab(SBtabDir)
+model <- import_from_SBtab(SBtabDir)
 print(comment(model))
 modelName <- checkModel(comment(model),paste0(SBtabDir,'/',comment(model),'_gvf.c'))
 
