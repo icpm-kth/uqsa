@@ -1,0 +1,3 @@
+!!SBtab	Document='CaMKIIs' TableName='Suggested Input' TableTitle='The model has conservation laws that were automatically determined, these are the conserved constants' TableType='Quantity'
+!ID	!Name	!DefaultValue	!Unit	!ConservationLaw	!Comment
+CLU1	caa_ConservedConst	0	nM	TRUE	caa_ConservedConst = caa

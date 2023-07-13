@@ -1,0 +1,3 @@
+!!SBtab	SBtabVersion='1.0'  Document='CaMKIIs' TableType='Quantity'  TableName='TurnOn' TableTitle='TurnsOn constant Ca base level'	
+!TimePoint	!Time	>SET:isOn
+ActivationT0	0	1

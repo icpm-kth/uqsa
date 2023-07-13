@@ -62,6 +62,9 @@
  <Parameter Name="CaMKII_0" Description="input parameter" DefaultValue="0"/>
  <Parameter Name="CaM_0" Description="input parameter" DefaultValue="30"/>
  <Parameter Name="PP2B_0" Description="input parameter" DefaultValue="3"/>
+ <Parameter Name="kca1" Description="input parameter" DefaultValue="0.00978422"/>
+ <Parameter Name="kca2" Description="input parameter" DefaultValue="0.03448"/>
+ <Parameter Name="isOn" Description="input parameter" DefaultValue="0"/>
  <Expression Name="KD__CaM_Ca3__PP2B" Description="defined expression" Formula="(KD__CaM_Ca3__Ca * KD__CaM_Ca4__PP2B) / KD__PP2B_CaM_Ca3__Ca"/>
  <Expression Name="KD__CaM_Ca2__PP2B" Description="defined expression" Formula="(KD__CaM_Ca2__Ca * KD__CaM_Ca3__PP2B) / KD__PP2B_CaM_Ca2__Ca"/>
  <Expression Name="KD__CaM_Ca1__PP2B" Description="defined expression" Formula="(KD__CaM_Ca1__Ca * KD__CaM_Ca2__PP2B) / KD__PP2B_CaM_Ca1__Ca"/>
@@ -105,8 +108,7 @@
  <Expression Name="kr__CaM_Ca2__pCaMKIIa" Description="defined expression" Formula="KD__CaM_Ca2__pCaMKIIa * kf__CaM_Ca2__pCaMKIIa"/>
  <Expression Name="kr__CaM_Ca1__pCaMKIIa" Description="defined expression" Formula="KD__CaM_Ca1__pCaMKIIa * kf__CaM_Ca1__pCaMKIIa"/>
  <Expression Name="kr__CaM__pCaMKIIa" Description="defined expression" Formula="KD__CaM__pCaMKIIa * kf__CaM__pCaMKIIa"/>
- <Expression Name="logistic" Description="defined expression" Formula="1.0/(1+exp(-10*t))"/>
- <Expression Name="Ca" Description="defined expression" Formula="logistic*Ca_set"/>
+ <Expression Name="Ca" Description="defined expression" Formula="isOn*Ca_set+caa"/>
  <Expression Name="PP1" Description="defined expression" Formula="PP1_0-PP1__pCaMKIIa"/>
  <Expression Name="CaMKII" Description="defined expression" Formula="CaMKII_0 - PP1_0 - (CaMKII_CaM + CaMKII_CaM_Ca1 + CaMKII_CaM_Ca2 + CaMKII_CaM_Ca3 + CaMKII_CaM_Ca4 + pCaMKII_CaM_Ca4 + pCaMKIIa + pCaMKII_CaM_Ca3 + pCaMKII_CaM_Ca2 + pCaMKII_CaM_Ca1 + pCaMKII_CaM - PP1)"/>
  <Expression Name="CaM" Description="defined expression" Formula="CaM_0 + PP1_0 - CaMKII_0 - (CaM_Ca1 + CaM_Ca2 + CaM_Ca3 + CaM_Ca4 + PP2B_CaM + PP2B_CaM_Ca1 + PP2B_CaM_Ca2 + PP2B_CaM_Ca3 + PP2B_CaM_Ca4 + PP1 - CaMKII - pCaMKIIa)"/>
@@ -159,6 +161,8 @@
  <Expression Name="ReactionFlux32" Description="flux" Formula="(kautMax*pairedCaMKIIc*CaMKII_CaM_Ca4)"/>
  <Expression Name="ReactionFlux33" Description="flux" Formula="(kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa)"/>
  <Expression Name="ReactionFlux34" Description="flux" Formula="(kcat__PP1__pCaMKIIa*PP1__pCaMKIIa)"/>
+ <Expression Name="SpikeFlux1" Description="flux" Formula="cab"/>
+ <Expression Name="SpikeFlux2" Description="flux" Formula="0-(kca1*kca2*caa+(kca1+kca2)*cab)"/>
  <StateVariable Name="CaM_Ca1" Description="compound" DefaultInitialCondition="0" Formula="+ReactionFlux1-ReactionFlux2-ReactionFlux6-ReactionFlux15-ReactionFlux26"/>
  <StateVariable Name="CaM_Ca2" Description="compound" DefaultInitialCondition="0" Formula="+ReactionFlux2-ReactionFlux3-ReactionFlux7-ReactionFlux16-ReactionFlux25"/>
  <StateVariable Name="CaM_Ca3" Description="compound" DefaultInitialCondition="0" Formula="+ReactionFlux3-ReactionFlux4-ReactionFlux8-ReactionFlux17-ReactionFlux24"/>
@@ -180,8 +184,11 @@
  <StateVariable Name="pCaMKII_CaM_Ca1" Description="compound" DefaultInitialCondition="0" Formula="+ReactionFlux26+ReactionFlux28-ReactionFlux29"/>
  <StateVariable Name="pCaMKII_CaM" Description="compound" DefaultInitialCondition="0" Formula="+ReactionFlux27-ReactionFlux28"/>
  <StateVariable Name="PP1__pCaMKIIa" Description="compound" DefaultInitialCondition="0" Formula="+ReactionFlux33-ReactionFlux34"/>
+ <StateVariable Name="caa" Description="compound" DefaultInitialCondition="0" Formula="+SpikeFlux1"/>
+ <StateVariable Name="cab" Description="compound" DefaultInitialCondition="5.658469984" Formula="+SpikeFlux2"/>
  <Function Name="CaPerCaM" Description="output" Formula="BoundCa / (s + Total_CaM)"/>
  <Function Name="AutoCaMKII" Description="output" Formula="100*(Total_pCaMKII / (s + totalCaMKII))"/>
  <Function Name="CaMPerPP2B" Description="output" Formula="Total_PP2B_CaM_CaX / (s + PP2B + Total_PP2B_CaM_CaX)"/>
  <Function Name="ActivePP2B" Description="output" Formula="100 * (PP2B_CaM_Ca4 / (s + PP2B + Total_PP2B_CaM_CaX))"/>
+ <Function Name="Camonitor" Description="output" Formula="Ca"/>
 </VectorField>

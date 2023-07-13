@@ -1,7 +1,10 @@
-!!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableType='Quantity'  TableName='Input' TableTitle='Input Parameter List; dynamics are hardcoded into model' 
+!!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableType='Quantity'  TableName='Input' TableTitle='Input Parameter List; dynamics are hardcoded into model'		
 !ID	!Name	!DefaultValue	!Unit
 Ca_set	Ca_set	2187.8	nanomole/litre
 PP1_0	PP1_0	0	nanomole/litre
 CaMKII_0	CaMKII_0	0	nanomole/litre
 CaM_0	CaM_0	30	nanomole/litre
 PP2B_0	PP2B_0	3	nanomole/litre
+kca1	kca1	0.00978422	s^-1
+kca2	kca2	0.03448	s^-1
+isOn	isOn	0	1
