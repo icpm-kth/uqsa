@@ -15,7 +15,7 @@ modelName <- checkModel(comment(model.tab), uqsa_example("CaMKII",pat="_gvf[.]c$
 
 ## this is a function from the CaMKIIs.R file,
 ## it takes the "!Scale" mentioned in SBtab into account:
-numPar <- length(model.tab$Parameter[["!ID"]])
+numPar <- length(model.tab$Parameter[["!Name"]])
 parVal <- model$par()[1:numPar]
 
 
