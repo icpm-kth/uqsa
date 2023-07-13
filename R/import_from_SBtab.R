@@ -62,16 +62,16 @@ import_experiments <- function(modelName=NULL, SBtabDir){
     modelName <- comment(SBtab)
   }
   compoundNames <- SBtab[["Compound"]][["!Name"]]
-  compoundId <- SBtab[["Compound"]][["!ID"]]
+  compoundId <- row.names(SBtab[["Compound"]])
   default_y0 <- as.numeric(SBtab[["Compound"]][["!InitialValue"]])
   names(default_y0) <- compoundNames
   default_par <- as.numeric(SBtab[["Parameter"]][["!DefaultValue"]])
   inputNames <- SBtab[["Input"]][["!Name"]]
-  inputId <- SBtab[["Input"]][["!ID"]]
+  inputId <- row.names(SBtab[["Input"]])
   default_input <- SBtab[["Input"]][["!DefaultValue"]]
 
   outputNames <- SBtab[["Output"]][["!Name"]]
-  outputId <- SBtab[["Output"]][["!ID"]]
+  outputId <- row.names(SBtab[["Output"]])
 	if ("!ErrorNames" %in% names(SBtab[["Output"]])){
 		errorNames <- SBtab[["Output"]][["!ErrorNames"]]
 	} else {
