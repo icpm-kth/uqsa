@@ -4,16 +4,16 @@
 \alias{simulator.c}
 \title{This creates a closure that simulates the model}
 \usage{
-simulator.c(experiments, modelName, parABC, parMap = identity)
+simulator.c(experiments, modelName, parMap = identity)
 }
 \arguments{
 \item{experiments}{a list of experiments to simulate: inital values, inputs, time vectors, initial times}
 
 \item{modelName}{a string (with optional comment indicating an .so file) which points out the model to simulate}
 
-\item{parABC}{the parameters for the model, subject to change by parMap.}
-
 \item{parMap}{the model will be called with parMap(parABC); so any parameter transformation can happen there.}
+
+\item{parABC}{the parameters for the model, subject to change by parMap.}
 }
 \value{
 a closure that returns the model's output for a given parameter vector

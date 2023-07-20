@@ -85,17 +85,18 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
 #' @param num number of different starting parameter vectors [default 1].
 #' @return Sigma and startPar (matrix with `num` rows) as a list
 getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1){
+	if (all(is.na(preDelta)) || is.null(preDelta)) stop("no usable pre-calibration parameters.")
   prePar <- prePar[!is.na(preDelta),]
   preDelta <- preDelta[!is.na(preDelta)]
-  nk <- nrow(prePar)*p
-  pick1  <- grep(TRUE, (preDelta <= delta))      # pick all pars that meet threshold
-  pick2 <- order(preDelta, decreasing = F)[1:nk] # pick top p percent
+  nk <- ceil(nrow(prePar)*p)
+  pick1  <- which(preDelta <= delta)   # pick all pars that meet threshold
+  pick2 <- order(preDelta, decreasing = FALSE)[1:nk] # pick top p percent
   if(length(pick1)>length(pick2)){
     pick <- pick1
   }else{
     pick <- pick2
   }
-  Scorr <- cor(prePar[pick,])*0.8 #tone down corrs
+  Scorr <- cor(prePar[pick,])
   diag(Scorr) <- 1
   sdv <- apply(prePar[pick,], 2, sd)
   Sigma <- sfactor * Scorr * tcrossprod(sdv)

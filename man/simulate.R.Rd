@@ -4,16 +4,16 @@
 \alias{simulate.R}
 \title{This creates a closure that simulates the model}
 \usage{
-\method{simulate}{R}(experiments, model, parABC, parMap = identity)
+\method{simulate}{R}(experiments, model, parMap = identity)
 }
 \arguments{
 \item{experiments}{a list of experiments to simulate: inital values, inputs, time vectors, initial times}
 
-\item{parABC}{the parameters for the model, subject to change by parMap.}
-
 \item{parMap}{the model will be called with parMap(parABC); so any parameter transformation can happen there.}
 
 \item{modelName}{a string (with optional comment indicating an .so file) which points out the model to simulate}
+
+\item{parABC}{the parameters for the model, subject to change by parMap.}
 }
 \value{
 a closure that returns the model's output for a given parameter vector

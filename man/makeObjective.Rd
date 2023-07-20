@@ -6,7 +6,7 @@
 \usage{
 makeObjective(
   experiments,
-  modelName,
+  modelName = NULL,
   distance,
   parMap = identity,
   simulate = NULL

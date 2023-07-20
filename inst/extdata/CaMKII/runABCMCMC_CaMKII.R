@@ -1,30 +1,32 @@
 require(rgsl)
 require(SBtabVFGEN)
+require(parallel)
 library(uqsa)
 
 nChains <- 4
-nCores <- parallel::detectCores() %/% nChains
-options(mc.cores=nCores)
-require(parallel)
+options(mc.cores=parallel::detectCores() %/% nChains)
 
 model.tsv <- uqsa_example("CaMKII",full.names=TRUE)
 model.tab <- sbtab_from_tsv(model.tsv)
 
-# source all R functions for this model
+# source all R functions for this model, this also loads a variable called "model"
 source(uqsa_example("CaMKII",pat="^CaMKII.*R$",full.names=TRUE))
 
 experiments <- sbtab.data(model.tab)
 
 # we take the model name as inferred from the sbtab document:
 modelName <- checkModel(comment(model.tab), uqsa_example("CaMKII",pat="_gvf[.]c$"))
+## Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
+ns <- 5000 # Size of the sub-sample from each chain
+npc <- 50000 # pre-calibration sample size
 
 ## model is a list variable defined in CaMKIIs.R, model$par() is the
 ## CaMKII_default() function from the same file.  But, model$par() is
 ## a more generic name that is defined for any model made by the same
-## tool.  These functions takes the "!Scale" mentioned in SBtab into
-## account and always return the parameters in linear scale. So, if
-## the SBtab gives us the logarithmic values, this function has the
-## converted values:
+## tool (RPN-derivative/sh/ode.sh).  These functions takes the
+## "!Scale" mentioned in SBtab into account and always return the
+## parameters in linear scale. So, if the SBtab gives us the
+## logarithmic values, this function has the converted values:
 numPar <- nrow(model.tab$Parameter)
 parVal <- model$par()[1:numPar]
 ## There is one caveat: in our SBtab files we make a distinction
@@ -39,18 +41,21 @@ parVal <- model$par()[1:numPar]
 ## we only want to consider the not-so-well-known internal parameters:
 ## that's why we do [1:numPar].
 
-# we sample in logarithmic space, so the model get's a transfornmation
+# we sample in logarithmic space, so the model gets a transformation
 # function to compensate:
 parMap <- function(parABC){
 	return(10^parABC)
 }
 
 ## scale to determine prior values
-defRange <- 200
+defRange <- 100
 
 ## Define Lower and Upper Limits for logUniform prior distribution for the parameters
 ll <- log10(parVal/defRange)
 ul <- log10(parVal*defRange)
+## parameter 23 should not vary quite as much:
+ll[23] <- log10(parVal[23]/10)
+ul[23] <- log10(parVal[23]*10)
 
 ## Define the experiments that have to be considered in each iteration of the for loop to compare simulations with experimental data
 experimentsIndices <- list(
@@ -61,11 +66,6 @@ experimentsIndices <- list(
  which(startsWith(names(experiments),"E4")),
  which(startsWith(names(experiments),"E5"))
 )
-
-
-## Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 50000 # Size of the sub-sample from each chain
-npc <- 50000 # pre-calibration sample size
 
 # Define ABC-MCMC Settings
 delta <- 1.0
@@ -83,9 +83,7 @@ distanceMeasure <- function(funcSim, dataExpr=Inf, dataErr=Inf){
 
 save_sample <- function(ind,ABCMCMCoutput){
 	I <- paste(ind, collapse="_")
-	timeStr <- Sys.time()
-	timeStr <- gsub(":","_", timeStr)
-	timeStr <- gsub(" ","_", timeStr)
+	timeStr <- gsub("[ :]","_", Sys.time())
 	if (!dir.exists("./PosteriorSamples")) {
 		dir.create("./PosteriorSamples")
 	}
@@ -93,15 +91,13 @@ save_sample <- function(ind,ABCMCMCoutput){
 	save(ABCMCMCoutput, file=outFileR)
 }
 
-
 start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
 	expInd <- experimentsIndices[[i]]
-	objectiveFunction <- makeObjective(experiments[expInd], modelName, distanceMeasure, parMap)
-	acceptanceProbability <- makeAcceptanceProbability(experiments[expInd], modelName, getAcceptanceProbability, parMap)
+	simulate <- simulator.c(experiments[expInd], modelName, parMap)
+	objectiveFunction <- makeObjective(experiments[expInd], modelName, distanceMeasure, parMap, simulate)
 
 	cat("#####Starting run for Experiments ", expInd, "######\n")
-	## If First Experimental Setting, Create an Independente Colupla
 	if(i==1){
 		message("- Initial Prior: uniform product distribution")
 		rprior <- rUniformPrior(ll, ul)
@@ -139,13 +135,21 @@ for (i in 1:length(experimentsIndices)){
 	start_time_ABC = Sys.time()
 	cl <- makeForkCluster(nChains)
 	clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
-	out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior, objectiveFunction))
+	out_ABCMCMC <- parLapply(cl,
+		1:nChains,
+		function(j) {
+			tryCatch(
+				ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior, objectiveFunction),
+				error=function(cond) {message("ABCMCMC crashed"); print(M); print(j); return(NULL)}
+			)
+		}
+	)
 	stopCluster(cl)
 
 	ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
-	if (!is.matrix(ABCMCMCoutput$draws))
+	if (!is.matrix(ABCMCMCoutput$draws)){
 		stop("All chains got stuck.")
-
+	}
 	if (!is.null(ABCMCMCoutput$scores)){
 		ABCMCMCoutput$scores <- as.numeric(t(ABCMCMCoutput$scores))
 	}

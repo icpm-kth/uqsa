@@ -130,6 +130,7 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity){
 #' @param modelName a string (with optional comment indicating an .so file) which points out the model to simulate
 #' @param parABC the parameters for the model, subject to change by parMap.
 #' @param parMap the model will be called with parMap(parABC); so any parameter transformation can happen there.
+#' @export
 #' @return a closure that returns the model's output for a given parameter vector
 #' @examples
 #'    model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
@@ -139,7 +140,7 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity){
 #'    modelName <- checkModel("<insert_model_name>_gvf.c")
 #'    simulate <- simulator.c(experiments, modelName,  parABC)
 #'    yf <- sim(parABC)
-simulator.c <- function(experiments, modelName,  parABC, parMap=identity){
+simulator.c <- function(experiments, modelName, parMap=identity){
 	require(rgsl)
 ## simulator:
 	sim <- function(parABC){
@@ -166,6 +167,7 @@ simulator.c <- function(experiments, modelName,  parABC, parMap=identity){
 #' @param modelName a string (with optional comment indicating an .so file) which points out the model to simulate
 #' @param parABC the parameters for the model, subject to change by parMap.
 #' @param parMap the model will be called with parMap(parABC); so any parameter transformation can happen there.
+#' @export
 #' @return a closure that returns the model's output for a given parameter vector
 #' @examples
 #'    model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
@@ -175,16 +177,8 @@ simulator.c <- function(experiments, modelName,  parABC, parMap=identity){
 #'    source("<model name>.R") # this defines the `model` variable
 #'    simulate <- simulator.R(experiments, model,  parABC)
 #'    yf <- sim(parABC)
-simulate.R  <- function(experiments, model,  parABC, parMap=identity){
-	if (is.matrix(parABC)){
-		npc <- ncol(parABC)
-	} else {
-		npc <- 1
-	}
+simulate.R  <- function(experiments, model, parMap=identity){
 	numExperiments <- length(experiments)
-	# transform the ABC parameters if necessary (parMap is a user supplied function),
-	# then determine the effective number of parameters, after transformation
-
 	# an experiment can have an optional input
 	if ('input' %in% names(experiments[[1]])){
 		nu <- length(experiments[[1]][['input']])
@@ -192,6 +186,12 @@ simulate.R  <- function(experiments, model,  parABC, parMap=identity){
 		nu <- 0
 	}
 	sim <- function(parABC){
+		if (is.matrix(parABC)){
+			npc <- ncol(parABC)
+		} else {
+			npc <- 1
+		}
+
 		modelPar <- parMap(parABC)
 		if (is.matrix(modelPar)) {
 			np <- nrow(modelPar)
@@ -302,18 +302,21 @@ checkModel <- function(modelName,modelFile=NULL){
 #' @param getScore a function that calculates ABC scores
 #' @param parMap a function that transforms ABC variables into acceptable model parameters
 #' @return an objective function
-makeObjective <- function(experiments,modelName,distance,parMap=identity,simulate=NULL)
+makeObjective <- function(experiments,modelName=NULL,distance,parMap=identity,simulate=NULL)
 {
-	if (is.null(simulate)){
+	if (is.null(simulate) && !is.null(modelName)){
 		simulate <- function(par){
 			return(runModel(experiments, modelName,  par, parMap))
 		}
 	}
 	Objective <- function(parABC){
 		out <- simulate(parABC)
-		S <- c()
-		for(i in 1:length(experiments)){
-		  S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) distance(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues))))
+		N <- length(experiments)
+		S <- rep(Inf,0)
+		for(i in 1:N){
+			if (!is.null(experiments[[i]]) && !is.null(out[[i]])){
+				S[i] <- unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) distance(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues)))
+			}
 		}
 		return(S)
 	}
