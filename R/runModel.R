@@ -177,7 +177,7 @@ simulator.c <- function(experiments, modelName, parMap=identity){
 #'    source("<model name>.R") # this defines the `model` variable
 #'    simulate <- simulator.R(experiments, model,  parABC)
 #'    yf <- sim(parABC)
-simulate.R  <- function(experiments, model, parMap=identity){
+simulator.R  <- function(experiments, model, parMap=identity){
 	numExperiments <- length(experiments)
 	# an experiment can have an optional input
 	if ('input' %in% names(experiments[[1]])){

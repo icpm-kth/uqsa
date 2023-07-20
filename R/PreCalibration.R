@@ -86,21 +86,22 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
 #' @return Sigma and startPar (matrix with `num` rows) as a list
 getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1){
 	if (all(is.na(preDelta)) || is.null(preDelta)) stop("no usable pre-calibration parameters.")
-  prePar <- prePar[!is.na(preDelta),]
-  preDelta <- preDelta[!is.na(preDelta)]
-  nk <- ceil(nrow(prePar)*p)
-  pick1  <- which(preDelta <= delta)   # pick all pars that meet threshold
-  pick2 <- order(preDelta, decreasing = FALSE)[1:nk] # pick top p percent
-  if(length(pick1)>length(pick2)){
-    pick <- pick1
-  }else{
-    pick <- pick2
-  }
-  Scorr <- cor(prePar[pick,])
-  diag(Scorr) <- 1
-  sdv <- apply(prePar[pick,], 2, sd)
-  Sigma <- sfactor * Scorr * tcrossprod(sdv)
-  startPar <- prePar[sample(pick, num, replace = FALSE),]
-  list(Sigma=Sigma, startPar=startPar)
+	prePar <- prePar[!is.na(preDelta),]
+	preDelta <- preDelta[!is.na(preDelta)]
+	nk <- ceil(nrow(prePar)*p)
+	pick1  <- which(preDelta <= delta)   # pick all pars that meet threshold
+	pick2 <- order(preDelta, decreasing = FALSE)[1:nk] # pick top p percent
+	if(length(pick1)>length(pick2)){
+		pick <- pick1
+	}else{
+		pick <- pick2
+		warning(sprintf("distances between experiment and simulation are too big; selecting the best (%i) parameter vectors.\n",length(pick)))
+	}
+	Scorr <- cor(prePar[pick,])
+	diag(Scorr) <- 1
+	sdv <- apply(prePar[pick,], 2, sd)
+	Sigma <- sfactor * Scorr * tcrossprod(sdv)
+	startPar <- prePar[sample(pick, num, replace = FALSE),]
+	list(Sigma=Sigma, startPar=startPar)
 }
 
