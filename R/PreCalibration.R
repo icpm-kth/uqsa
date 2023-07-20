@@ -38,7 +38,7 @@
 preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
   mc.cores <- getOption("mc.cores")
   nCores <- ifelse(is.null(mc.cores),parallel::detectCores(),mc.cores)
-  npcPerCore <- pracma::ceil(npc/nCores)
+  npcPerCore <- ceiling(npc/nCores)
 
   computeObjectiveFunction <- function(i, prePar){
     preDelta <- objectiveFunction(t(prePar[((i-1)*npcPerCore+1):(i*npcPerCore),]))
@@ -88,7 +88,7 @@ getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1)
 	if (all(is.na(preDelta)) || is.null(preDelta)) stop("no usable pre-calibration parameters.")
 	prePar <- prePar[!is.na(preDelta),]
 	preDelta <- preDelta[!is.na(preDelta)]
-	nk <- ceil(nrow(prePar)*p)
+	nk <- ceiling(nrow(prePar)*p)
 	pick1  <- which(preDelta <= delta)   # pick all pars that meet threshold
 	pick2 <- order(preDelta, decreasing = FALSE)[1:nk] # pick top p percent
 	if(length(pick1)>length(pick2)){
