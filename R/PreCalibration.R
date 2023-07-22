@@ -42,7 +42,7 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
 
   computeObjectiveFunction <- function(i, prePar){
     preDelta <- objectiveFunction(t(prePar[((i-1)*npcPerCore+1):(i*npcPerCore),]))
-    dim(preDelta)<-c(npcPerCore, length(preDelta)/npcPerCore)
+    #dim(preDelta)<-c(npcPerCore, length(preDelta)/npcPerCore)
     #preDelta <- apply(preDelta,1,max)
     preDelta <- apply(preDelta,1,mean)
     if(any(is.na(preDelta))){
@@ -85,7 +85,13 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
 #' @param num number of different starting parameter vectors [default 1].
 #' @return Sigma and startPar (matrix with `num` rows) as a list
 getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1){
-	if (all(is.na(preDelta)) || is.null(preDelta)) stop("no usable pre-calibration parameters.")
+	if (all(is.na(preDelta)) || is.null(preDelta))
+		stop("no usable pre-calibration parameters.")
+	if (sum(is.finite(preDelta))<num){
+		cat(sprintf("There are %i valid (finite) distance scores in the pre-calibration sample (%i starting positions requested).\n",sum(is.finite(preDelta)),num))
+		stop("The number of valid points is too small to make MCMC starting parameters.")
+	}
+
 	prePar <- prePar[!is.na(preDelta),]
 	preDelta <- preDelta[!is.na(preDelta)]
 	nk <- ceiling(nrow(prePar)*p)

@@ -311,11 +311,13 @@ makeObjective <- function(experiments,modelName=NULL,distance,parMap=identity,si
 	}
 	Objective <- function(parABC){
 		out <- simulate(parABC)
+		n <- ifelse(is.matrix(parABC),ncol(parABC),1)
 		N <- length(experiments)
-		S <- rep(Inf,0)
+		S <- matrix(Inf,nrow=N,ncol=n)
+		rownames(S) <- names(experiments)
 		for(i in 1:N){
 			if (!is.null(experiments[[i]]) && !is.null(out[[i]])){
-				S[i] <- unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) distance(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues)))
+				S[i,] <- unlist(mclapply(1:n, function(j) distance(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues)))
 			}
 		}
 		return(S)
