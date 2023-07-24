@@ -99,8 +99,7 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
     if(is.null(acceptanceProbability)){
       out <- parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
       curDelta <- out$curDelta
-    }
-    else{
+    }else{
       out <- parUpdate_ProbabilisticAcceptance(acceptanceProbability, curPar, canPar, curPrior, dprior)
     }
     
