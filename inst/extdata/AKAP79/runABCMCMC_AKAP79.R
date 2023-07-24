@@ -32,9 +32,9 @@ ul = log10(ul) # log10-scale
 experimentsIndices <- list(c(3, 12,18, 9, 2, 11, 17, 8, 1, 10, 16, 7))
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 100 # Size of the sub-sample from each chain
+ns <- 1000 # Size of the sub-sample from each chain
 npc <- 5000 # pre-calibration sample size
-nChains <- 4
+nChains <- 10
 
 # Define ABC-MCMC Settings
 delta <- 0.01
@@ -52,7 +52,7 @@ getScore	<- function(yy_sim, yy_exp=Inf, yy_expErr=Inf){
 
 getAcceptanceProbability <- function(yy_sim, yy_exp, yy_expErr){
 	
-  return(exp(-getScore(yy_sim,yy_exp,yy_expErr)/(2*delta)))
+  return(exp(-getScore(yy_sim,yy_exp,yy_expErr)/(delta)))
 	#return(exp(-mean((1/71.67*(yy_sim-yy_exp)/yy_expErr)^2,na.rm = TRUE)/(2*delta)))
 }
 
