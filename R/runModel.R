@@ -117,7 +117,7 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity){
 #' This creates a closure that simulates the model
 #'
 #' This is a shorter alternative to the runModel function (C backend).
-#' 
+#'
 #' It returns a closure around:
 #'     - experiments,
 #'     - the model, and

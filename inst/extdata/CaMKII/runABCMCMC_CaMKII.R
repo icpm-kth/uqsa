@@ -116,6 +116,9 @@ for (i in 1:length(experimentsIndices)){
 	## Run Pre-Calibration Sampling
 	message("- Precalibration")
 	start_time_preCalibration <- Sys.time()
+
+	## Pre-Calibration uses only mclapply calls, we set up no cluster for this.
+	options(mc.cores=parallel::detectCores())
 	pC <- preCalibration(objectiveFunction, npc, rprior)
 	cat("\nPreCalibration:")
 	print(Sys.time()-start_time_preCalibration)
@@ -133,8 +136,12 @@ for (i in 1:length(experimentsIndices)){
 	## Run ABC-MCMC Sampling
 	cat(sprintf("-Running MCMC chains \n"))
 	start_time_ABC = Sys.time()
+
+	## here we set up a cluster and start n parallel MCMC chains
+	## so, we reduce the number of cores per chain (the chains are on the same computing node)
+	options(mc.cores=parallel::detectCores() %/% nChains)
 	cl <- makeForkCluster(nChains)
-	clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
+	clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
 	out_ABCMCMC <- parLapply(cl,
 		1:nChains,
 		function(j) {
