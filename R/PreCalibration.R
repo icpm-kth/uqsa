@@ -94,9 +94,9 @@ getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1)
 		pick <- pick2
 		warning(sprintf("distances between experiment and simulation are too big; selecting the best (%i) parameter vectors.\n",length(pick)))
 	}
-	Scorr <- cor(prePar[,pick])
+	Scorr <- cor(t(prePar[,pick]))
 	diag(Scorr) <- 1
-	sdv <- apply(prePar[,pick], 2, sd)
+	sdv <- apply(t(prePar[,pick]), 2, sd)
 	Sigma <- sfactor * Scorr * tcrossprod(sdv)
 	startPar <- prePar[,sample(pick, num, replace = FALSE)]
 	list(Sigma=Sigma, startPar=startPar)
