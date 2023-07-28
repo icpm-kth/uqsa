@@ -7,17 +7,16 @@ model.tsv <- uqsa_example("AKAP79")
 model.tab <- sbtab_from_tsv(model.tsv)
 
 # source all R functions for this model, this also loads a variable called "model"
-source(uqsa_example("AKAP79",pat="^CaMKII[.]R$"))
+source(uqsa_example("AKAP79",pat="^AKAP79[.]R$"))
 
 experiments <- sbtab.data(model.tab)
 
 print(comment(model.tab))
-modelName <- checkModel(comment(model.tab),uqsa_example("AKAP79",pat="_gvf.c")))
+modelName <- checkModel(comment(model.tab),uqsa_example("AKAP79",pat="_gvf.c"))
 
 numPar <- nrow(model.tab$Parameter)
 parVal <- model$par()[1:numPar]
 parNames <- row.names(model.tab$Parameter)
-
 
 parMap <- function(parABC){
 	return(10^parABC)
@@ -48,10 +47,13 @@ nCores <- parallel::detectCores() %/% nChains
 
 set.seed(7619201)
 
-getScore	<- function(yy_sim, yy_exp=Inf, yy_expErr=Inf){
-  yy_expErr<-1
-	distance <- mean((1/71.67*(yy_sim-yy_exp)/yy_expErr)^2, na.rm=TRUE)
-	return(distance)
+distanceMeasure <- function(funcSim, dataExpr=Inf, dataErr=Inf){
+  if (all(is.finite(funcSim))){
+    distance <- mean((1/71.67*(funcSim-as.matrix(dataExpr))/as.matrix(dataErr))^2, na.rm=TRUE)
+  } else {
+    distance <- Inf
+  }
+  return(distance)
 }
 
 getAcceptanceProbability <- function(yy_sim, yy_exp, yy_expErr){
@@ -63,9 +65,12 @@ start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
 
 	expInd <- experimentsIndices[[i]]
-	objectiveFunction <- makeObjective(experiments[expInd], modelName, getScore, parMap)
-	acceptanceProbability <- makeAcceptanceProbability(experiments[expInd], modelName, getAcceptanceProbability, parMap)
-
+	simulate <- simulator.c(experiments[expInd], modelName, parMap)
+	objectiveFunction <- makeObjective(experiments[expInd], modelName, distanceMeasure, parMap, simulate)
+	
+	#acceptanceProbability <- makeAcceptanceProbability(experiments[expInd], modelName, getAcceptanceProbability, parMap,simulate)
+  acceptanceProbability <- NULL
+  
 	cat("#####Starting run for Experiments ", expInd, "######\n")
 	## If First Experimental Setting, Create an Independente Colupla
 	if(i==1){
@@ -101,13 +106,12 @@ for (i in 1:length(experimentsIndices)){
 
 	## Get Starting Parameters from Pre-Calibration
 	M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta, num = nChains)
-	M$startPar <- matrix(M$startPar, nChains)
 	for(j in 1 : nChains){
-		stopifnot(dprior(M$startPar[j,])>0)
+		stopifnot(dprior(M$startPar[,j])>0)
 	  cat("Chain", j, "\n")
-	  cat("\tMin distance of starting parameter for chain",j," = ", min(objectiveFunction(M$startPar[j,])),"\n")
-	  cat("\tMean distance of starting parameter for chain",j," = ", mean(objectiveFunction(M$startPar[j,])),"\n")
-	  cat("\tMax distance of starting parameter for chain",j," = ", max(objectiveFunction(M$startPar[j,])),"\n")
+	  cat("\tMin distance of starting parameter for chain",j," = ", min(objectiveFunction(M$startPar[,j])),"\n")
+	  cat("\tMean distance of starting parameter for chain",j," = ", mean(objectiveFunction(M$startPar[,j])),"\n")
+	  cat("\tMax distance of starting parameter for chain",j," = ", max(objectiveFunction(M$startPar[,j])),"\n")
 	}
 
 	## Run ABC-MCMC Sampling
