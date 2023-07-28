@@ -3,28 +3,21 @@ require(SBtabVFGEN)
 library(uqsa)
 library(parallel)
 
-#SBtabDir <- getwd()
-#model = import_from_SBtab("~/Documents/uqsa/inst/extdata/AKAP79")
-#print(comment(model))
-#modelName <- checkModel(comment(model),paste0(SBtabDir,'/',comment(model),'_gvf.c'))
-
-model.tsv <- uqsa_example("AKAP79",full.names=TRUE)
-model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
+model.tsv <- uqsa_example("AKAP79")
+model.tab <- sbtab_from_tsv(model.tsv)
 
 # source all R functions for this model, this also loads a variable called "model"
-source(uqsa_example("AKAP79",pat="^AKAP79[.]R$",full.names=TRUE))
+source(uqsa_example("AKAP79",pat="^CaMKII[.]R$"))
 
-experiments <- SBtabVFGEN::sbtab.data(model.tab)
-modelName <- checkModel(comment(model.tab), uqsa_example("AKAP79",pat="_gvf[.]c$"))
+experiments <- sbtab.data(model.tab)
+
+print(comment(model.tab))
+modelName <- checkModel(comment(model.tab),uqsa_example("AKAP79",pat="_gvf.c")))
 
 numPar <- nrow(model.tab$Parameter)
 parVal <- model$par()[1:numPar]
+parNames <- row.names(model.tab$Parameter)
 
-parVal <- model.tab[["Parameter"]][["!DefaultValue"]]
-parNames <- model.tab[["Parameter"]][["!Name"]]
-
-# load experiments
-#experiments <- import_experiments(modelName, SBtabDir)
 
 parMap <- function(parABC){
 	return(10^parABC)
@@ -62,7 +55,6 @@ getScore	<- function(yy_sim, yy_exp=Inf, yy_expErr=Inf){
 }
 
 getAcceptanceProbability <- function(yy_sim, yy_exp, yy_expErr){
-	
   return(exp(-getScore(yy_sim,yy_exp,yy_expErr)/(delta)))
 
 }

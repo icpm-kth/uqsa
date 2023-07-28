@@ -36,14 +36,22 @@
 #' @return list with entries preDelta and prePar, final values of
 #'     calibration run
 preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
-	prePar <- rprior(npc)
-	preDelta <- apply(objectiveFunction(t(prePar)),2,mean)
-
+	nCores <- options()$mc.cores
+	# make npc a multiple of cores
+	npc <- ceiling(npc/nCores)*nCores
+	prePar <- t(rprior(npc))
+	n <- dim(prePar)
+	# split work
+	dim(prePar) <- c(n[1],n[2]/nCores,nCores)
+	preDelta<-apply(Reduce(rbind,mclapply(1:nCores,function(j) {objectiveFunction(prePar[,,j])})),2,mean)
+	dim(prePar) <- n
 	# With the following loop we repeat the process and keep the npc best parameters and deltas
 	for( i in 1:rep){
-		newPrePar <- rbind(prePar, p<-rprior(npc))
-		newPreDelta <- c(preDelta,apply(objectiveFunction(t(p)),2,mean))
-
+		newPrePar <- cbind(prePar, p<-t(rprior(npc)))
+		dim(p)<-c(n[1],n[2]/nCores,nCores)
+		d <- apply(Reduce(rbind,mclapply(1:nCores,function(j) {objectiveFunction(p[,,j])})),2,mean)
+		newPreDelta <- c(preDelta,d)
+		dim(p) <- n
 		ix <- order(newPreDelta)[1:npc]
 		preDelta <- newPreDelta[ix]
 		prePar <- newPrePar[ix,]
@@ -68,7 +76,7 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
 getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1){
 	if (all(is.na(preDelta)) || is.null(preDelta))
 		stop("no usable pre-calibration parameters.")
-	if (sum(is.finite(preDelta))<num){
+	if (sum(is.finite(preDelta)) < num){
 		cat(sprintf("There are %i valid (finite) distance scores in the pre-calibration sample (%i starting positions requested).\n",sum(is.finite(preDelta)),num))
 		stop("The number of valid points is too small to make MCMC starting parameters.")
 	}

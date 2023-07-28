@@ -17,8 +17,13 @@ experiments <- sbtab.data(model.tab)
 # we take the model name as inferred from the sbtab document:
 modelName <- checkModel(comment(model.tab), uqsa_example("CaMKII",pat="_gvf[.]c$"))
 ## Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
+<<<<<<< HEAD
 ns <- 500 # Size of the sub-sample from each chain
 npc <- 1000 # pre-calibration sample size
+=======
+ns <- 5000 # Size of the sub-sample from each chain
+npc <- 5000 # pre-calibration sample size
+>>>>>>> e16f55d (re-created AKAP79.R)
 
 ## model is a list variable defined in CaMKIIs.R, model$par() is the
 ## CaMKII_default() function from the same file.  But, model$par() is

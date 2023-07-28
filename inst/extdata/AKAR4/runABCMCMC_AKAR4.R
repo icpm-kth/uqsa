@@ -2,19 +2,19 @@ require(uqsa)
 require(rgsl)
 library(SBtabVFGEN)
 
-SBtabDir <- uqsa_example("AKAR4")
-model <- import_from_SBtab(SBtabDir)
-print(comment(model)) # this should be the name of the model, if everything works
-modelName <- checkModel(comment(model),paste0(SBtabDir,"/AKAR4_gvf.c"))
-#modelName <- checkModel(comment(model),"./AKAR4.R")
+model.tsv <- uqsa_example("AKAR4",full.names=TRUE)
+model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
+source(uqsa_example("AKAR4",pat="^AKAR4.*R$"))
 
-source(paste(SBtabDir,"/",modelName,".R",sep=""))
+print(comment(model.tab))
+modelName <- checkModel(comment(model.tab),uqsa_example("AKAR4",pat="_gvf.c$")))
 
-parVal <- model[["Parameter"]][["!DefaultValue"]]
-parNames <- model[["Parameter"]][["!Name"]]
+numPar <- nrow(model.tab$Parameter)
+parNames <- row.names(model.tab$Parameter)
+parVal <- model$par()[1:numPar]
 
 # load experiments
-experiments <- import_experiments(modelName, SBtabDir)
+experiments <- SBtabVFGEN::sbtab.data(model.tab)
 
 # scale to determine prior values
 defRange <- 1000
@@ -39,19 +39,7 @@ npc <- 500 # pre-calibration
 p <- 0.01		 # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
 
 delta <- 0.002
-
 set.seed(2022)
-
-# Define the score function to compare simulated data with experimental data
-# maxVal <- max(unlist(lapply(experiments, function(x) max(x[["outputValues"]]))))
-# minVal <- min(unlist(lapply(experiments, function(x) min(x[["outputValues"]]))))
-# 
-# getScore	<- function(yy_sim, yy_exp, errorValues = NULL){
-# 	yy_sim <- (yy_sim-0)/(0.2-0.0)
-# 	ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-minVal)/(maxVal-minVal), Inf)
-# 	distance <- mean((yy_sim-yy_exp)^2)
-# 	return(distance)
-# }
 
 library(GauPro)
 
