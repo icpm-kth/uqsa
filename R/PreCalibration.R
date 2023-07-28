@@ -51,7 +51,7 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
 		p<-t(rprior(npc))
 		newPrePar <- cbind(prePar, p)
 		dim(p)<-c(n[1],n[2]/nCores,nCores)
-		d <- unlist(mclapply(1:nCores,function(j) {apply(objectiveFunction(p[,,j]),2,max})))
+		d <- unlist(mclapply(1:nCores,function(j) {apply(objectiveFunction(p[,,j]),2,max)}))
 		newPreDelta <- c(preDelta,d)
 		dim(p) <- n
 		ix <- order(newPreDelta)[1:npc]
