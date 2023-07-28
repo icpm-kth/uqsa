@@ -3,17 +3,28 @@ require(SBtabVFGEN)
 library(uqsa)
 library(parallel)
 
-SBtabDir <- getwd()
-model <- import_from_SBtab(SBtabDir)
-print(comment(model))
-modelName <- checkModel(comment(model),paste0(SBtabDir,'/',comment(model),'_gvf.c'))
+#SBtabDir <- getwd()
+#model = import_from_SBtab("~/Documents/uqsa/inst/extdata/AKAP79")
+#print(comment(model))
+#modelName <- checkModel(comment(model),paste0(SBtabDir,'/',comment(model),'_gvf.c'))
 
-parVal <- model[["Parameter"]][["!DefaultValue"]]
-names(parVal)<-model[["Parameter"]][["!Name"]]
-parNames <- model[["Parameter"]][["!Name"]]
+model.tsv <- uqsa_example("AKAP79",full.names=TRUE)
+model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
+
+# source all R functions for this model, this also loads a variable called "model"
+source(uqsa_example("AKAP79",pat="^AKAP79[.]R$",full.names=TRUE))
+
+experiments <- SBtabVFGEN::sbtab.data(model.tab)
+modelName <- checkModel(comment(model.tab), uqsa_example("AKAP79",pat="_gvf[.]c$"))
+
+numPar <- nrow(model.tab$Parameter)
+parVal <- model$par()[1:numPar]
+
+parVal <- model.tab[["Parameter"]][["!DefaultValue"]]
+parNames <- model.tab[["Parameter"]][["!Name"]]
 
 # load experiments
-experiments <- import_experiments(modelName, SBtabDir)
+#experiments <- import_experiments(modelName, SBtabDir)
 
 parMap <- function(parABC){
 	return(10^parABC)
@@ -33,8 +44,8 @@ experimentsIndices <- list(c(3, 12,18, 9, 2, 11, 17, 8, 1, 10, 16, 7))
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
 ns <- 1000 # Size of the sub-sample from each chain
-npc <- 5000 # pre-calibration sample size
-nChains <- 10
+npc <- 50000 # pre-calibration sample size
+nChains <- 4
 
 # Define ABC-MCMC Settings
 delta <- 0.01
@@ -53,7 +64,7 @@ getScore	<- function(yy_sim, yy_exp=Inf, yy_expErr=Inf){
 getAcceptanceProbability <- function(yy_sim, yy_exp, yy_expErr){
 	
   return(exp(-getScore(yy_sim,yy_exp,yy_expErr)/(delta)))
-	#return(exp(-mean((1/71.67*(yy_sim-yy_exp)/yy_expErr)^2,na.rm = TRUE)/(2*delta)))
+
 }
 
 start_time = Sys.time()

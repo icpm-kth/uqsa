@@ -7,15 +7,18 @@ library(parallel)
 library(pracma)
 
 SBtabDir <- getwd()
-model = import_from_SBtab(SBtabDir)
-modelName <- checkModel(comment(model),"./AKAR4_gvf.c")
+#model = import_from_SBtab(SBtabDir)
+model.tsv <- uqsa_example("AKAR4",full.names=TRUE) 
+#modelName <- checkModel(comment(model),"./AKAR4_gvf.c")
+model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
 
-parVal <- model[["Parameter"]][["!DefaultValue"]]
-parNames <- model[["Parameter"]][["!Name"]]
+parVal <- model.tab[["Parameter"]][["!DefaultValue"]]
+parNames <- model.tab[["Parameter"]][["!Name"]]
 names(parVal) <- parNames
 
 # load experiments
-experiments <- import_experiments(modelName, SBtabDir)
+#experiments <- import_experiments(modelName, SBtabDir)
+experiments <- SBtabVFGEN::sbtab.data(model.tab)
 
 # scale to determine prior values
 defRange <- 1000
@@ -57,7 +60,7 @@ getScore	<- function(yy_sim, yy_exp, error = NULL){
 
 
 # Create reactions and parameters for stochastic simulations with the GillespieSSA2 package
-reactions <- importReactionsSSA(model)
+reactions <- importReactionsSSA(model.tab)
 
 AvoNum <- 6.022e23
 unit <- 1e-6
