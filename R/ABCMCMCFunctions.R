@@ -65,9 +65,9 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
   n <- 0
   acceptedSamples <- 0
   nRegularizations <- 0
-  sampleFrequency <- 100
-  while (n/sampleFrequency < nSims){
-    if(n %% 100 == 0 && acceptedSamples<0.000000005*n){
+  batchSize <- 100
+  while (n/batchSize < nSims){
+    if(n %% batchSize == 0 && acceptedSamples<0.0005*n){
       nRegularizations <- nRegularizations + 1
       if(nRegularizations >= 1){
         timeStr <- Sys.time()
@@ -108,9 +108,9 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
     acceptedSamples <- acceptedSamples + out$acceptance
 
     n <- n+1
-    if(n %% sampleFrequency == 0){
-      draws[n/sampleFrequency,]  <- curPar
-      scores[n/sampleFrequency] <- curDelta
+    if(n %% batchSize == 0){
+      draws[n/batchSize,]  <- curPar
+      scores[n/batchSize] <- curDelta
     }
   }
   cat("Finished chain.\n")
