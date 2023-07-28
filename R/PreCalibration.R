@@ -37,24 +37,25 @@
 #'     calibration run
 preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
 	nCores <- options()$mc.cores
+	nCores <- ifelse(is.null(nCores),parallel::detectCores(),nCores)
 	# make npc a multiple of cores
 	npc <- ceiling(npc/nCores)*nCores
 	prePar <- t(rprior(npc))
 	n <- dim(prePar)
 	# split work
 	dim(prePar) <- c(n[1],n[2]/nCores,nCores)
-	preDelta<-apply(Reduce(rbind,mclapply(1:nCores,function(j) {objectiveFunction(prePar[,,j])})),2,mean)
+	preDelta<-apply(Reduce(cbind,mclapply(1:nCores,function(j) {objectiveFunction(prePar[,,j])})),2,mean)
 	dim(prePar) <- n
 	# With the following loop we repeat the process and keep the npc best parameters and deltas
 	for( i in 1:rep){
 		newPrePar <- cbind(prePar, p<-t(rprior(npc)))
 		dim(p)<-c(n[1],n[2]/nCores,nCores)
-		d <- apply(Reduce(rbind,mclapply(1:nCores,function(j) {objectiveFunction(p[,,j])})),2,mean)
+		d <- apply(Reduce(cbind,mclapply(1:nCores,function(j) {objectiveFunction(p[,,j])})),2,mean)
 		newPreDelta <- c(preDelta,d)
 		dim(p) <- n
 		ix <- order(newPreDelta)[1:npc]
 		preDelta <- newPreDelta[ix]
-		prePar <- newPrePar[ix,]
+		prePar <- newPrePar[,ix]
 	}
 	return(list(preDelta=preDelta, prePar=prePar))
 }
@@ -81,9 +82,9 @@ getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1)
 		stop("The number of valid points is too small to make MCMC starting parameters.")
 	}
 
-	prePar <- prePar[!is.na(preDelta),]
+	prePar <- prePar[,!is.na(preDelta)]
 	preDelta <- preDelta[!is.na(preDelta)]
-	nk <- ceiling(nrow(prePar)*p)
+	nk <- ceiling(ncol(prePar)*p)
 	pick1  <- which(preDelta <= delta)   # pick all pars that meet threshold
 	pick2 <- order(preDelta, decreasing = FALSE)[1:nk] # pick top p percent
 	if(length(pick1)>length(pick2)){
@@ -92,11 +93,11 @@ getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1)
 		pick <- pick2
 		warning(sprintf("distances between experiment and simulation are too big; selecting the best (%i) parameter vectors.\n",length(pick)))
 	}
-	Scorr <- cor(prePar[pick,])
+	Scorr <- cor(prePar[,pick])
 	diag(Scorr) <- 1
-	sdv <- apply(prePar[pick,], 2, sd)
+	sdv <- apply(prePar[,pick], 2, sd)
 	Sigma <- sfactor * Scorr * tcrossprod(sdv)
-	startPar <- prePar[sample(pick, num, replace = FALSE),]
+	startPar <- prePar[,sample(pick, num, replace = FALSE)]
 	list(Sigma=Sigma, startPar=startPar)
 }
 
