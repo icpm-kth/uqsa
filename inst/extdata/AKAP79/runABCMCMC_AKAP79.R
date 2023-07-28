@@ -3,6 +3,13 @@ require(SBtabVFGEN)
 library(uqsa)
 library(parallel)
 
+# Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
+ns <- 1000 # Size of the sub-sample from each chain
+npc <- 5000 # pre-calibration sample size
+nChains <- 4
+# Define ABC-MCMC Settings
+delta <- 0.01
+
 model.tsv <- uqsa_example("AKAP79")
 model.tab <- sbtab_from_tsv(model.tsv)
 
@@ -12,11 +19,14 @@ source(uqsa_example("AKAP79",pat="^AKAP79[.]R$"))
 experiments <- sbtab.data(model.tab)
 
 print(comment(model.tab))
-modelName <- checkModel(comment(model.tab),uqsa_example("AKAP79",pat="_gvf.c"))
+modelName <- checkModel(comment(model.tab),uqsa_example("AKAP79",pat="_gvf.c")))
 
 numPar <- nrow(model.tab$Parameter)
 parVal <- model$par()[1:numPar]
 parNames <- row.names(model.tab$Parameter)
+
+# load experiments
+experiments <- import_experiments(model.tab)
 
 parMap <- function(parABC){
 	return(10^parABC)
@@ -34,13 +44,6 @@ ul = log10(ul) # log10-scale
 # Define the experiments that have to be considered in each iteration of the for loop to compare simulations with experimental data
 experimentsIndices <- list(c(3, 12,18, 9, 2, 11, 17, 8, 1, 10, 16, 7))
 
-# Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 1000 # Size of the sub-sample from each chain
-npc <- 50000 # pre-calibration sample size
-nChains <- 4
-
-# Define ABC-MCMC Settings
-delta <- 0.01
 
 # Define the number of Cores for the parallelization
 nCores <- parallel::detectCores() %/% nChains
@@ -55,6 +58,17 @@ distanceMeasure <- function(funcSim, dataExpr=Inf, dataErr=Inf){
   }
   return(distance)
 }
+
+save_sample <- function(ind,ABCMCMCoutput){
+	I <- paste(ind, collapse="_")
+	timeStr <- gsub("[ :]","_", Sys.time())
+	if (!dir.exists("./PosteriorSamples")) {
+		dir.create("./PosteriorSamples")
+	}
+	outFileR <- paste("./PosteriorSamples/Draws",modelName,"nChains",nChains,"ns",ns,"npc",npc,I,timeStr,".RData",collapse="_",sep="_")
+	save(ABCMCMCoutput, file=outFileR)
+}
+
 
 getAcceptanceProbability <- function(yy_sim, yy_exp, yy_expErr){
   return(exp(-getScore(yy_sim,yy_exp,yy_expErr)/(delta)))
@@ -75,17 +89,14 @@ for (i in 1:length(experimentsIndices)){
 	## If First Experimental Setting, Create an Independente Colupla
 	if(i==1){
 		message("- Initial Prior: uniform product distribution")
-	  
 		#rprior <- rUniformPrior(ll, ul)
 		rprior <- rNormalPrior(mean = (ll+ul)/2, sd = (ul-ll)/5) 
 		# with this choice of sd, each component has 98.8% probability
 		# of being in its interval [ll,ul], 
 		# and the vector has (98.8%)^27 = 71.2% probability of being in the hyperrectangle
 		# defined by ll and ul
-		
 		#dprior <- dUniformPrior(ll, ul)
 		dprior <- dNormalPrior(mean = (ll+ul)/2, sd = (ul-ll)/5)
-		
 		## Otherwise, Take Copula from the Previous Exp Setting and Use as a Prior
 	} else {
 		start_time_fitCopula <- Sys.time()
@@ -106,8 +117,9 @@ for (i in 1:length(experimentsIndices)){
 
 	## Get Starting Parameters from Pre-Calibration
 	M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta, num = nChains)
+	options(mc.cores=parallal::detectCores %/% nChains)
 	for(j in 1 : nChains){
-		stopifnot(dprior(M$startPar[,j])>0)
+		stopifnot(all(dprior(M$startPar[,j])>0))
 	  cat("Chain", j, "\n")
 	  cat("\tMin distance of starting parameter for chain",j," = ", min(objectiveFunction(M$startPar[,j])),"\n")
 	  cat("\tMean distance of starting parameter for chain",j," = ", mean(objectiveFunction(M$startPar[,j])),"\n")
@@ -119,7 +131,7 @@ for (i in 1:length(experimentsIndices)){
 	start_time_ABC = Sys.time()
 	cl <- makeForkCluster(nChains)
 	clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
-	out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior, acceptanceProbability))
+	out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior, acceptanceProbability))
 	stopCluster(cl)
 	
 	ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
@@ -131,26 +143,8 @@ for (i in 1:length(experimentsIndices)){
 	cat("\nRegularizations:", ABCMCMCoutput$nRegularizations)
 	cat("\nAcceptance rate:", ABCMCMCoutput$acceptanceRate)
 	
-	if (i>1){
-	  precursors <- experimentsIndices[[1]][1:(i-1)]
-	  objectiveFunction <- makeObjective(experiments[precursors], modelName, getScore, parMap, nCores)
-	  draws <- checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
-	}
-
-	cat("\nNumber of draws after fitting with previous experiments:",ABCMCMCoutput$dim(draws)[1])
-
 	# Save Resulting Samples to MATLAB and R files.
-	cat("\n-Saving sample \n")
-	outFile <- paste(experimentsIndices[[1]], collapse="_")
-	timeStr <- Sys.time()
-	timeStr <- gsub(":","_", timeStr)
-	timeStr <- gsub(" ","_", timeStr)
-	if (!dir.exists("./PosteriorSamples")) {
-		dir.create("./PosteriorSamples")
-	}
-
-	outFileR <- paste("./PosteriorSamples/Draws",modelName,"nChains",nChains,"ns",ns,"npc",npc,outFile,timeStr,".RData",collapse="_",sep="_")
-	save(ABCMCMCoutput, parNames, file=outFileR)
+	save_sample(expInd,ABCMCMCoutput)
 }
 end_time = Sys.time()
 time_ = end_time - start_time

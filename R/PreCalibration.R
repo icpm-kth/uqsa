@@ -44,13 +44,14 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
 	n <- dim(prePar)
 	# split work
 	dim(prePar) <- c(n[1],n[2]/nCores,nCores)
-	preDelta<-apply(Reduce(cbind,mclapply(1:nCores,function(j) {objectiveFunction(prePar[,,j])})),2,mean)
+	preDelta<-unlist(mclapply(1:nCores, function(j) {apply(objectiveFunction(prePar[,,j]),2,max)}))
 	dim(prePar) <- n
 	# With the following loop we repeat the process and keep the npc best parameters and deltas
 	for( i in 1:rep){
-		newPrePar <- cbind(prePar, p<-t(rprior(npc)))
+		p<-t(rprior(npc))
+		newPrePar <- cbind(prePar, p)
 		dim(p)<-c(n[1],n[2]/nCores,nCores)
-		d <- apply(Reduce(cbind,mclapply(1:nCores,function(j) {objectiveFunction(p[,,j])})),2,mean)
+		d <- unlist(mclapply(1:nCores,function(j) {apply(objectiveFunction(p[,,j]),2,max})))
 		newPreDelta <- c(preDelta,d)
 		dim(p) <- n
 		ix <- order(newPreDelta)[1:npc]
@@ -85,7 +86,7 @@ getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1)
 	prePar <- prePar[,!is.na(preDelta)]
 	preDelta <- preDelta[!is.na(preDelta)]
 	nk <- ceiling(ncol(prePar)*p)
-	pick1  <- which(preDelta <= delta)   # pick all pars that meet threshold
+	pick1 <- which(preDelta <= delta)   # pick all pars that meet threshold
 	pick2 <- order(preDelta, decreasing = FALSE)[1:nk] # pick top p percent
 	if(length(pick1)>length(pick2)){
 		pick <- pick1
