@@ -130,13 +130,12 @@ for (i in 1:length(experimentsIndices)){
 
 	## Get Starting Parameters from Pre-Calibration
 	M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta, num = nChains)
-	M$startPar <- matrix(M$startPar, nChains)
 	for(j in 1 : nChains){
-		stopifnot(dprior(M$startPar[j,])>0)
+		stopifnot(dprior(M$startPar[,j])>0)
 		cat("Chain", j, "\n")
-		cat("\tMin distance of starting parameter for chain",j," = ", min(objectiveFunction(M$startPar[j,])),"\n")
-		cat("\tMean distance of starting parameter for chain",j," = ", mean(objectiveFunction(M$startPar[j,])),"\n")
-		cat("\tMax distance of starting parameter for chain",j," = ", max(objectiveFunction(M$startPar[j,])),"\n")
+		cat("\tMin distance of starting parameter for chain",j," = ", min(objectiveFunction(M$startPar[,j])),"\n")
+		cat("\tMean distance of starting parameter for chain",j," = ", mean(objectiveFunction(M$startPar[,j])),"\n")
+		cat("\tMax distance of starting parameter for chain",j," = ", max(objectiveFunction(M$startPar[,j])),"\n")
 	}
 	## Run ABC-MCMC Sampling
 	cat(sprintf("-Running MCMC chains \n"))
@@ -145,13 +144,13 @@ for (i in 1:length(experimentsIndices)){
 	## here we set up a cluster and start n parallel MCMC chains
 	## so, we reduce the number of cores per chain (the chains are on the same computing node)
 	options(mc.cores=parallel::detectCores() %/% nChains)
-	cl <- makeForkCluster(nChains)
+	cl <- makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
 	clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
 	out_ABCMCMC <- parLapply(cl,
 		1:nChains,
 		function(j) {
 			tryCatch(
-				ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior, objectiveFunction),
+				ABCMCMC(objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior, objectiveFunction),
 				error=function(cond) {message("ABCMCMC crashed"); print(M); print(j); return(NULL)}
 			)
 		}
