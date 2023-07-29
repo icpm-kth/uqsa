@@ -66,7 +66,7 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
   nRegularizations <- 0
   batchSize <- 100
   while (n/batchSize < nSims){
-    if(n %% batchSize == 0 && acceptedSamples<0.0005*n){
+    if(n %% batchSize == 0 && acceptedSamples<0.00005*n){
       nRegularizations <- nRegularizations + 1
       if(nRegularizations >= 5){
         timeStr <- Sys.time()
@@ -76,7 +76,7 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
         warning(paste0("Stuck chain (nRegularizations = ", nRegularizations,")\n"))
         return(list(draws = c(), scores = c(), acceptanceRate = c(), nRegularizations = nRegularizations))
       }
-      cat(paste0("Regularization of proposal covariance matrix (nRegularizations = ", nRegularizations,")"))
+      cat(paste0("Regularization of proposal covariance matrix (nRegularizations = ", nRegularizations,")\n"))
 
       Sigma0 <- solve(solve(Sigma0)+solve(0.1*norm(Sigma0)*diag(1,np,np)))
       Sigma1 <- 0.25*diag(diag(Sigma0))
@@ -114,11 +114,11 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
     }
     
     if(n %% 1000 == 0){
-      cat("n =", n)
+      cat("\nn =", n)
       print(gc())
     }
   }
-  cat("Finished chain.\n")
+  #cat("Finished chain.\n")
   return(list(draws = draws, scores = scores, acceptanceRate = acceptedSamples/n, nRegularizations = nRegularizations))
 }
 
