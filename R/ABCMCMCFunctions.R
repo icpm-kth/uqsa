@@ -57,7 +57,6 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
       curDelta <- Inf
     }
   }
-  
   curPrior <- dprior(curPar)
   draws <- matrix(NA, nSims,np)
   scores <- rep(NA, nSims)
@@ -104,6 +103,7 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
     }
     
     curPar <- out$curPar
+    curDelta <- out$curDelta
     curPrior <- out$curPrior
     acceptedSamples <- acceptedSamples + out$acceptance
 
@@ -111,6 +111,11 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
     if(n %% batchSize == 0){
       draws[n/batchSize,]  <- curPar
       scores[n/batchSize] <- curDelta
+    }
+    
+    if(n %% 10000 == 0){
+      cat("n =", n)
+      print(gc())
     }
   }
   cat("Finished chain.\n")
@@ -141,26 +146,28 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
 #' @param nCores number of cores to use in mclapply().
 #' @return updated values for curPar, curDelta, and curPrior
 parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior){
-  
+  canDelta <- max(objectiveFunction(canPar))
+
+  if(is.na(canDelta)){
+    cat("\n*** [parUpdate] canDelta is NA. Replacing it with Inf ***")
+    canDelta <- Inf
+  }
   canPrior <- dprior(canPar)
-  
-  acceptance <- (runif(1) <= canPrior/curPrior)
-  if(acceptance){
-    canDelta <- max(objectiveFunction(canPar))
-    if(is.na(canDelta)){
-      cat("\n*** [parUpdate] canDelta is NA. Replacing it with Inf ***")
-      canDelta <- Inf
-    }
-    if (canDelta <= max(delta, curDelta)){
+
+  if (canDelta <= max(delta, curDelta)){
+    acceptance <- (runif(1) <= canPrior/curPrior)
+    if (acceptance){
       curDelta <- canDelta
       curPrior <- canPrior
       curPar <- canPar
-    } else {
-      acceptance <- FALSE
     }
+  } else {
+	  # curPar, curDelta, and curPrior remain unchanged
+	  acceptance <- FALSE
   }
   return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior, acceptance=acceptance))
 }
+
 
 
 parUpdate_ProbabilisticAcceptance <- function(acceptanceProbability, curPar, canPar, curPrior, dprior){
