@@ -73,7 +73,7 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
         timeStr <- gsub(":","_", timeStr)
         timeStr <- gsub(" ","_", timeStr)
         save(draws, file = paste0("AbortedChainAfterRegularization_",timeStr,".RData"))
-        warning(paste0("Stuck chain (nRegularizations = ", nRegularizations,")"))
+        warning(paste0("Stuck chain (nRegularizations = ", nRegularizations,")\n"))
         return(list(draws = c(), scores = c(), acceptanceRate = c(), nRegularizations = nRegularizations))
       }
       cat(paste0("Regularization of proposal covariance matrix (nRegularizations = ", nRegularizations,")"))
