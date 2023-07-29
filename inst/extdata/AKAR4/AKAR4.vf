@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 <VectorField Name="AKAR4" Description="model created by an R script «sbtab_to_vfgen.R» (https://github.com/a-kramer/SBtabVFGEN)">
- <Parameter Name="kf_C_AKAR4" Description="independent parameter kf_C_AKAR4" DefaultValue="0.018"/>
- <Parameter Name="kb_C_AKAR4" Description="independent parameter kb_C_AKAR4" DefaultValue="0.106"/>
- <Parameter Name="kcat_AKARp" Description="independent parameter kcat_AKARp" DefaultValue="10.2"/>
- <Expression Name="reaction_1" Description="flux reaction_1" Formula="kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C"/>
- <Expression Name="reaction_2" Description="flux reaction_2" Formula="kcat_AKARp*AKAR4_C"/>
- <StateVariable Name="AKAR4" Description="compound AKAR4" DefaultInitialCondition="0.2" Formula="-reaction_1"/>
- <StateVariable Name="AKAR4_C" Description="compound AKAR4_C" DefaultInitialCondition="0" Formula="+reaction_1-reaction_2"/>
- <StateVariable Name="AKAR4p" Description="compound AKAR4p" DefaultInitialCondition="0" Formula="+reaction_2"/>
- <StateVariable Name="C" Description="compound C" DefaultInitialCondition="0" Formula="-reaction_1+reaction_2"/>
- <Function Name="AKAR4pOUT" Description="output AKAR4pOUT" Formula="AKAR4p"/>
+ <Parameter Name="kf_C_AKAR4" Description="independent parameter" DefaultValue="0.018"/>
+ <Parameter Name="kb_C_AKAR4" Description="independent parameter" DefaultValue="0.106"/>
+ <Parameter Name="kcat_AKARp" Description="independent parameter" DefaultValue="10.2"/>
+ <Expression Name="reaction_1" Description="flux" Formula="kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C"/>
+ <Expression Name="reaction_2" Description="flux" Formula="kcat_AKARp*AKAR4_C"/>
+ <StateVariable Name="AKAR4" Description="compound" DefaultInitialCondition="0.2" Formula="-reaction_1"/>
+ <StateVariable Name="AKAR4_C" Description="compound" DefaultInitialCondition="0" Formula="+reaction_1-reaction_2"/>
+ <StateVariable Name="AKAR4p" Description="compound" DefaultInitialCondition="0" Formula="+reaction_2"/>
+ <StateVariable Name="C" Description="compound" DefaultInitialCondition="0" Formula="-reaction_1+reaction_2"/>
+ <Function Name="AKAR4pOUT" Description="output" Formula="108 + 380*AKAR4p"/>
 </VectorField>

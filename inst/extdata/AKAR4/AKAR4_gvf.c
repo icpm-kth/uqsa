@@ -2,6 +2,7 @@
 #include <math.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_odeiv2.h>
+#include <gsl/gsl_math.h>
 
 /* The error code indicates how to pre-allocate memory
  * for output values such as `f_`. The _vf function returns
@@ -45,25 +46,25 @@ int AKAR4_jac(double t, const double y_[], double *jac_, double *dfdt_, void *pa
 	double reaction_1=kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C;
 	double reaction_2=kcat_AKARp*AKAR4_C;
 /* column 1 (df/dy_0) */
-	jac_[0] = (-1*(kf_C_AKAR4*C)); /* [0, 0] */
-	jac_[4] = (kf_C_AKAR4*C); /* [1, 0] */
+	jac_[0] = -C*kf_C_AKAR4; /* [0, 0] */
+	jac_[4] = C*kf_C_AKAR4; /* [1, 0] */
 	jac_[8] = 0; /* [2, 0] */
-	jac_[12] = (-1*(kf_C_AKAR4*C)); /* [3, 0] */
+	jac_[12] = -C*kf_C_AKAR4; /* [3, 0] */
 /* column 2 (df/dy_1) */
-	jac_[1] = (-1*(0-kb_C_AKAR4)); /* [0, 1] */
-	jac_[5] = ((0-kb_C_AKAR4)-kcat_AKARp); /* [1, 1] */
+	jac_[1] = kb_C_AKAR4; /* [0, 1] */
+	jac_[5] = (-kcat_AKARp)-kb_C_AKAR4; /* [1, 1] */
 	jac_[9] = kcat_AKARp; /* [2, 1] */
-	jac_[13] = ((-1*(0-kb_C_AKAR4))+kcat_AKARp); /* [3, 1] */
+	jac_[13] = kcat_AKARp+kb_C_AKAR4; /* [3, 1] */
 /* column 3 (df/dy_2) */
 	jac_[2] = 0; /* [0, 2] */
 	jac_[6] = 0; /* [1, 2] */
 	jac_[10] = 0; /* [2, 2] */
 	jac_[14] = 0; /* [3, 2] */
 /* column 4 (df/dy_3) */
-	jac_[3] = (-1*(kf_C_AKAR4*AKAR4)); /* [0, 3] */
-	jac_[7] = (kf_C_AKAR4*AKAR4); /* [1, 3] */
+	jac_[3] = -AKAR4*kf_C_AKAR4; /* [0, 3] */
+	jac_[7] = AKAR4*kf_C_AKAR4; /* [1, 3] */
 	jac_[11] = 0; /* [2, 3] */
-	jac_[15] = (-1*(kf_C_AKAR4*AKAR4)); /* [3, 3] */
+	jac_[15] = -AKAR4*kf_C_AKAR4; /* [3, 3] */
 	return GSL_SUCCESS;
 }
 /* ode parameter Jacobian df(t,y;p)/dp */
@@ -81,18 +82,18 @@ int AKAR4_jacp(double t, const double y_[], double *jacp_, double *dfdt_, void *
 	double reaction_1=kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C;
 	double reaction_2=kcat_AKARp*AKAR4_C;
 /* column 1 (df/dp_0) */
-	jacp_[0] = (-1*(C*AKAR4)); /* [0, 0] */
-	jacp_[3] = (C*AKAR4); /* [1, 0] */
+	jacp_[0] = -AKAR4*C; /* [0, 0] */
+	jacp_[3] = AKAR4*C; /* [1, 0] */
 	jacp_[6] = 0; /* [2, 0] */
-	jacp_[9] = (-1*(C*AKAR4)); /* [3, 0] */
+	jacp_[9] = -AKAR4*C; /* [3, 0] */
 /* column 2 (df/dp_1) */
-	jacp_[1] = (-1*(0-AKAR4_C)); /* [0, 1] */
-	jacp_[4] = (0-AKAR4_C); /* [1, 1] */
+	jacp_[1] = AKAR4_C; /* [0, 1] */
+	jacp_[4] = -AKAR4_C; /* [1, 1] */
 	jacp_[7] = 0; /* [2, 1] */
-	jacp_[10] = (-1*(0-AKAR4_C)); /* [3, 1] */
+	jacp_[10] = AKAR4_C; /* [3, 1] */
 /* column 3 (df/dp_2) */
 	jacp_[2] = 0; /* [0, 2] */
-	jacp_[5] = (0-AKAR4_C); /* [1, 2] */
+	jacp_[5] = -AKAR4_C; /* [1, 2] */
 	jacp_[8] = AKAR4_C; /* [2, 2] */
 	jacp_[11] = AKAR4_C; /* [3, 2] */
 	return GSL_SUCCESS;
@@ -111,7 +112,7 @@ int AKAR4_func(double t, const double y_[], double *func_, void *par)
 	double C=y_[3];
 	double reaction_1=kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C;
 	double reaction_2=kcat_AKARp*AKAR4_C;
-	func_[0] = AKAR4p; /* AKAR4pOUT */
+	func_[0] = 108 + 380*AKAR4p; /* AKAR4pOUT */
 	return GSL_SUCCESS;
 }
 /* ode default parameters */
@@ -128,7 +129,7 @@ int AKAR4_default(double t, void *par)
 int AKAR4_init(double t, double *y_, void *par)
 {
 	double *p_=par;
-	if (!y_) return        4;
+	if (!y_) return 4;
 	double kf_C_AKAR4=p_[0];
 	double kb_C_AKAR4=p_[1];
 	double kcat_AKARp=p_[2];

@@ -196,12 +196,11 @@ checkFitWithPreviousExperiments <- function(draws, objectiveFunction, delta){
 
   scores <- objectiveFunction(t(draws))
 
-  dim(scores) <- c(nDraws,length(scores)/nDraws)
-  acceptable <- apply(scores <= delta,1,all)
-  stopifnot(length(acceptable)==nDraws)
+  acceptable <- apply(scores <= delta,2,all)
+
   if (any(acceptable)){
     draws <- draws[acceptable,]
-    nPickedDraws <- nrow(draws)
+    nPickedDraws <- sum(acceptable)
     nonFits <- nDraws - nPickedDraws;
     cat("-- ", nonFits, " samples  did not fit previous datasets")
   } else {
