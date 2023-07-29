@@ -113,7 +113,7 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
       scores[n/batchSize] <- curDelta
     }
     
-    if(n %% 10000 == 0){
+    if(n %% 1000 == 0){
       cat("n =", n)
       print(gc())
     }
