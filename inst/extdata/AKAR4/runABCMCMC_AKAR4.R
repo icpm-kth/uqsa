@@ -103,14 +103,15 @@ for (i in seq(length(chunks))){
 	time_ABC <- Sys.time() - time_ABC
 	cat(sprintf("- time spent on ABC-MCMC: \n"))
 	print(time_ABC)
-
 	if (i>1){
+		simulate <- simulator.c(experiments,modelName,parMap)
+		Obj <- makeObjective(experiments,modelName,distanceMeasure,parMap,simulate)
 		mcmc$draws <- checkFitWithPreviousExperiments(mcmc$draws, Obj, delta)
 	}
 	# Save Resulting Samples to MATLAB and R files.
 
 	## this section makes a little sensitivity plot:
-	y<-runModel(experiments,modelName,parABC=t(mcmc$draws),parMap=parMap)
+	y<-simulate(t(mcmc$draws))
 	f<-aperm(y[[3]]$func[1,,]) # aperm makes the sample-index (3rd) the first index of f, default permutation
 	S<-sensitivity(mcmc$draws,f)
 	S[1,]<-0 # the first index of S is time, and initially sensitivity is 0
@@ -128,11 +129,11 @@ time_ = end_time - start_time
 #### PLOT RESTULTS FOR AKAR4
 par(mfrow=c(2,3))
 for(i in 1:3){
-	 hist(draws$draws[,i], main=parNames[i], xlab = "Value in log scale")
+	 hist(mcmc$draws[,i], main=parNames[i], xlab = "Value in log scale")
 }
 combinePar <- list(c(1,2), c(1,3), c(2,3))
 for(i in combinePar){
-	 plot(draws$draws[,i[1]], draws$draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
+	 plot(mcmc$draws[,i[1]], mcmc$draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
 }
 
 
@@ -142,7 +143,7 @@ library(ggplot2)
 for(i in 1:3){
   experiment <- experiments[i]
   stopifnot(length(experiment)==1)
-  output_yy <- runModel(experiment, modelName, t(draws$draws), parMap, nCores)
+  output_yy <- simulate(t(mcmc$draws))
   df_ <- mclapply(1:dim(output_yy[[1]][["func"]])[3], function(i) as.data.frame(x = list(output_yy[[1]][["func"]][1,,i]/0.2,experiment[[1]][['outputTimes']]), col.names = c("y","t")))
   df__ <- melt(df_,id=c("t","y"))
   yy_exp <- (experiments[[i]][["outputValues"]]-minVal)/(maxVal-minVal)
