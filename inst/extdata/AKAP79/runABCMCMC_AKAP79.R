@@ -123,8 +123,6 @@ print(time_)
 cat("\nRegularizations:", ABCMCMCoutput$nRegularizations)
 cat("\nAcceptance rate:", ABCMCMCoutput$acceptanceRate)
 
-
-
 # Save Resulting Samples to MATLAB and R files.
 save_sample(ABCMCMCoutput)
 
