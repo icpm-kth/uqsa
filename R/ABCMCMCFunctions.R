@@ -146,24 +146,23 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
 #' @param nCores number of cores to use in mclapply().
 #' @return updated values for curPar, curDelta, and curPrior
 parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior){
-  canDelta <- max(objectiveFunction(canPar))
 
-  if(is.na(canDelta)){
-    cat("\n*** [parUpdate] canDelta is NA. Replacing it with Inf ***")
-    canDelta <- Inf
-  }
   canPrior <- dprior(canPar)
 
-  if (canDelta <= max(delta, curDelta)){
-    acceptance <- (runif(1) <= canPrior/curPrior)
-    if (acceptance){
+  acceptance <- (runif(1) <= canPrior/curPrior)
+  if(acceptance){
+    canDelta <- max(objectiveFunction(canPar))
+    if(is.na(canDelta)){
+      cat("\n*** [parUpdate] canDelta is NA. Replacing it with Inf ***")
+      canDelta <- Inf
+    }
+    if (canDelta <= max(delta, curDelta)){
       curDelta <- canDelta
       curPrior <- canPrior
       curPar <- canPar
+    } else {
+      acceptance <- FALSE
     }
-  } else {
-	  # curPar, curDelta, and curPrior remain unchanged
-	  acceptance <- FALSE
   }
   return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior, acceptance=acceptance))
 }
