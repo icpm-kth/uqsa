@@ -6,7 +6,7 @@ library(SBtabVFGEN)
 library(parallel)
 library(pracma)
 
-#SBtabDir <- getwd()
+SBtabDir <- getwd()
 #model = import_from_SBtab(SBtabDir)
 model.tsv <- uqsa_example("AKAR4",full.names=TRUE) 
 #modelName <- checkModel(comment(model),"./AKAR4_gvf.c")
@@ -17,7 +17,7 @@ parNames <- model.tab[["Parameter"]][["!Name"]]
 names(parVal) <- parNames
 
 # load experiments
-experiments <- import_experiments(modelName, "~/Documents/uqsa/inst/extdata/AKAR4")
+experiments <- import_experiments(modelName, SBtabDir)
 #experiments <- SBtabVFGEN::sbtab.data(model.tab)
 
 
