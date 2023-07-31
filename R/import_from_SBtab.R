@@ -75,7 +75,7 @@ import_experiments <- function(modelName=NULL, SBtabDir){
 	if ("!ErrorNames" %in% names(SBtab[["Output"]])){
 		errorNames <- SBtab[["Output"]][["!ErrorNames"]]
 	} else {
-		errorNames <- outputNames
+		errorNames <- NULL
 	}
   source(paste(SBtabDir, "/", modelName, ".R", sep = ""))
   vectorialOutputFunction <- eval(as.name(paste0(modelName,"_func")))
