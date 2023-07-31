@@ -6,7 +6,7 @@ library(SBtabVFGEN)
 library(parallel)
 library(pracma)
 
-SBtabDir <- getwd()
+#SBtabDir <- getwd()
 #model = import_from_SBtab(SBtabDir)
 model.tsv <- uqsa_example("AKAR4",full.names=TRUE) 
 #modelName <- checkModel(comment(model),"./AKAR4_gvf.c")
@@ -17,8 +17,9 @@ parNames <- model.tab[["Parameter"]][["!Name"]]
 names(parVal) <- parNames
 
 # load experiments
-#experiments <- import_experiments(modelName, SBtabDir)
-experiments <- SBtabVFGEN::sbtab.data(model.tab)
+experiments <- import_experiments(modelName, "~/Documents/uqsa/inst/extdata/AKAR4")
+#experiments <- SBtabVFGEN::sbtab.data(model.tab)
+
 
 # scale to determine prior values
 defRange <- 1000
@@ -83,7 +84,7 @@ chunks <- list(c(1,2),3)
 for (i in seq(length(chunks))){
   expInd <- chunks[[i]]
   cat("#####Starting run for Experiments ", expInd, "######\n")
-  Obj <- makeObjectiveSSA(experiments[expInd],parNames,getScore,parMap, Phi, compiled_reactions, mc.cores=detectCores(), nStochSim = 3)
+  objectiveFunction <- makeObjectiveSSA(experiments[expInd],parNames,getScore,parMap, Phi, compiled_reactions, nStochSim = 3)
   ## If First Experimental Setting, Create an Independente Colupla
   if(i==1){
     cat(sprintf("- Starting with uniform prior \n"))
@@ -100,7 +101,7 @@ for (i in seq(length(chunks))){
   cat(sprintf("- Precalibration \n"))
   
   time_pC <- Sys.time()
-  out1 <- preCalibration(Obj, npc, rprior)
+  pC <- preCalibration(objectiveFunction, npc, rprior)
   time_pC <- Sys.time() - time_pC
   cat(sprintf("- time for precalibration: \n"))
   print(time_pC)
@@ -108,20 +109,20 @@ for (i in seq(length(chunks))){
   
   sfactor <- 0.1 # scaling factor
   ## Get Starting Parameters from Pre-Calibration
-  out2 <- getMCMCPar(out1$prePar, out1$preDelta, p, sfactor, delta)
+  out2 <- getMCMCPar(pC$prePar, pC$preDelta, p, sfactor, delta)
   Sigma <- out2$Sigma
   startPar <- out2$startPar
   ## Run ABC-MCMC Sampling
   cat(sprintf("- Running MCMC\n"))
   
   time_ABC <- Sys.time()
-  draws <- ABCMCMC(Obj, startPar, ns, Sigma, delta, priorPDF)
+  draws <- ABCMCMC(objectiveFunction, startPar, ns, Sigma, delta, priorPDF)
   time_ABC <- Sys.time() - time_ABC
   cat(sprintf("- time for ABCMCMC: \n"))
   print(time_ABC)
   
   if (i>1){
-    draws$draws <- checkFitWithPreviousExperiments(draws$draws, Obj, delta)
+    draws$draws <- checkFitWithPreviousExperiments(draws$draws, objectiveFunction, delta)
   }
   # Save Resulting Samples to MATLAB and R files.
   cat("-Saving sample \n")
