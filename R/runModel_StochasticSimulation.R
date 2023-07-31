@@ -248,16 +248,16 @@ makeGillespieModel <- function(SBtab,LV=NULL,strip.null=TRUE){
 		## V <- 1e-15 # litres
 		LV <- 6.02214076e+8 # L*V
 	}
-	parValue <- SBtab[["Parameter"]][["!DefaultValue"]]
-	parNames <- SBtab[["Parameter"]][["!ID"]]
-	parUnits <- SBtab[["Parameter"]][["!Unit"]]
-	compoundNames <- SBtab[["Compound"]][["!ID"]]
-	reactionNames <- SBtab[["Reaction"]][["!ID"]]
-	isReversible <- as.logical(SBtab[["Reaction"]][["!IsReversible"]])
+	parValue <- SBtab$Parameter[["!DefaultValue"]]
+	parNames <- row.names(SBtab$Parameter)
+	parUnits <- SBtab$Parameter[["!Unit"]]
+	compoundNames <- row.names(SBtab$Compound)
+	reactionNames <- row.names(SBtab$Reaction)
+	isReversible <- as.logical(SBtab$Reaction[["!IsReversible"]])
 	SSA2reactions <- vector(mode="list",length=2*n)
 	if ("Expression" %in% names(SBtab)){
-		expressionNames <- SBtab[["Expression"]][["!ID"]]
-		expressionFormula <- SBtab[["Expression"]][["!Formula"]]
+		expressionNames <- row.names(SBtab$Expression)
+		expressionFormula <- SBtab$Expression[["!Formula"]]
 		names(expressionFormula)<-expressionNames
 	} else {
 		expressionNames <- NULL
@@ -271,7 +271,7 @@ makeGillespieModel <- function(SBtab,LV=NULL,strip.null=TRUE){
 		rCompoundNames <- rVarNames[rVarNames %in% compoundNames]
 		rExpressionNames <- rVarNames[rVarNames %in% expressionNames]
 		rExpressions <- expressionFormula[rExpressionNames]
-		names(rExpressions) <- rExpressionNames
+		if(!is.null(rExpressions))		names(rExpressions) <- rExpressionNames
 		effect <- numeric(length(rCompoundNames))
 		names(effect) <- rCompoundNames
 		cf<-list(reactants=match.coefficients(r$re),products=match.coefficients(r$pr))
@@ -306,7 +306,7 @@ makeGillespieModel <- function(SBtab,LV=NULL,strip.null=TRUE){
 #' @return a list of GillespieSSA2::reaction items
 #' @export
 importReactionsSSA <- function(model){
-  num_reactions <- length(model$Reaction[["!ID"]])
+  num_reactions <- length(row.names(model$Reaction))
   num_reversible_reactions <- sum(model$Reaction[["!IsReversible"]]==TRUE)
   reactions <- vector("list", len=num_reactions + num_reversible_reactions)
   compound_names <- model$Compound[["!Name"]]
@@ -411,8 +411,8 @@ makeObjectiveSSA <- function(experiments, parNames, distance, parMap=identity, P
     if (is.matrix(parABC)) {
       rownames(parABC) <- parNames
       npc <- ncol(parABC)
-      S <- mclapply(1:npc, function(i) sapply(experiments, function(e) simulateAndComputeDistance(e, parABC[,i])))
-      return(unlist(S))
+      S <- do.call(cbind,mclapply(1:npc, function(i) sapply(experiments, function(e) simulateAndComputeDistance(e, parABC[,i]))))
+      return(S)
     }
     else {
       names(parABC) <- parNames
