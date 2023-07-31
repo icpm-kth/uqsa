@@ -121,7 +121,7 @@ import_experiments <- function(modelName=NULL, SBtabDir){
       match_errorNames <- match(tabOutputId, errorNames)
       match_errorNames <- match_errorNames[!is.na(match_errorNames)]
       experiments[[i]][["errorNames"]] <- errorNames[match_errorNames]
-      experiments[[i]][["errorValues"]] <- as.matrix(experiment_table[paste("~", errorNames[match_errorNames], sep = "")])
+      experiments[[i]][["errorValues"]] <- as.matrix(experiment_table[paste0("~", errorNames[match_errorNames])])
       experiments[[i]][["errorValues"]] <- experiments[[i]][["errorValues"]][as.logical(notNAidx),]
     }
   }
