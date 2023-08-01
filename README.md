@@ -23,7 +23,7 @@ A detailed documentation is available in the [wiki](https://github.com/icpm-kth/
 
 ## Demo
 
-A simple example using the AKAR4 model is available as a Jupyter notebook (to be preinstalled) in the file [`UQ_AKAR4.ipynb`](https://github.com/icpm-kth/uqsa/blob/master/UQ_AKAR4.ipynb). You can run it locally after installing Jupyter (read [here](https://jupyter.org/install) for further imformation).
+A simple example using the AKAR4 model is available as a Jupyter notebook in the file [`UQ_AKAR4.ipynb`](https://github.com/icpm-kth/uqsa/blob/master/UQ_AKAR4.ipynb). You can run it locally after installing Jupyter (read [here](https://jupyter.org/install) for further imformation).
 ## Original Work
 
 This repository (https://github.com/icpm-kth/uqsa) is a continued development of the methodology presented in the paper:
