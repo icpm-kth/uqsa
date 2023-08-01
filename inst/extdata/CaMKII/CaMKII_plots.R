@@ -1,3 +1,4 @@
+require(ggplot2)
 
 #' Plot simulations of CaMKII model using parameter draws
 #'
