@@ -6,11 +6,15 @@ library(SBtabVFGEN)
 library(parallel)
 library(pracma)
 
+nChains <- 4
+#options(mc.cores=parallel::detectCores() %/% nChains)
+options(mc.cores=4)
+
 SBtabDir <- getwd()
 #model = import_from_SBtab(SBtabDir)
 model.tsv <- uqsa_example("AKAR4",full.names=TRUE) 
-#modelName <- checkModel(comment(model),"./AKAR4_gvf.c")
 model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
+modelName <- checkModel(comment(model.tab),"./AKAR4_gvf.c")
 
 parVal <- model.tab[["Parameter"]][["!DefaultValue"]]
 parNames <- model.tab[["Parameter"]][["!Name"]]
@@ -19,7 +23,6 @@ names(parVal) <- parNames
 # load experiments
 experiments <- import_experiments(modelName, SBtabDir)
 #experiments <- SBtabVFGEN::sbtab.data(model.tab)
-
 
 # scale to determine prior values
 defRange <- 1000
@@ -38,7 +41,7 @@ ul = log10(ul) # log10-scale
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
 ns <- 100 # no of samples required from each ABC-MCMC chain
-npc <- 500 # pre-calibration
+npc <- 1000 # pre-calibration
 
 # Define ABC-MCMC Settings
 p <- 0.01		 # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
@@ -70,7 +73,7 @@ Phi <- AvoNum * vol * unit
 
 compiled_reactions <- GillespieSSA2::compile_reactions(
   reactions = reactions,
-  state_ids = model$Compound[["!Name"]],
+  state_ids = model.tab$Compound[["!Name"]],
   params = c(parVal, Phi=Phi)
 )
 
@@ -79,9 +82,11 @@ compiled_reactions <- GillespieSSA2::compile_reactions(
 start_time = Sys.time()
 
 # work packages
-chunks <- list(c(1,2),3)
+#chunks <- list(c(1,2),3)
+chunks <- list(c(1,2,3))
 
-for (i in seq(length(chunks))){
+i<-1
+#for (i in seq(length(chunks))){
   expInd <- chunks[[i]]
   cat("#####Starting run for Experiments ", expInd, "######\n")
   objectiveFunction <- makeObjectiveSSA(experiments[expInd],parNames,getScore,parMap, Phi, compiled_reactions, nStochSim = 3)
@@ -101,7 +106,7 @@ for (i in seq(length(chunks))){
   cat(sprintf("- Precalibration \n"))
   
   time_pC <- Sys.time()
-  pC <- preCalibration(objectiveFunction, npc, rprior)
+  pC <- preCalibration(objectiveFunction, npc, rprior,rep = 3)
   time_pC <- Sys.time() - time_pC
   cat(sprintf("- time for precalibration: \n"))
   print(time_pC)
@@ -109,45 +114,78 @@ for (i in seq(length(chunks))){
   
   sfactor <- 0.1 # scaling factor
   ## Get Starting Parameters from Pre-Calibration
-  out2 <- getMCMCPar(pC$prePar, pC$preDelta, p, sfactor, delta)
-  Sigma <- out2$Sigma
-  startPar <- out2$startPar
+  M <- getMCMCPar(pC$prePar, pC$preDelta, p, sfactor, delta, num = nChains)
+  Sigma <- M$Sigma
+  startPar <- M$startPar
+  for(j in 1 : nChains){
+    cat("Chain", j, "\n")
+    cat("\tMin distance of starting parameter for chain",j," = ", min(objectiveFunction(M$startPar[,j])),"\n")
+    cat("\tMean distance of starting parameter for chain",j," = ", mean(objectiveFunction(M$startPar[,j])),"\n")
+    cat("\tMax distance of starting parameter for chain",j," = ", max(objectiveFunction(M$startPar[,j])),"\n")
+  }
+  
   ## Run ABC-MCMC Sampling
   cat(sprintf("- Running MCMC\n"))
-  
   time_ABC <- Sys.time()
-  draws <- ABCMCMC(objectiveFunction, startPar, ns, Sigma, delta, priorPDF)
+  cl <- makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
+  clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "priorPDF"))
+  out_ABCMCMC <- parLapply(cl,
+                           1:nChains,
+                           function(j) {
+                             tryCatch(
+                               ABCMCMC(objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, priorPDF),
+                               error=function(cond) {message("ABCMCMC crashed"); print(M); print(j); return(NULL)}
+                             )
+                           }
+  )
+  stopCluster(cl)
+  
+  ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
+  if (!is.matrix(ABCMCMCoutput$draws)){
+    stop("All chains got stuck.")
+  }
+  if (!is.null(ABCMCMCoutput$scores)){
+    ABCMCMCoutput$scores <- as.numeric(t(ABCMCMCoutput$scores))
+  }
+  
+  #draws <- ABCMCMC(objectiveFunction, startPar, ns, Sigma, delta, priorPDF)
+  
   time_ABC <- Sys.time() - time_ABC
   cat(sprintf("- time for ABCMCMC: \n"))
   print(time_ABC)
   
-  if (i>1){
-    draws$draws <- checkFitWithPreviousExperiments(draws$draws, objectiveFunction, delta)
-  }
-  # Save Resulting Samples to MATLAB and R files.
-  cat("-Saving sample \n")
-  outFile <- paste(seq(1,i), collapse="_")
-  timeStr <- Sys.time()
-  timeStr <- gsub(":","_", timeStr)
-  timeStr <- gsub(" ","_", timeStr)
-  outFileR <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
-  if (require("R.matlab")){
-    outFileM <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
-  }
+  cat("\nRegularizations:", ABCMCMCoutput$nRegularizations)
+  cat("\nAcceptance rate:", ABCMCMCoutput$acceptanceRate)
+  
+  
+  # if (i>1){
+  #   draws$draws <- checkFitWithPreviousExperiments(draws$draws, objectiveFunction, delta)
+  # }
+  # # Save Resulting Samples to MATLAB and R files.
+  # cat("-Saving sample \n")
+  # outFile <- paste(seq(1,i), collapse="_")
+  # timeStr <- Sys.time()
+  # timeStr <- gsub(":","_", timeStr)
+  # timeStr <- gsub(" ","_", timeStr)
+  # outFileR <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
+  # if (require("R.matlab")){
+  #   outFileM <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
+  # }
   #save(draws, parNames, file=outFileR)
-}
+#}
 end_time = Sys.time()
 time_ = end_time - start_time
-
+cat("Total time:")
+print(time_)
 
 #### PLOT RESTULTS FOR AKAR4
 par(mfrow=c(2,3))
 for(i in 1:3){
-  hist(draws$draws[,i], main=parNames[i], xlab = "Value in log scale")
+  hist(ABCMCMCoutput$draws[,i], main=parNames[i], xlab = "Value in log scale")
 }
 combinePar <- list(c(1,2), c(1,3), c(2,3))
 for(i in combinePar){
-  plot(draws$draws[,i[1]], draws$draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
+  plot(ABCMCMCoutput$draws[,i[1]], ABCMCMCoutput$draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
 }
 
 
@@ -181,7 +219,7 @@ simulateSSA <- function(e, param, nStochSim){
 par(mfrow=c(1,1))
 plot(experiments[[1]][["outputTimes"]],experiments[[1]][["outputValues"]],ylim=c(90,250))
 for(i in 1:ns){
-  param <- draws$draws[1,]
+  param <- ABCMCMCoutput$draws[1,]
   names(param) <- parNames
   sim <- simulateSSA(experiments[[1]], param, 3)
   points(experiments[[1]][["outputTimes"]],sim*(maxVal-minVal)+minVal, col="blue")

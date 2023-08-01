@@ -72,6 +72,8 @@ experimentsIndices <- list(
  which(startsWith(names(experiments),"E5"))
 )
 
+experimentsIndices <- list(1:99)
+
 # Define ABC-MCMC Settings
 delta <- 1.0
 
@@ -124,7 +126,7 @@ for (i in 1:length(experimentsIndices)){
 
 	## Pre-Calibration uses only mclapply calls, we set up no cluster for this.
 	options(mc.cores=parallel::detectCores())
-	pC <- preCalibration(objectiveFunction, npc, rprior)
+	pC <- preCalibration(objectiveFunction, npc, rprior, rep=5)
 	cat("\nPreCalibration:")
 	print(Sys.time()-start_time_preCalibration)
 
