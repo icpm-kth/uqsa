@@ -16,6 +16,7 @@ Alternatively, download a release `tar.gz` or `zip` file and run
 ```sh
 R CMD INSTALL uqsa*.{tar.gz,zip}
 ```
+
 ## License
 
 The code is distributed under the GNU General Public License v3.0.
