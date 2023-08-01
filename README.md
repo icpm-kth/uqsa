@@ -65,6 +65,8 @@ Stemmer PM, Klee CB. Biochemistry. 1994;33(22):6859-6866 (phenotype 1, 3 and 4)
 ```
 O'Donnell SE et al. Proteins. 2011;79(3):765-786 (phenotype 2)
 ```
+and described in detail in the SBtab files of the CaMKII model folder.
+
 
 
 ### Model references
@@ -81,6 +83,12 @@ Buxbaum JD, Dudai Y. 1989. A quantitative model for the kinetics of cAMP-depende
 activity. Long-term activation of the kinase and its possible relevance to learning and memory. 
 The Journal of Biological Chemistry 264:9344–9351.
 ```
+
+The CaMKII model is from 
+```
+QWERTY
+```
+
 
 ## Acknowledgements
 
