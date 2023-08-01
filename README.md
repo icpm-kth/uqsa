@@ -7,7 +7,8 @@ Bayesian methods and ABC-MCMC sampling.
 * **Documentation:** https://github.com/icpm-kth/uqsa/wiki/Documentation
 * **Demos:** https://github.com/icpm-kth/uqsa/wiki/Documentation#demos
 * **References:** https://github.com/icpm-kth/uqsa/wiki/Documentation#references
-* **Acknowledgements
+* **License:** https://github.com/icpm-kth/uqsa/wiki/Documentation#license
+  
 
 
 ## Acknowledgements
