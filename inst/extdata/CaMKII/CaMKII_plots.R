@@ -56,6 +56,9 @@ plotCaMKIISimulations <- function(draws, num.sub.samples = 100, show.plot = TRUE
     
     num.sub.samples <- 100
     simulate <- simulator.c(experiments[experimentsIndices[[i]]], modelName, parMap)
+    #objectiveFunction <- makeObjective(experiments[experimentsIndices[[i]]], modelName, distanceMeasure, parMap, simulate)
+    #apply(objectiveFunction(t(draws[sample(1:dim(draws)[1],num.sub.samples),])),2,max)
+    
     output_yy <- simulate(t(draws[sample(1:dim(draws)[1],num.sub.samples),]))
     y <- sapply(output_yy, function(o) o$func[outputIndex,1,])
     E.data.frame.sim <- data.frame(x=(rep(x,each=num.sub.samples)),y=c(y))
