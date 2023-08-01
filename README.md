@@ -79,14 +79,16 @@ Elife 10 (2021): e68164.`
 ```
 which was modified from:
 ```
-Buxbaum JD, Dudai Y. 1989. A quantitative model for the kinetics of cAMP-dependent protein kinase (type II) 
-activity. Long-term activation of the kinase and its possible relevance to learning and memory. 
+Buxbaum JD, Dudai Y. 1989. "A quantitative model for the kinetics of cAMP-dependent protein kinase (type II) 
+activity. Long-term activation of the kinase and its possible relevance to learning and memory." 
 The Journal of Biological Chemistry 264:9344–9351.
 ```
 
 The CaMKII model is from 
 ```
-Nair, A. G., Gutierrez-Arenas, O., Eriksson, O., Jauhiainen, A., Blackwell, K. T., & Kotaleski, J. H. (2014). Modeling intracellular signaling underlying striatal function in health and disease. Progress in molecular biology and translational science, 123, 277-304.
+Nair, A. G., Gutierrez-Arenas, O., Eriksson, O., Jauhiainen, A., Blackwell, K. T., & Kotaleski, J. H. (2014).
+"Modeling intracellular signaling underlying striatal function in health and disease." Progress in molecular
+biology and translational science, 123, 277-304.
 
 ```
 
