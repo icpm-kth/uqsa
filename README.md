@@ -16,6 +16,9 @@ Alternatively, download a release `tar.gz` or `zip` file and run
 ```sh
 R CMD INSTALL uqsa*.{tar.gz,zip}
 ```
+## License
+
+The code is distributed under the GNU General Public License v3.0.
 
 ## Documentation
 
@@ -47,7 +50,7 @@ The demo UQ.ipynb was presented in Figure 5c of the paper
 Eriksson, Olivia et al. "Combining hypothesis- and data-driven neuroscience modeling in FAIR workflows", 
 eLife (2022), 11:e69013 DOI: https://doi.org/10.7554/eLife.69013
 ```
- The code is distributed under the GNU General Public License v3.0.
+ 
 
 ## Data references
 
