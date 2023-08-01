@@ -21,9 +21,14 @@ R CMD INSTALL uqsa*.{tar.gz,zip}
 
 A detailed documentation is available in the [wiki](https://github.com/icpm-kth/uqsa/wiki/Documentation).
 
-## Demo
+## Demos
 
 A simple example using the AKAR4 model is available as a Jupyter notebook in the file [`UQ_AKAR4.ipynb`](https://github.com/icpm-kth/uqsa/blob/master/UQ_AKAR4.ipynb). You can run it locally after installing Jupyter (read [here](https://jupyter.org/install) for further imformation).
+
+Three larger examples are available in the form of R scripts and can be run locally or (preferably) on a computer cluster:
+* [AKAP79 ODE model](https://github.com/icpm-kth/uqsa/blob/master/inst/extdata/AKAP79/runABCMCMC_AKAP79.R)
+* [CaMKII ODE model](https://github.com/icpm-kth/uqsa/blob/master/inst/extdata/CaMKII/runABCMCMC_CaMKII.R)
+* [AKAR4 stochastic model](https://github.com/icpm-kth/uqsa/blob/master/inst/extdata/AKAR4/runABCMCMC_AKAR4_withStochasticStimulation.R)
 ## Original Work
 
 This repository (https://github.com/icpm-kth/uqsa) is a continued development of the methodology presented in the paper:
