@@ -21,6 +21,9 @@ R CMD INSTALL uqsa*.{tar.gz,zip}
 
 A detailed documentation is available in the [wiki](https://github.com/icpm-kth/uqsa/wiki/Documentation).
 
+## Demo
+
+A simple example using the AKAR4 model is available as a Jupyter notebook (to be preinstalled) in the file [`UQ_AKAR4.ipynb`](https://github.com/icpm-kth/uqsa/blob/master/UQ_AKAR4.ipynb). You can run it locally after installing Jupyter (read [here](https://jupyter.org/install) for further imformation).
 ## Original Work
 
 This repository (https://github.com/icpm-kth/uqsa) is a continued development of the methodology presented in the paper:
@@ -38,11 +41,7 @@ eLife (2022), 11:e69013 DOI: https://doi.org/10.7554/eLife.69013
 ```
  The code is distributed under the GNU General Public License v3.0.
 
-The UQ folder contains R scripts to run the uncertainty quantification method (ABC-MCMC with copulas). A detailed documentation of this code can be found in the wiki of this repository (https://github.com/icpm-kth/uqsa/wiki/Documentation).
-
-The SA folder will soon contain the code for the global sensitivity analysis, meanwhile we refer to https://github.com/alexjau/uqsa.
-
-### Data references
+## Data references
 
 The experimental data for the AKAP79 and AKAR4 models are from the publication:
 ```
