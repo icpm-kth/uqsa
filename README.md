@@ -58,6 +58,15 @@ Elife 10 (2021): e68164.
 ```
 and described in detail in the SBtab files of the AKAP79 and AKAR4 model folders.
 
+The experimental data for the CaMKII model are extracted from the following references:
+```
+Stemmer PM, Klee CB. Biochemistry. 1994;33(22):6859-6866 (phenotype 1, 3 and 4)
+```
+```
+O'Donnell SE et al. Proteins. 2011;79(3):765-786 (phenotype 2)
+```
+
+
 ### Model references
 
 The AKAP79 model is from
