@@ -86,7 +86,8 @@ The Journal of Biological Chemistry 264:9344–9351.
 
 The CaMKII model is from 
 ```
-QWERTY
+Nair, A. G., Gutierrez-Arenas, O., Eriksson, O., Jauhiainen, A., Blackwell, K. T., & Kotaleski, J. H. (2014). Modeling intracellular signaling underlying striatal function in health and disease. Progress in molecular biology and translational science, 123, 277-304.
+
 ```
 
 
