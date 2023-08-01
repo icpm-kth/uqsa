@@ -99,4 +99,4 @@ biology and translational science, 123, 277-304.
 
 ## Acknowledgements
 
-This open source software code was developed in part or in the Human Brain Project, funded from the European Union’s Horizon 2020 Framework Programme for Research and Innovation under Specific Grant Agreements No. 720270 and No. 785907 (Human Brain Project SGA1 and SGA2).
+This open source software code was developed with support from the Swedish e-Science Research Centre (SeRC) as well as within the Human Brain Project, funded from the European Union’s Horizon 2020 Framework Programme for Research and Innovation under Specific Grant Agreements No. 720270 and No. 785907 (Human Brain Project SGA1 and SGA2).
