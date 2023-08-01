@@ -29,6 +29,8 @@ Three larger examples are available in the form of R scripts and can be run loca
 * [AKAP79 ODE model](https://github.com/icpm-kth/uqsa/blob/master/inst/extdata/AKAP79/runABCMCMC_AKAP79.R)
 * [CaMKII ODE model](https://github.com/icpm-kth/uqsa/blob/master/inst/extdata/CaMKII/runABCMCMC_CaMKII.R)
 * [AKAR4 stochastic model](https://github.com/icpm-kth/uqsa/blob/master/inst/extdata/AKAR4/runABCMCMC_AKAR4_withStochasticStimulation.R)
+These R scrips can be found in the folder [`inst/extdata`](https://github.com/icpm-kth/uqsa/tree/master/inst/extdata).
+  
 ## Original Work
 
 This repository (https://github.com/icpm-kth/uqsa) is a continued development of the methodology presented in the paper:
