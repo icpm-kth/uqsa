@@ -130,6 +130,9 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity){
 #' @param modelName a string (with optional comment indicating an .so file) which points out the model to simulate
 #' @param parABC the parameters for the model, subject to change by parMap.
 #' @param parMap the model will be called with parMap(parABC); so any parameter transformation can happen there.
+#' @param noise boolean variable. If noise=TRUE, Gaussian noise is added to the output of the simulations. The standard
+#'              deviation of the Gaussian noise is equal to the measurement error. If noise=FALSE the output is the
+#'              deterministic solution of the ODE system.
 #' @export
 #' @return a closure that returns the model's output for a given parameter vector
 #' @examples
@@ -140,15 +143,29 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity){
 #'    modelName <- checkModel("<insert_model_name>_gvf.c")
 #'    simulate <- simulator.c(experiments, modelName,  parABC)
 #'    yf <- sim(parABC)
-simulator.c <- function(experiments, modelName, parMap=identity){
-	require(rgsl)
-## simulator:
-	sim <- function(parABC){
-		modelPar <- parMap(parABC)
-		yf <- rgsl::r_gsl_odeiv2_outer(modelName, experiments, as.matrix(modelPar))
-		return(yf)
-	}
-	return(sim)
+simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE){
+  require(rgsl)
+  ## simulator:
+  sim <- function(parABC){
+    modelPar <- parMap(parABC)
+    yf <- rgsl::r_gsl_odeiv2_outer(modelName, experiments, as.matrix(modelPar))
+    
+    if(noise){
+      for(i in 1:length(experiments)){
+        out <- yf[[i]]$func
+        l <- dim(out)[2]
+        n <- ifelse(is.matrix(parABC),ncol(parABC),1)
+        error <- as.matrix(experiments[[i]]$errorValues)
+        if(!is.null(error)){
+          error[is.na(error)] <- 0
+          y <- mclapply(1:n, function(j) out[,,j] + rnorm(l, mean = rep(0,l), sd = error))
+          yf[[i]]$func[1,,] <- do.call(cbind,y)
+        }
+      }
+    }
+    return(yf)
+  }
+  return(sim)
 }
 
 
@@ -336,15 +353,14 @@ makeObjective <- function(experiments,modelName=NULL,distance,parMap=identity,si
 #' @param getAcceptanceProbability an R function that mape the results of a simulation and experimental data to an acceptance probability
 #' @param parMap an optional mapping between sampling parameters (parABC) and model parameters (e.g. rescaling,re-ordering).
 #' @return a function that calculates probabilities given only parABC as input; it implicitly uses all the argiments to this function.
-makeAcceptanceProbability <- function(experiments, modelName, getAcceptanceProbability, parMap=identity)
-{
+makeAcceptanceProbability <- function(experiments, modelName, getAcceptanceProbability, parMap=identity){
 	acceptanceProbability <- function(parABC){
 		out <- runModel(experiments, modelName,  parABC, parMap)
 		S <- c()
 		for(i in 1:length(experiments)){
 		  S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) getAcceptanceProbability(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues))))
 		}
-		return(min(S))
+		return(S)
 	}
 	return(acceptanceProbability)
 }
