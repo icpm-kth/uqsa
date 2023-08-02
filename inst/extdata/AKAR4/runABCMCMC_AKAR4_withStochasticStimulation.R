@@ -7,6 +7,7 @@ library(parallel)
 library(pracma)
 
 nChains <- 4
+
 #options(mc.cores=parallel::detectCores() %/% nChains)
 options(mc.cores=4)
 
@@ -41,7 +42,7 @@ ul = log10(ul) # log10-scale
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
 ns <- 100 # no of samples required from each ABC-MCMC chain
-npc <- 1000 # pre-calibration
+npc <- 100 # pre-calibration
 
 # Define ABC-MCMC Settings
 p <- 0.01		 # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
@@ -50,18 +51,11 @@ delta <- 0.01
 
 set.seed(2022)
 
-# Define the score function to compare simulated data with experimental data
-maxVal <- max(unlist(lapply(experiments, function(x) max(x[["outputValues"]]))))
-minVal <- min(unlist(lapply(experiments, function(x) min(x[["outputValues"]]))))
-
 # Function to compute the score (distance) between experimental and simulated data
-getScore	<- function(yy_sim, yy_exp, error = NULL){
-  yy_sim <- (yy_sim-0)/(0.2-0.0)
-  ifelse(!is.na(yy_exp), yy_exp <- (yy_exp-minVal)/(maxVal-minVal), Inf)
-  distance <- mean((yy_sim-yy_exp)^2)
+distanceMeasure <- function(funcSim, dataExpr, dataErr = 1.0){
+  distance <- mean(((funcSim-dataExpr)/max(dataExpr))^2,na.rm=TRUE)
   return(distance)
 }
-
 
 # Create reactions and parameters for stochastic simulations with the GillespieSSA2 package
 reactions <- importReactionsSSA(model.tab)
@@ -89,7 +83,7 @@ i<-1
 #for (i in seq(length(chunks))){
   expInd <- chunks[[i]]
   cat("#####Starting run for Experiments ", expInd, "######\n")
-  objectiveFunction <- makeObjectiveSSA(experiments[expInd],parNames,getScore,parMap, Phi, compiled_reactions, nStochSim = 3)
+  objectiveFunction <- makeObjectiveSSA(experiments[expInd],parNames,distanceMeasure,parMap, Phi, compiled_reactions, nStochSim = 3)
   ## If First Experimental Setting, Create an Independente Colupla
   if(i==1){
     cat(sprintf("- Starting with uniform prior \n"))
@@ -106,7 +100,7 @@ i<-1
   cat(sprintf("- Precalibration \n"))
   
   time_pC <- Sys.time()
-  pC <- preCalibration(objectiveFunction, npc, rprior,rep = 3)
+  pC <- preCalibration(objectiveFunction, npc, rprior,rep = 1)
   time_pC <- Sys.time() - time_pC
   cat(sprintf("- time for precalibration: \n"))
   print(time_pC)
@@ -206,23 +200,25 @@ simulateSSA <- function(e, param, nStochSim){
       sim_name = modelName)
     
     # out$state is a matrix of dimension (time points)x(num compounds)
-    output <- apply(out_ssa$state, 1, e[["outputFunction"]])
+    output <- apply(out_ssa$state/Phi, 1, e[["outputFunction"]])
     interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
     interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
     avgOutput <- avgOutput + interpOutput$y
   }
   avgOutput <- avgOutput/nStochSim
-  return(avgOutput/Phi)
+  return(avgOutput)
 }
 
 
+exp.ind <- 2
 par(mfrow=c(1,1))
-plot(experiments[[1]][["outputTimes"]],experiments[[1]][["outputValues"]],ylim=c(90,250))
-for(i in 1:ns){
-  param <- ABCMCMCoutput$draws[1,]
+plot(experiments[[exp.ind]][["outputTimes"]],experiments[[exp.ind]][["outputValues"]],ylim=c(90,250))
+for(i in 1:100){
+  #param <- ABCMCMCoutput$draws[i,]
+  param <- pC$prePar[,i]
   names(param) <- parNames
-  sim <- simulateSSA(experiments[[1]], param, 3)
-  points(experiments[[1]][["outputTimes"]],sim*(maxVal-minVal)+minVal, col="blue")
+  sim <- simulateSSA(experiments[[exp.ind]], param, nStochSim = 3)
+  points(experiments[[exp.ind]][["outputTimes"]],sim, col="blue")
 }
 
 
