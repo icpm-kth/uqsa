@@ -17,7 +17,7 @@ require(ggplot2)
 #' @return list of plots, one for each experimental dataset
 
 
-plotAKAP79Simulations <- function(draws, num.sub.samples = 1000, show.plot = TRUE){
+plotAKAP79Simulations <- function(draws, num.sub.samples = 100, show.plot = TRUE){
   
   if(dim(draws)[1] < num.sub.samples) num.sub.samples <- dim(draws)[1]
   
@@ -32,7 +32,7 @@ plotAKAP79Simulations <- function(draws, num.sub.samples = 1000, show.plot = TRU
   
   p<-list()
   for(i in 1:12){
-    simulate <- simulator.c(experiments[i], modelName, parMap)
+    simulate <- simulator.c(experiments[i], modelName, parMap, noise = TRUE)
     #output_yy <- simulate(t(ABCMCMCoutput$draws[(ABCMCMCoutput$scores %in% sort(ABCMCMCoutput$scores)[1:300]),]))
     output_yy <- simulate(t(draws[sample(1:dim(draws)[1],num.sub.samples),]))
     
