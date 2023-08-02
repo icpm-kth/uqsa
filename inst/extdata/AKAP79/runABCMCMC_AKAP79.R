@@ -131,4 +131,5 @@ time_ = end_time - start_time
 cat("\nTotal time:")
 print(time_)
 
+p<-plotAKAP79Simulations(ABCMCMCoutput$draws)
 
