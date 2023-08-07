@@ -4,13 +4,7 @@
 \alias{runModel}
 \title{Simulate an Experiment using the named ODE Model}
 \usage{
-runModel(
-  experiments,
-  modelName,
-  parABC,
-  parMap = identity,
-  mc.cores = detectCores()
-)
+runModel(experiments, modelName, parABC, parMap = identity)
 }
 \arguments{
 \item{experiments}{list of experiments to simulate}
@@ -22,8 +16,6 @@ file (a prefix)}
 contains a vector of both normal parameters (e.g. kinetic
 params like kf and kr) and input_parameters (concatenated in
 that order). With N columns, N simulations will be performed.}
-
-\item{mc.cores}{number of cores to use (defaults to 8)}
 }
 \value{
 output function values

@@ -8,8 +8,7 @@ makeAcceptanceProbability(
   experiments,
   modelName,
   getAcceptanceProbability,
-  parMap = identity,
-  mc.cores = detectCores()
+  parMap = identity
 )
 }
 \arguments{
@@ -20,8 +19,6 @@ makeAcceptanceProbability(
 \item{getAcceptanceProbability}{an R function that mape the results of a simulation and experimental data to an acceptance probability}
 
 \item{parMap}{an optional mapping between sampling parameters (parABC) and model parameters (e.g. rescaling,re-ordering).}
-
-\item{mc.cores}{number of cores to use}
 }
 \value{
 a function that calculates probabilities given only parABC as input; it implicitly uses all the argiments to this function.

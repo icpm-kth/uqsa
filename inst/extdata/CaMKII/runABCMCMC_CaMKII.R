@@ -1,7 +1,11 @@
 require(rgsl)
 require(SBtabVFGEN)
 library(uqsa)
-library(parallel)
+
+nChains <- 4
+nCores <- parallel::detectCores() %/% nChains
+options(mc.cores=nCores)
+require(parallel)
 
 model.tsv <- uqsa_example("CaMKII",full.names=TRUE)
 model.tab <- sbtab_from_tsv(model.tsv)
@@ -11,20 +15,38 @@ source(uqsa_example("CaMKII",pat="^CaMKII.*R$",full.names=TRUE))
 
 experiments <- sbtab.data(model.tab)
 
+# we take the model name as inferred from the sbtab document:
 modelName <- checkModel(comment(model.tab), uqsa_example("CaMKII",pat="_gvf[.]c$"))
 
-## this is a function from the CaMKIIs.R file,
-## it takes the "!Scale" mentioned in SBtab into account:
-numPar <- length(model.tab$Parameter[["!Name"]])
+## model is a list variable defined in CaMKIIs.R, model$par() is the
+## CaMKII_default() function from the same file.  But, model$par() is
+## a more generic name that is defined for any model made by the same
+## tool.  These functions takes the "!Scale" mentioned in SBtab into
+## account and always return the parameters in linear scale. So, if
+## the SBtab gives us the logarithmic values, this function has the
+## converted values:
+numPar <- length(model.tab$Parameter[["!ID"]])
 parVal <- model$par()[1:numPar]
+## There is one caveat: in our SBtab files we make a distinction
+## between *model parameters* and *input parameters*. The input
+## parameters represent something we did to the system during the
+## experiment (known values), while the model parameters represent
+## internal properties of the system (unknown). The ODE model file
+## makes no such distinction (it just has ODE parameters). So, the
+## parameters the model accepts are more numerous than what we need to
+## estimate using ABC. We assume the internal model parameters to come
+## first and input parameters last. During sampling (or optimization)
+## we only want to consider the not-so-well-known internal parameters:
+## that's why we do [1:numPar].
 
-
+# we sample in logarithmic space, so the model get's a transfornmation
+# function to compensate:
 parMap <- function(parABC){
 	return(10^parABC)
 }
 
 ## scale to determine prior values
-defRange <- 1000
+defRange <- 200
 
 ## Define Lower and Upper Limits for logUniform prior distribution for the parameters
 ll <- log10(parVal/defRange)
@@ -48,13 +70,9 @@ npc <- 50000 # pre-calibration sample size
 # Define ABC-MCMC Settings
 delta <- 0.5
 
-# Define the number of Cores for the parallelization
-nChains <- 4
-nCores <- parallel::detectCores() %/% nChains
-
 set.seed(7619201)
 
-Score <- function(yy_sim, yy_exp=Inf, yy_expErr=Inf){
+distanceMeasure <- function(yy_sim, yy_exp=Inf, yy_expErr=Inf){
 	distance <- mean(abs((yy_sim-as.matrix(yy_exp))/as.matrix(yy_expErr)), na.rm=TRUE)
 	return(distance)
 }
@@ -75,7 +93,7 @@ save_sample <- function(ind,ABCMCMCoutput){
 start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
 	expInd <- experimentsIndices[[i]]
-	objectiveFunction <- makeObjective(experiments[expInd], modelName, Score, parMap)
+	objectiveFunction <- makeObjective(experiments[expInd], modelName, distanceMeasure, parMap)
 	acceptanceProbability <- makeAcceptanceProbability(experiments[expInd], modelName, getAcceptanceProbability, parMap)
 
 	cat("#####Starting run for Experiments ", expInd, "######\n")
@@ -88,7 +106,7 @@ for (i in 1:length(experimentsIndices)){
 	} else {
 		start_time_fitCopula <- Sys.time()
 		message("- New Prior: fitting Copula based on previous MCMC runs")
-		C <- fitCopula(ABCMCMCoutput$draws, nCores)
+		C <- fitCopula(ABCMCMCoutput$draws)
 		rprior <- rCopulaPrior(C)
 		dprior <- dCopulaPrior(C)
 		cat("\nFitting copula:")
@@ -117,7 +135,7 @@ for (i in 1:length(experimentsIndices)){
 	start_time_ABC = Sys.time()
 	cl <- makeForkCluster(nChains)
 	clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
-	out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior, acceptanceProbability))
+	out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior, objectiveFunction))
 	stopCluster(cl)
 
 	ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))

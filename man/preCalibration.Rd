@@ -4,21 +4,13 @@
 \alias{preCalibration}
 \title{Determine a starting value for ABC's delta}
 \usage{
-preCalibration(
-  objectiveFunction,
-  npc = 1000,
-  rprior,
-  nCores = parallel::detectCores(),
-  rep = 1
-)
+preCalibration(objectiveFunction, npc = 1000, rprior, rep = 1)
 }
 \arguments{
 \item{npc}{sample size of pre-calibration.}
 
 \item{rprior}{a function that generates random ABC variables,
 distributed according to the prior.}
-
-\item{nCores}{number of processor cores to use in mclapply().}
 
 \item{rep}{number of repetitions of the preCalibration process}
 

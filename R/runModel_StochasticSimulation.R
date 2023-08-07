@@ -376,13 +376,12 @@ importReactionsSSA <- function(model){
 #' @param Phi Volume
 #' @param reactions a list that encodes the reactions for
 #'     GillespieSSA2
-#' @param mc.cores same as for parallel::mclapply()
 #' @param nStochSim number of stochastic simulations to average over
 #' @return a closure for the objective function that implicitly
 #'     depends on all of the arguments to this function but explicitly
 #'     only on the ABC parameters parABC.
 #' @export
-makeObjectiveSSA <- function(experiments, parNames, distance, parMap=identity, Phi, reactions, mc.cores=detectCores(), nStochSim = 1){
+makeObjectiveSSA <- function(experiments, parNames, distance, parMap=identity, Phi, reactions, nStochSim = 1){
   objectiveFunction <- function(parABC){
     simulateAndComputeDistance <- function(e, param){
       avgOutput <- rep(0, length(e[["outputTimes"]]))
@@ -412,12 +411,12 @@ makeObjectiveSSA <- function(experiments, parNames, distance, parMap=identity, P
     if (is.matrix(parABC)) {
       rownames(parABC) <- parNames
       npc <- ncol(parABC)
-      S <- mclapply(1:npc, function(i) sapply(experiments, function(e) simulateAndComputeDistance(e, parABC[,i])), mc.cores = mc.cores)
+      S <- mclapply(1:npc, function(i) sapply(experiments, function(e) simulateAndComputeDistance(e, parABC[,i])))
       return(unlist(S))
     }
     else {
       names(parABC) <- parNames
-      S <- mclapply(experiments, function(e) simulateAndComputeDistance(e, parABC), mc.cores = mc.cores)
+      S <- mclapply(experiments, function(e) simulateAndComputeDistance(e, parABC))
       return(unlist(S))
     }
   }

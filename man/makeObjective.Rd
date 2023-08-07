@@ -9,7 +9,7 @@ makeObjective(
   modelName,
   distance,
   parMap = identity,
-  mc.cores = detectCores()
+  simulate = NULL
 )
 }
 \arguments{
@@ -18,8 +18,6 @@ makeObjective(
 \item{modelName}{and model storage file as comment}
 
 \item{parMap}{a function that transforms ABC variables into acceptable model parameters}
-
-\item{mc.cores}{number of cores to use}
 
 \item{getScore}{a function that calculates ABC scores}
 }

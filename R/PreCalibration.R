@@ -32,13 +32,14 @@
 #'     distributed according to the prior.
 #' @param getScore a function that maps the model's output values to
 #'     ABC score values (in comparison to data).
-#' @param nCores number of processor cores to use in mclapply().
 #' @param rep number of repetitions of the preCalibration process
 #' @return list with entries preDelta and prePar, final values of
 #'     calibration run
-preCalibration <- function(objectiveFunction, npc=1000, rprior, nCores = parallel::detectCores(), rep = 1){
+preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
+  mc.cores <- getOption("mc.cores")
+  nCores <- ifelse(is.null(mc.cores),parallel::detectCores(),mc.cores)
   npcPerCore <- pracma::ceil(npc/nCores)
-  
+
   computeObjectiveFunction <- function(i, prePar){
     preDelta <- objectiveFunction(t(prePar[((i-1)*npcPerCore+1):(i*npcPerCore),]))
     dim(preDelta)<-c(npcPerCore, length(preDelta)/npcPerCore)
@@ -50,22 +51,22 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, nCores = paralle
     }
     return(preDelta)
   }
-  
+
   prePar <- rprior(npcPerCore*nCores)
-  preDelta <- unlist(mclapply(1:nCores, function(i) computeObjectiveFunction(i, prePar), mc.cores = nCores))
-  
+  preDelta <- unlist(mclapply(1:nCores, function(i) computeObjectiveFunction(i, prePar)))
+
   # With the following loop we repeat the process and keep the npc best parameters and deltas
   for( i in 1:rep){
     newPrePar <- rprior(npcPerCore*nCores)
-    newPreDelta <- unlist(mclapply(1:nCores, function(j) computeObjectiveFunction(j, newPrePar), mc.cores = nCores))
-    
+    newPreDelta <- unlist(mclapply(1:nCores, function(j) computeObjectiveFunction(j, newPrePar)))
+
     newPrePar <- rbind(prePar, newPrePar)
     newPreDelta <- c(preDelta, newPreDelta)
-    
+
     sortPreDelta <- sort(newPreDelta, index.return = TRUE)
     preDelta <- sortPreDelta$x[1:npc]
     prePar <- newPrePar[sortPreDelta$ix[1:npc],]
-  } 
+  }
   return(list(preDelta=preDelta, prePar=prePar))
 }
 

@@ -114,6 +114,31 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity){
 	return(output_yy)
 }
 
+#' This creates a closure that simulates the model
+#'
+#' This is a shorter alternative to the runModel function (C backend).
+#' 
+#' It returns a closure around:
+#'     - experiments,
+#'     - the model, and
+#'     - parameter mapping
+#'
+#' The returned function depends only on parABC (the sampling
+#' parameters). The simulation will be done suing the rgsl backend.
+#'
+#' @param experiments a list of experiments to simulate: inital values, inputs, time vectors, initial times
+#' @param modelName a string (with optional comment indicating an .so file) which points out the model to simulate
+#' @param parABC the parameters for the model, subject to change by parMap.
+#' @param parMap the model will be called with parMap(parABC); so any parameter transformation can happen there.
+#' @return a closure that returns the model's output for a given parameter vector
+#' @examples
+#'    model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
+#'    experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
+#'    parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
+#'
+#'    modelName <- checkModel("<insert_model_name>_gvf.c")
+#'    simulate <- simulator.c(experiments, modelName,  parABC)
+#'    yf <- sim(parABC)
 simulator.c <- function(experiments, modelName,  parABC, parMap=identity){
 	require(rgsl)
 ## simulator:
@@ -125,6 +150,31 @@ simulator.c <- function(experiments, modelName,  parABC, parMap=identity){
 	return(sim)
 }
 
+
+#' This creates a closure that simulates the model
+#'
+#' This is a shorter alternative to the runModel function (R, deSolve backend).
+#'
+#' It returns a closure around:
+#'     - experiments,
+#'     - the model, and
+#'     - parameter mapping
+#'
+#' The returned function depends only on parABC (the sampling parameters).
+#'
+#' @param experiments a list of experiments to simulate: inital values, inputs, time vectors, initial times
+#' @param modelName a string (with optional comment indicating an .so file) which points out the model to simulate
+#' @param parABC the parameters for the model, subject to change by parMap.
+#' @param parMap the model will be called with parMap(parABC); so any parameter transformation can happen there.
+#' @return a closure that returns the model's output for a given parameter vector
+#' @examples
+#'    model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
+#'    experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
+#'    parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
+#'
+#'    source("<model name>.R") # this defines the `model` variable
+#'    simulate <- simulator.R(experiments, model,  parABC)
+#'    yf <- sim(parABC)
 simulate.R  <- function(experiments, model,  parABC, parMap=identity){
 	if (is.matrix(parABC)){
 		npc <- ncol(parABC)

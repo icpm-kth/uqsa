@@ -11,7 +11,6 @@ makeObjectiveSSA(
   parMap = identity,
   Phi,
   reactions,
-  mc.cores = detectCores(),
   nStochSim = 1
 )
 }
@@ -34,8 +33,6 @@ into something the model will accept.}
 
 \item{reactions}{a list that encodes the reactions for
 GillespieSSA2}
-
-\item{mc.cores}{same as for parallel::mclapply()}
 
 \item{nStochSim}{number of stochastic simulations to average over}
 }
