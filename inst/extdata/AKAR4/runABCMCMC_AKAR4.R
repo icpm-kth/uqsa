@@ -1,12 +1,14 @@
-require(uqsa)
+## this project:
+library(uqsa)
+## our other packages:
 require(rgsl)
-library(SBtabVFGEN)
+require(SBtabVFGEN)
 
 model.tsv <- uqsa_example("AKAR4",full.names=TRUE)
-model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
+model.tab <- sbtab_from_tsv(model.tsv) # SBtabVFGEN
 source(uqsa_example("AKAR4",pat="^AKAR4[.]R$"))
 
-modelName <- checkModel(comment(model.tab),uqsa_example("AKAR4",pat="_gvf[.]c$"))
+modelName <- checkModel(comment(model.tab),uqsa_example("AKAR4",pat="_gvf[.]c$")) # SBtabVFGEN
 
 numPar <- nrow(model.tab$Parameter)
 parNames <- row.names(model.tab$Parameter)

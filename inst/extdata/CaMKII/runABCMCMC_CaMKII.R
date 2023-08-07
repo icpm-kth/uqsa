@@ -10,7 +10,7 @@ model.tsv <- uqsa_example("CaMKII",full.names=TRUE)
 model.tab <- sbtab_from_tsv(model.tsv)
 
 # source all R functions for this model, this also loads a variable called "model"
-source(uqsa_example("CaMKII",pat="^CaMKII.*R$",full.names=TRUE))
+source(uqsa_example("CaMKII",pat="^CaMKIIs[.]R$",full.names=TRUE))
 
 experiments <- sbtab.data(model.tab)
 
