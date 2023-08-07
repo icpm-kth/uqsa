@@ -43,7 +43,7 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
   if(is.null(objectiveFunction) && is.null(acceptanceProbability)){
     error("Provide objectiveFunction or acceptanceProbability.")
   }
-  
+
   cat("Started chain.\n")
   Sigma1 <- 0.25*diag(diag(Sigma0))
   curDelta <- Inf
@@ -85,9 +85,6 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
       n <- 0
       acceptedSamples <- 0
     }
-    #else if (n %% 100 == 0 && acceptedSamples > 0.1*n) {
-    #  delta <- delta * .9
-    #}
 
     if(runif(1)<=0.95){
       canPar <- MASS::mvrnorm(n=1, curPar, Sigma0)
@@ -101,7 +98,6 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
     }else{
       out <- parUpdate_ProbabilisticAcceptance(acceptanceProbability, curPar, canPar, curPrior, dprior)
     }
-    
     curPar <- out$curPar
     curDelta <- out$curDelta
     curPrior <- out$curPrior
@@ -112,7 +108,6 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
       draws[n/batchSize,]  <- curPar
       scores[n/batchSize] <- curDelta
     }
-    
     if(n %% 10000 == 0){
       cat("\nn =", n)
       print(gc())

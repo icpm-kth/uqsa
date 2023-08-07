@@ -33,7 +33,7 @@ ll = log10(ll) # log10-scale
 ul = log10(ul) # log10-scale
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 50000 # no of samples required from each ABC-MCMC chain
+ns <- 500 # no of samples required from each ABC-MCMC chain
 npc <- 50000 # pre-calibration
 
 # Define ABC-MCMC Settings
@@ -60,8 +60,6 @@ distanceMeasure <- function(funcSim, dataExpr, dataErr = 1.0){
 
 
 nCores <- parallel::detectCores()
-nChains <- nCores %/% 2
-
 # Loop through the Different Experimental Settings
 start_time = Sys.time()
 
@@ -96,12 +94,12 @@ for (i in seq(length(chunks))){
 	print(time_pC)
 
 	## Get Starting Parameters from Pre-Calibration
-	M <- getMCMCPar(pC$prePar, pC$preDelta, delta, num=nChains)
+	M <- getMCMCPar(pC$prePar, pC$preDelta, delta, num=1)
 	## Run ABC-MCMC Sampling
 	cat(sprintf("- Running MCMC\n"))
 	time_ABC <- Sys.time()
-	options(mc.cores=nCores %/% nChains)
-	mcmc <- ABCMCMC(Obj, M$startPar, ns, M$Sigma, delta, priorPDF)
+	options(mc.cores=nCores)
+	mcmc <- ABCMCMC(Obj, as.numeric(M$startPar), ns, M$Sigma, delta, priorPDF)
 	time_ABC <- Sys.time() - time_ABC
 	cat(sprintf("- time spent on ABC-MCMC: \n"))
 	print(time_ABC)
@@ -114,7 +112,7 @@ for (i in seq(length(chunks))){
 
 	## this section makes a little sensitivity plot:
 	y<-simulate(t(mcmc$draws))
-	f<-aperm(y[[3]]$func[1,,]) # aperm makes the sample-index (3rd) the first index of f, default permutation
+	f<-aperm(y[[1]]$func[1,,]) # aperm makes the sample-index (3rd) the first index of f, default permutation
 	S<-sensitivity(mcmc$draws,f)
 	S[1,]<-0 # the first index of S is time, and initially sensitivity is 0
 	cuS<-t(apply(S,1,cumsum))
@@ -127,32 +125,3 @@ for (i in seq(length(chunks))){
 }
 end_time = Sys.time()
 time_ = end_time - start_time
-
-#### PLOT RESTULTS FOR AKAR4
-par(mfrow=c(2,3))
-for(i in 1:3){
-	 hist(mcmc$draws[,i], main=parNames[i], xlab = "Value in log scale")
-}
-combinePar <- list(c(1,2), c(1,3), c(2,3))
-for(i in combinePar){
-	 plot(mcmc$draws[,i[1]], mcmc$draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
-}
-
-
-library(reshape2)
-library(ggplot2)
-
-for(i in 1:3){
-  experiment <- experiments[i]
-  stopifnot(length(experiment)==1)
-  output_yy <- simulate(t(mcmc$draws))
-  df_ <- mclapply(1:dim(output_yy[[1]][["func"]])[3], function(i) as.data.frame(x = list(output_yy[[1]][["func"]][1,,i]/0.2,experiment[[1]][['outputTimes']]), col.names = c("y","t")))
-  df__ <- melt(df_,id=c("t","y"))
-  yy_exp <- (experiments[[i]][["outputValues"]]-minVal)/(maxVal-minVal)
-  dfExpA<- data.frame(t=experiment[[1]][["outputTimes"]], y=yy_exp)
-  ggp <- ggplot(df__,aes(x=t, y=y, group=L1))+
-    geom_line(color="blue")+
-    geom_point(data=dfExpA, aes(x=t, y=y), inherit.aes=FALSE)
-  show(ggp)
-}
-
