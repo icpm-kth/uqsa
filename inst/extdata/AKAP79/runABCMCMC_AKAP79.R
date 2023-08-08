@@ -15,6 +15,7 @@ model.tab <- sbtab_from_tsv(model.tsv)
 
 # source all R functions for this model, this also loads a variable called "model"
 source(uqsa_example("AKAP79",pat="^AKAP79[.]R$"))
+source(uqsa_example("AKAP79",pat="^AKAP79_plots[.]R$"))
 
 experiments <- sbtab.data(model.tab)
 
