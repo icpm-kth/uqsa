@@ -4,7 +4,7 @@
 \alias{sum.of.bin.variance}
 \title{Weighted Sum of Bin-specific variances}
 \usage{
-\method{sum}{of.bin.variance}(hst, binMeans, totalMean)
+sum.of.bin.variance(hst, binMeans, totalMean)
 }
 \arguments{
 \item{hst}{the histogram of the parameter sample}

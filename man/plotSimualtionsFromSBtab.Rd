@@ -2,21 +2,7 @@
 % Please edit documentation in R/plotSimulations.R
 \name{plotSimualtionsFromSBtab}
 \alias{plotSimualtionsFromSBtab}
-\title{Simulate a model imported from SBtab and plot simulations and experimental data, given a parameter vector in input
- 
- This function imports model and experimental data saved as SBtab files,
- it simualtes the model with the same initial conditions and input as in
- the corresponding experiments, and it plots the simulations together with
- the corresponding experimental data.
- It currently works with one dimensional output.
- 
- @export
- @param SBtabDir the directory that contains `.tsv` files (with SBtab content)
- @param paramVal parameter vector with which the model has to be simulated
- @param plotDir the directory where the plots will be saved as .pdf and .RData variables
- @param width width of the plot window
- @param heigth heigth of the plot window
- @return a vector of R plot objects}
+\title{Simulate and plot Data and Simulation}
 \usage{
 plotSimualtionsFromSBtab(
   SBtabDir,
@@ -26,20 +12,24 @@ plotSimualtionsFromSBtab(
   heigth = 10
 )
 }
+\arguments{
+\item{SBtabDir}{the directory that contains `.tsv` files (with SBtab content)}
+
+\item{paramVal}{parameter vector with which the model has to be simulated}
+
+\item{plotDir}{the directory where the plots will be saved as .pdf and .RData variables}
+
+\item{width}{width of the plot window}
+
+\item{heigth}{heigth of the plot window}
+}
+\value{
+a vector of R plot objects
+}
 \description{
-Simulate a model imported from SBtab and plot simulations and experimental data, given a parameter vector in input
- 
- This function imports model and experimental data saved as SBtab files,
- it simualtes the model with the same initial conditions and input as in
- the corresponding experiments, and it plots the simulations together with
- the corresponding experimental data.
- It currently works with one dimensional output.
- 
- @export
- @param SBtabDir the directory that contains `.tsv` files (with SBtab content)
- @param paramVal parameter vector with which the model has to be simulated
- @param plotDir the directory where the plots will be saved as .pdf and .RData variables
- @param width width of the plot window
- @param heigth heigth of the plot window
- @return a vector of R plot objects
+This function imports model and experimental data saved as SBtab files,
+it simualtes the model with the same initial conditions and input as in
+the corresponding experiments, and it plots the simulations together with
+the corresponding experimental data.
+It currently works with one dimensional output.
 }

@@ -8,6 +8,13 @@
 \description{
 This package will solve an initial value problem (given an ordinary differential equation) for a list of simulation experiments. The simulations will be compared to data, repeatedly. The package can sample the parameters of the model via ABC (approximate Bayesian computation) and by doing so quantify the uncertainty that remains within the model even after considering the data. Experiments are evaluated in a sequence, intermediate probability densities are modeled using the VineCopua package.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://icpm-kth.github.io/uqsa/}
+}
+
+}
 \author{
 \strong{Maintainer}: Olivia Eriksson \email{olivia@mech.kth.se}
 

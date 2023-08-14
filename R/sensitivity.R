@@ -32,6 +32,7 @@ observable.mean.in.bin <- function(id,outputSample){
 #' This function calculates the variance sum of a vector valued
 #' observable.
 #'
+#' @usage sum.of.bin.variance(hst, binMeans, totalMean)
 #' @param hst the histogram of the parameter sample
 #' @param binMeans the means of the observable within each bin (rows of means)
 #' @param totalMean the mean of the observable over the entire sample (vector)

@@ -1,3 +1,5 @@
+*.h5
+*Suggested*.tsv
 *.mat
 *.RData
 *.log
@@ -10,5 +12,6 @@
 PosteriorSamples
 .ipynb_checkpoints
 inst/doc
-
-docs
+*.zip
+*.tar.gz
+*.mod

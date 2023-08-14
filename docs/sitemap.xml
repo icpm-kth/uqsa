@@ -1,141 +1,141 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>/404.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/404.html</loc>
   </url>
   <url>
-    <loc>/LICENSE-text.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/LICENSE-text.html</loc>
   </url>
   <url>
-    <loc>/articles/index.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/articles/index.html</loc>
   </url>
   <url>
-    <loc>/articles/uqsa-AKAP79.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/articles/uqsa-AKAP79.html</loc>
   </url>
   <url>
-    <loc>/authors.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/authors.html</loc>
   </url>
   <url>
-    <loc>/index.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/index.html</loc>
   </url>
   <url>
-    <loc>/names.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/names.html</loc>
   </url>
   <url>
-    <loc>/reference/ABCMCMC.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/ABCMCMC.html</loc>
   </url>
   <url>
-    <loc>/reference/checkFitWithPreviousExperiments.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/checkFitWithPreviousExperiments.html</loc>
   </url>
   <url>
-    <loc>/reference/checkModel.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/checkModel.html</loc>
   </url>
   <url>
-    <loc>/reference/convert.parameter.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/convert.parameter.html</loc>
   </url>
   <url>
-    <loc>/reference/dCopulaPrior.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/dCopulaPrior.html</loc>
   </url>
   <url>
-    <loc>/reference/dNormalPrior.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/dNormalPrior.html</loc>
   </url>
   <url>
-    <loc>/reference/dUniformPrior.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/dUniformPrior.html</loc>
   </url>
   <url>
-    <loc>/reference/fitCopula.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/fitCopula.html</loc>
   </url>
   <url>
-    <loc>/reference/getMCMCPar.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/getMCMCPar.html</loc>
   </url>
   <url>
-    <loc>/reference/importReactionsSSA.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/importReactionsSSA.html</loc>
   </url>
   <url>
-    <loc>/reference/import_experiments.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/import_experiments.html</loc>
   </url>
   <url>
-    <loc>/reference/import_from_SBtab.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/import_from_SBtab.html</loc>
   </url>
   <url>
-    <loc>/reference/index.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/index.html</loc>
   </url>
   <url>
-    <loc>/reference/makeAcceptanceProbability.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/makeAcceptanceProbability.html</loc>
   </url>
   <url>
-    <loc>/reference/makeGillespieModel.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/makeGillespieModel.html</loc>
   </url>
   <url>
-    <loc>/reference/makeIndepCopula.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/makeIndepCopula.html</loc>
   </url>
   <url>
-    <loc>/reference/makeObjective.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/makeObjective.html</loc>
   </url>
   <url>
-    <loc>/reference/makeObjectiveSSA.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/makeObjectiveSSA.html</loc>
   </url>
   <url>
-    <loc>/reference/match.coefficients.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/match.coefficients.html</loc>
   </url>
   <url>
-    <loc>/reference/match.names.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/match.names.html</loc>
   </url>
   <url>
-    <loc>/reference/observable.mean.in.bin.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/observable.mean.in.bin.html</loc>
   </url>
   <url>
-    <loc>/reference/parUpdate.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/parUpdate.html</loc>
   </url>
   <url>
-    <loc>/reference/parameter.from.kinetic.law.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/parameter.from.kinetic.law.html</loc>
   </url>
   <url>
-    <loc>/reference/parse.formula.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/parse.formula.html</loc>
   </url>
   <url>
-    <loc>/reference/parse.kinetic.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/parse.kinetic.html</loc>
   </url>
   <url>
-    <loc>/reference/plotSimualtionsFromSBtab.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/plotSimualtionsFromSBtab.html</loc>
   </url>
   <url>
-    <loc>/reference/preCalibration.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/preCalibration.html</loc>
   </url>
   <url>
-    <loc>/reference/propensity.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/propensity.html</loc>
   </url>
   <url>
-    <loc>/reference/rCopulaPrior.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/rCopulaPrior.html</loc>
   </url>
   <url>
-    <loc>/reference/rNormalPrior.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/rNormalPrior.html</loc>
   </url>
   <url>
-    <loc>/reference/rUniformPrior.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/rUniformPrior.html</loc>
   </url>
   <url>
-    <loc>/reference/runModel.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/runModel.html</loc>
   </url>
   <url>
-    <loc>/reference/sensitivity.graph.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/sensitivity.graph.html</loc>
   </url>
   <url>
-    <loc>/reference/sensitivity.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/sensitivity.html</loc>
   </url>
   <url>
-    <loc>/reference/simulator.R.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/simulator.R.html</loc>
   </url>
   <url>
-    <loc>/reference/simulator.c.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/simulator.c.html</loc>
   </url>
   <url>
-    <loc>/reference/sum.of.bin.variance.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/sum.of.bin.variance.html</loc>
   </url>
   <url>
-    <loc>/reference/uqsa-package.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/uqsa-package.html</loc>
   </url>
   <url>
-    <loc>/reference/uqsa_example.html</loc>
+    <loc>https://icpm-kth.github.io/uqsa/reference/uqsa_example.html</loc>
   </url>
 </urlset>

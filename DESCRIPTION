@@ -28,3 +28,4 @@ Suggests:
 RoxygenNote: 7.2.3
 Config/testthat/edition: 3
 VignetteBuilder: knitr
+URL: https://icpm-kth.github.io/uqsa/
