@@ -3,11 +3,12 @@
 This is an R package that performs *parameter estimation*,
 *uncertainty quantification*, and *global sensitivity analysis* using
 Bayesian methods and ABC-MCMC sampling.
- 
+
+* **Homepage** https://icpm-kth.github.io/uqsa/
 * **Source code:** https://github.com/icpm-kth/uqsa/
 * **License:** https://github.com/icpm-kth/uqsa/wiki/Documentation#license
 * **Documentation:** https://github.com/icpm-kth/uqsa/wiki/Documentation
-* **Demos:** https://github.com/icpm-kth/uqsa/wiki/Documentation#demos
+* **Examples:** https://github.com/icpm-kth/uqsa/wiki/Home
 * **Cite:** https://github.com/icpm-kth/uqsa/wiki/Documentation#cite
 
 ## Acknowledgements
