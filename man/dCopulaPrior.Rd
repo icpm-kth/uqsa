@@ -19,5 +19,5 @@ makeIndepCopula() and creates a density function from it.
 \examples{
 prior_pdf<-dCopulaPrior(makeIndepCopula(ll=c(-1,-1,-1),ul=c(1,1,1)))
 prior_pdf(runif(3))
-0.125
+# 0.125
 }

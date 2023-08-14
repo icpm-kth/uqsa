@@ -18,6 +18,4 @@ The returned function generates n random vectors, as rows of a matrix.
 \examples{
 rcp<-rCopulaPrior(makeIndepCopula(ll=c(0,1,2),ul=c(1,2,3)))
 rcp(12)
-# this returns a matrix of random values, the first column has values between 0 and 1
-# the second column has values between 1 and 2, etc.
 }

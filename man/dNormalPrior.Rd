@@ -22,5 +22,4 @@ with mean "mean" and standard deviation "sd".
 \examples{
 dnp<-dNormalPrior(mean=c(0,1,2),sd=c(1,2,3))
 dnp(c(0.5,1.5,2.5))
-[1] 0.008926651
 }

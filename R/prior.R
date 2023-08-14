@@ -10,7 +10,7 @@
 #' @examples
 #' prior_pdf<-dCopulaPrior(makeIndepCopula(ll=c(-1,-1,-1),ul=c(1,1,1)))
 #' prior_pdf(runif(3))
-#' 0.125
+#' # 0.125
 dCopulaPrior <- function(Copula){
 	U <- Copula$U
 	Y <- Copula$Y
@@ -47,8 +47,6 @@ dCopulaPrior <- function(Copula){
 #' @examples
 #' rcp<-rCopulaPrior(makeIndepCopula(ll=c(0,1,2),ul=c(1,2,3)))
 #' rcp(12)
-#' # this returns a matrix of random values, the first column has values between 0 and 1
-#' # the second column has values between 1 and 2, etc.
 rCopulaPrior <- function(Copula){
   copula <- Copula$copula
   Z <- Copula$Z
@@ -78,7 +76,6 @@ rCopulaPrior <- function(Copula){
 #' @examples
 #' dup<-dUniformPrior(ll=c(0,1,2),ul=c(1,2,3))
 #' dup(c(0.5,1.5,2.5))
-#' [1] 1
 dUniformPrior <- function(ll,ul){
   dprior <- function(x){
     return(prod(dunif(x,min=ll,max=ul)))
@@ -103,19 +100,6 @@ dUniformPrior <- function(ll,ul){
 #' @examples
 #' rup<-rUniformPrior(ll=c(0,1,2),ul=c(1,2,3))
 #' rup(12)
-#'           [,1]     [,2]     [,3]
-#'  [1,] 0.7879692 1.344263 2.452547
-#'  [2,] 0.7154937 1.846704 2.174703
-#'  [3,] 0.6644920 1.257256 2.764870
-#'  [4,] 0.3470803 1.524026 2.715229
-#'  [5,] 0.7879692 1.344263 2.452547
-#'  [6,] 0.7154937 1.846704 2.174703
-#'  [7,] 0.6644920 1.257256 2.764870
-#'  [8,] 0.3470803 1.524026 2.715229
-#'  [9,] 0.7879692 1.344263 2.452547
-#' [10,] 0.7154937 1.846704 2.174703
-#' [11,] 0.6644920 1.257256 2.764870
-#' [12,] 0.3470803 1.524026 2.715229
 rUniformPrior <- function(ll,ul){
   np <- length(ll)
   stopifnot(np==length(ul))
@@ -141,7 +125,6 @@ rUniformPrior <- function(ll,ul){
 #' @examples
 #' dnp<-dNormalPrior(mean=c(0,1,2),sd=c(1,2,3))
 #' dnp(c(0.5,1.5,2.5))
-#' [1] 0.008926651
 dNormalPrior <- function(mean,sd){
   dprior <- function(x){
     return(prod(dnorm(x, mean=mean, sd = sd)))
@@ -167,20 +150,6 @@ dNormalPrior <- function(mean,sd){
 #' @examples
 #' rnp<-rNormalPrior(mean=c(0,1,2),sd=c(1,2,3))
 #' rnp(12)
-#'             [,1]       [,2]       [,3]
-#' [1,]  0.99368106  1.0074638  0.2411801
-#' [2,] -1.39127288  0.3608953 -0.7704979
-#' [3,] -0.23957518 -0.4376285  7.2133888
-#' [4,]  0.55225848 -3.0625581  2.1468860
-#' [5,] -1.74950066 -1.9512875 -0.1923920
-#' [6,]  0.36377999 -0.2222019  4.0832047
-#' [7,]  0.62605893 -0.8562764 -0.2743055
-#' [8,] -0.99829859  2.8863743  7.4753572
-#' [9,] -0.71302121  2.8879101  1.4377714
-#' [10,]  0.04040756 -1.6638517  0.7293233
-#' [11,] -0.04951403  1.9498103  2.1706586
-#' [12,]  0.49326957  2.7241179  7.4083735
-
 rNormalPrior <- function(mean,sd){
   np <- length(mean)
   stopifnot(np==length(sd))

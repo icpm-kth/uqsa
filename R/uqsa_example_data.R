@@ -21,18 +21,9 @@
 #'     modelName was provided or the full path to the example if the
 #'     file pattern _pat_ is unset
 #' @examples
-#' > uqsa_example()
-#' [1] "AKAP79"    "AKAR4"     "CaMKII"    "README.md"
-#'
-#' This will return all paths to 'tsv' files in the AKAR4 directory:
-#' > uqsa_example("AKAR4")
-#'  [1] "/path/to/AKAR4/AKAR4_100nM.tsv"
-#'  [2] "/path/to/AKAR4/AKAR4_25nM.tsv"
-#'  [3] etc.
-#'
-#' This will just return the path of the example directory:
-#' > uqsa_example("AKAR4",pat=NULL)
-#'  [1] "/path/extdata/AKAR4"
+#' uqsa_example()
+#' uqsa_example("AKAR4")
+#' uqsa_example("AKAR4",pat=NULL)
 #' @export
 uqsa_example<-function(modelName=NULL,full.names=TRUE,pat='[.]tsv$',f=NULL) {
 	if (!is.null(f)){

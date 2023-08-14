@@ -26,8 +26,8 @@ returns c("A","B") for the left side and "AB2" for the right side.
 \examples{
 lapply(parse.formula("A + 2*B <=> AB2"),match.names)
 lapply(parse.formula("A + 2*B <=> AB2"),match.names)
-$reactants
-[1] "A" "B"
-$products
-[1] "AB2"
+# $reactants
+# [1] "A" "B"
+# $products
+# [1] "AB2"
 }

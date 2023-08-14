@@ -22,5 +22,4 @@ uniform distribtions.
 \examples{
 dup<-dUniformPrior(ll=c(0,1,2),ul=c(1,2,3))
 dup(c(0.5,1.5,2.5))
-[1] 1
 }

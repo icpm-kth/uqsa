@@ -25,8 +25,8 @@ returns c(1,2) for the left side and 1 for the right side.
 }
 \examples{
 lapply(parse.formula("A + 2*B <=> AB2"),match.coefficients)
-$reactants
-[1] 1 2
-$products
-[1] 1
+# $reactants
+# [1] 1 2
+# $products
+# [1] 1
 }

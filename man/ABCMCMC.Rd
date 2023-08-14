@@ -5,7 +5,7 @@
 \title{Performs and Approximate Bayesian Computation Sampling of Model Parameters}
 \usage{
 ABCMCMC(
-  objectiveFunction,
+  objectiveFunction = NULL,
   startPar,
   nSims,
   Sigma0,

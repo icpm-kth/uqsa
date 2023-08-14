@@ -29,15 +29,7 @@ In a more general setting (where the '-' split is wrong),
 the splitting has to be done by hand or more complex rules.
 }
 \examples{
-> parse.kinetic("kf*A*B-kb*C")
- forward backward
-"kf*A*B"   "kb*C"
-
-> parse.kinetic("kf*A*B")
- forward backward
-"kf*A*B"      "0"
-
-> parse.kinetic("kf*A/(Km+A)")
-      forward      backward
-"kf*A/(Km+A)"           "0"
+ parse.kinetic("kf*A*B-kb*C")
+ parse.kinetic("kf*A*B")
+ parse.kinetic("kf*A/(Km+A)")
 }

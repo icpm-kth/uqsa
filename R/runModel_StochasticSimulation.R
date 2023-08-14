@@ -30,10 +30,10 @@ parse.formula <- function(reactionFormula){
 #' @return coefficients, as a vector
 #' @param chrv a character vector as returned by parse.formula
 #' @examples lapply(parse.formula("A + 2*B <=> AB2"),match.coefficients)
-#' $reactants
-#' [1] 1 2
-#' $products
-#' [1] 1
+#' # $reactants
+#' # [1] 1 2
+#' # $products
+#' # [1] 1
 match.coefficients <- function(chrv){
 	cf <- numeric(length(chrv))
 	l <- grepl("^[0-9]+",chrv) # leading numbers exist
@@ -57,10 +57,10 @@ match.coefficients <- function(chrv){
 #' @param chrv a character vector as returned by parse.formula
 #' @examples lapply(parse.formula("A + 2*B <=> AB2"),match.names)
 #' lapply(parse.formula("A + 2*B <=> AB2"),match.names)
-#' $reactants
-#' [1] "A" "B"
-#' $products
-#' [1] "AB2"
+#' # $reactants
+#' # [1] "A" "B"
+#' # $products
+#' # [1] "AB2"
 match.names <- function(chrv){
 	vn <- character(length(chrv))
 	l <- grepl("^[0-9]+",chrv) # leading numbers exist
@@ -87,17 +87,9 @@ match.names <- function(chrv){
 #' @param reactionKinetic a string with the kinetic law for a reaction
 #' @return a character vector of components named 'forward' and 'backward'
 #' @examples
-#' > parse.kinetic("kf*A*B-kb*C")
-#'  forward backward
-#' "kf*A*B"   "kb*C"
-#'
-#' > parse.kinetic("kf*A*B")
-#'  forward backward
-#' "kf*A*B"      "0"
-#'
-#' > parse.kinetic("kf*A/(Km+A)")
-#'       forward      backward
-#' "kf*A/(Km+A)"           "0"
+#'  parse.kinetic("kf*A*B-kb*C")
+#'  parse.kinetic("kf*A*B")
+#'  parse.kinetic("kf*A/(Km+A)")
 parse.kinetic <- function(reactionKinetic){
 	if (grepl("^[^-]*-[^-]*$",reactionKinetic)){
 		rates<-ftsplit(reactionKinetic,"-")
@@ -124,7 +116,7 @@ parse.kinetic <- function(reactionKinetic){
 #' @param n multiplicity of each reactant, if any (order > 0); omit for zero-order
 #' @param LV L*V -- product of _Avogadro's number_ and _volume_ [defaults to 6.02214076e+8]
 #' @return rescaled parameter for stochastic simulation with a comment of how to re-scale it
-#' @examples reaction: "2 A + B -> C"
+#' @examples # reaction: "2 A + B -> C"
 #' k <- 1.0
 #' attr(k,'unit') <- "µM/s"
 #' n <- c(2,1)

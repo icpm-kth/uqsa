@@ -29,7 +29,7 @@ the order of the reaction (the order is related to the reaction's
 stoichiometry).
 }
 \examples{
-reaction: "2 A + B -> C"
+# reaction: "2 A + B -> C"
 k <- 1.0
 attr(k,'unit') <- "µM/s"
 n <- c(2,1)

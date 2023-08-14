@@ -4,7 +4,7 @@
 \alias{simulator.c}
 \title{This creates a closure that simulates the model}
 \usage{
-simulator.c(experiments, modelName, parMap = identity)
+simulator.c(experiments, modelName, parMap = identity, noise = FALSE)
 }
 \arguments{
 \item{experiments}{a list of experiments to simulate: inital values, inputs, time vectors, initial times}
@@ -12,6 +12,10 @@ simulator.c(experiments, modelName, parMap = identity)
 \item{modelName}{a string (with optional comment indicating an .so file) which points out the model to simulate}
 
 \item{parMap}{the model will be called with parMap(parABC); so any parameter transformation can happen there.}
+
+\item{noise}{boolean variable. If noise=TRUE, Gaussian noise is added to the output of the simulations. The standard
+deviation of the Gaussian noise is equal to the measurement error. If noise=FALSE the output is the
+deterministic solution of the ODE system.}
 
 \item{parABC}{the parameters for the model, subject to change by parMap.}
 }
