@@ -1,10 +1,6 @@
 url: https://icpm-kth.github.io/uqsa/
 template:
   bootstrap: 5
-home:
-  sidebar:
-    structure: [links, license, community, authors, dev]
-    
 reference:
 - title: "User Functions"
   desc: "exported functions"
