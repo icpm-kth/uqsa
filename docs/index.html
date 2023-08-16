@@ -84,18 +84,18 @@
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
-<p>Some topics are covered in Articles on this page. There is also a function reference.</p>
-<p>The package includes example models. These examples are also covered by the articles: AKAR4, AKAP79, and CaMKII.</p>
-<p>We also have a GitHub Wiki.</p>
-<ul><li>
-<strong>Wiki:</strong> <a href="https://github.com/icpm-kth/uqsa/wiki/Home" class="external-link uri">https://github.com/icpm-kth/uqsa/wiki/Home</a>
-</li></ul>
+<p>The Articles on this page are a user guide to this package. The function reference is also accessible through R (<code><a href="reference/ABCMCMC.html">?uqsa::ABCMCMC</a></code>).</p>
+<p>The package itself includes example models and a <em>run</em> script. We advise users to copy the run scripts either from github or the package and adapt them. The location of a <em>run</em> file can be found like this:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,pat<span class="op">=</span><span class="st">"^run.*R$"</span><span class="op">)</span></span></code></pre></div>
+<p>Or by browsing the folders on GitHub (<code>inst/extdata/</code>)</p>
+<p>These examples are also covered by the articles: AKAR4, AKAP79, and CaMKII.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>The first two packages are optional in your own work, but you will need them for our examples:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/rgsl"</span><span class="op">)</span>       <span class="co"># requires gsl in your OS</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/SBtabVFGEN"</span><span class="op">)</span> <span class="co"># if you plan to use SBtab</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/uqsa"</span><span class="op">)</span>       <span class="co"># this package</span></span></code></pre></div>

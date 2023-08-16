@@ -8,13 +8,19 @@ Bayesian methods and ABC-MCMC sampling.
 
 ## Documentation
 
-Some topics are covered in Articles on this page. There is also a function reference.
+The Articles on this page are a user guide to this package. The
+function reference is also accessible through R (`?uqsa::ABCMCMC`).
 
-The package includes example models. These examples are also covered by the articles: AKAR4, AKAP79, and CaMKII.
+The package itself includes example models and a *run* script. We
+advise users to copy the run scripts either from github or the package
+and adapt them. The location of a *run* file can be found like this:
 
-We also have a GitHub Wiki.
+```R
+uqsa::uqsa_example("AKAP79",pat="^run.*R$")
+```
+Or by browsing the folders on GitHub (`inst/extdata/`)
 
-* **Wiki:** https://github.com/icpm-kth/uqsa/wiki/Home
+These examples are also covered by the articles: AKAR4, AKAP79, and CaMKII.
 
 ## Installation
 
