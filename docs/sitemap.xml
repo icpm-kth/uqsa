@@ -7,9 +7,6 @@
     <loc>https://icpm-kth.github.io/uqsa/LICENSE-text.html</loc>
   </url>
   <url>
-<<<<<<< HEAD
-    <loc>https://icpm-kth.github.io/uqsa/articles/articles/uqsa.html</loc>
-=======
     <loc>https://icpm-kth.github.io/uqsa/articles/ABC_sampling.html</loc>
   </url>
   <url>
@@ -46,11 +43,13 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/simulate.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/uqsa.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/cite.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/data.html</loc>
->>>>>>> 55796ed (Added articles)
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/index.html</loc>
