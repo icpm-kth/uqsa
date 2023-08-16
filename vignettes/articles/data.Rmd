@@ -1,0 +1,105 @@
+---
+title: "Data"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The R package `uqsa`, typically imports systems biology models and corresponding data stored in [SBtab](https://www.sbtab.net) files. SBtab is a table format for system biology. The use of SBtab is optional, but very practical. SBML models currently cannot be imported by this package. 
+
+Data and models are tightly linked and we also include two tables on the relationships between the data and model simulations in all our examples:
+
+1. *Experiments*, a table with a list of experiments together with appropriate model settings
+2. *Output*, a list of output functions that correspond to measurable values for this model, named the same as the corresponding data columns
+
+An SBtab Document is a set of tables that represent reactions, compounds, parameters, and measured data that correspond to simulations of the model under certain input conditions and initial values. According to the specifications of the SBtab authors, MS Excel spreadsheets are an acceptable storage format - but we don't use any of their original code. Our [SBtabVFGEN](icpm-kth/SBtabVFGEN) package uses either multiple TSV files or one [ODS](https://en.wikipedia.org/wiki/OpenDocument) file. The TSV reading is done using core R functions, while ODS is read through [readODS](https://cran.r-project.org/package=readODS). Both formats can have issues that are general and not specific to this package:
+
+- TSV
+    - line endings can be `\n` or `\n\r`
+    - fields could be automatically and unnecessarily quoted by a spreadsheet software
+    - encoding (UTF-8, or something else)
+    - some spreadsheets may want to write a unicode minus sign `−` rather than `-` into a tsv file: `U+2212`, be careful
+    - lines can be blank, but not quite, if they contain just tabs or spaces
+- ODS
+    - comments inside fields could be imported as field content and confuse the model parser
+    - same issue with unicode minus signs
+    - `readODS` could theoretically be discontinued (deprecated), despite the format continuing to exist
+
+Models can be automatically converted between the SBtab format and other modelling formats, such as SBML. For more information about SBtab please refer to [the official git repository](https://github.com/tlubitz/SBtab). Be aware that the conversion from SBML to SBtab has to be done with the official SBtab tools, not ours (SBML is hard).
+
+For the most part, in our case, an SBtab document is a collection of [tsv](https://en.wikipedia.org/wiki/Tab-separated_values) files (has to be one file per table). Each table contains information about model, data, and their relationship to one another:
+
+- Reactions
+- Parameters
+- Output Functions
+- Compounds/Molecular Species
+
+Each type of items gets a TSV file, see our examples. Still, a user can circumvent this entire format by just writing the C code or R code for the model by hand or an entirely different tool, such as [VFGEN](https://warrenweckesser.github.io/vfgen/) itself, or an SBML related project like [SBFC](https://www.ebi.ac.uk/biomodels/tools/converters/) that generates code.
+
+# Scheduled Events
+
+an experiment can contain sudden events, in *systems biology* this is useful to describe experiments that include an intervention at a specified time (activation, silencing, stimulus, action potential, etc.), these events happen much faster than the system dynamics and modelling them exactly would slow down the solver dramatically. In the case of an event at $t$, the solver is stopped, a linear (or affine) transformation to the current state $x(t)$ and parameters $p$ is applied (in C):
+
+$$ x(t) := A x(t) + b $$
+(this is an assignment, not a mathematical equality, there is a discontinuity if $A$ and $b$ have non-trivial values)
+
+Each `experiment[[i]]$event` has this structure:
+
+- `experiment[[1]]$event`
+    + `time` (a numeric vector, the event schedule)
+    + `tf` (a named list with two items, both affine transformations)
+        + `state` (the state transformation, a named list)
+            + `A` (a three dimensional array, where the third dimension corresponds to the time)
+            + `b` (a three dimensional array, with the second dimension always being 1, and third as long as the time vector)
+        + `param` (the parameter transformation, a named list)
+            + `A` (a three dimensional array, where the third dimension corresponds to the time)
+            + `b` (a three dimensional array, with the second dimension always being 1, and third as long as the time vector)
+- `experiment[[2]]$event`
+    + [...]
+- `experiment[[3]]$event`
+    + [...]
+
+same type of content for each experiment. In some cases it is permissible to omit parts if they are trivial ($b$ is trivial if it is `0`, the neutral element of addition). In such cases, omitted items can be `NULL` (this may not work in some combinations, subject to improvement).
+
+# R-functions
+
+The [icpm-kth/SBtabVFGEN] package has functions to import a model with the data into R data structures:
+
+```R
+remotes::install_github("icpm-kth/SBtabVFGEN")
+```
+
+and once it is installed:
+
+```R
+model.tsv <- dir(pattern="[.]tsv$",full.names=TRUE) # a list of file paths to TSV files
+model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)  # a list of data.frames
+experiments <- SBtabVFGEN::sbtab.data(model.tab)    # a list of simulation experiments with data
+```
+
+The `experiments` variable is a list, each member (itself a list), describes a simulation experiment. Each experiment may result in one or more calls to the simulator (in C this amounts to resetting the driver of the chosen solver). An experiment has the properties:
+
+|item|type|meaning|
+|---:|:------:|:---|
+|input|numeric vector|known input parameters|
+|initialTime|numeric vector|a scalar time $t_0$ |
+|initialState|numeric vector|initial state $x_0$ of the ode $\dot x = f(x(t),t,p=c(k,u))$, $x(t_0)=x_0$ |
+|outputTimes|numeric vector|a time vector that corresponds to when measurements were taken|
+|outputValues|data.frame|the values of the data at the above outputTimes|
+|errorValues|data.frame|an indication of the measurement error/noise|
+|events|list|a sudden transformation event|
+
+
+# Gaussian Measurement errors
+
+For Gaussian noise, `errorValues` can be the standard deviation of the mean. the data frame has the same shape and names as the output values. The usual way to write this somewhere is typically
+
+```
+outputValues ± errorValues
+```
+
+For other error models, or noise distributions, the user can decide what kind of values are useful and use them in their custom scoring functions (untested by us).

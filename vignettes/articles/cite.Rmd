@@ -1,0 +1,30 @@
+---
+title: "Cite"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+If you use this package, please cite:
+
+```
+Kramer, A., Milinanni, F., Nyquist, P., Jauhiainen, A., & Eriksson, O. (2023). UQSA--An R-Package for Uncertainty Quantification and Sensitivity Analysis for Biochemical Reaction Network Models. arXiv preprint arXiv:2308.05527.
+```
+
+This repository (https://github.com/icpm-kth/uqsa) is a continued development of the methodology presented in the paper:
+```
+Eriksson, Olivia and Jauhiainen Alexandra et al. "Uncertainty quantification, propagation and characterization by 
+Bayesian analysis combined with global sensitivity analysis applied to dynamical intracellular pathway models." 
+Bioinformatics 35.2 (2019): 284-292.
+```
+The original code for that paper can be found at: https://github.com/alexjau/uqsa.
+
+The demo UQ.ipynb was presented in Figure 5c of the paper
+```
+Eriksson, Olivia et al. "Combining hypothesis- and data-driven neuroscience modeling in FAIR workflows", 
+eLife (2022), 11:e69013 DOI: https://doi.org/10.7554/eLife.69013
+```
+ 
