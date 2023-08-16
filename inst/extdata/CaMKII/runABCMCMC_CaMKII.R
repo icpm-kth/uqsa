@@ -18,7 +18,7 @@ experiments <- sbtab.data(model.tab)
 modelName <- checkModel(comment(model.tab), uqsa_example("CaMKII",pat="_gvf[.]c$"))
 ## Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
 ns <- 500 # Size of the sub-sample from each chain
-npc <- 5000 # pre-calibration sample size
+npc <- 100000 # pre-calibration sample size
 
 ## model is a list variable defined in CaMKIIs.R, model$par() is the
 ## CaMKII_default() function from the same file.  But, model$par() is
@@ -70,13 +70,13 @@ experimentsIndices <- list(
 experimentsIndices <- list(1:99)
 
 # Define ABC-MCMC Settings
-delta <- 1.0
+delta <- 3.0
 
 set.seed(7619201)
 
 distanceMeasure <- function(funcSim, dataExpr=Inf, dataErr=Inf){
 	if (all(is.finite(funcSim))){
-		distance <- mean(abs((funcSim-as.matrix(dataExpr))/as.matrix(dataErr)), na.rm=TRUE)
+		distance <- mean(abs((as.numeric(funcSim)-as.numeric(dataExpr))/as.numeric(dataErr)), na.rm=TRUE)
 	} else {
 		distance <- Inf
 	}
@@ -121,7 +121,7 @@ for (i in 1:length(experimentsIndices)){
 
 	## Pre-Calibration uses only mclapply calls, we set up no cluster for this.
 	options(mc.cores=parallel::detectCores())
-	pC <- preCalibration(objectiveFunction, npc, rprior, rep=5)
+	pC <- preCalibration(objectiveFunction, npc, rprior, rep=3)
 	cat("\nPreCalibration:")
 	print(Sys.time()-start_time_preCalibration)
 

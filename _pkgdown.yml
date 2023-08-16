@@ -1,4 +1,52 @@
 url: https://icpm-kth.github.io/uqsa/
 template:
   bootstrap: 5
-
+home:
+  sidebar:
+    structure: [links, license, community, authors, dev]
+    
+reference:
+- title: "User Functions"
+  desc: "exported functions"
+  contents:
+  - ABCMCMC
+  - checkFitWithPreviousExperiments
+  - checkModel
+  - dCopulaPrior
+  - dNormalPrior
+  - dUniformPrior
+  - fitCopula
+  - getMCMCPar
+  - importReactionsSSA
+  - import_experiments
+  - import_from_SBtab
+  - makeAcceptanceProbability
+  - makeGillespieModel
+  - makeIndepCopula
+  - makeObjective
+  - makeObjectiveSSA
+  - parUpdate
+  - plotSimualtionsFromSBtab
+  - preCalibration
+  - rCopulaPrior
+  - rNormalPrior
+  - rUniformPrior
+  - runModel
+  - sensitivity
+  - sensitivity.graph
+  - simulator.R
+  - simulator.c
+  - uqsa_example
+- title: "Internal Functions"
+  desc: "not exported functions"
+  contents:
+  - convert.parameter
+  - match.coefficients
+  - match.names
+  - observable.mean.in.bin
+  - parameter.from.kinetic.law
+  - parse.formula
+  - parse.kinetic
+  - propensity
+  - sum.of.bin.variance
+  - uqsa-package

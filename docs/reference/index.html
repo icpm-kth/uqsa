@@ -18,7 +18,10 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item">
+      <ul class="navbar-nav me-auto"><li class="nav-item">
+  <a class="nav-link" href="../articles/uqsa.html">Get started</a>
+</li>
+<li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
 <li class="nav-item dropdown">
@@ -26,6 +29,9 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/uqsa-AKAP79.html">uqsa-AKAP79</a>
   </div>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="../news/index.html">Changelog</a>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
@@ -41,9 +47,9 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="user-functions">User Functions<a class="anchor" aria-label="anchor" href="#user-functions"></a></h2>
       
-      
+      <p class="section-desc"></p><p>exported functions</p>
 
       
     </div><div id="" class="section level2">
@@ -66,11 +72,6 @@
           <code><a href="checkModel.html">checkModel()</a></code> 
         </dt>
         <dd>checkModel tries to establish the simulation file for a given model</dd>
-      </dl><dl><dt>
-          
-          <code><a href="convert.parameter.html">convert.parameter()</a></code> 
-        </dt>
-        <dd>convert ODE parameter to Gillespie parameter</dd>
       </dl><dl><dt>
           
           <code><a href="dCopulaPrior.html">dCopulaPrior()</a></code> 
@@ -138,39 +139,9 @@
         <dd>Function that creates the objective function</dd>
       </dl><dl><dt>
           
-          <code><a href="match.coefficients.html">match.coefficients()</a></code> 
-        </dt>
-        <dd>find the coefficients in a formula</dd>
-      </dl><dl><dt>
-          
-          <code><a href="match.names.html">match.names()</a></code> 
-        </dt>
-        <dd>Find the variable names in a formula</dd>
-      </dl><dl><dt>
-          
-          <code><a href="observable.mean.in.bin.html">observable.mean.in.bin()</a></code> 
-        </dt>
-        <dd>The mean value of an observable value given a parameter bin</dd>
-      </dl><dl><dt>
-          
           <code><a href="parUpdate.html">parUpdate()</a></code> 
         </dt>
         <dd>Updates Parameter Values</dd>
-      </dl><dl><dt>
-          
-          <code><a href="parameter.from.kinetic.law.html">parameter.from.kinetic.law()</a></code> 
-        </dt>
-        <dd>Attempt to find multiplicative reaction rate coefficients</dd>
-      </dl><dl><dt>
-          
-          <code><a href="parse.formula.html">parse.formula()</a></code> 
-        </dt>
-        <dd>Splits a formula into a left and right side</dd>
-      </dl><dl><dt>
-          
-          <code><a href="parse.kinetic.html">parse.kinetic()</a></code> 
-        </dt>
-        <dd>Find forward and backward component in a reaction kinetic</dd>
       </dl><dl><dt>
           
           <code><a href="plotSimualtionsFromSBtab.html">plotSimualtionsFromSBtab()</a></code> 
@@ -181,11 +152,6 @@
           <code><a href="preCalibration.html">preCalibration()</a></code> 
         </dt>
         <dd>Determine a starting value for ABC's delta</dd>
-      </dl><dl><dt>
-          
-          <code><a href="propensity.html">propensity()</a></code> 
-        </dt>
-        <dd>propensity creates a propensity formula</dd>
       </dl><dl><dt>
           
           <code><a href="rCopulaPrior.html">rCopulaPrior()</a></code> 
@@ -228,16 +194,73 @@
         <dd>This creates a closure that simulates the model</dd>
       </dl><dl><dt>
           
+          <code><a href="uqsa_example.html">uqsa_example()</a></code> 
+        </dt>
+        <dd>Load an example model for this package</dd>
+      </dl></div><div class="section level2">
+      <h2 id="internal-functions">Internal Functions<a class="anchor" aria-label="anchor" href="#internal-functions"></a></h2>
+      
+      <p class="section-desc"></p><p>not exported functions</p>
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="convert.parameter.html">convert.parameter()</a></code> 
+        </dt>
+        <dd>convert ODE parameter to Gillespie parameter</dd>
+      </dl><dl><dt>
+          
+          <code><a href="match.coefficients.html">match.coefficients()</a></code> 
+        </dt>
+        <dd>find the coefficients in a formula</dd>
+      </dl><dl><dt>
+          
+          <code><a href="match.names.html">match.names()</a></code> 
+        </dt>
+        <dd>Find the variable names in a formula</dd>
+      </dl><dl><dt>
+          
+          <code><a href="observable.mean.in.bin.html">observable.mean.in.bin()</a></code> 
+        </dt>
+        <dd>The mean value of an observable value given a parameter bin</dd>
+      </dl><dl><dt>
+          
+          <code><a href="parameter.from.kinetic.law.html">parameter.from.kinetic.law()</a></code> 
+        </dt>
+        <dd>Attempt to find multiplicative reaction rate coefficients</dd>
+      </dl><dl><dt>
+          
+          <code><a href="parse.formula.html">parse.formula()</a></code> 
+        </dt>
+        <dd>Splits a formula into a left and right side</dd>
+      </dl><dl><dt>
+          
+          <code><a href="parse.kinetic.html">parse.kinetic()</a></code> 
+        </dt>
+        <dd>Find forward and backward component in a reaction kinetic</dd>
+      </dl><dl><dt>
+          
+          <code><a href="propensity.html">propensity()</a></code> 
+        </dt>
+        <dd>propensity creates a propensity formula</dd>
+      </dl><dl><dt>
+          
           <code><a href="sum.of.bin.variance.html">sum.of.bin.variance()</a></code> 
         </dt>
         <dd>Weighted Sum of Bin-specific variances</dd>
       </dl><dl><dt>
           
-          <code><a href="uqsa_example.html">uqsa_example()</a></code> 
+          <code><a href="uqsa-package.html">uqsa</a></code> <code><a href="uqsa-package.html">uqsa-package</a></code> 
         </dt>
-        <dd>Load an example model for this package</dd>
+        <dd>uqsa: Uncertainty Quanitification and Global Sensitivity Analysis via ABC sampling</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

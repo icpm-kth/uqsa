@@ -40,6 +40,9 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item">
+  <a class="nav-link" href="articles/uqsa.html">Get started</a>
+</li>
+<li class="nav-item">
   <a class="nav-link" href="reference/index.html">Reference</a>
 </li>
 <li class="nav-item dropdown">
@@ -47,6 +50,9 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="articles/uqsa-AKAP79.html">uqsa-AKAP79</a>
   </div>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="news/index.html">Changelog</a>
 </li>
       </ul>
 <form class="form-inline my-2 my-lg-0" role="search">
@@ -64,30 +70,43 @@
 <div class="page-header"><h1 id="uncertainty-quantification-uq-and-sensitivity-analysis-sa">Uncertainty Quantification (UQ) and Sensitivity Analysis (SA)<a class="anchor" aria-label="anchor" href="#uncertainty-quantification-uq-and-sensitivity-analysis-sa"></a>
 </h1></div>
 <p>This is an R package that performs <em>parameter estimation</em>, <em>uncertainty quantification</em>, and <em>global sensitivity analysis</em> using Bayesian methods and ABC-MCMC sampling.</p>
-<ul>
-<li>
-<strong>Homepage</strong> <a href="https://icpm-kth.github.io/uqsa/" class="uri">https://icpm-kth.github.io/uqsa/</a>
-</li>
-<li>
+<ul><li>
 <strong>Source code:</strong> <a href="https://github.com/icpm-kth/uqsa/" class="external-link uri">https://github.com/icpm-kth/uqsa/</a>
-</li>
-<li>
-<strong>License:</strong> <a href="https://github.com/icpm-kth/uqsa/wiki/Documentation#license" class="external-link uri">https://github.com/icpm-kth/uqsa/wiki/Documentation#license</a>
-</li>
-<li>
-<strong>Documentation:</strong> <a href="https://github.com/icpm-kth/uqsa/wiki/Documentation" class="external-link uri">https://github.com/icpm-kth/uqsa/wiki/Documentation</a>
-</li>
-<li>
-<strong>Examples:</strong> <a href="https://github.com/icpm-kth/uqsa/wiki/Home" class="external-link uri">https://github.com/icpm-kth/uqsa/wiki/Home</a>
-</li>
-<li>
-<strong>Cite:</strong> <a href="https://github.com/icpm-kth/uqsa/wiki/Documentation#cite" class="external-link uri">https://github.com/icpm-kth/uqsa/wiki/Documentation#cite</a>
-</li>
-</ul>
+</li></ul>
 <div class="section level2">
-<h2 id="acknowledgements">Acknowledgements<a class="anchor" aria-label="anchor" href="#acknowledgements"></a>
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
-<p>This open source software code was developed with support from the Swedish e-Science Research Centre (SeRC) as well as within the Human Brain Project, funded from the European Union’s Horizon 2020 Framework Programme for Research and Innovation (945539) (Human Brain Project SGA1, SGA2 and SGA3).</p>
+<p>Some topics are covered in Articles on this page. There is also a function reference.</p>
+<p>The package includes example models. These examples are also covered by the articles: AKAR4, AKAP79, and CaMKII.</p>
+<p>We also have a GitHub Wiki.</p>
+<ul><li>
+<strong>Wiki:</strong> <a href="https://github.com/icpm-kth/uqsa/wiki/Home" class="external-link uri">https://github.com/icpm-kth/uqsa/wiki/Home</a>
+</li></ul>
+</div>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/SBtabVFGEN"</span><span class="op">)</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/uqsa"</span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="gnu-scientific-library-optional">GNU Scientific Library (optional)<a class="anchor" aria-label="anchor" href="#gnu-scientific-library-optional"></a>
+</h3>
+<p>For the simulation backend using the GNU Scientific Library, the gsl needs to be installed in your OS.</p>
+<p>Debian and Ubuntu:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="ex">apt</span> install libgsl-dev</span></code></pre></div>
+<p>Alpine Linux:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="ex">apk</span> add gsl</span></code></pre></div>
+<p>Guix:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="ex">guix</span> install gsl</span></code></pre></div>
+<p>Arch Linux:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="ex">pacman</span> -S gsl</span></code></pre></div>
+<p>Gentoo:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="ex">emerge</span> sci-libs/gsl</span></code></pre></div>
+<p>And finally, in R:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/rgsl"</span><span class="op">)</span></span></code></pre></div>
+</div>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="license">
@@ -97,13 +116,6 @@
 </ul>
 </div>
 
-
-<div class="citation">
-<h2 data-toc-skip>Citation</h2>
-<ul class="list-unstyled">
-<li><a href="authors.html#citation">Citing uqsa</a></li>
-</ul>
-</div>
 
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
