@@ -72,8 +72,7 @@
 
 
 
-
-<div class="row">
+<script src="simulate_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Simulate</h1>
             
@@ -84,106 +83,49 @@
 
     
     
-<p>A fundamental task performed in our tool set is simulating the model
-(whether it is imported from an SBtab document or not). Typically, the
-solution to an <em>initial value problem</em> depends on the choices of
-initial states, parameter values and inputs (also parameters). But only
-the parameters will vary often, during ABC or MCMC in general as that is
-a parameter estimation task. For this reason we provide two closure
-generating functions:</p>
+<p>A fundamental task performed in our tool set is simulating the model (whether it is imported from an SBtab document or not). Typically, the solution to an <em>initial value problem</em> depends on the choices of initial states, parameter values and inputs (also parameters). But only the parameters will vary often, during ABC or MCMC in general as that is a parameter estimation task. For this reason we provide two closure generating functions:</p>
 <ul>
 <li><code>simulate &lt;- simulator.c(experiments, modelName, parMap = identity)</code></li>
 <li><code>simulate &lt;- simulator.R(experiments, model, parMap = identity)</code></li>
 </ul>
-<p>Both return a function with the interface: <code>simulate(k)</code>,
-where <code>k</code> is a parameter matrix of intrinsic parameters (each
-column is one parameter vector, without inputs). The experiments to
-simulate (with their inputs), the model to use and how to transform the
-parameter vectors before passing them to the model are all implicit in
-<code>simulate</code>. The function <code>parMap</code> can be used to
-sample <code>k</code> in logarithmic space. So, k can be some
-logarithmic vector and <code>parMap = exp</code> will transform them to
-linear space. But it can also re-order or reshape them in some way (or
-change type to something the model expects).</p>
+<p>Both return a function with the interface: <code>simulate(k)</code>, where <code>k</code> is a parameter matrix of intrinsic parameters (each column is one parameter vector, without inputs). The experiments to simulate (with their inputs), the model to use and how to transform the parameter vectors before passing them to the model are all implicit in <code>simulate</code>. The function <code>parMap</code> can be used to sample <code>k</code> in logarithmic space. So, k can be some logarithmic vector and <code>parMap = exp</code> will transform them to linear space. But it can also re-order or reshape them in some way (or change type to something the model expects).</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="st">"muModel"</span>,<span class="st">"myModel_gvf.c"</span><span class="op">)</span> <span class="co"># will compile if necessary</span></span>
 <span><span class="va">simulate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">experiments</span>, <span class="va">modelName</span>, parMap <span class="op">=</span> <span class="va">exp</span><span class="op">)</span></span>
 <span><span class="va">par</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>,<span class="fl">3</span>,<span class="fl">5</span><span class="op">)</span></span>
 <span><span class="va">yf</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate</a></span><span class="op">(</span><span class="va">par</span><span class="op">)</span></span></code></pre></div>
-<p>will return a list <code>yf</code> of the same length as
-<code>experiments</code>, with solutions at the <code>outputTimes</code>
-indicated in the <code>experiments</code>, for state variables and
-output functions:</p>
+<p>will return a list <code>yf</code> of the same length as <code>experiments</code>, with solutions at the <code>outputTimes</code> indicated in the <code>experiments</code>, for state variables and output functions:</p>
 <pre><code><span><span class="va">yf</span><span class="op">[[</span><span class="va">l</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span>,<span class="va">k</span><span class="op">]</span></span></code></pre>
-<p>This is the value of the output function <code>i</code> for
-experiment <code>l</code>, at <code>outputTimes[j]</code>, for parameter
-set <code>par[,k]</code>.</p>
+<p>This is the value of the output function <code>i</code> for experiment <code>l</code>, at <code>outputTimes[j]</code>, for parameter set <code>par[,k]</code>.</p>
 <div class="section level2">
 <h2 id="r-functions">R-functions<a class="anchor" aria-label="anchor" href="#r-functions"></a>
 </h2>
 <div class="section level3">
 <h3 id="runmodel">runModel<a class="anchor" aria-label="anchor" href="#runmodel"></a>
 </h3>
-<p>Simulate an Experiment using an ODE Model, without using the closures
-from the previous sections.</p>
+<p>Simulate an Experiment using an ODE Model, without using the closures from the previous sections.</p>
 <pre><code><span><span class="fu"><a href="../reference/runModel.html">runModel</a></span><span class="op">(</span><span class="va">experiments</span>, <span class="va">modelName</span>,  <span class="va">parABC</span>, parMap<span class="op">=</span><span class="va">identity</span><span class="op">)</span></span></code></pre>
-<p>This function uses the GSL solvers, or the R solver
-<code>deSolve</code> [default] to simulate the ODE model with the
-initial states and input characteristic of the experiments provided in
-input.</p>
-<p>If the model name has a comment that indicates a model file ending in
-<code>.so</code>, then this function will use the shared library and the
-GSL solvers.</p>
-<p><strong>Input arguments</strong> * <code>experiments</code> (list) -
-experiments to simulate. Each experiment variable is an element of the
-variable <code>experiments</code> that is imported via function
-<code>import_experiments</code> * <code>modelName</code>(character) -
-used to find model files and functions within the file (a prefix), and
-optionally a comment indicating a file * <code>parABC</code> (numeric) -
-a matrix of column vectors; each column contains a vector of both normal
-parameters (e.g. kinetic parameters like kf and kr) and input_parameters
-(concatenated in that order, i.e. first parameters, then inputs). If the
-number of columns is N, N simulations will be performed. *
-<code>parMap</code> (function) - re-mapping function to apply to
-parameters (e.g. to switch from a linear to a logarithmic scale)</p>
+<p>This function uses the GSL solvers, or the R solver <code>deSolve</code> [default] to simulate the ODE model with the initial states and input characteristic of the experiments provided in input.</p>
+<p>If the model name has a comment that indicates a model file ending in <code>.so</code>, then this function will use the shared library and the GSL solvers.</p>
+<p><strong>Input arguments</strong> * <code>experiments</code> (list) - experiments to simulate. Each experiment variable is an element of the variable <code>experiments</code> that is imported via function <code>import_experiments</code> * <code>modelName</code>(character) - used to find model files and functions within the file (a prefix), and optionally a comment indicating a file * <code>parABC</code> (numeric) - a matrix of column vectors; each column contains a vector of both normal parameters (e.g. kinetic parameters like kf and kr) and input_parameters (concatenated in that order, i.e. first parameters, then inputs). If the number of columns is N, N simulations will be performed. * <code>parMap</code> (function) - re-mapping function to apply to parameters (e.g. to switch from a linear to a logarithmic scale)</p>
 <p><strong>Output</strong> (list)</p>
-<p>List <code>out</code> whose elements correspond to a simulation for
-each experiment provided in the input argument <code>experiments</code>.
-Each element is in turn a list, with elements: - <code>state</code>
-(numeric) - value of the approximated solution of the ODE system at each
-time point as the experimental measurements - <code>func</code>
-(numeric) - value of the output at each time point as the experimental
-measurements</p>
+<p>List <code>out</code> whose elements correspond to a simulation for each experiment provided in the input argument <code>experiments</code>. Each element is in turn a list, with elements: - <code>state</code> (numeric) - value of the approximated solution of the ODE system at each time point as the experimental measurements - <code>func</code> (numeric) - value of the output at each time point as the experimental measurements</p>
 </div>
 <div class="section level3">
 <h3 id="checkmodel">checkModel<a class="anchor" aria-label="anchor" href="#checkmodel"></a>
 </h3>
-<p>Assign a simulation file for a given model, and compile the model if
-necessary, check for existence:</p>
+<p>Assign a simulation file for a given model, and compile the model if necessary, check for existence:</p>
 <pre><code><span><span class="va">model.sbtab</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">model.tsv</span><span class="op">)</span></span>
 <span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">model.sbtab</span><span class="op">)</span>,modelFile<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span></code></pre>
-<p>An SBtab document contains a model name,
-<code><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">SBtabVFGEN::sbtab_from_tsv</a></code> includes this information as a
-comment to the return value.</p>
-<p>checkModel returns this model name as supplied in the first slot,
-with some additional comments about the file. The user can of course
-pick a different model name at this point. Or circumvent this
-function.</p>
+<p>An SBtab document contains a model name, <code><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">SBtabVFGEN::sbtab_from_tsv</a></code> includes this information as a comment to the return value.</p>
+<p>checkModel returns this model name as supplied in the first slot, with some additional comments about the file. The user can of course pick a different model name at this point. Or circumvent this function.</p>
 <p>As an alternative to this function, it is sufficient to write</p>
 <pre><code><span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="st">"test_ode_model"</span>             <span class="co"># or some other model name</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">modelName</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"test_ode_model.so"</span> <span class="co"># e.g.: manually compiled</span></span></code></pre>
-<p>This function will not attempt to find a model file, other than in
-the current directory. But, checkModel will compile a GSL compatible C
-source file into a shared object <em>if</em> <code>modelFile</code> ends
-with <code>.c</code> and stop if that doesn’t work.</p>
-<p>In any case, this function stops execution if the model file doesn’t
-exist.</p>
-<p><strong>Input arguments</strong> * <code>modelName</code> (character)
-* <code>modelFile</code> (character) - a string, if the model file is
-different from “modelName.R”. If the file name ends in <code>.c</code>,
-the c source will be compiled to a shared library.</p>
-<p><strong>Output</strong> (character) The returned value is “modelName”
-with an additional comment about which file to use for simulations.</p>
+<p>This function will not attempt to find a model file, other than in the current directory. But, checkModel will compile a GSL compatible C source file into a shared object <em>if</em> <code>modelFile</code> ends with <code>.c</code> and stop if that doesn’t work.</p>
+<p>In any case, this function stops execution if the model file doesn’t exist.</p>
+<p><strong>Input arguments</strong> * <code>modelName</code> (character) * <code>modelFile</code> (character) - a string, if the model file is different from “modelName.R”. If the file name ends in <code>.c</code>, the c source will be compiled to a shared library.</p>
+<p><strong>Output</strong> (character) The returned value is “modelName” with an additional comment about which file to use for simulations.</p>
 </div>
 <div class="section level3">
 <h3 id="makeobjective">
@@ -191,33 +133,10 @@ with an additional comment about which file to use for simulations.</p>
 </h3>
 <p>Creates Objective functions from ingredients (as closures)</p>
 <pre><code><span><span class="va">obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/makeObjective.html">makeObjective</a></span><span class="op">(</span><span class="va">experiments</span>,<span class="va">modelName</span>,<span class="va">distance</span>,parMap<span class="op">=</span><span class="va">identity</span><span class="op">)</span></span></code></pre>
-<p>This function creates a function <code>obj</code> (closure), that is
-used in the ABCMCMC parameter estimation. The created function accepts
-only one argument in input: a vectorial parameter or a matrix of
-parameters, with each column corresponding to a parameter vector.</p>
-<p>The function <code>obj(par)</code> will: 1. apply the transformation
-<code>parMap</code> to each column of <code>par</code>: 1. for each
-experiment, append the input parameters
-(<code>experiments[[i]]$input</code>) 2. simulate all experiments, with
-inputs, events, and initial values from <code>experiments</code> 3.
-calculate the model’s output functions 4. use the distance measure
-function to obtain the distance between simulation and experimental data
-(<code>experiments[[i]]$outputValues</code>) 2. save all distances as a
-matrix: distance[i,j] is the distance between the data and model
-functions in experiment <code>i</code> and parameter set
-<code>j</code></p>
-<p><strong>Input arguements</strong> * <code>experiments</code> (list) -
-simulation experiments * <code>modelName</code> (character) - model name
-as a string, and model storage file as comment to this variable *
-<code>distance</code> (function) - function that calculates ABC scores,
-i.e. distance between experimental and simulated data *
-<code>parMap</code> (function) - a function that transforms ABC
-variables into acceptable model parameters (e.g. allowing to switch from
-linear to logarithmic scale)</p>
-<p><strong>Output</strong> (function) The output is a function that
-accepts one parameter matrix <code>par</code> and calculates the
-distance between experimental data and data simulated from the model
-using <code>par</code>.</p>
+<p>This function creates a function <code>obj</code> (closure), that is used in the ABCMCMC parameter estimation. The created function accepts only one argument in input: a vectorial parameter or a matrix of parameters, with each column corresponding to a parameter vector.</p>
+<p>The function <code>obj(par)</code> will: 1. apply the transformation <code>parMap</code> to each column of <code>par</code>: 1. for each experiment, append the input parameters (<code>experiments[[i]]$input</code>) 2. simulate all experiments, with inputs, events, and initial values from <code>experiments</code> 3. calculate the model’s output functions 4. use the distance measure function to obtain the distance between simulation and experimental data (<code>experiments[[i]]$outputValues</code>) 2. save all distances as a matrix: distance[i,j] is the distance between the data and model functions in experiment <code>i</code> and parameter set <code>j</code></p>
+<p><strong>Input arguements</strong> * <code>experiments</code> (list) - simulation experiments * <code>modelName</code> (character) - model name as a string, and model storage file as comment to this variable * <code>distance</code> (function) - function that calculates ABC scores, i.e. distance between experimental and simulated data * <code>parMap</code> (function) - a function that transforms ABC variables into acceptable model parameters (e.g. allowing to switch from linear to logarithmic scale)</p>
+<p><strong>Output</strong> (function) The output is a function that accepts one parameter matrix <code>par</code> and calculates the distance between experimental data and data simulated from the model using <code>par</code>.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

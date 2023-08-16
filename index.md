@@ -18,43 +18,30 @@ We also have a GitHub Wiki.
 
 ## Installation
 
+The first two packages are optional in your own work, but you will
+need them for our examples:
+
 ```R
-remotes::install_github("icpm-kth/SBtabVFGEN")
-remotes::install_github("icpm-kth/uqsa")
+remotes::install_github("icpm-kth/rgsl")       # requires gsl in your OS
+remotes::install_github("icpm-kth/SBtabVFGEN") # if you plan to use SBtab
+remotes::install_github("icpm-kth/uqsa")       # this package
 ```
+
+- `rgsl` is an interface between R and the ODE solvers in the GNU Scientific Library
+- `SBtabVFGEN` is an R package that works with models written in the SBtab format
 
 ### GNU Scientific Library (optional)
 
-For the simulation backend using the GNU Scientific Library, the gsl needs to be installed in your OS.
+For the simulation backend using the [GNU Scientific Library](https://www.gnu.org/software/gsl/) (gsl) needs to be installed in your OS.
 
-Debian and Ubuntu:
-```sh
-apt install libgsl-dev
-```
+|   Operating System | command                  |
+|-------------------:|:-------------------------|
+| Debian and Ubuntu: | `apt install libgsl-dev` |
+|      Alpine Linux: | `apk add gsl`            |
+|               Guix | `guix install gsl`       |
+|         Arch Linux | `pacman -S gsl`          |
+|             Gentoo | `emerge sci-libs/gsl`    |
+|              MACOX | `brew install gsl`       |
 
-Alpine Linux:
-```sh
-apk add gsl
-```
 
-Guix:
-```sh
-guix install gsl
-```
-
-Arch Linux:
-```sh
-pacman -S gsl
-```
-
-Gentoo:
-```sh
-emerge sci-libs/gsl
-```
-
-And finally, in R:
-
-```R
-remotes::install_github("icpm-kth/rgsl")
-```
 
