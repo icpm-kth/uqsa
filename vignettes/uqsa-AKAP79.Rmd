@@ -1,8 +1,8 @@
 ---
-title: "uqsa-AKAP79"
+title: "Example-AKAP79"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{uqsa-AKAP79}
+  %\VignetteIndexEntry{Example-AKAP79}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
