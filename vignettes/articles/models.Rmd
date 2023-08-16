@@ -1,0 +1,65 @@
+---
+title: "Models"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+If you need the model as an ordinary differential equation (compatible with deSolve):
+
+```R
+model.tsv <- dir(pattern="[.]tsv$")
+model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
+SBtabVFGEN::sbtab_to_vfgen(model.tab,cla=FALSE)
+```
+this will write a file called MODEL.vf (where MODEL is whatever you chose as the model name); MODEL.vf encodes the model as an ODE. This file is compatible with the [vfgen](https://warrenweckesser.github.io/vfgen/) tool; it creates code in many languages from this `vf` file.
+
+Alternatively, you can use our tool: [icpm-kth/RPN-derivative](icpm-kth/RPN-derivative), which contains a shell script [ode.sh](icpm-kth/RPN/derivative/sh/ode.sh); this script uses either the derivative binary from RPN-derivative, [maxima](https://maxima.sourceforge.io/), or [yacas](https://yacas.readthedocs.io/en/latest/) to calculate analytical derivative functions for the jacobian (vfgen uses the [ginac](https://www.ginac.de/) library). Our own tool also accepts the `.zip` file or `.tar.gz` file that `sbtab_to_vfgen()` creates.
+
+```sh
+$ git clone https://github.com/icpm-kth/RPN-derivative.git
+$ cd RPN-derivative
+$ sh/ode.sh -R --maxima ${MODEL:-myModel}.vf 
+```
+
+Note: `ode.sh` is compatible with the same vf files from SBtabVFGEN, but doesn't support all of the outputs VFGEN can do, and does nothing related to delays.
+
+Maxima needs to be installed for this backend to work. Same with Yacas, if you prefer.
+
+Alternatively:
+
+```sh
+$ git clone https://github.com/icpm-kth/RPN-derivative.git
+$ cd RPN-derivative
+$ make && sudo make install
+$ sh/ode.sh -R MODEL.vf 
+```
+
+which by default will use the `derivative` binary the third line has installed, hopefully. The R script created this way contains the functions that `deSolve` would need to simulate the model, but also functions that return default initial values, default parameters, the parameter jacobian, and the output functions (a model of the measurements available for the system). In the same file, there is a `model` variable (named *model*) which contains the same functions but with anonymous names, e.g.: `model$jac()` is the jacobian function.
+
+# Parameters
+
+Our goal is to perform *parameter estimation*. A *systems biology* model typically has parameters that are either reaction rate coefficients $k_f$, equilibrium constants $K_d$, Hill coefficients, and many other quantities related to *kinetc laws*; they are often unknown or not uniquely determined yet. But, not all parameters of a model are unknown, and not all model parameters are intrinsic to the system we study. Some of them model the interventions we do to the model when performing an experiment. This could be the frequency of a driving force for a mechanical model, or the amount of a treatment dose (added to the system) that affects the time course of reactions:
+
+- a substrate, or buffer
+- an enzyme, 
+- a silencing agent, 
+- an inhibitor
+
+These parameters are known to us, because they are written down in the protocol. If the input is time dependent, then its dynamics (or explicit algebraic functions) have to become part of the model. These input parameters can be different between experiments, but the intrinsic parameters are always the same.
+
+The ordinary differential equation on the other hand does not need to know the distinction between known or unknown parameters. For these reason: 
+
+```R
+u = experiments[[i]]$input #,
+p = c(k,u) #,
+```
+
+where `k` are intrinsic, unknown parameters (subject to sampling), and `u` are the known input parameters that are encoded in the `input` field of an experiment. 
+
+If input parameters exist, then they are always concatenated in that order and passed to the model, the model's C code only sees `p`. The wrapper functions in the `rgsl` package do this concatenation when the solver is called. We sample `k` usually in logarithmic space, but the solver gets the proposed `k` and appends the right `u` for each experiment, both in linear space.
