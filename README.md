@@ -2,8 +2,7 @@
 
 This is an R package that performs *parameter estimation*,
 *uncertainty quantification*, and *global sensitivity analysis* using
-Bayesian methods and ABC-MCMC sampling. It is primarily designed for **biochemical reaction networks** describing intracellular cellular pathways and similar. All information about the model as well as the experimental data used for parameter estimation and uncertainty quantification is stored in the [SBtab](https://github.com/tlubitz/SBtab) table format for Systems Biology projects [1].
-
+Bayesian methods and ABC-MCMC sampling (UQ) and variance decomposition methods (GSA). It is primarily designed for **biochemical reaction networks** describing intracellular cellular pathways and similar. All information about the model as well as the experimental data used for parameter estimation and uncertainty quantification is stored in the [SBtab](https://github.com/tlubitz/SBtab) table format for Systems Biology projects [1].
 
 * **Source code:** https://github.com/icpm-kth/uqsa/
 * **Documentation** https://icpm-kth.github.io/uqsa/
