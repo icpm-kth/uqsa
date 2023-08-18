@@ -17,8 +17,8 @@ experiments <- sbtab.data(model.tab)
 # we take the model name as inferred from the sbtab document:
 modelName <- checkModel(comment(model.tab), uqsa_example("CaMKII",pat="_gvf[.]c$"))
 ## Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 500 # Size of the sub-sample from each chain
-npc <- 100000 # pre-calibration sample size
+ns <- 5000 # Size of the sub-sample from each chain
+npc <- 10000 # pre-calibration sample size
 
 ## model is a list variable defined in CaMKIIs.R, model$par() is the
 ## CaMKII_default() function from the same file.  But, model$par() is
@@ -66,8 +66,6 @@ experimentsIndices <- list(
  which(startsWith(names(experiments),"E4")),
  which(startsWith(names(experiments),"E5"))
 )
-
-experimentsIndices <- list(1:99)
 
 # Define ABC-MCMC Settings
 delta <- 3.0
@@ -143,13 +141,11 @@ for (i in 1:length(experimentsIndices)){
 	options(mc.cores=parallel::detectCores() %/% nChains)
 	cl <- makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
 	clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
-	out_ABCMCMC <- parLapply(cl,
+	out_ABCMCMC <- parLapply( # parallel block
+		cl,
 		1:nChains,
 		function(j) {
-			tryCatch(
-				ABCMCMC(objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior, objectiveFunction),
-				error=function(cond) {message("ABCMCMC crashed"); print(M); print(j); return(NULL)}
-			)
+				ABCMCMC(objectiveFunction, M$startPar[,j,drop=FALSE], ns, M$Sigma, delta, dprior)
 		}
 	)
 	stopCluster(cl)
