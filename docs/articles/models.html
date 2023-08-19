@@ -100,19 +100,19 @@ either the derivative binary from RPN-derivative, <a href="https://maxima.source
 analytical derivative functions for the jacobian (vfgen uses the <a href="https://www.ginac.de/" class="external-link">ginac</a> library). Our own tool also
 accepts the <code>.zip</code> file or <code>.tar.gz</code> file that
 <code>sbtab_to_vfgen()</code> creates.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> git clone https://github.com/icpm-kth/RPN-derivative.git</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd RPN-derivative</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sh/ode.sh <span class="at">-R</span> <span class="at">--maxima</span> <span class="va">${MODEL</span><span class="op">:-</span>myModel<span class="va">}</span>.vf </span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">$</span> git clone https://github.com/icpm-kth/RPN-derivative.git</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="ex">$</span> cd RPN-derivative</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="ex">$</span> sh/ode.sh <span class="at">-R</span> <span class="at">--maxima</span> <span class="va">${MODEL</span><span class="op">:-</span>myModel<span class="va">}</span>.vf </span></code></pre></div>
 <p>Note: <code>ode.sh</code> is compatible with the same vf files from
 SBtabVFGEN, but doesn’t support all of the outputs VFGEN can do, and
 does nothing related to delays.</p>
 <p>Maxima needs to be installed for this backend to work. Same with
 Yacas, if you prefer.</p>
 <p>Alternatively:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> git clone https://github.com/icpm-kth/RPN-derivative.git</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd RPN-derivative</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> make <span class="kw">&amp;&amp;</span> <span class="fu">sudo</span> make install</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sh/ode.sh <span class="at">-R</span> MODEL.vf </span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">$</span> git clone https://github.com/icpm-kth/RPN-derivative.git</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="ex">$</span> cd RPN-derivative</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="ex">$</span> make <span class="kw">&amp;&amp;</span> <span class="fu">sudo</span> make install</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="ex">$</span> sh/ode.sh <span class="at">-R</span> MODEL.vf </span></code></pre></div>
 <p>which by default will use the <code>derivative</code> binary the
 third line has installed, hopefully. The R script created this way
 contains the functions that <code>deSolve</code> would need to simulate
