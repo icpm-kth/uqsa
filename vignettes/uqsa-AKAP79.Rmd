@@ -18,8 +18,8 @@ This example covers the AKAP79 example model and `rgsl` as solver
 backend, alternatively, it is possible to use `deSolve` instead (but
 not covered here).
 
-We use `icpm-kth/SBtabVFGEN` to read the model files, `icpm-kth/rgsl` as an
-interface to `gsl_odeiv2` solvers (for initial value problems):
+We use `icpm-kth/SBtabVFGEN` to read the model files and `icpm-kth/rgsl` as an
+interface to `gsl_odeiv2` solvers (for initial value problems) to simulate the model:
 
 ```{r setup}
 library(uqsa)
@@ -58,7 +58,7 @@ parMap <- function(parABC){
 ```
 
 We have also defined a function that will transform the sampling
-variables `parABC` into something that the model will accept. The plan
+variables `parABC` used by the ABC method into something that the model will accept as parameters. The plan
 is to sample in logarithmic space: the ABC algorithm will sample the
 logarithms of the model parameters. We limit the sampling to ranges,
 as appropriate for each parameter:
