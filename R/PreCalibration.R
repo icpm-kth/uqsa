@@ -36,7 +36,7 @@
 #' @return list with entries preDelta and prePar, final values of
 #'     calibration run
 preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
-	nCores <- options("mc.cores")
+	nCores <- unlist(options("mc.cores"))
 	if (is.null(nCores)){
 		nCores <- parallel::detectCores()
 		options(mc.cores=nCores)
