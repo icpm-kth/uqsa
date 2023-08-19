@@ -50,7 +50,7 @@ the tables. Because they are tables, we can retrieve default values
 from them.
 
 ```{r defaults, eval=FALSE}
-parVal <- model$Parameter[["!DefaultValue"]]
+parVal <- model.tab$Parameter[["!DefaultValue"]]
 
 parMap <- function(parABC){
 	return(10^parABC)

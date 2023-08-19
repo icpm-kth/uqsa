@@ -44,6 +44,7 @@
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/AKAP79.html">Example-AKAP79</a>
     <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
     <a class="dropdown-item" href="../articles/cite.html">Cite</a>
     <a class="dropdown-item" href="../articles/data.html">Data</a>
@@ -52,7 +53,6 @@
     <a class="dropdown-item" href="../articles/literature_references.html">Model and Data references</a>
     <a class="dropdown-item" href="../articles/models.html">Models</a>
     <a class="dropdown-item" href="../articles/simulate.html">Simulate</a>
-    <a class="dropdown-item" href="../articles/uqsa-AKAP79.html">Example-AKAP79</a>
   </div>
 </li>
 <li class="nav-item">
@@ -72,8 +72,7 @@
 
 
 
-
-<div class="row">
+<script src="models_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Models</h1>
             
@@ -84,85 +83,41 @@
 
     
     
-<p>If you need the model as an ordinary differential equation
-(compatible with deSolve):</p>
+<p>If you need the model as an ordinary differential equation (compatible with deSolve):</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model.tsv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span>pattern<span class="op">=</span><span class="st">"[.]tsv$"</span><span class="op">)</span></span>
 <span><span class="va">model.tab</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">model.tsv</span><span class="op">)</span></span>
 <span><span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">sbtab_to_vfgen</a></span><span class="op">(</span><span class="va">model.tab</span>,cla<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p>this will write a file called MODEL.vf (where MODEL is whatever you
-chose as the model name); MODEL.vf encodes the model as an ODE. This
-file is compatible with the <a href="https://warrenweckesser.github.io/vfgen/" class="external-link">vfgen</a> tool; it
-creates code in many languages from this <code>vf</code> file.</p>
-<p>Alternatively, you can use our tool: <a href="icpm-kth/RPN-derivative">icpm-kth/RPN-derivative</a>, which
-contains a shell script <a href="icpm-kth/RPN/derivative/sh/ode.sh">ode.sh</a>; this script uses
-either the derivative binary from RPN-derivative, <a href="https://maxima.sourceforge.io/" class="external-link">maxima</a>, or <a href="https://yacas.readthedocs.io/en/latest/" class="external-link">yacas</a> to calculate
-analytical derivative functions for the jacobian (vfgen uses the <a href="https://www.ginac.de/" class="external-link">ginac</a> library). Our own tool also
-accepts the <code>.zip</code> file or <code>.tar.gz</code> file that
-<code>sbtab_to_vfgen()</code> creates.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">$</span> git clone https://github.com/icpm-kth/RPN-derivative.git</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="ex">$</span> cd RPN-derivative</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="ex">$</span> sh/ode.sh <span class="at">-R</span> <span class="at">--maxima</span> <span class="va">${MODEL</span><span class="op">:-</span>myModel<span class="va">}</span>.vf </span></code></pre></div>
-<p>Note: <code>ode.sh</code> is compatible with the same vf files from
-SBtabVFGEN, but doesn’t support all of the outputs VFGEN can do, and
-does nothing related to delays.</p>
-<p>Maxima needs to be installed for this backend to work. Same with
-Yacas, if you prefer.</p>
+<p>this will write a file called MODEL.vf (where MODEL is whatever you chose as the model name); MODEL.vf encodes the model as an ODE. This file is compatible with the <a href="https://warrenweckesser.github.io/vfgen/" class="external-link">vfgen</a> tool; it creates code in many languages from this <code>vf</code> file.</p>
+<p>Alternatively, you can use our tool: <a href="icpm-kth/RPN-derivative">icpm-kth/RPN-derivative</a>, which contains a shell script <a href="icpm-kth/RPN/derivative/sh/ode.sh">ode.sh</a>; this script uses either the derivative binary from RPN-derivative, <a href="https://maxima.sourceforge.io/" class="external-link">maxima</a>, or <a href="https://yacas.readthedocs.io/en/latest/" class="external-link">yacas</a> to calculate analytical derivative functions for the jacobian (vfgen uses the <a href="https://www.ginac.de/" class="external-link">ginac</a> library). Our own tool also accepts the <code>.zip</code> file or <code>.tar.gz</code> file that <code><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">sbtab_to_vfgen()</a></code> creates.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>$ <span class="fu">git</span> clone https://github.com/icpm-kth/RPN-derivative.git</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>$ <span class="bu">cd</span> RPN-derivative</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>$ <span class="ex">sh/ode.sh</span> -R --maxima <span class="va">${MODEL:-</span>myModel<span class="va">}</span>.vf </span></code></pre></div>
+<p>Note: <code>ode.sh</code> is compatible with the same vf files from SBtabVFGEN, but doesn’t support all of the outputs VFGEN can do, and does nothing related to delays.</p>
+<p>Maxima needs to be installed for this backend to work. Same with Yacas, if you prefer.</p>
 <p>Alternatively:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">$</span> git clone https://github.com/icpm-kth/RPN-derivative.git</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="ex">$</span> cd RPN-derivative</span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="ex">$</span> make <span class="kw">&amp;&amp;</span> <span class="fu">sudo</span> make install</span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="ex">$</span> sh/ode.sh <span class="at">-R</span> MODEL.vf </span></code></pre></div>
-<p>which by default will use the <code>derivative</code> binary the
-third line has installed, hopefully. The R script created this way
-contains the functions that <code>deSolve</code> would need to simulate
-the model, but also functions that return default initial values,
-default parameters, the parameter jacobian, and the output functions (a
-model of the measurements available for the system). In the same file,
-there is a <code>model</code> variable (named <em>model</em>) which
-contains the same functions but with anonymous names, e.g.:
-<code>model$jac()</code> is the jacobian function.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>$ <span class="fu">git</span> clone https://github.com/icpm-kth/RPN-derivative.git</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>$ <span class="bu">cd</span> RPN-derivative</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>$ <span class="fu">make</span> <span class="kw">&amp;&amp;</span> <span class="fu">sudo</span> make install</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>$ <span class="ex">sh/ode.sh</span> -R MODEL.vf </span></code></pre></div>
+<p>which by default will use the <code>derivative</code> binary the third line has installed, hopefully. The R script created this way contains the functions that <code>deSolve</code> would need to simulate the model, but also functions that return default initial values, default parameters, the parameter jacobian, and the output functions (a model of the measurements available for the system). In the same file, there is a <code>model</code> variable (named <em>model</em>) which contains the same functions but with anonymous names, e.g.: <code>model$jac()</code> is the jacobian function.</p>
 <div class="section level2">
 <h2 id="parameters">Parameters<a class="anchor" aria-label="anchor" href="#parameters"></a>
 </h2>
-<p>Our goal is to perform <em>parameter estimation</em>. A <em>systems
-biology</em> model typically has parameters that are either reaction
-rate coefficients <span class="math inline">\(k_f\)</span>, equilibrium
-constants <span class="math inline">\(K_d\)</span>, Hill coefficients,
-and many other quantities related to <em>kinetc laws</em>; they are
-often unknown or not uniquely determined yet. But, not all parameters of
-a model are unknown, and not all model parameters are intrinsic to the
-system we study. Some of them model the interventions we do to the model
-when performing an experiment. This could be the frequency of a driving
-force for a mechanical model, or the amount of a treatment dose (added
-to the system) that affects the time course of reactions:</p>
+<p>Our goal is to perform <em>parameter estimation</em>. A <em>systems biology</em> model typically has parameters that are either reaction rate coefficients <span class="math inline">\(k_f\)</span>, equilibrium constants <span class="math inline">\(K_d\)</span>, Hill coefficients, and many other quantities related to <em>kinetc laws</em>; they are often unknown or not uniquely determined yet. But, not all parameters of a model are unknown, and not all model parameters are intrinsic to the system we study. Some of them model the interventions we do to the model when performing an experiment. This could be the frequency of a driving force for a mechanical model, or the amount of a treatment dose (added to the system) that affects the time course of reactions:</p>
 <ul>
 <li>a substrate, or buffer</li>
 <li>an enzyme,</li>
 <li>a silencing agent,</li>
 <li>an inhibitor</li>
 </ul>
-<p>These parameters are known to us, because they are written down in
-the protocol. If the input is time dependent, then its dynamics (or
-explicit algebraic functions) have to become part of the model. These
-input parameters can be different between experiments, but the intrinsic
-parameters are always the same.</p>
-<p>The ordinary differential equation on the other hand does not need to
-know the distinction between known or unknown parameters. For these
-reason:</p>
+<p>These parameters are known to us, because they are written down in the protocol. If the input is time dependent, then its dynamics (or explicit algebraic functions) have to become part of the model. These input parameters can be different between experiments, but the intrinsic parameters are always the same.</p>
+<p>The ordinary differential equation on the other hand does not need to know the distinction between known or unknown parameters. For these reason:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">u</span> <span class="op">=</span> <span class="va">experiments</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span> <span class="co">#,</span></span>
 <span><span class="va">p</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">k</span>,<span class="va">u</span><span class="op">)</span> <span class="co">#,</span></span></code></pre></div>
-<p>where <code>k</code> are intrinsic, unknown parameters (subject to
-sampling), and <code>u</code> are the known input parameters that are
-encoded in the <code>input</code> field of an experiment.</p>
-<p>If input parameters exist, then they are always concatenated in that
-order and passed to the model, the model’s C code only sees
-<code>p</code>. The wrapper functions in the <code>rgsl</code> package
-do this concatenation when the solver is called. We sample
-<code>k</code> usually in logarithmic space, but the solver gets the
-proposed <code>k</code> and appends the right <code>u</code> for each
-experiment, both in linear space.</p>
+<p>where <code>k</code> are intrinsic, unknown parameters (subject to sampling), and <code>u</code> are the known input parameters that are encoded in the <code>input</code> field of an experiment.</p>
+<p>If input parameters exist, then they are always concatenated in that order and passed to the model, the model’s C code only sees <code>p</code>. The wrapper functions in the <code>rgsl</code> package do this concatenation when the solver is called. We sample <code>k</code> usually in logarithmic space, but the solver gets the proposed <code>k</code> and appends the right <code>u</code> for each experiment, both in linear space.</p>
 </div>
   </main>
 </div>
