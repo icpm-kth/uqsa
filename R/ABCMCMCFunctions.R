@@ -162,8 +162,6 @@ parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, del
   return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior, acceptance=acceptance))
 }
 
-
-
 parUpdate_ProbabilisticAcceptance <- function(acceptanceProbability, curPar, canPar, curPrior, dprior){
   canPrior <- dprior(canPar)
   acceptance <- (runif(1) <= acceptanceProbability(canPar)*min(1,canPrior/curPrior))
