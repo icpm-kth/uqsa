@@ -158,18 +158,20 @@ The sampling loop:
 start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
 	expInd <- experimentsIndices[[i]]
-	objectiveFunction <- makeObjective(experiments[expInd], modelName, Score, parMap)
+
+	objectiveFunction <- makeObjective(experiments[expInd], modelName, distanceMeasure, parMap)
+
 	pC <- preCalibration(objectiveFunction, npc, rprior)
 	M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta, num = nChains)
-	M$startPar <- matrix(M$startPar, nrow=nChains)
+
 	cl <- makeForkCluster(nChains)
 	options(mc.cores=nCores %/% nChains)
 	clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
-	out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior))
+	out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior))
 	stopCluster(cl)
+
 	ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
 	save_sample(expInd,ABCMCMCoutput)
-	## prepare a new prior distribution for the next iteration:
 	C <- fitCopula(ABCMCMCoutput$draws, nCores)
 	rprior <- rCopulaPrior(C)
 	dprior <- dCopulaPrior(C)
