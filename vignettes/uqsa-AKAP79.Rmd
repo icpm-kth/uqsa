@@ -33,8 +33,8 @@ Next, we import the model's data tables from the SBtab files:
 ```{r read-model, eval=FALSE}
 modelName <- checkModel("AKAP79",uqsa_example("AKAP79",pat="gvf[.]c$"))
 model.tsv <- uqsa_example(modelName,pat="[.]tsv$")
-model <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
-experiments <- SBtabVFGEN::sbtab.data(model.tsv)
+model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
+experiments <- SBtabVFGEN::sbtab.data(model.tab)
 ```
 
 The function `checkModel` checks that the model files exist and
@@ -99,22 +99,33 @@ lab). The intermediate distributions will be modelled using
 experimentsIndices <- list(c(3, 12,18, 9), c(2, 11, 17, 8), c(1, 10, 16, 7))
 ```
 
-ABC procedure setup:
+Problem Size and core distribution:
 
 ```{r sample-size, eval=FALSE}
 ns <- 5000 # Size of the sub-sample from each chain
 npc <- 1000 # pre-calibration sample size
-nChains <- 16
-n <- ns*nChains
-options(mc.cores=parallel::detectCores() %/% nChains)
 
+nChains <- 4
+nCores <- parallel::detectCores() %/% nChains
+
+options(mc.cores=nCores)
+
+```
+
+ABC related settings:
+
+```{r ABC, eval=FALSE}
 delta <- 1
 
 set.seed(7619201)
 
-Score <- function(yy_sim, yy_exp=Inf, yy_expErr=Inf){
-	distance <- mean(((yy_sim-yy_exp)/yy_expErr)^2, na.rm=TRUE)
-	return(distance)
+distanceMeasure <- function(funcSim, dataExpr=Inf, dataErr=Inf){
+  if (all(is.finite(funcSim))){
+    distance <- mean((1/71.67*(funcSim-as.matrix(dataExpr))/as.matrix(dataErr))^2, na.rm=TRUE)
+  } else {
+    distance <- Inf
+  }
+  return(distance)
 }
 ```
 
@@ -134,6 +145,13 @@ save_sample <- function(ind,ABCMCMCoutput){
 }
 ```
 
+Build a random number generator, and density function for the intial prior:
+```{r initial-prior, eval=FALSE}
+rprior <- rUniformPrior(ll, ul)
+dprior <- dUniformPrior(ll, ul)
+
+```
+
 The sampling loop:
 
 ```{r sample, eval=FALSE}
@@ -141,23 +159,20 @@ start_time = Sys.time()
 for (i in 1:length(experimentsIndices)){
 	expInd <- experimentsIndices[[i]]
 	objectiveFunction <- makeObjective(experiments[expInd], modelName, Score, parMap)
-	if (i==1){
-		rprior <- rUniformPrior(ll, ul)
-		dprior <- dUniformPrior(ll, ul)
-	} else {
-		C <- fitCopula(ABCMCMCoutput$draws, nCores)
-		rprior <- rCopulaPrior(C)
-		dprior <- dCopulaPrior(C)
-	}
 	pC <- preCalibration(objectiveFunction, npc, rprior)
 	M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta, num = nChains)
 	M$startPar <- matrix(M$startPar, nrow=nChains)
 	cl <- makeForkCluster(nChains)
-	clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
-	out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior, acceptanceProbability))
+	options(mc.cores=nCores %/% nChains)
+	clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
+	out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[j,], ns, M$Sigma, delta, dprior))
 	stopCluster(cl)
 	ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
 	save_sample(expInd,ABCMCMCoutput)
+	## prepare a new prior distribution for the next iteration:
+	C <- fitCopula(ABCMCMCoutput$draws, nCores)
+	rprior <- rCopulaPrior(C)
+	dprior <- dCopulaPrior(C)
 }
 end_time = Sys.time()
 time_ = end_time - start_time
