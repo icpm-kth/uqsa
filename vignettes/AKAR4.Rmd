@@ -1,0 +1,142 @@
+---
+title: "AKAR4"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{AKAR4}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r packages}
+library(uqsa)
+library(parallel)
+library(SBtabVFGEN)
+library(rgsl)
+```
+
+We load the model from a collection of TSV files, convert the contents
+to a list of `data.frames` and also load the R functions of the
+model. The R file we source includes a variable called `model`, it is
+a list of functions, onme of which is called `model$par()` and returns
+the default parameters of the model in linear space:
+
+```{r setup}
+model.tsv <- uqsa_example("AKAR4",full.names=TRUE)
+model.tab <- sbtab_from_tsv(model.tsv) # SBtabVFGEN
+source(uqsa_example("AKAR4",pat="^AKAR4[.]R$"))
+
+modelName <- checkModel(comment(model.tab),uqsa_example("AKAR4",pat="_gvf[.]c$")) # SBtabVFGEN
+
+numPar <- nrow(model.tab$Parameter)
+parNames <- row.names(model.tab$Parameter)
+parVal <- model$par()[1:numPar]
+parMap <- function (parABC=0) {
+	return(10^parABC)
+}
+
+```
+
+We want to sample in logarithmic space, so we set up a mapping
+function that the sampler will call before it simulates the model.
+
+Next, we load the list of experiments from the same list of data.frames (SBtab content):
+```{r load-experiments}
+experiments <- sbtab.data(model.tab)
+```
+
+Define lower and upper Limits for log-uniform prior distribution for the parameters:
+
+```{r limits}
+defRange <- 1000
+ll <- c(parVal/defRange)
+ul <- c(parVal*defRange)
+ll <- log10(ll) # log10-scale
+ul <- log10(ul) # log10-scale
+```
+
+Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
+
+```{r sample-size}
+ns <- 500 # no of samples required from each ABC-MCMC chain
+npc <- 500 # pre-calibration
+```
+
+```{r ABC-settings}
+delta <- 0.002
+set.seed(2022)
+nCores <- parallel::detectCores()
+```
+
+We define a function that measures the distance between experiment and simulation:
+
+```{r distance}
+distanceMeasure <- function(funcSim, dataExpr, dataErr = 1.0){
+  distance <- mean(((funcSim-dataExpr$AKAR4pOUT)/max(dataExpr$AKAR4pOUT))^2,na.rm=TRUE)
+  return(distance)
+}
+```
+
+We divide the workload into chunks and loop over the chunks:
+
+```{r ABC}
+chunks <- list(c(1,2),3)
+priorPDF <- dUniformPrior(ll, ul)
+rprior <- rUniformPrior(ll, ul)
+
+start_time = Sys.time()
+for (i in seq(length(chunks))){
+	expInd <- chunks[[i]]
+	simulate <- simulator.c(experiments[expInd],modelName,parMap)
+	Obj <- makeObjective(experiments[expInd],modelName,distanceMeasure,parMap,simulate)
+	time_pC <- Sys.time()
+	options(mc.cores = nCores)
+	pC <- preCalibration(Obj, npc, rprior, rep=3)
+	M <- getMCMCPar(pC$prePar, pC$preDelta, delta, num=1)
+	time_pC <- Sys.time() - time_pC
+	cat(sprintf("\t - time spent on precalibration: %g s\n",time_pC))
+
+
+	time_ABC <- Sys.time()
+	mcmc <- ABCMCMC(Obj, as.numeric(M$startPar), ns, M$Sigma, delta, priorPDF)
+	time_ABC <- Sys.time() - time_ABC
+	cat(sprintf("\t - time spent on ABC-MCMC: %g s\n",time_ABC))
+
+	if (i>1){
+		simulate <- simulator.c(experiments[chunks[[1]]],modelName,parMap)
+		Obj <- makeObjective(experiments[chunks[[1]]],modelName,distanceMeasure,parMap,simulate)
+		mcmc$draws <- checkFitWithPreviousExperiments(mcmc$draws, Obj, delta)
+	}
+	# Save Resulting Samples to MATLAB and R files.
+
+	C <- fitCopula(mcmc$draws)
+	priorPDF <- dCopulaPrior(C)
+	rprior <- rCopulaPrior(C)
+}
+end_time = Sys.time()
+time_ = end_time - start_time
+print(time_)
+```
+
+Some sensitivity plots using the results of the above loop:
+
+```{r plot}
+y<-simulate(t(mcmc$draws))
+f<-aperm(y[[1]]$func[1,,]) # aperm makes the sample-index (3rd) the first index of f, default permutation
+S<-sensitivity(mcmc$draws,f)
+S[1,]<-0 # the first index of S is time, and initially sensitivity is 0
+cuS<-t(apply(S,1,cumsum))
+plot.new()
+tm<-experiments[[3]]$outputTimes
+plot(tm,cuS[,3],type="l")
+## this section makes a little sensitivity plot:
+for (si in dim(S)[2]:1){
+	polygon(c(tm,rev(tm)),c(cuS[,si],numeric(length(tm))),col=si+1)
+}
+```

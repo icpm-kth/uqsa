@@ -36,9 +36,6 @@ ul = log10(ul) # log10-scale
 ns <- 500 # no of samples required from each ABC-MCMC chain
 npc <- 50000 # pre-calibration
 
-# Define ABC-MCMC Settings
-p <- 0.01 # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
-
 delta <- 0.002
 set.seed(2022)
 
@@ -51,8 +48,6 @@ set.seed(2022)
 ## }
 ## experiments <- lapply(experiments, gaussianProcessPrediction)
 
-maxVal <- 184
-minVal <- 108
 distanceMeasure <- function(funcSim, dataExpr, dataErr = 1.0){
   distance <- mean(((funcSim-dataExpr$AKAR4pOUT)/max(dataExpr$AKAR4pOUT))^2,na.rm=TRUE)
   return(distance)
