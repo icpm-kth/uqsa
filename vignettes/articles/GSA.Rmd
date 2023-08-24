@@ -1,0 +1,12 @@
+---
+title: "GSA"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+Information on Global Sensitivity Analysis
+ 
