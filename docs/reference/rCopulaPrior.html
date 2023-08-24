@@ -21,22 +21,31 @@
       <ul class="navbar-nav me-auto"><li class="nav-item">
   <a class="nav-link" href="../articles/uqsa.html">Get started</a>
 </li>
-<li class="active nav-item">
-  <a class="nav-link" href="../reference/index.html">Reference</a>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
+    <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
+    <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
+    <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
+    <a class="dropdown-item" href="../articles/data.html">Importing data</a>
+    <div class="dropdown-divider"></div>
+    <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
+    <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
+    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
+    <div class="dropdown-divider"></div>
+    <h6 class="dropdown-header" data-toc-skip>Sensitivity analysis</h6>
+    <a class="dropdown-item" href="../articles/GSA.html">GSA following UQ</a>
+  </div>
 </li>
 <li class="nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/AKAP79.html">Example-AKAP79</a>
-    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
-    <a class="dropdown-item" href="../articles/cite.html">Cite</a>
-    <a class="dropdown-item" href="../articles/data.html">Data</a>
-    <a class="dropdown-item" href="../articles/examples_overview.html">Examples overview</a>
-    <a class="dropdown-item" href="../articles/installation.html">Installation</a>
-    <a class="dropdown-item" href="../articles/literature_references.html">Model and Data references</a>
-    <a class="dropdown-item" href="../articles/models.html">Models</a>
-    <a class="dropdown-item" href="../articles/simulate.html">Simulate</a>
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-examples">
+    <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
   </div>
+</li>
+<li class="active nav-item">
+  <a class="nav-link" href="../reference/index.html">Function reference</a>
 </li>
 <li class="nav-item">
   <a class="nav-link" href="../news/index.html">Changelog</a>
@@ -82,19 +91,19 @@
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">rcp</span><span class="op">&lt;-</span><span class="fu">rCopulaPrior</span><span class="op">(</span><span class="fu"><a href="makeIndepCopula.html">makeIndepCopula</a></span><span class="op">(</span>ll<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,ul<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rcp</span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]     [,2]     [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.43078986 1.260551 2.783127</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.40058545 1.113560 2.212086</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.61209265 1.345711 2.742749</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.22336230 1.758590 2.041970</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.89539534 1.076107 2.931474</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.04752082 1.086033 2.364461</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.38175203 1.014651 2.639666</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.46740116 1.072968 2.894782</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.27071723 1.791775 2.398040</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.49549381 1.284843 2.986549</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.82668868 1.371501 2.023514</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.17129304 1.612434 2.811479</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            [,1]     [,2]     [,3]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.7443599 1.653830 2.807608</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.5484217 1.660360 2.651351</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.8020172 1.657592 2.678998</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.9951867 1.157755 2.112586</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.2775234 1.552214 2.314228</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.8836619 1.328340 2.617839</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.7270312 1.305571 2.307877</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.9121257 1.581769 2.644560</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.5871936 1.807874 2.021973</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.7360145 1.923027 2.733087</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.2125067 1.904736 2.986825</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.6388015 1.474280 2.179411</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

@@ -29,22 +29,31 @@ function."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
       <ul class="navbar-nav me-auto"><li class="nav-item">
   <a class="nav-link" href="../articles/uqsa.html">Get started</a>
 </li>
-<li class="active nav-item">
-  <a class="nav-link" href="../reference/index.html">Reference</a>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
+    <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
+    <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
+    <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
+    <a class="dropdown-item" href="../articles/data.html">Importing data</a>
+    <div class="dropdown-divider"></div>
+    <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
+    <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
+    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
+    <div class="dropdown-divider"></div>
+    <h6 class="dropdown-header" data-toc-skip>Sensitivity analysis</h6>
+    <a class="dropdown-item" href="../articles/GSA.html">GSA following UQ</a>
+  </div>
 </li>
 <li class="nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/AKAP79.html">Example-AKAP79</a>
-    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
-    <a class="dropdown-item" href="../articles/cite.html">Cite</a>
-    <a class="dropdown-item" href="../articles/data.html">Data</a>
-    <a class="dropdown-item" href="../articles/examples_overview.html">Examples overview</a>
-    <a class="dropdown-item" href="../articles/installation.html">Installation</a>
-    <a class="dropdown-item" href="../articles/literature_references.html">Model and Data references</a>
-    <a class="dropdown-item" href="../articles/models.html">Models</a>
-    <a class="dropdown-item" href="../articles/simulate.html">Simulate</a>
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-examples">
+    <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
   </div>
+</li>
+<li class="active nav-item">
+  <a class="nav-link" href="../reference/index.html">Function reference</a>
 </li>
 <li class="nav-item">
   <a class="nav-link" href="../news/index.html">Changelog</a>
@@ -101,18 +110,18 @@ ll)</p></dd>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">rup</span><span class="op">&lt;-</span><span class="fu">rUniformPrior</span><span class="op">(</span>ll<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,ul<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rup</span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]     [,2]     [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.35922318 1.874701 2.605144</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.28119982 1.345205 2.811338</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.98563928 1.478419 2.467562</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.91350118 1.538208 2.082818</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.09962472 1.868077 2.687100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.58590843 1.584318 2.964108</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.13677949 1.877494 2.594701</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.70947692 1.019271 2.466498</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.89533518 1.153609 2.564736</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.31269450 1.492884 2.197774</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.32803745 1.098296 2.139465</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.40394983 1.604036 2.552527</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.02330662 1.671410 2.761590</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.32685830 1.607799 2.530337</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.74544321 1.105806 2.257882</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.62570496 1.306110 2.699353</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.23189436 1.446959 2.246760</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.43290989 1.130965 2.639181</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.04858957 1.508417 2.592168</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.09525173 1.013480 2.264542</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.81802712 1.766686 2.522626</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.94938813 1.402395 2.408857</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.06807676 1.832823 2.847848</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.70663064 1.002800 2.433885</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
