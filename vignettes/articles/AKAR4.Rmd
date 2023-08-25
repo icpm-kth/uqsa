@@ -1,10 +1,5 @@
 ---
 title: "AKAR4"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{AKAR4}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -124,7 +119,15 @@ time_ = end_time - start_time
 print(time_)
 ```
 
-Some sensitivity plots using the results of the above loop:
+We plot the sample as a two dimensional histogram plot-matrix using
+the hexbin package:
+
+```{r sample-density}
+colnames(mcmc$draws)<-names(parVal)
+hexbin::hexplom(mcmc$draws)
+```
+
+A sensitivity plot using the results of the above loop:
 
 ```{r plot}
 y<-simulate(t(mcmc$draws))
