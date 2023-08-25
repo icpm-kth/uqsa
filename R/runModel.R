@@ -158,7 +158,7 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE){
         error <- as.matrix(experiments[[i]]$errorValues)
         if(!is.null(error)){
           error[is.na(error)] <- 0
-          y <- mclapply(1:n, function(j) out[,,j] + rnorm(l, mean = rep(0,l), sd = error))
+          y <- mclapply(1:n, function(j) out[,,j] + rnorm(l, mean = 0, sd = error))
           yf[[i]]$func[1,,] <- do.call(cbind,y)
         }
       }

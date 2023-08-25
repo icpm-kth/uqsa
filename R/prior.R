@@ -56,7 +56,7 @@ rCopulaPrior <- function(Copula){
     R <- RVineSim(npc, copula)
     prePar <- matrix(0, npc, np)
     for(i in 1:np){
-      prePar[,i] = spline(unique(Z[,i]),unique(U[,i]),xout=R[,i])$y
+      prePar[,i] <- spline(unique(Z[,i]),unique(U[,i]),xout=R[,i])$y
     }
     return(prePar)
   }

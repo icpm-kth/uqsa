@@ -38,22 +38,31 @@
 <li class="nav-item">
   <a class="nav-link" href="../articles/uqsa.html">Get started</a>
 </li>
-<li class="nav-item">
-  <a class="nav-link" href="../reference/index.html">Reference</a>
-</li>
 <li class="active nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/AKAP79.html">Example-AKAP79</a>
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
+    <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
+    <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
+    <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
+    <a class="dropdown-item" href="../articles/data.html">Importing data</a>
+    <div class="dropdown-divider"></div>
+    <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
+    <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
     <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
-    <a class="dropdown-item" href="../articles/cite.html">Cite</a>
-    <a class="dropdown-item" href="../articles/data.html">Data</a>
-    <a class="dropdown-item" href="../articles/examples_overview.html">Examples overview</a>
-    <a class="dropdown-item" href="../articles/installation.html">Installation</a>
-    <a class="dropdown-item" href="../articles/literature_references.html">Model and Data references</a>
-    <a class="dropdown-item" href="../articles/models.html">Models</a>
-    <a class="dropdown-item" href="../articles/simulate.html">Simulate</a>
+    <div class="dropdown-divider"></div>
+    <h6 class="dropdown-header" data-toc-skip>Sensitivity analysis</h6>
+    <a class="dropdown-item" href="../articles/GSA.html">GSA following UQ</a>
   </div>
+</li>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-examples">
+    <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
+  </div>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="../reference/index.html">Function reference</a>
 </li>
 <li class="nav-item">
   <a class="nav-link" href="../news/index.html">Changelog</a>
@@ -72,7 +81,8 @@
 
 
 
-<script src="ABC_sampling_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+
+<div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>ABC sampling</h1>
             
@@ -83,14 +93,38 @@
 
     
     
-<p>The Approximate Bayesian Computation Markov chain Monte Carlo (ABCMCMC) algorithm is implemented in our toolset an <code><a href="../reference/ABCMCMC.html">ABCMCMC()</a></code>.</p>
-<p>In the ABC-MCMC algorithm, parameters are proposed and used to simulate the model. Initially, we can use an uninformative <em>prior distribution</em> that only encodes qualitative knowledge or knowledge about parameter <em>ranges</em>. This can be achieved using standard distributions such as <em>normal</em> or <em>uniform</em>. But if the procedure is repeated, then the last <em>posterior</em> distribution can be used as the <em>prior</em> distribution of the next round. This is necessary when new data is measured and added. However, the posterior density is characterized by the sample, it doesn’t have a computational form for evaluation. This requires a density estimator, which approximates the distribution; generic flowchart:</p>
+<p>The Approximate Bayesian Computation Markov chain Monte Carlo
+(ABCMCMC) algorithm is implemented in our toolset an
+<code><a href="../reference/ABCMCMC.html">ABCMCMC()</a></code>.</p>
+<p>In the ABC-MCMC algorithm, parameters are proposed and used to
+simulate the model. Initially, we can use an uninformative <em>prior
+distribution</em> that only encodes qualitative knowledge or knowledge
+about parameter <em>ranges</em>. This can be achieved using standard
+distributions such as <em>normal</em> or <em>uniform</em>. But if the
+procedure is repeated, then the last <em>posterior</em> distribution can
+be used as the <em>prior</em> distribution of the next round. This is
+necessary when new data is measured and added. However, the posterior
+density is characterized by the sample, it doesn’t have a computational
+form for evaluation. This requires a density estimator, which
+approximates the distribution; generic flowchart:</p>
 <pre><code><span><span class="va">sample</span> <span class="op">-&gt;</span> <span class="va">estimator</span> <span class="op">-&gt;</span> <span class="va">density_function</span></span></code></pre>
-<p>With that function, we can now obtain a density value for any parameter vector. We use the <a href="https://cran.r-project.org/package=VineCopula" class="external-link">VineCopula</a> package for this purpose.</p>
-<p>During ABC, the simulated output values are compared with the experimental data. Parameters with simulations close enough to the data are kept as the <em>posterior sample</em></p>
-<p>If additional data is added at a later stage, and ABC sampling is performed on the new data while approximating the prior using the old sampling results, the new sample will be somewhat incorrect depending on how good the approximation of the old posterior turned out.</p>
-<p>It therefore interesting to check if a Markov-chain of sampled parameters is “in agreement” with an older set of experimental data that was only implicitly used in the prior, but not directly. This can be performed with function <code>checkFitWithPreviousExperiments</code>.</p>
-<p>But, one can of course also check compatibility with an experiment that wasn’t actually used at all.</p>
+<p>With that function, we can now obtain a density value for any
+parameter vector. We use the <a href="https://cran.r-project.org/package=VineCopula" class="external-link">VineCopula</a>
+package for this purpose.</p>
+<p>During ABC, the simulated output values are compared with the
+experimental data. Parameters with simulations close enough to the data
+are kept as the <em>posterior sample</em></p>
+<p>If additional data is added at a later stage, and ABC sampling is
+performed on the new data while approximating the prior using the old
+sampling results, the new sample will be somewhat incorrect depending on
+how good the approximation of the old posterior turned out.</p>
+<p>It therefore interesting to check if a Markov-chain of sampled
+parameters is “in agreement” with an older set of experimental data that
+was only implicitly used in the prior, but not directly. This can be
+performed with function
+<code>checkFitWithPreviousExperiments</code>.</p>
+<p>But, one can of course also check compatibility with an experiment
+that wasn’t actually used at all.</p>
 <div class="section level2">
 <h2 id="available-prior-functions-in-our-examples">Available Prior functions in our examples<a class="anchor" aria-label="anchor" href="#available-prior-functions-in-our-examples"></a>
 </h2>
@@ -115,11 +149,57 @@
 <h3 id="abcmcmc">
 <code>ABCMCMC</code><a class="anchor" aria-label="anchor" href="#abcmcmc"></a>
 </h3>
-<p>Build a chain of parameters approximately distributed as the posterior distribution of model parameters</p>
+<p>Build a chain of parameters approximately distributed as the
+posterior distribution of model parameters</p>
 <pre><code><span><span class="va">mcmc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ABCMCMC.html">ABCMCMC</a></span><span class="op">(</span><span class="va">objectiveFunction</span>, <span class="va">startPar</span>, <span class="va">nSims</span>, <span class="va">Sigma0</span>, <span class="va">delta</span>, <span class="va">dprior</span>, acceptanceProbability<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span></code></pre>
-<p>The <code>ABCMCMC</code> function generates chains of sample parameters using the ABCMCMC algorithm. These samples are approximately distributed as the posterior probability of the model parameters. To build a chain, the algorithm considers the (current) last value in the chain and proposes a parameter that is sampled from a multivariate normal distribution that is cenetered at the current parameter and <code>Sigma0</code> as covariance matrix. The covariance matrix is adaptively modified: if the chain gets stuck, a regularization is performed. After 4 regularizations, the chain is aborted. Then, to understand if the proposed parameter just sampled is “in agreement” with the experimental data <code>objectiveFunction</code> is called with the proposed parameter vector: <code>objectiveFunction</code> simulates the model and computes the distance between the experimental data and output functions of the model. If this distance is larger that the threshold <code>delta</code>, then the proposed parameter is not likely to have generated the experimental data, and therefore rejected. The Markov chain will repeat for this point (it stands still). If the distance is less than the threshold <code>delta</code>, the proposed parameter is accepted with probability equal to the ratio of prior probability density (calculated by <code>dprior</code>) evaluated in the proposed and current parameter, respectively.</p>
-<p><strong>Input arguments</strong> * <code>objectiveFunction</code> (function) - function that, given a (vectorial) parameter as input, simulated the model and outputs the distance between experimental data and data simulated from the model with the parameter provided in input * <code>startPar</code> (numeric) - parameter (as vector) that corresponds to the starting parameter of the chain * <code>nSims</code> (integer) - requested number of samples in the output chain * <code>Sigma0</code> (numeric) - matrix with both dimensions equal to the length of the (vectorial) model parameter, corresponding to the covariance matrix of the desired proposed moves in the parameter space. In the ABCMCMC algorithm this covariance matrix is slightly modified and regularized to enhance the exploration of the parameter space and the convergence of the method * <code>delta</code> (numeric) - ABC acceptance threshold * <code>dprior</code> (function) - function that evaluates the prior probability density function of the parameter given in input</p>
-<p><strong>Output</strong> (list) The output of <code>ABCMCMC</code> is a list containing the following data: * <code>draws</code> (numeric) - a matrix with <code>nSims</code> rows and a number of columns equal to the length of the model parameter. Each row corresponds to a sample in the ABCMCMC chain * <code>scores</code> (numeric) - vector of length <code>nSims</code> containing distances between experimental data and data simulated with the corresponding ABCMCMC samples (stored in <code>draws</code>) * <code>acceptanceRate</code> (numeric) - fraction of parameters in the ABCMCMC chain that were proposed and accepted. * <code>nRegularizations</code> (integer) - number of regularizations performed on the covariance matrix for the moves proposed in the algorithm</p>
+<p>The <code>ABCMCMC</code> function generates chains of sample
+parameters using the ABCMCMC algorithm. These samples are approximately
+distributed as the posterior probability of the model parameters. To
+build a chain, the algorithm considers the (current) last value in the
+chain and proposes a parameter that is sampled from a multivariate
+normal distribution that is cenetered at the current parameter and
+<code>Sigma0</code> as covariance matrix. The covariance matrix is
+adaptively modified: if the chain gets stuck, a regularization is
+performed. After 4 regularizations, the chain is aborted. Then, to
+understand if the proposed parameter just sampled is “in agreement” with
+the experimental data <code>objectiveFunction</code> is called with the
+proposed parameter vector: <code>objectiveFunction</code> simulates the
+model and computes the distance between the experimental data and output
+functions of the model. If this distance is larger that the threshold
+<code>delta</code>, then the proposed parameter is not likely to have
+generated the experimental data, and therefore rejected. The Markov
+chain will repeat for this point (it stands still). If the distance is
+less than the threshold <code>delta</code>, the proposed parameter is
+accepted with probability equal to the ratio of prior probability
+density (calculated by <code>dprior</code>) evaluated in the proposed
+and current parameter, respectively.</p>
+<p><strong>Input arguments</strong> * <code>objectiveFunction</code>
+(function) - function that, given a (vectorial) parameter as input,
+simulated the model and outputs the distance between experimental data
+and data simulated from the model with the parameter provided in input *
+<code>startPar</code> (numeric) - parameter (as vector) that corresponds
+to the starting parameter of the chain * <code>nSims</code> (integer) -
+requested number of samples in the output chain * <code>Sigma0</code>
+(numeric) - matrix with both dimensions equal to the length of the
+(vectorial) model parameter, corresponding to the covariance matrix of
+the desired proposed moves in the parameter space. In the ABCMCMC
+algorithm this covariance matrix is slightly modified and regularized to
+enhance the exploration of the parameter space and the convergence of
+the method * <code>delta</code> (numeric) - ABC acceptance threshold *
+<code>dprior</code> (function) - function that evaluates the prior
+probability density function of the parameter given in input</p>
+<p><strong>Output</strong> (list) The output of <code>ABCMCMC</code> is
+a list containing the following data: * <code>draws</code> (numeric) - a
+matrix with <code>nSims</code> rows and a number of columns equal to the
+length of the model parameter. Each row corresponds to a sample in the
+ABCMCMC chain * <code>scores</code> (numeric) - vector of length
+<code>nSims</code> containing distances between experimental data and
+data simulated with the corresponding ABCMCMC samples (stored in
+<code>draws</code>) * <code>acceptanceRate</code> (numeric) - fraction
+of parameters in the ABCMCMC chain that were proposed and accepted. *
+<code>nRegularizations</code> (integer) - number of regularizations
+performed on the covariance matrix for the moves proposed in the
+algorithm</p>
 </div>
 <div class="section level3">
 <h3 id="checkfitwithpreviousexperiments">
@@ -129,9 +209,25 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">oldObjective</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/makeObjective.html">makeObjective</a></span><span class="op">(</span><span class="va">oldExperiments</span>,<span class="va">modelName</span>, <span class="va">distanceMeasure</span>, <span class="va">parMap</span>, <span class="va">simulate</span><span class="op">)</span></span>
 <span><span class="va">filteredDraws</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkFitWithPreviousExperiments.html">checkFitWithPreviousExperiments</a></span><span class="op">(</span>draws<span class="op">=</span><span class="va">mcmc</span><span class="op">$</span><span class="va">draws</span>, objectiveFunction<span class="op">=</span><span class="va">oldObjective</span>, <span class="va">delta</span><span class="op">)</span></span></code></pre></div>
-<p>This function tests the samples in <code>draws</code> with experimental data that have not been used to generate <code>draws</code>. The experimental data needs to be used to construct the variable <code>objectiveFunction</code>. The <code>objectiveFunction</code> is used to simualte the model with the <code>draws</code> as parameters, and compare the simulated data with the old experimental data. If the distances computed with <code>objectiveFunction</code> are below the ABC threshold <code>delta</code>, then the corresponding parameters in <code>draws</code> are kept. Otherwise, they are discarded.</p>
-<p><strong>Input arguments</strong> * <code>draws</code> (numeric) - matrix of sampled values (to be filtered) * <code>objectiveFunction</code> (function) - function that, given a (vectorial) parameter as input, simulated the model and outputs the distance between experimental data and data simulated from the model with the parameter provided in input * <code>delta</code> (numeric) - acceptance threshold</p>
-<p><strong>Output</strong> (numeric) Filtered subset (matrix) of acceptable parameter draws</p>
+<p>This function tests the samples in <code>draws</code> with
+experimental data that have not been used to generate
+<code>draws</code>. The experimental data needs to be used to construct
+the variable <code>objectiveFunction</code>. The
+<code>objectiveFunction</code> is used to simualte the model with the
+<code>draws</code> as parameters, and compare the simulated data with
+the old experimental data. If the distances computed with
+<code>objectiveFunction</code> are below the ABC threshold
+<code>delta</code>, then the corresponding parameters in
+<code>draws</code> are kept. Otherwise, they are discarded.</p>
+<p><strong>Input arguments</strong> * <code>draws</code> (numeric) -
+matrix of sampled values (to be filtered) *
+<code>objectiveFunction</code> (function) - function that, given a
+(vectorial) parameter as input, simulated the model and outputs the
+distance between experimental data and data simulated from the model
+with the parameter provided in input * <code>delta</code> (numeric) -
+acceptance threshold</p>
+<p><strong>Output</strong> (numeric) Filtered subset (matrix) of
+acceptable parameter draws</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

@@ -64,24 +64,14 @@ logarithms of the model parameters. We limit the sampling to ranges,
 as appropriate for each parameter:
 
 ```{r bounds, eval=FALSE}
-defRange <- 1000
+defRange <- c(rep(1000,19),1.9,1000,1.25,1.25,1.25,1.5,1.5,2)
 
 # Define Lower and Upper Limits for logUniform prior distribution for the parameters
 
-ll <- c(parVal[1:19]/defRange,
-       parVal[20]/1.9,
-       parVal[21]/defRange,
-       parVal[22:24]/1.25,
-       parVal[25:26]/1.5,
-       parVal[27]/2
-      )
-ul <- c(parVal[1:19]*defRange,
-       parVal[20]*1.9,
-       parVal[21]*defRange,
-       parVal[22:24]*1.25,
-       parVal[25:26]*1.5,
-       parVal[27]*2
-      )
+ll <- parVal/defRange
+
+ul <- parVal*defRange
+
 ll = log10(ll) # log10-scale
 ul = log10(ul) # log10-scale
 ```
@@ -102,13 +92,14 @@ experimentsIndices <- list(c(3, 12,18, 9), c(2, 11, 17, 8), c(1, 10, 16, 7))
 Problem Size and core distribution:
 
 ```{r sample-size, eval=FALSE}
-ns <- 5000 # Size of the sub-sample from each chain
+ns <- 100 # Size of the sub-sample from each chain
 npc <- 1000 # pre-calibration sample size
 
 nChains <- 4
-nCores <- parallel::detectCores() %/% nChains
+nCores <- parallel::detectCores()
+nCoresPerChain <- nCores %/% nChains
 
-options(mc.cores=nCores)
+options(mc.cores=nCoresPerChain)
 
 ```
 
@@ -160,19 +151,20 @@ for (i in 1:length(experimentsIndices)){
 	expInd <- experimentsIndices[[i]]
 
 	objectiveFunction <- makeObjective(experiments[expInd], modelName, distanceMeasure, parMap)
-
+  
+	options(mc.cores = nCores)
 	pC <- preCalibration(objectiveFunction, npc, rprior)
 	M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta, num = nChains)
 
+	options(mc.cores = nCoresPerChain)
 	cl <- makeForkCluster(nChains)
-	options(mc.cores=nCores %/% nChains)
 	clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
 	out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior))
 	stopCluster(cl)
 
 	ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
 	save_sample(expInd,ABCMCMCoutput)
-	C <- fitCopula(ABCMCMCoutput$draws, nCores)
+	C <- fitCopula(ABCMCMCoutput$draws, nCoresPerChain)
 	rprior <- rCopulaPrior(C)
 	dprior <- dCopulaPrior(C)
 }
@@ -182,4 +174,13 @@ time_ = end_time - start_time
 cat("Total time:\n",time_)
 ```
 
+The sampling loop ran for ~12.5 minutes on a machine with the following specs:
+
+|MacBook Pro |(13-inch, M1, 2020)|
+|-----------:|:------------------|
+|Chip: |Apple M1|
+|Memory: |16 GB|
+
 The result is a collection of intermediate samples (2 files) and a final posterior sample (1 file).
+
+

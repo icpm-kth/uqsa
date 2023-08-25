@@ -15,5 +15,6 @@ inst/doc
 *.zip
 *.tar.gz
 *.mod
+.DS_Store
 /doc/
 /Meta/
