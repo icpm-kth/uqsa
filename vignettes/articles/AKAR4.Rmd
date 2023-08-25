@@ -56,17 +56,20 @@ ll <- log10(ll) # log10-scale
 ul <- log10(ul) # log10-scale
 ```
 
-Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
+Define Number of Samples for the Precalibration (npc) and each
+ABC-MCMC chain (ns). During ABC, we save every 100th point, so this
+number should be lower than the pre-calibration size.
 
 ```{r sample-size}
-ns <- 500 # no of samples required from each ABC-MCMC chain
-npc <- 500 # pre-calibration
+ns <- 800   # ABC-MCMC sample size
+npc <- 5000 # pre-calibration size
 ```
 
 ```{r ABC-settings}
-delta <- 0.002
+delta <- 0.2
 set.seed(2022)
 nCores <- parallel::detectCores()
+options(mc.cores=nCores)
 ```
 
 We define a function that measures the distance between experiment and simulation:
@@ -88,15 +91,14 @@ rprior <- rUniformPrior(ll, ul)
 start_time = Sys.time()
 for (i in seq(length(chunks))){
 	expInd <- chunks[[i]]
-	simulate <- simulator.c(experiments[expInd],modelName,parMap)
+	simulate <- simulator.c(experiments[expInd],modelName,parMap,noise=TRUE)
 	Obj <- makeObjective(experiments[expInd],modelName,distanceMeasure,parMap,simulate)
 	time_pC <- Sys.time()
-	options(mc.cores = nCores)
+
 	pC <- preCalibration(Obj, npc, rprior, rep=3)
 	M <- getMCMCPar(pC$prePar, pC$preDelta, delta, num=1)
 	time_pC <- Sys.time() - time_pC
 	cat(sprintf("\t - time spent on precalibration: %g s\n",time_pC))
-
 
 	time_ABC <- Sys.time()
 	mcmc <- ABCMCMC(Obj, as.numeric(M$startPar), ns, M$Sigma, delta, priorPDF)
@@ -108,7 +110,6 @@ for (i in seq(length(chunks))){
 		Obj <- makeObjective(experiments[chunks[[1]]],modelName,distanceMeasure,parMap,simulate)
 		mcmc$draws <- checkFitWithPreviousExperiments(mcmc$draws, Obj, delta)
 	}
-	# Save Resulting Samples to MATLAB and R files.
 
 	C <- fitCopula(mcmc$draws)
 	priorPDF <- dCopulaPrior(C)

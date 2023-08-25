@@ -149,16 +149,16 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE){
   sim <- function(parABC){
     modelPar <- parMap(parABC)
     yf <- unlist(mclapply(experiments,function(EX) {rgsl::r_gsl_odeiv2_outer(modelName, list(EX), as.matrix(modelPar))}),recursive=FALSE)
-    names(yf) <- names(experiment)
+    names(yf) <- names(experiments)
     if(noise){
       for(i in 1:length(experiments)){
         out <- yf[[i]]$func
         l <- dim(out)[2]
         n <- ifelse(is.matrix(parABC),ncol(parABC),1)
-        error <- as.matrix(experiments[[i]]$errorValues)
-        if(!is.null(error)){
-          error[is.na(error)] <- 0
-          y <- mclapply(1:n, function(j) out[,,j] + rnorm(l, mean = 0, sd = error))
+        sd <- as.matrix(experiments[[i]]$errorValues)
+        if(!is.null(sd)){
+          sd[is.na(sd)] <- 0.0
+          y <- mclapply(1:n, function(j) {return(out[,,j] + rnorm(l, 0, sd))})
           yf[[i]]$func[1,,] <- do.call(cbind,y)
         }
       }
