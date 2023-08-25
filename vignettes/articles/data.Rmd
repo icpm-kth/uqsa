@@ -9,43 +9,72 @@ knitr::opts_chunk$set(
 )
 ```
 
-The R package `uqsa`, typically imports systems biology models and corresponding data stored in [SBtab](https://www.sbtab.net) files. SBtab is a table format for system biology. The use of SBtab is optional, but very practical. SBML models currently cannot be imported by this package. 
+There are applications that would require the data to be separate from
+the model. This is the case where several competing models exist for
+the same set of data. Our focus is on the case where we are developing
+a singular model for a given data-set. For this reason, we store them
+together. Having two models would require us to copy the same data-set
+into the directories of all competing models. On a system where
+[symbolic links](https://en.wikipedia.org/wiki/Symbolic_link) are
+possible (or hard links) they can be used to conserve disk-space for
+large data-sets.
 
-Data and models are tightly linked and we also include two tables on the relationships between the data and model simulations in all our examples:
+The data-sets themselves can be stored in a normal SBtab table, using
+any valid `TableName`. How many data sets there are and their type are
+listed in the *table of experiments*: `Experiments.tsv`
 
-1. *Experiments*, a table with a list of experiments together with appropriate model settings
-2. *Output*, a list of output functions that correspond to measurable values for this model, named the same as the corresponding data columns
+Each experiment can be a time series experiment, or a dose response
+curve (where each line is a separate time series with a single
+measurement time-point, a *final state* that counts).
 
-An SBtab Document is a set of tables that represent reactions, compounds, parameters, and measured data that correspond to simulations of the model under certain input conditions and initial values. According to the specifications of the SBtab authors, MS Excel spreadsheets are an acceptable storage format - but we don't use any of their original code. Our [SBtabVFGEN](icpm-kth/SBtabVFGEN) package uses either multiple TSV files or one [ODS](https://en.wikipedia.org/wiki/OpenDocument) file. The TSV reading is done using core R functions, while ODS is read through [readODS](https://cran.r-project.org/package=readODS). Both formats can have issues that are general and not specific to this package:
+In a time series table, the first column is called `!TimePoint`, the
+second is typically `!Time`, followed by the measured quantities
+labelled as `>outputFunctionID` (values) and `~outputFunctionID` (error estimates).
 
-- TSV
-    - line endings can be `\n` or `\n\r`
-    - fields could be automatically and unnecessarily quoted by a spreadsheet software
-    - encoding (UTF-8, or something else)
-    - some spreadsheets may want to write a unicode minus sign `−` rather than `-` into a tsv file: `U+2212`, be careful
-    - lines can be blank, but not quite, if they contain just tabs or spaces
-- ODS
-    - comments inside fields could be imported as field content and confuse the model parser
-    - same issue with unicode minus signs
-    - `readODS` could theoretically be discontinued (deprecated), despite the format continuing to exist
+## Time Series
 
-Models can be automatically converted between the SBtab format and other modelling formats, such as SBML. For more information about SBtab please refer to [the official git repository](https://github.com/tlubitz/SBtab). Be aware that the conversion from SBML to SBtab has to be done with the official SBtab tools, not ours (SBML is hard).
+|label| example | meaning|
+|----:|:-------:|:-------|
+|!TimePoint|`Experiment0Time0`|same as !ID, but for times (a unique string)|
+|!Time|`-0.5`|a floating point constant|
+|>outputFunctionID|`>Calcium_Out`|values that are meant to be compared to the Output called `Calcium_Out`|
+|~outputFunctionID|`~Calcium_Out`|error estimated for the values in *>outputFunctionID*|
 
-For the most part, in our case, an SBtab document is a collection of [tsv](https://en.wikipedia.org/wiki/Tab-separated_values) files (has to be one file per table). Each table contains information about model, data, and their relationship to one another:
+Each time series typically requires one model simulation to reproduce
+(unless scheduled events are happening).
 
-- Reactions
-- Parameters
-- Output Functions
-- Compounds/Molecular Species
+## Dose Response
 
-Each type of items gets a TSV file, see our examples. Still, a user can circumvent this entire format by just writing the C code or R code for the model by hand or an entirely different tool, such as [VFGEN](https://warrenweckesser.github.io/vfgen/) itself, or an SBML related project like [SBFC](https://www.ebi.ac.uk/biomodels/tools/converters/) that generates code.
+An experiment that maps an increasing input to output values. In such
+cases the output has to happen at one pre-defined time-point for each
+dose. These dose-response curves will be transformed into *n*
+time-series experiments during parsing, where *n* is the number of
+content-rows (without headers).
+
+|label| example | meaning|
+|----:|:-------:|:-------|
+|!ID|`Experiment0Dose0`|a unique string, identifying this dose|
+|>anInput|`300`|a valid value for one of the input parameters|
+|>outputFunctionID|`>Calcium_Out`|values that are meant to be compared to the Output called `Calcium_Out`|
+|~outputFunctionID|`~Calcium_Out`|error estimated for the values in *>outputFunctionID*|
+
+A dose response curve requires *n* simulations of the model to reproduce.
 
 # Scheduled Events
 
-an experiment can contain sudden events, in *systems biology* this is useful to describe experiments that include an intervention at a specified time (activation, silencing, stimulus, action potential, etc.), these events happen much faster than the system dynamics and modelling them exactly would slow down the solver dramatically. In the case of an event at $t$, the solver is stopped, a linear (or affine) transformation to the current state $x(t)$ and parameters $p$ is applied (in C):
+an experiment can contain sudden events, in *systems biology* this is
+useful to describe experiments that include an intervention at a
+specified time (activation, silencing, stimulus, action potential,
+etc.), these events happen much faster than the system dynamics and
+modelling them exactly would slow down the solver dramatically. In the
+case of an event at $t$, the solver is stopped, a linear (or affine)
+transformation to the current state $x(t)$ and parameters $p$ is
+applied (in C):
 
 $$ x(t) := A x(t) + b $$
-(this is an assignment, not a mathematical equality, there is a discontinuity if $A$ and $b$ have non-trivial values)
+
+(this is an assignment, not a mathematical equality, there is a
+discontinuity if $A$ and $b$ have non-trivial values)
 
 Each `experiment[[i]]$event` has this structure:
 
@@ -67,7 +96,7 @@ same type of content for each experiment. In some cases it is permissible to omi
 
 # R-functions
 
-The [icpm-kth/SBtabVFGEN] package has functions to import a model with the data into R data structures:
+The [icpm-kth/SBtabVFGEN](github.com/icpm-kth/SBtabVFGEN) package has functions to import a model with the data into R data structures. If you did not install this already:
 
 ```R
 remotes::install_github("icpm-kth/SBtabVFGEN")
@@ -102,4 +131,6 @@ For Gaussian noise, `errorValues` can be the standard deviation of the mean. the
 outputValues ± errorValues
 ```
 
-For other error models, or noise distributions, the user can decide what kind of values are useful and use them in their custom scoring functions (untested by us).
+For other error models, or noise distributions, the user can decide
+what kind of values are useful and use them in their custom scoring
+functions (untested by us).
