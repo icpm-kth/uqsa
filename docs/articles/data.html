@@ -6,12 +6,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="description" content="uqsa">
-<title>Data • uqsa</title>
+<title>Importing Data • uqsa</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Data">
+<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Importing Data">
 <meta property="og:description" content="uqsa">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -84,7 +84,7 @@
 
 <script src="data_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="" class="logo" alt=""><h1>Data</h1>
+      <img src="" class="logo" alt=""><h1>Importing Data</h1>
             
       
       
@@ -93,49 +93,194 @@
 
     
     
-<p>The R package <code>uqsa</code>, typically imports systems biology models and corresponding data stored in <a href="https://www.sbtab.net" class="external-link">SBtab</a> files. SBtab is a table format for system biology. The use of SBtab is optional, but very practical. SBML models currently cannot be imported by this package.</p>
-<p>Data and models are tightly linked and we also include two tables on the relationships between the data and model simulations in all our examples:</p>
-<ol style="list-style-type: decimal">
-<li>
-<em>Experiments</em>, a table with a list of experiments together with appropriate model settings</li>
-<li>
-<em>Output</em>, a list of output functions that correspond to measurable values for this model, named the same as the corresponding data columns</li>
-</ol>
-<p>An SBtab Document is a set of tables that represent reactions, compounds, parameters, and measured data that correspond to simulations of the model under certain input conditions and initial values. According to the specifications of the SBtab authors, MS Excel spreadsheets are an acceptable storage format - but we don’t use any of their original code. Our <a href="icpm-kth/SBtabVFGEN">SBtabVFGEN</a> package uses either multiple TSV files or one <a href="https://en.wikipedia.org/wiki/OpenDocument" class="external-link">ODS</a> file. The TSV reading is done using core R functions, while ODS is read through <a href="https://cran.r-project.org/package=readODS" class="external-link">readODS</a>. Both formats can have issues that are general and not specific to this package:</p>
-<ul>
-<li>TSV
-<ul>
-<li>line endings can be <code>\n</code> or <code>\n\r</code>
-</li>
-<li>fields could be automatically and unnecessarily quoted by a spreadsheet software</li>
-<li>encoding (UTF-8, or something else)</li>
-<li>some spreadsheets may want to write a unicode minus sign <code>−</code> rather than <code>-</code> into a tsv file: <code>U+2212</code>, be careful</li>
-<li>lines can be blank, but not quite, if they contain just tabs or spaces</li>
-</ul>
-</li>
-<li>ODS
-<ul>
-<li>comments inside fields could be imported as field content and confuse the model parser</li>
-<li>same issue with unicode minus signs</li>
-<li>
-<code>readODS</code> could theoretically be discontinued (deprecated), despite the format continuing to exist</li>
-</ul>
-</li>
-</ul>
-<p>Models can be automatically converted between the SBtab format and other modelling formats, such as SBML. For more information about SBtab please refer to <a href="https://github.com/tlubitz/SBtab" class="external-link">the official git repository</a>. Be aware that the conversion from SBML to SBtab has to be done with the official SBtab tools, not ours (SBML is hard).</p>
-<p>For the most part, in our case, an SBtab document is a collection of <a href="https://en.wikipedia.org/wiki/Tab-separated_values" class="external-link">tsv</a> files (has to be one file per table). Each table contains information about model, data, and their relationship to one another:</p>
-<ul>
-<li>Reactions</li>
-<li>Parameters</li>
-<li>Output Functions</li>
-<li>Compounds/Molecular Species</li>
-</ul>
-<p>Each type of items gets a TSV file, see our examples. Still, a user can circumvent this entire format by just writing the C code or R code for the model by hand or an entirely different tool, such as <a href="https://warrenweckesser.github.io/vfgen/" class="external-link">VFGEN</a> itself, or an SBML related project like <a href="https://www.ebi.ac.uk/biomodels/tools/converters/" class="external-link">SBFC</a> that generates code.</p>
+<p>There are applications that would require the data to be separate from the model. This is the case where several competing models exist for the same set of data. Our focus is on the case where we are developing a singular model for a given data-set. For this reason, we store them together. Having two models would require us to copy the same data-set into the directories of all competing models. On a system where <a href="https://en.wikipedia.org/wiki/Symbolic_link" class="external-link">symbolic links</a> are possible (or hard links) they can be used to conserve disk-space for large data-sets.</p>
+<p>The data-sets themselves can be stored in a normal SBtab table, using any valid <code>TableName</code>. How many data sets there are and their type are listed in the <em>table of experiments</em>: <code>Experiments.tsv</code></p>
+<p>Each experiment can be a time series experiment, or a dose response curve (where each line is a separate time series with a single measurement time-point, a <em>final state</em> that counts).</p>
+<p>In a time series table, the first column is called <code>!TimePoint</code>, the second is typically <code>!Time</code>, followed by the measured quantities labelled as <code>&gt;outputFunctionID</code> (values) and <code>~outputFunctionID</code> (error estimates).</p>
+<div class="section level3">
+<h3 id="time-series">Time Series<a class="anchor" aria-label="anchor" href="#time-series"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="16%">
+<col width="17%">
+<col width="65%">
+</colgroup>
+<thead><tr class="header">
+<th align="right">label</th>
+<th align="center">example</th>
+<th align="left">meaning</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">!TimePoint</td>
+<td align="center"><code>Experiment0Time0</code></td>
+<td align="left">same as !ID, but for times (a unique string)</td>
+</tr>
+<tr class="even">
+<td align="right">!Time</td>
+<td align="center"><code>-0.5</code></td>
+<td align="left">a floating point constant</td>
+</tr>
+<tr class="odd">
+<td align="right">&gt;outputFunctionID</td>
+<td align="center"><code>&gt;Calcium_Out</code></td>
+<td align="left">values that are meant to be compared to the Output called <code>Calcium_Out</code>
+</td>
+</tr>
+<tr class="even">
+<td align="right"></td>
+<td align="center"></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="right">~outputFunctionID</td>
+<td align="center"><code>~Calcium_Out</code></td>
+<td align="left">error estimated for the values in <em>&gt;outputFunctionID</em>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Each time series typically requires one model simulation to reproduce (unless scheduled events are happening).</p>
+<div class="section level4">
+<h4 id="example-time-series">Example Time Series<a class="anchor" aria-label="anchor" href="#example-time-series"></a>
+</h4>
+<pre><code>!!SBtab Document='myModel' TableType='QuantityMatrix' TableName='AutorYEARfigureS1a' TableTitle='Data originally published in CITATION'</code></pre>
+<table class="table">
+<thead><tr class="header">
+<th align="right">!TimePoint</th>
+<th align="right">!Time</th>
+<th align="right"><code>&gt;A_out</code></th>
+<th align="left"><code>~A_out</code></th>
+<th align="right"><code>&gt;totalB</code></th>
+<th align="left"><code>~totalB</code></th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">E0T0</td>
+<td align="right">-1.0</td>
+<td align="right">1.20</td>
+<td align="left">0.012</td>
+<td align="right">201.1</td>
+<td align="left">12</td>
+</tr>
+<tr class="even">
+<td align="right">E0T1</td>
+<td align="right">+0.0</td>
+<td align="right">11.8</td>
+<td align="left">0.12</td>
+<td align="right">203.2</td>
+<td align="left">11</td>
+</tr>
+<tr class="odd">
+<td align="right">E0T2</td>
+<td align="right">+1.0</td>
+<td align="right">31.7</td>
+<td align="left">0.19</td>
+<td align="right">198.7</td>
+<td align="left">13</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section level3">
+<h3 id="dose-response">Dose Response<a class="anchor" aria-label="anchor" href="#dose-response"></a>
+</h3>
+<p>An experiment that maps an increasing input to output values. In such cases the output has to happen at one pre-defined time-point for each dose. These dose-response curves will be transformed into <em>n</em> time-series experiments during parsing, where <em>n</em> is the number of content-rows (without headers).</p>
+<table class="table">
+<colgroup>
+<col width="16%">
+<col width="17%">
+<col width="65%">
+</colgroup>
+<thead><tr class="header">
+<th align="right">label</th>
+<th align="center">example</th>
+<th align="left">meaning</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">!ID</td>
+<td align="center"><code>Experiment0Dose0</code></td>
+<td align="left">a unique string, identifying this dose</td>
+</tr>
+<tr class="even">
+<td align="right">&gt;anInput</td>
+<td align="center"><code>300</code></td>
+<td align="left">a valid value for one of the input parameters</td>
+</tr>
+<tr class="odd">
+<td align="right">&gt;outputFunctionID</td>
+<td align="center"><code>&gt;Calcium_Out</code></td>
+<td align="left">values that are meant to be compared to the Output called <code>Calcium_Out</code>
+</td>
+</tr>
+<tr class="even">
+<td align="right"></td>
+<td align="center"></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="right">~outputFunctionID</td>
+<td align="center"><code>~Calcium_Out</code></td>
+<td align="left">error estimated for the values in <em>&gt;outputFunctionID</em>
+</td>
+</tr>
+</tbody>
+</table>
+<p>A dose response curve requires <em>n</em> simulations of the model to reproduce.</p>
+<div class="section level4">
+<h4 id="example-dose-response-curve">Example Dose Response Curve<a class="anchor" aria-label="anchor" href="#example-dose-response-curve"></a>
+</h4>
+<pre><code>!!SBtab Document='myModel' TableType='QuantityMatrix' TableName='AutorYEARfigureS1b' TableTitle='Data originally published in CITATION'</code></pre>
+<table class="table">
+<thead><tr class="header">
+<th align="right">!ID</th>
+<th align="center"><code>&gt;treatment_dose</code></th>
+<th align="center"><code>&gt;treatment_duration</code></th>
+<th align="right"><code>&gt;A_final</code></th>
+<th align="left"><code>~A_final</code></th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">E0D0</td>
+<td align="center">200</td>
+<td align="center">50</td>
+<td align="right">50.1</td>
+<td align="left">1.2</td>
+</tr>
+<tr class="even">
+<td align="right">E0D1</td>
+<td align="center">1000</td>
+<td align="center">50</td>
+<td align="right">83.2</td>
+<td align="left">0.9</td>
+</tr>
+<tr class="odd">
+<td align="right">E0D2</td>
+<td align="center">7000</td>
+<td align="center">25</td>
+<td align="right">74.7</td>
+<td align="left">1.8</td>
+</tr>
+<tr class="even">
+<td align="right"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="right"></td>
+<td align="left"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <div class="section level2">
 <h2 id="scheduled-events">Scheduled Events<a class="anchor" aria-label="anchor" href="#scheduled-events"></a>
 </h2>
 <p>an experiment can contain sudden events, in <em>systems biology</em> this is useful to describe experiments that include an intervention at a specified time (activation, silencing, stimulus, action potential, etc.), these events happen much faster than the system dynamics and modelling them exactly would slow down the solver dramatically. In the case of an event at <span class="math inline">\(t\)</span>, the solver is stopped, a linear (or affine) transformation to the current state <span class="math inline">\(x(t)\)</span> and parameters <span class="math inline">\(p\)</span> is applied (in C):</p>
-<p><span class="math display">\[ x(t) := A x(t) + b \]</span> (this is an assignment, not a mathematical equality, there is a discontinuity if <span class="math inline">\(A\)</span> and <span class="math inline">\(b\)</span> have non-trivial values)</p>
+<p><span class="math display">\[ x(t) := A x(t) + b \]</span></p>
+<p>(this is an assignment, not a mathematical equality, there is a discontinuity if <span class="math inline">\(A\)</span> and <span class="math inline">\(b\)</span> have non-trivial values)</p>
 <p>Each <code>experiment[[i]]$event</code> has this structure:</p>
 <ul>
 <li>
@@ -186,20 +331,20 @@
 <div class="section level2">
 <h2 id="r-functions">R-functions<a class="anchor" aria-label="anchor" href="#r-functions"></a>
 </h2>
-<p>The [icpm-kth/SBtabVFGEN] package has functions to import a model with the data into R data structures:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<p>The <a href="github.com/icpm-kth/SBtabVFGEN">icpm-kth/SBtabVFGEN</a> package has functions to import a model with the data into R data structures. If you did not install this already:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/SBtabVFGEN"</span><span class="op">)</span></span></code></pre></div>
 <p>and once it is installed:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model.tsv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span>pattern<span class="op">=</span><span class="st">"[.]tsv$"</span>,full.names<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="co"># a list of file paths to TSV files</span></span>
 <span><span class="va">model.tab</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">model.tsv</span><span class="op">)</span>  <span class="co"># a list of data.frames</span></span>
 <span><span class="va">experiments</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">model.tab</span><span class="op">)</span>    <span class="co"># a list of simulation experiments with data</span></span></code></pre></div>
 <p>The <code>experiments</code> variable is a list, each member (itself a list), describes a simulation experiment. Each experiment may result in one or more calls to the simulator (in C this amounts to resetting the driver of the chosen solver). An experiment has the properties:</p>
 <table class="table">
 <colgroup>
-<col width="25%">
-<col width="50%">
-<col width="25%">
+<col width="13%">
+<col width="15%">
+<col width="71%">
 </colgroup>
 <thead><tr class="header">
 <th align="right">item</th>
@@ -230,16 +375,21 @@
 <td align="left">a time vector that corresponds to when measurements were taken</td>
 </tr>
 <tr class="odd">
+<td align="right"></td>
+<td align="center"></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
 <td align="right">outputValues</td>
 <td align="center">data.frame</td>
 <td align="left">the values of the data at the above outputTimes</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="right">errorValues</td>
 <td align="center">data.frame</td>
 <td align="left">an indication of the measurement error/noise</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="right">events</td>
 <td align="center">list</td>
 <td align="left">a sudden transformation event</td>
