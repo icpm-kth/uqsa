@@ -38,23 +38,32 @@
 <li class="nav-item">
   <a class="nav-link" href="../articles/uqsa.html">Get started</a>
 </li>
-<li class="nav-item">
-  <a class="nav-link" href="../reference/index.html">Reference</a>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
+    <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
+    <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
+    <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
+    <a class="dropdown-item" href="../articles/data.html">Importing data</a>
+    <div class="dropdown-divider"></div>
+    <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
+    <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
+    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
+    <div class="dropdown-divider"></div>
+    <h6 class="dropdown-header" data-toc-skip>Sensitivity analysis</h6>
+    <a class="dropdown-item" href="../articles/GSA.html">GSA following UQ</a>
+  </div>
 </li>
 <li class="active nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/AKAP79.html">Example-AKAP79</a>
-    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-examples">
+    <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
     <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
-    <a class="dropdown-item" href="../articles/cite.html">Cite</a>
-    <a class="dropdown-item" href="../articles/data.html">Data</a>
-    <a class="dropdown-item" href="../articles/examples_overview.html">Examples overview</a>
-    <a class="dropdown-item" href="../articles/installation.html">Installation</a>
-    <a class="dropdown-item" href="../articles/literature_references.html">Model and Data references</a>
-    <a class="dropdown-item" href="../articles/models.html">Models</a>
-    <a class="dropdown-item" href="../articles/simulate.html">Simulate</a>
   </div>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="../reference/index.html">Function reference</a>
 </li>
 <li class="nav-item">
   <a class="nav-link" href="../news/index.html">Changelog</a>
@@ -93,14 +102,14 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model.tsv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,full.names<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">model.tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">model.tsv</span><span class="op">)</span> <span class="co"># SBtabVFGEN</span></span>
-<span><span class="co">#&gt; [tsv] file[1] «/tmp/RtmpBwLhZs/temp_libpath12f0681c54c6/uqsa/extdata/AKAR4/AKAR4_100nM.tsv» belongs to Document «AKAR4»</span></span>
+<span><span class="co">#&gt; [tsv] file[1] «/tmp/Rtmp1oLWAL/temp_libpathc7213b9eabbf/uqsa/extdata/AKAR4/AKAR4_100nM.tsv» belongs to Document «AKAR4»</span></span>
 <span><span class="co">#&gt;  I'll take this as the Model Name.</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,pat<span class="op">=</span><span class="st">"^AKAR4[.]R$"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: deSolve</span></span>
 <span></span>
 <span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">model.tab</span><span class="op">)</span>,<span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,pat<span class="op">=</span><span class="st">"_gvf[.]c$"</span><span class="op">)</span><span class="op">)</span> <span class="co"># SBtabVFGEN</span></span>
 <span><span class="co">#&gt; building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).</span></span>
-<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './AKAR4.so' '/tmp/RtmpBwLhZs/temp_libpath12f0681c54c6/uqsa/extdata/AKAR4/AKAR4_gvf.c' `pkg-config --libs gsl`</span></span>
+<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './AKAR4.so' '/tmp/Rtmp1oLWAL/temp_libpathc7213b9eabbf/uqsa/extdata/AKAR4/AKAR4_gvf.c' `pkg-config --libs gsl`</span></span>
 <span></span>
 <span><span class="va">numPar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">model.tab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span></span>
 <span><span class="va">parNames</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/row.names.html" class="external-link">row.names</a></span><span class="op">(</span><span class="va">model.tab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span></span>
@@ -119,14 +128,15 @@
 <span><span class="va">ul</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">parVal</span><span class="op">*</span><span class="va">defRange</span><span class="op">)</span></span>
 <span><span class="va">ll</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">ll</span><span class="op">)</span> <span class="co"># log10-scale</span></span>
 <span><span class="va">ul</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">ul</span><span class="op">)</span> <span class="co"># log10-scale</span></span></code></pre></div>
-<p>Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)</p>
+<p>Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns). During ABC, we save every 100th point, so this number should be lower than the pre-calibration size.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ns</span> <span class="op">&lt;-</span> <span class="fl">500</span> <span class="co"># no of samples required from each ABC-MCMC chain</span></span>
-<span><span class="va">npc</span> <span class="op">&lt;-</span> <span class="fl">500</span> <span class="co"># pre-calibration</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ns</span> <span class="op">&lt;-</span> <span class="fl">800</span>   <span class="co"># ABC-MCMC sample size</span></span>
+<span><span class="va">npc</span> <span class="op">&lt;-</span> <span class="fl">50000</span> <span class="co"># pre-calibration size</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">delta</span> <span class="op">&lt;-</span> <span class="fl">0.002</span></span>
+<code class="sourceCode R"><span><span class="va">delta</span> <span class="op">&lt;-</span> <span class="fl">0.02</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2022</span><span class="op">)</span></span>
-<span><span class="va">nCores</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">nCores</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>mc.cores<span class="op">=</span><span class="va">nCores</span><span class="op">)</span></span></code></pre></div>
 <p>We define a function that measures the distance between experiment and simulation:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">distanceMeasure</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">funcSim</span>, <span class="va">dataExpr</span>, <span class="va">dataErr</span> <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span><span class="op">{</span></span>
@@ -142,15 +152,14 @@
 <span><span class="va">start_time</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">chunks</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="va">expInd</span> <span class="op">&lt;-</span> <span class="va">chunks</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span></span>
-<span>    <span class="va">simulate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[</span><span class="va">expInd</span><span class="op">]</span>,<span class="va">modelName</span>,<span class="va">parMap</span><span class="op">)</span></span>
+<span>    <span class="va">simulate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[</span><span class="va">expInd</span><span class="op">]</span>,<span class="va">modelName</span>,<span class="va">parMap</span>,noise<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span>    <span class="va">Obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/makeObjective.html">makeObjective</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[</span><span class="va">expInd</span><span class="op">]</span>,<span class="va">modelName</span>,<span class="va">distanceMeasure</span>,<span class="va">parMap</span>,<span class="va">simulate</span><span class="op">)</span></span>
 <span>    <span class="va">time_pC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>mc.cores <span class="op">=</span> <span class="va">nCores</span><span class="op">)</span></span>
+<span></span>
 <span>    <span class="va">pC</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/preCalibration.html">preCalibration</a></span><span class="op">(</span><span class="va">Obj</span>, <span class="va">npc</span>, <span class="va">rprior</span>, rep<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span>
 <span>    <span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getMCMCPar.html">getMCMCPar</a></span><span class="op">(</span><span class="va">pC</span><span class="op">$</span><span class="va">prePar</span>, <span class="va">pC</span><span class="op">$</span><span class="va">preDelta</span>, <span class="va">delta</span>, num<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
 <span>    <span class="va">time_pC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">time_pC</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\t - time spent on precalibration: %g s\n"</span>,<span class="va">time_pC</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
 <span></span>
 <span>    <span class="va">time_ABC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>    <span class="va">mcmc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ABCMCMC.html">ABCMCMC</a></span><span class="op">(</span><span class="va">Obj</span>, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">M</span><span class="op">$</span><span class="va">startPar</span><span class="op">)</span>, <span class="va">ns</span>, <span class="va">M</span><span class="op">$</span><span class="va">Sigma</span>, <span class="va">delta</span>, <span class="va">priorPDF</span><span class="op">)</span></span>
@@ -162,65 +171,88 @@
 <span>        <span class="va">Obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/makeObjective.html">makeObjective</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[</span><span class="va">chunks</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">]</span>,<span class="va">modelName</span>,<span class="va">distanceMeasure</span>,<span class="va">parMap</span>,<span class="va">simulate</span><span class="op">)</span></span>
 <span>        <span class="va">mcmc</span><span class="op">$</span><span class="va">draws</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkFitWithPreviousExperiments.html">checkFitWithPreviousExperiments</a></span><span class="op">(</span><span class="va">mcmc</span><span class="op">$</span><span class="va">draws</span>, <span class="va">Obj</span>, <span class="va">delta</span><span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
-<span>    <span class="co"># Save Resulting Samples to MATLAB and R files.</span></span>
 <span></span>
 <span>    <span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitCopula.html">fitCopula</a></span><span class="op">(</span><span class="va">mcmc</span><span class="op">$</span><span class="va">draws</span><span class="op">)</span></span>
 <span>    <span class="va">priorPDF</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dCopulaPrior.html">dCopulaPrior</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span></span>
 <span>    <span class="va">rprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rCopulaPrior.html">rCopulaPrior</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="co">#&gt;   - time spent on precalibration: 2.24256 s</span></span>
+<span><span class="co">#&gt;   - time spent on precalibration: 35.1048 s</span></span>
 <span><span class="co">#&gt; Started chain.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 10000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1838879 98.3    2856029 152.6  2856029 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3157694 24.1    8388608  64.0  7414814  56.6</span></span>
+<span><span class="co">#&gt; Ncells 1839079 98.3    2856321 152.6  2856321 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3358046 25.7    8388608  64.0  8388165  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 20000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839043 98.3    2856029 152.6  2856029 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3158056 24.1    8388608  64.0  7485430  57.2</span></span>
+<span><span class="co">#&gt; Ncells 1839243 98.3    2856321 152.6  2856321 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3358408 25.7    8388608  64.0  8388165  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 30000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839046 98.3    2856029 152.6  2856029 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3158088 24.1    8388608  64.0  7485430  57.2</span></span>
+<span><span class="co">#&gt; Ncells 1839246 98.3    2856321 152.6  2856321 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3358440 25.7    8388608  64.0  8388165  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 40000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839048 98.3    2856029 152.6  2856029 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3158108 24.1    8388608  64.0  7485430  57.2</span></span>
+<span><span class="co">#&gt; Ncells 1839249 98.3    2856321 152.6  2856321 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3358464 25.7    8388608  64.0  8388165  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 50000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839051 98.3    2856029 152.6  2856029 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3158135 24.1    8388608  64.0  7506576  57.3</span></span>
-<span><span class="co">#&gt;   - time spent on ABC-MCMC: 45.8361 s</span></span>
-<span><span class="co">#&gt;   - time spent on precalibration: 1.45686 s</span></span>
+<span><span class="co">#&gt; Ncells 1839252 98.3    2856321 152.6  2856321 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3358491 25.7    8388608  64.0  8388165  64.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; n = 60000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
+<span><span class="co">#&gt; Ncells 1839256 98.3    2856322 152.6  2856322 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3358523 25.7    8388608  64.0  8388165  64.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; n = 70000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
+<span><span class="co">#&gt; Ncells 1839258 98.3    2856322 152.6  2856322 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3358547 25.7    8388608  64.0  8388165  64.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; n = 80000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
+<span><span class="co">#&gt; Ncells 1839261 98.3    2856322 152.6  2856322 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3358575 25.7    8388608  64.0  8388165  64.0</span></span>
+<span><span class="co">#&gt;   - time spent on ABC-MCMC: 14.9937 s</span></span>
+<span><span class="co">#&gt;   - time spent on precalibration: 24.5917 s</span></span>
 <span><span class="co">#&gt; Started chain.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 10000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1895933 101.3    2856029 152.6  2856029 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3288046  25.1    8388608  64.0  7506576  57.3</span></span>
+<span><span class="co">#&gt; Ncells 1896255 101.3    2856322 152.6  2856322 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3492637  26.7    8388608  64.0  8388608  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 20000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1895936 101.3    2856029 152.6  2856029 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3288074  25.1    8388608  64.0  7506576  57.3</span></span>
+<span><span class="co">#&gt; Ncells 1896259 101.3    2856323 152.6  2856323 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3492669  26.7    8388608  64.0  8388608  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 30000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1895940 101.3    2856030 152.6  2856030 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3288106  25.1    8388608  64.0  7506576  57.3</span></span>
+<span><span class="co">#&gt; Ncells 1896262 101.3    2856324 152.6  2856324 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3492697  26.7    8388608  64.0  8388608  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 40000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1895943 101.3    2856031 152.6  2856031 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3288134  25.1    8388608  64.0  7506576  57.3</span></span>
+<span><span class="co">#&gt; Ncells 1896264 101.3    2856324 152.6  2856324 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3492721  26.7    8388608  64.0  8388608  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 50000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1895946 101.3    2856031 152.6  2856031 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3288162  25.1    8388608  64.0  7506576  57.3</span></span>
-<span><span class="co">#&gt;   - time spent on ABC-MCMC: 4.25383 s</span></span>
+<span><span class="co">#&gt; Ncells 1896268 101.3    2856324 152.6  2856324 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3492753  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; n = 60000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
+<span><span class="co">#&gt; Ncells 1896270 101.3    2856325 152.6  2856325 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3492777  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; n = 70000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
+<span><span class="co">#&gt; Ncells 1896273 101.3    2856325 152.6  2856325 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3492805  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; n = 80000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
+<span><span class="co">#&gt; Ncells 1896276 101.3    2856325 152.6  2856325 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3492833  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt;   - time spent on ABC-MCMC: 7.30149 s</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -Checking fit with previous data</span></span>
-<span><span class="co">#&gt; --  157  samples  did not fit previous datasets</span></span>
+<span><span class="co">#&gt; --  177  samples  did not fit previous datasets</span></span>
 <span><span class="va">end_time</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">time_</span> <span class="op">=</span> <span class="va">end_time</span> <span class="op">-</span> <span class="va">start_time</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">time_</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Time difference of 5.144722 mins</span></span></code></pre></div>
+<span><span class="co">#&gt; Time difference of 23.37487 mins</span></span></code></pre></div>
 <p>We plot the sample as a two dimensional histogram plot-matrix using the hexbin package:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">mcmc</span><span class="op">$</span><span class="va">draws</span><span class="op">)</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">parVal</span><span class="op">)</span></span>

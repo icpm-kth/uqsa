@@ -16,7 +16,7 @@ navbar:
         href: articles/models.html
       - text: Importing data
         href: articles/data.html
-      - text: -------  
+      - text: -------
       - text: Paremeter estimation and uncertainty quantification
       - text: Simulating a model
         href: articles/simulate.html
@@ -33,6 +33,8 @@ navbar:
           href: articles/examples_overview.html
         - text: AKAP79
           href: articles/AKAP79.html
+        - text: AKAR4
+          href: articles/AKAR4.html
     reference:
         text: Function reference
         href: reference/index.html

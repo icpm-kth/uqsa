@@ -59,6 +59,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
   </div>
 </li>
 <li class="nav-item">
@@ -81,8 +82,7 @@
 
 
 
-
-<div class="row">
+<script src="data_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Data</h1>
             
@@ -93,92 +93,49 @@
 
     
     
-<p>The R package <code>uqsa</code>, typically imports systems biology
-models and corresponding data stored in <a href="https://www.sbtab.net" class="external-link">SBtab</a> files. SBtab is a table format
-for system biology. The use of SBtab is optional, but very practical.
-SBML models currently cannot be imported by this package.</p>
-<p>Data and models are tightly linked and we also include two tables on
-the relationships between the data and model simulations in all our
-examples:</p>
+<p>The R package <code>uqsa</code>, typically imports systems biology models and corresponding data stored in <a href="https://www.sbtab.net" class="external-link">SBtab</a> files. SBtab is a table format for system biology. The use of SBtab is optional, but very practical. SBML models currently cannot be imported by this package.</p>
+<p>Data and models are tightly linked and we also include two tables on the relationships between the data and model simulations in all our examples:</p>
 <ol style="list-style-type: decimal">
 <li>
-<em>Experiments</em>, a table with a list of experiments together
-with appropriate model settings</li>
+<em>Experiments</em>, a table with a list of experiments together with appropriate model settings</li>
 <li>
-<em>Output</em>, a list of output functions that correspond to
-measurable values for this model, named the same as the corresponding
-data columns</li>
+<em>Output</em>, a list of output functions that correspond to measurable values for this model, named the same as the corresponding data columns</li>
 </ol>
-<p>An SBtab Document is a set of tables that represent reactions,
-compounds, parameters, and measured data that correspond to simulations
-of the model under certain input conditions and initial values.
-According to the specifications of the SBtab authors, MS Excel
-spreadsheets are an acceptable storage format - but we don’t use any of
-their original code. Our <a href="icpm-kth/SBtabVFGEN">SBtabVFGEN</a>
-package uses either multiple TSV files or one <a href="https://en.wikipedia.org/wiki/OpenDocument" class="external-link">ODS</a> file. The TSV
-reading is done using core R functions, while ODS is read through <a href="https://cran.r-project.org/package=readODS" class="external-link">readODS</a>. Both
-formats can have issues that are general and not specific to this
-package:</p>
+<p>An SBtab Document is a set of tables that represent reactions, compounds, parameters, and measured data that correspond to simulations of the model under certain input conditions and initial values. According to the specifications of the SBtab authors, MS Excel spreadsheets are an acceptable storage format - but we don’t use any of their original code. Our <a href="icpm-kth/SBtabVFGEN">SBtabVFGEN</a> package uses either multiple TSV files or one <a href="https://en.wikipedia.org/wiki/OpenDocument" class="external-link">ODS</a> file. The TSV reading is done using core R functions, while ODS is read through <a href="https://cran.r-project.org/package=readODS" class="external-link">readODS</a>. Both formats can have issues that are general and not specific to this package:</p>
 <ul>
 <li>TSV
 <ul>
 <li>line endings can be <code>\n</code> or <code>\n\r</code>
 </li>
-<li>fields could be automatically and unnecessarily quoted by a
-spreadsheet software</li>
+<li>fields could be automatically and unnecessarily quoted by a spreadsheet software</li>
 <li>encoding (UTF-8, or something else)</li>
-<li>some spreadsheets may want to write a unicode minus sign
-<code>−</code> rather than <code>-</code> into a tsv file:
-<code>U+2212</code>, be careful</li>
-<li>lines can be blank, but not quite, if they contain just tabs or
-spaces</li>
+<li>some spreadsheets may want to write a unicode minus sign <code>−</code> rather than <code>-</code> into a tsv file: <code>U+2212</code>, be careful</li>
+<li>lines can be blank, but not quite, if they contain just tabs or spaces</li>
 </ul>
 </li>
 <li>ODS
 <ul>
-<li>comments inside fields could be imported as field content and
-confuse the model parser</li>
+<li>comments inside fields could be imported as field content and confuse the model parser</li>
 <li>same issue with unicode minus signs</li>
 <li>
-<code>readODS</code> could theoretically be discontinued
-(deprecated), despite the format continuing to exist</li>
+<code>readODS</code> could theoretically be discontinued (deprecated), despite the format continuing to exist</li>
 </ul>
 </li>
 </ul>
-<p>Models can be automatically converted between the SBtab format and
-other modelling formats, such as SBML. For more information about SBtab
-please refer to <a href="https://github.com/tlubitz/SBtab" class="external-link">the official
-git repository</a>. Be aware that the conversion from SBML to SBtab has
-to be done with the official SBtab tools, not ours (SBML is hard).</p>
-<p>For the most part, in our case, an SBtab document is a collection of
-<a href="https://en.wikipedia.org/wiki/Tab-separated_values" class="external-link">tsv</a>
-files (has to be one file per table). Each table contains information
-about model, data, and their relationship to one another:</p>
+<p>Models can be automatically converted between the SBtab format and other modelling formats, such as SBML. For more information about SBtab please refer to <a href="https://github.com/tlubitz/SBtab" class="external-link">the official git repository</a>. Be aware that the conversion from SBML to SBtab has to be done with the official SBtab tools, not ours (SBML is hard).</p>
+<p>For the most part, in our case, an SBtab document is a collection of <a href="https://en.wikipedia.org/wiki/Tab-separated_values" class="external-link">tsv</a> files (has to be one file per table). Each table contains information about model, data, and their relationship to one another:</p>
 <ul>
 <li>Reactions</li>
 <li>Parameters</li>
 <li>Output Functions</li>
 <li>Compounds/Molecular Species</li>
 </ul>
-<p>Each type of items gets a TSV file, see our examples. Still, a user
-can circumvent this entire format by just writing the C code or R code
-for the model by hand or an entirely different tool, such as <a href="https://warrenweckesser.github.io/vfgen/" class="external-link">VFGEN</a> itself, or an
-SBML related project like <a href="https://www.ebi.ac.uk/biomodels/tools/converters/" class="external-link">SBFC</a> that
-generates code.</p>
+<p>Each type of items gets a TSV file, see our examples. Still, a user can circumvent this entire format by just writing the C code or R code for the model by hand or an entirely different tool, such as <a href="https://warrenweckesser.github.io/vfgen/" class="external-link">VFGEN</a> itself, or an SBML related project like <a href="https://www.ebi.ac.uk/biomodels/tools/converters/" class="external-link">SBFC</a> that generates code.</p>
 <div class="section level2">
 <h2 id="scheduled-events">Scheduled Events<a class="anchor" aria-label="anchor" href="#scheduled-events"></a>
 </h2>
-<p>an experiment can contain sudden events, in <em>systems biology</em>
-this is useful to describe experiments that include an intervention at a
-specified time (activation, silencing, stimulus, action potential,
-etc.), these events happen much faster than the system dynamics and
-modelling them exactly would slow down the solver dramatically. In the
-case of an event at <span class="math inline">\(t\)</span>, the solver
-is stopped, a linear (or affine) transformation to the current state
-<span class="math inline">\(x(t)\)</span> and parameters <span class="math inline">\(p\)</span> is applied (in C):</p>
-<p><span class="math display">\[ x(t) := A x(t) + b \]</span> (this is
-an assignment, not a mathematical equality, there is a discontinuity if
-<span class="math inline">\(A\)</span> and <span class="math inline">\(b\)</span> have non-trivial values)</p>
+<p>an experiment can contain sudden events, in <em>systems biology</em> this is useful to describe experiments that include an intervention at a specified time (activation, silencing, stimulus, action potential, etc.), these events happen much faster than the system dynamics and modelling them exactly would slow down the solver dramatically. In the case of an event at <span class="math inline">\(t\)</span>, the solver is stopped, a linear (or affine) transformation to the current state <span class="math inline">\(x(t)\)</span> and parameters <span class="math inline">\(p\)</span> is applied (in C):</p>
+<p><span class="math display">\[ x(t) := A x(t) + b \]</span> (this is an assignment, not a mathematical equality, there is a discontinuity if <span class="math inline">\(A\)</span> and <span class="math inline">\(b\)</span> have non-trivial values)</p>
 <p>Each <code>experiment[[i]]$event</code> has this structure:</p>
 <ul>
 <li>
@@ -187,29 +144,24 @@ an assignment, not a mathematical equality, there is a discontinuity if
 <li>
 <code>time</code> (a numeric vector, the event schedule)</li>
 <li>
-<code>tf</code> (a named list with two items, both affine
-transformations)
+<code>tf</code> (a named list with two items, both affine transformations)
 <ul>
 <li>
 <code>state</code> (the state transformation, a named list)
 <ul>
 <li>
-<code>A</code> (a three dimensional array, where the third dimension
-corresponds to the time)</li>
+<code>A</code> (a three dimensional array, where the third dimension corresponds to the time)</li>
 <li>
-<code>b</code> (a three dimensional array, with the second dimension
-always being 1, and third as long as the time vector)</li>
+<code>b</code> (a three dimensional array, with the second dimension always being 1, and third as long as the time vector)</li>
 </ul>
 </li>
 <li>
 <code>param</code> (the parameter transformation, a named list)
 <ul>
 <li>
-<code>A</code> (a three dimensional array, where the third dimension
-corresponds to the time)</li>
+<code>A</code> (a three dimensional array, where the third dimension corresponds to the time)</li>
 <li>
-<code>b</code> (a three dimensional array, with the second dimension
-always being 1, and third as long as the time vector)</li>
+<code>b</code> (a three dimensional array, with the second dimension always being 1, and third as long as the time vector)</li>
 </ul>
 </li>
 </ul>
@@ -229,17 +181,12 @@ always being 1, and third as long as the time vector)</li>
 </ul>
 </li>
 </ul>
-<p>same type of content for each experiment. In some cases it is
-permissible to omit parts if they are trivial (<span class="math inline">\(b\)</span> is trivial if it is <code>0</code>, the
-neutral element of addition). In such cases, omitted items can be
-<code>NULL</code> (this may not work in some combinations, subject to
-improvement).</p>
+<p>same type of content for each experiment. In some cases it is permissible to omit parts if they are trivial (<span class="math inline">\(b\)</span> is trivial if it is <code>0</code>, the neutral element of addition). In such cases, omitted items can be <code>NULL</code> (this may not work in some combinations, subject to improvement).</p>
 </div>
 <div class="section level2">
 <h2 id="r-functions">R-functions<a class="anchor" aria-label="anchor" href="#r-functions"></a>
 </h2>
-<p>The [icpm-kth/SBtabVFGEN] package has functions to import a model
-with the data into R data structures:</p>
+<p>The [icpm-kth/SBtabVFGEN] package has functions to import a model with the data into R data structures:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/SBtabVFGEN"</span><span class="op">)</span></span></code></pre></div>
 <p>and once it is installed:</p>
@@ -247,10 +194,7 @@ with the data into R data structures:</p>
 <code class="sourceCode R"><span><span class="va">model.tsv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span>pattern<span class="op">=</span><span class="st">"[.]tsv$"</span>,full.names<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="co"># a list of file paths to TSV files</span></span>
 <span><span class="va">model.tab</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">model.tsv</span><span class="op">)</span>  <span class="co"># a list of data.frames</span></span>
 <span><span class="va">experiments</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">model.tab</span><span class="op">)</span>    <span class="co"># a list of simulation experiments with data</span></span></code></pre></div>
-<p>The <code>experiments</code> variable is a list, each member (itself
-a list), describes a simulation experiment. Each experiment may result
-in one or more calls to the simulator (in C this amounts to resetting
-the driver of the chosen solver). An experiment has the properties:</p>
+<p>The <code>experiments</code> variable is a list, each member (itself a list), describes a simulation experiment. Each experiment may result in one or more calls to the simulator (in C this amounts to resetting the driver of the chosen solver). An experiment has the properties:</p>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -277,16 +221,13 @@ the driver of the chosen solver). An experiment has the properties:</p>
 <tr class="odd">
 <td align="right">initialState</td>
 <td align="center">numeric vector</td>
-<td align="left">initial state <span class="math inline">\(x_0\)</span>
-of the ode <span class="math inline">\(\dot x =
-f(x(t),t,p=c(k,u))\)</span>, <span class="math inline">\(x(t_0)=x_0\)</span>
+<td align="left">initial state <span class="math inline">\(x_0\)</span> of the ode <span class="math inline">\(\dot x = f(x(t),t,p=c(k,u))\)</span>, <span class="math inline">\(x(t_0)=x_0\)</span>
 </td>
 </tr>
 <tr class="even">
 <td align="right">outputTimes</td>
 <td align="center">numeric vector</td>
-<td align="left">a time vector that corresponds to when measurements
-were taken</td>
+<td align="left">a time vector that corresponds to when measurements were taken</td>
 </tr>
 <tr class="odd">
 <td align="right">outputValues</td>
@@ -309,14 +250,9 @@ were taken</td>
 <div class="section level2">
 <h2 id="gaussian-measurement-errors">Gaussian Measurement errors<a class="anchor" aria-label="anchor" href="#gaussian-measurement-errors"></a>
 </h2>
-<p>For Gaussian noise, <code>errorValues</code> can be the standard
-deviation of the mean. the data frame has the same shape and names as
-the output values. The usual way to write this somewhere is
-typically</p>
+<p>For Gaussian noise, <code>errorValues</code> can be the standard deviation of the mean. the data frame has the same shape and names as the output values. The usual way to write this somewhere is typically</p>
 <pre><code>outputValues ± errorValues</code></pre>
-<p>For other error models, or noise distributions, the user can decide
-what kind of values are useful and use them in their custom scoring
-functions (untested by us).</p>
+<p>For other error models, or noise distributions, the user can decide what kind of values are useful and use them in their custom scoring functions (untested by us).</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

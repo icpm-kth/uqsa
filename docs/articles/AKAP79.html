@@ -59,6 +59,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
   </div>
 </li>
 <li class="nav-item">
@@ -81,8 +82,7 @@
 
 
 
-
-<div class="row">
+<script src="AKAP79_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Example-AKAP79</h1>
             
@@ -93,12 +93,8 @@
 
     
     
-<p>This example covers the AKAP79 example model and <code>rgsl</code> as
-solver backend, alternatively, it is possible to use
-<code>deSolve</code> instead (but not covered here).</p>
-<p>We use <code>icpm-kth/SBtabVFGEN</code> to read the model files and
-<code>icpm-kth/rgsl</code> as an interface to <code>gsl_odeiv2</code>
-solvers (for initial value problems) to simulate the model:</p>
+<p>This example covers the AKAP79 example model and <code>rgsl</code> as solver backend, alternatively, it is possible to use <code>deSolve</code> instead (but not covered here).</p>
+<p>We use <code>icpm-kth/SBtabVFGEN</code> to read the model files and <code>icpm-kth/rgsl</code> as an interface to <code>gsl_odeiv2</code> solvers (for initial value problems) to simulate the model:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span></span>
@@ -113,69 +109,39 @@ solvers (for initial value problems) to simulate the model:</p>
 <span><span class="va">model.tsv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="va">modelName</span>,pat<span class="op">=</span><span class="st">"[.]tsv$"</span><span class="op">)</span></span>
 <span><span class="va">model.tab</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">model.tsv</span><span class="op">)</span></span>
 <span><span class="va">experiments</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">model.tab</span><span class="op">)</span></span></code></pre></div>
-<p>The function <code>checkModel</code> checks that the model files
-exist and compiles the model to a shared library using a c compiler, the
-gsl library needs to be installed on the system for this to work (file
-ending in <code>.so</code>). On windows, it is easier to use the
-<code>deSolve</code> solvers.</p>
-<p>The <code>model</code> variable contains the tabulated properties of
-the model as a <code>list</code> of <code>data.frames</code>. The source
-files of the model <code>AKAP79.R</code>, <code>AKAP79.vf</code>, and
-<code>AKAP79_gvf.c</code> were all created automatically from the
-tables. Because they are tables, we can retrieve default values from
-them.</p>
+<p>The function <code>checkModel</code> checks that the model files exist and compiles the model to a shared library using a c compiler, the gsl library needs to be installed on the system for this to work (file ending in <code>.so</code>). On windows, it is easier to use the <code>deSolve</code> solvers.</p>
+<p>The <code>model</code> variable contains the tabulated properties of the model as a <code>list</code> of <code>data.frames</code>. The source files of the model <code>AKAP79.R</code>, <code>AKAP79.vf</code>, and <code>AKAP79_gvf.c</code> were all created automatically from the tables. Because they are tables, we can retrieve default values from them.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">parVal</span> <span class="op">&lt;-</span> <span class="va">model.tab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!DefaultValue"</span><span class="op">]</span><span class="op">]</span></span>
 <span></span>
 <span><span class="va">parMap</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">parABC</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fl">10</span><span class="op">^</span><span class="va">parABC</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>We have also defined a function that will transform the sampling
-variables <code>parABC</code> used by the ABC method into something that
-the model will accept as parameters. The plan is to sample in
-logarithmic space: the ABC algorithm will sample the logarithms of the
-model parameters. We limit the sampling to ranges, as appropriate for
-each parameter:</p>
+<p>We have also defined a function that will transform the sampling variables <code>parABC</code> used by the ABC method into something that the model will accept as parameters. The plan is to sample in logarithmic space: the ABC algorithm will sample the logarithms of the model parameters. We limit the sampling to ranges, as appropriate for each parameter:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">defRange</span> <span class="op">&lt;-</span> <span class="fl">1000</span></span>
+<code class="sourceCode R"><span><span class="va">defRange</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1000</span>,<span class="fl">19</span><span class="op">)</span>,<span class="fl">1.9</span>,<span class="fl">1000</span>,<span class="fl">1.25</span>,<span class="fl">1.25</span>,<span class="fl">1.25</span>,<span class="fl">1.5</span>,<span class="fl">1.5</span>,<span class="fl">2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Define Lower and Upper Limits for logUniform prior distribution for the parameters</span></span>
 <span></span>
-<span><span class="va">ll</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">parVal</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">19</span><span class="op">]</span><span class="op">/</span><span class="va">defRange</span>,</span>
-<span>       <span class="va">parVal</span><span class="op">[</span><span class="fl">20</span><span class="op">]</span><span class="op">/</span><span class="fl">1.9</span>,</span>
-<span>       <span class="va">parVal</span><span class="op">[</span><span class="fl">21</span><span class="op">]</span><span class="op">/</span><span class="va">defRange</span>,</span>
-<span>       <span class="va">parVal</span><span class="op">[</span><span class="fl">22</span><span class="op">:</span><span class="fl">24</span><span class="op">]</span><span class="op">/</span><span class="fl">1.25</span>,</span>
-<span>       <span class="va">parVal</span><span class="op">[</span><span class="fl">25</span><span class="op">:</span><span class="fl">26</span><span class="op">]</span><span class="op">/</span><span class="fl">1.5</span>,</span>
-<span>       <span class="va">parVal</span><span class="op">[</span><span class="fl">27</span><span class="op">]</span><span class="op">/</span><span class="fl">2</span></span>
-<span>      <span class="op">)</span></span>
-<span><span class="va">ul</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">parVal</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">19</span><span class="op">]</span><span class="op">*</span><span class="va">defRange</span>,</span>
-<span>       <span class="va">parVal</span><span class="op">[</span><span class="fl">20</span><span class="op">]</span><span class="op">*</span><span class="fl">1.9</span>,</span>
-<span>       <span class="va">parVal</span><span class="op">[</span><span class="fl">21</span><span class="op">]</span><span class="op">*</span><span class="va">defRange</span>,</span>
-<span>       <span class="va">parVal</span><span class="op">[</span><span class="fl">22</span><span class="op">:</span><span class="fl">24</span><span class="op">]</span><span class="op">*</span><span class="fl">1.25</span>,</span>
-<span>       <span class="va">parVal</span><span class="op">[</span><span class="fl">25</span><span class="op">:</span><span class="fl">26</span><span class="op">]</span><span class="op">*</span><span class="fl">1.5</span>,</span>
-<span>       <span class="va">parVal</span><span class="op">[</span><span class="fl">27</span><span class="op">]</span><span class="op">*</span><span class="fl">2</span></span>
-<span>      <span class="op">)</span></span>
+<span><span class="va">ll</span> <span class="op">&lt;-</span> <span class="va">parVal</span><span class="op">/</span><span class="va">defRange</span></span>
+<span></span>
+<span><span class="va">ul</span> <span class="op">&lt;-</span> <span class="va">parVal</span><span class="op">*</span><span class="va">defRange</span></span>
+<span></span>
 <span><span class="va">ll</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">ll</span><span class="op">)</span> <span class="co"># log10-scale</span></span>
 <span><span class="va">ul</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">ul</span><span class="op">)</span> <span class="co"># log10-scale</span></span></code></pre></div>
-<p>The sampling procedure takes data in the list of
-<code>experiments</code> and compares the data points to the solution
-that <code>gsl_odeiv2</code> returns. We define a list of experiments,
-subdividing them into smaller groups and processing the groups in
-sequence. Between the rounds of sampling the posterior of every result
-is used as the prior distribution of the next round. This mimics the
-arrival of data sets in sequence (from the lab). The intermediate
-distributions will be modelled using <code>VineCopula</code>.</p>
+<p>The sampling procedure takes data in the list of <code>experiments</code> and compares the data points to the solution that <code>gsl_odeiv2</code> returns. We define a list of experiments, subdividing them into smaller groups and processing the groups in sequence. Between the rounds of sampling the posterior of every result is used as the prior distribution of the next round. This mimics the arrival of data sets in sequence (from the lab). The intermediate distributions will be modelled using <code>VineCopula</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">experimentsIndices</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">12</span>,<span class="fl">18</span>, <span class="fl">9</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">11</span>, <span class="fl">17</span>, <span class="fl">8</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">10</span>, <span class="fl">16</span>, <span class="fl">7</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Problem Size and core distribution:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ns</span> <span class="op">&lt;-</span> <span class="fl">5000</span> <span class="co"># Size of the sub-sample from each chain</span></span>
+<code class="sourceCode R"><span><span class="va">ns</span> <span class="op">&lt;-</span> <span class="fl">100</span> <span class="co"># Size of the sub-sample from each chain</span></span>
 <span><span class="va">npc</span> <span class="op">&lt;-</span> <span class="fl">1000</span> <span class="co"># pre-calibration sample size</span></span>
 <span></span>
 <span><span class="va">nChains</span> <span class="op">&lt;-</span> <span class="fl">4</span></span>
-<span><span class="va">nCores</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%/%</a></span> <span class="va">nChains</span></span>
+<span><span class="va">nCores</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">nCoresPerChain</span> <span class="op">&lt;-</span> <span class="va">nCores</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%/%</a></span> <span class="va">nChains</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>mc.cores<span class="op">=</span><span class="va">nCores</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>mc.cores<span class="op">=</span><span class="va">nCoresPerChain</span><span class="op">)</span></span></code></pre></div>
 <p>ABC related settings:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">delta</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
@@ -190,8 +156,7 @@ distributions will be modelled using <code>VineCopula</code>.</p>
 <span>  <span class="op">}</span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">distance</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>We also setup a convenience function which saves the sampled values
-to a file:</p>
+<p>We also setup a convenience function which saves the sampled values to a file:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">save_sample</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">ind</span>,<span class="va">ABCMCMCoutput</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="va">I</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">ind</span>, collapse<span class="op">=</span><span class="st">"_"</span><span class="op">)</span></span>
@@ -204,8 +169,7 @@ to a file:</p>
 <span>    <span class="va">outFileR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"./PosteriorSamples/Draws"</span>,<span class="va">modelName</span>,<span class="st">"nChains"</span>,<span class="va">nChains</span>,<span class="st">"ns"</span>,<span class="va">ns</span>,<span class="st">"npc"</span>,<span class="va">npc</span>,<span class="va">I</span>,<span class="va">timeStr</span>,<span class="st">".RData"</span>,collapse<span class="op">=</span><span class="st">"_"</span>,sep<span class="op">=</span><span class="st">"_"</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/save.html" class="external-link">save</a></span><span class="op">(</span><span class="va">ABCMCMCoutput</span>, file<span class="op">=</span><span class="va">outFileR</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>Build a random number generator, and density function for the intial
-prior:</p>
+<p>Build a random number generator, and density function for the intial prior:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rUniformPrior.html">rUniformPrior</a></span><span class="op">(</span><span class="va">ll</span>, <span class="va">ul</span><span class="op">)</span></span>
 <span><span class="va">dprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dUniformPrior.html">dUniformPrior</a></span><span class="op">(</span><span class="va">ll</span>, <span class="va">ul</span><span class="op">)</span></span></code></pre></div>
@@ -216,19 +180,20 @@ prior:</p>
 <span>    <span class="va">expInd</span> <span class="op">&lt;-</span> <span class="va">experimentsIndices</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span></span>
 <span></span>
 <span>    <span class="va">objectiveFunction</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/makeObjective.html">makeObjective</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[</span><span class="va">expInd</span><span class="op">]</span>, <span class="va">modelName</span>, <span class="va">distanceMeasure</span>, <span class="va">parMap</span><span class="op">)</span></span>
-<span></span>
+<span>  </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>mc.cores <span class="op">=</span> <span class="va">nCores</span><span class="op">)</span></span>
 <span>    <span class="va">pC</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/preCalibration.html">preCalibration</a></span><span class="op">(</span><span class="va">objectiveFunction</span>, <span class="va">npc</span>, <span class="va">rprior</span><span class="op">)</span></span>
 <span>    <span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getMCMCPar.html">getMCMCPar</a></span><span class="op">(</span><span class="va">pC</span><span class="op">$</span><span class="va">prePar</span>, <span class="va">pC</span><span class="op">$</span><span class="va">preDelta</span>, delta<span class="op">=</span><span class="va">delta</span>, num <span class="op">=</span> <span class="va">nChains</span><span class="op">)</span></span>
 <span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>mc.cores <span class="op">=</span> <span class="va">nCoresPerChain</span><span class="op">)</span></span>
 <span>    <span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeForkCluster</a></span><span class="op">(</span><span class="va">nChains</span><span class="op">)</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>mc.cores<span class="op">=</span><span class="va">nCores</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%/%</a></span> <span class="va">nChains</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">clusterExport</a></span><span class="op">(</span><span class="va">cl</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"objectiveFunction"</span>, <span class="st">"M"</span>, <span class="st">"ns"</span>, <span class="st">"delta"</span>, <span class="st">"dprior"</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">out_ABCMCMC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span><span class="va">cl</span>, <span class="fl">1</span><span class="op">:</span><span class="va">nChains</span>, <span class="kw">function</span><span class="op">(</span><span class="va">j</span><span class="op">)</span> <span class="fu"><a href="../reference/ABCMCMC.html">ABCMCMC</a></span><span class="op">(</span><span class="va">objectiveFunction</span>, <span class="va">M</span><span class="op">$</span><span class="va">startPar</span><span class="op">[</span>,<span class="va">j</span><span class="op">]</span>, <span class="va">ns</span>, <span class="va">M</span><span class="op">$</span><span class="va">Sigma</span>, <span class="va">delta</span>, <span class="va">dprior</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
 <span></span>
 <span>    <span class="va">ABCMCMCoutput</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">Map</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">rbind</span>,<span class="va">out_ABCMCMC</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="fu">save_sample</span><span class="op">(</span><span class="va">expInd</span>,<span class="va">ABCMCMCoutput</span><span class="op">)</span></span>
-<span>    <span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitCopula.html">fitCopula</a></span><span class="op">(</span><span class="va">ABCMCMCoutput</span><span class="op">$</span><span class="va">draws</span>, <span class="va">nCores</span><span class="op">)</span></span>
+<span>    <span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitCopula.html">fitCopula</a></span><span class="op">(</span><span class="va">ABCMCMCoutput</span><span class="op">$</span><span class="va">draws</span>, <span class="va">nCoresPerChain</span><span class="op">)</span></span>
 <span>    <span class="va">rprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rCopulaPrior.html">rCopulaPrior</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span></span>
 <span>    <span class="va">dprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dCopulaPrior.html">dCopulaPrior</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
@@ -236,8 +201,24 @@ prior:</p>
 <span><span class="va">time_</span> <span class="op">=</span> <span class="va">end_time</span> <span class="op">-</span> <span class="va">start_time</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Total time:\n"</span>,<span class="va">time_</span><span class="op">)</span></span></code></pre></div>
-<p>The result is a collection of intermediate samples (2 files) and a
-final posterior sample (1 file).</p>
+<p>The sampling loop ran for ~12.5 minutes on a machine with the following specs:</p>
+<table class="table">
+<thead><tr class="header">
+<th align="right">MacBook Pro</th>
+<th align="left">(13-inch, M1, 2020)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">Chip:</td>
+<td align="left">Apple M1</td>
+</tr>
+<tr class="even">
+<td align="right">Memory:</td>
+<td align="left">16 GB</td>
+</tr>
+</tbody>
+</table>
+<p>The result is a collection of intermediate samples (2 files) and a final posterior sample (1 file).</p>
   </main>
 </div>
 

@@ -42,6 +42,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -91,35 +92,19 @@
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">rcp</span><span class="op">&lt;-</span><span class="fu">rCopulaPrior</span><span class="op">(</span><span class="fu"><a href="makeIndepCopula.html">makeIndepCopula</a></span><span class="op">(</span>ll<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,ul<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rcp</span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span></span>
-<<<<<<< HEAD
 <span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]     [,2]     [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.02184995 1.586954 2.156061</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.27490241 1.999262 2.311142</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.96325833 1.680738 2.892281</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.45026679 1.549126 2.394297</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.89520795 1.986294 2.003522</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.62109688 1.456635 2.444252</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.67255478 1.947527 2.033166</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.70816906 1.590504 2.944005</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.86967492 1.287001 2.602711</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.36529959 1.943855 2.182929</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.46064184 1.371761 2.582001</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.17213017 1.135753 2.722023</span>
-=======
-<span class="r-out co"><span class="r-pr">#&gt;</span>            [,1]     [,2]     [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.7443599 1.653830 2.807608</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.5484217 1.660360 2.651351</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.8020172 1.657592 2.678998</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.9951867 1.157755 2.112586</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.2775234 1.552214 2.314228</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.8836619 1.328340 2.617839</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.7270312 1.305571 2.307877</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.9121257 1.581769 2.644560</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.5871936 1.807874 2.021973</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.7360145 1.923027 2.733087</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.2125067 1.904736 2.986825</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.6388015 1.474280 2.179411</span>
->>>>>>> 236a5fc569e100a29f0a8dea7fce6eda255c292a
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.71570670 1.435282 2.239906</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.78472137 1.512122 2.764725</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.41556652 1.848060 2.821770</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.08141467 1.431830 2.338384</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.23810628 1.973249 2.275977</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.06730051 1.275485 2.588850</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.73975403 1.856392 2.824630</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.71453040 1.764069 2.180498</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.40745450 1.725221 2.345026</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.58925087 1.660620 2.214232</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.14387197 1.659785 2.380916</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.15943314 1.886527 2.294505</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

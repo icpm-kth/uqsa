@@ -62,11 +62,11 @@ number should be lower than the pre-calibration size.
 
 ```{r sample-size}
 ns <- 800   # ABC-MCMC sample size
-npc <- 5000 # pre-calibration size
+npc <- 50000 # pre-calibration size
 ```
 
 ```{r ABC-settings}
-delta <- 0.2
+delta <- 0.02
 set.seed(2022)
 nCores <- parallel::detectCores()
 options(mc.cores=nCores)

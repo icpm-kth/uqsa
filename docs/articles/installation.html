@@ -59,6 +59,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
   </div>
 </li>
 <li class="nav-item">
@@ -81,8 +82,7 @@
 
 
 
-
-<div class="row">
+<script src="installation_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Installation</h1>
             
@@ -99,44 +99,18 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># requires the 'remotes' package</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/uqsa"</span><span class="op">)</span></span></code></pre></div>
-<p>Alternatively, download a release <code>tar.gz</code> or
-<code>zip</code> file and run</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">R</span> CMD INSTALL uqsa<span class="pp">*</span>.<span class="dt">{tar.gz</span><span class="op">,</span><span class="dt">zip}</span></span></code></pre></div>
+<p>Alternatively, download a release <code>tar.gz</code> or <code>zip</code> file and run</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="ex">R</span> CMD INSTALL uqsa*.<span class="dt">{tar.gz,zip}</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="prerequisites">Prerequisites<a class="anchor" aria-label="anchor" href="#prerequisites"></a>
 </h3>
-<p>The R package <code>uqsa</code> contains examples that in addition to
-the normal package dependencies also use * reshape2, ggplot2; * the R
-package <code>icpm-kth/SBtabVFGEN</code>, used to generate vector field
-files from SBtab files (it can be installed by running
-<code>remotes::install_github("icpm-kth/SBtabVFGEN")</code>); -
-<code>SBtabVFGEN</code> benefits from having <code>libSBML</code>
-installed with R bindings; this is not a hard dependency, but required
-for export to SBML, L2V4. - <code>hdf5r</code> is also of (very minor)
-optional benefit. * the R package <code>icpm-kth/rgsl</code>, used to
-solve ODEs in C using functions from the GNU scientific library (gsl)
-(you can install it by running
-<code>remotes::install_github("icpm-kth/rgsl")</code>). - you also need
-to install the <a href="https://www.gnu.org/software/gsl/" class="external-link">GNU
-Scientific Library</a> itself (the rgsl package was tested on MACOS and
-some GNU Linux platforms [debian, ubuntu]) * The auto-generation of
-code, be it GSL odeiv2 compatible code or R code for each model is done
-using the shell script in <code>icpm-kth/RPN-derivative</code>; that
-package has several backends for analystic (symbolc) math (the thing
-that computer algebra systems do) - <a href="https://maxima.sourceforge.io/" class="external-link">maxima</a> - <a href="http://www.yacas.org/index.html" class="external-link">yacas</a> - the <a href="icpm-kth/RPN-derivative">RPN-derivative</a> package itself has a
-code to perform derivatives (needs
-<code>make &amp;&amp; sudo make install</code>)</p>
-<p>An R kernel for jupyter notebooks <a href="https://github.com/IRkernel/IRkernel" class="external-link">IRkernel</a> is required to
-run the Jupyter notebook with examples.</p>
+<p>The R package <code>uqsa</code> contains examples that in addition to the normal package dependencies also use * reshape2, ggplot2; * the R package <code>icpm-kth/SBtabVFGEN</code>, used to generate vector field files from SBtab files (it can be installed by running <code>remotes::install_github("icpm-kth/SBtabVFGEN")</code>); - <code>SBtabVFGEN</code> benefits from having <code>libSBML</code> installed with R bindings; this is not a hard dependency, but required for export to SBML, L2V4. - <code>hdf5r</code> is also of (very minor) optional benefit. * the R package <code>icpm-kth/rgsl</code>, used to solve ODEs in C using functions from the GNU scientific library (gsl) (you can install it by running <code>remotes::install_github("icpm-kth/rgsl")</code>). - you also need to install the <a href="https://www.gnu.org/software/gsl/" class="external-link">GNU Scientific Library</a> itself (the rgsl package was tested on MACOS and some GNU Linux platforms [debian, ubuntu]) * The auto-generation of code, be it GSL odeiv2 compatible code or R code for each model is done using the shell script in <code>icpm-kth/RPN-derivative</code>; that package has several backends for analystic (symbolc) math (the thing that computer algebra systems do) - <a href="https://maxima.sourceforge.io/" class="external-link">maxima</a> - <a href="http://www.yacas.org/index.html" class="external-link">yacas</a> - the <a href="icpm-kth/RPN-derivative">RPN-derivative</a> package itself has a code to perform derivatives (needs <code>make &amp;&amp; sudo make install</code>)</p>
+<p>An R kernel for jupyter notebooks <a href="https://github.com/IRkernel/IRkernel" class="external-link">IRkernel</a> is required to run the Jupyter notebook with examples.</p>
 <div class="section level4">
 <h4 id="note-on-model-code">Note on Model code<a class="anchor" aria-label="anchor" href="#note-on-model-code"></a>
 </h4>
-<p>Strictly speaking auto-generation of code is not required, the user
-can also hand-craft the model code and just not use any of the SBtab
-related functionality. This package only requires either R code for
-<code>deSolve</code> or C code for <code>gsl_odeiv2</code> (<a href="https://www.gnu.org/software/gsl/doc/html/ode-initval.html" class="external-link uri">https://www.gnu.org/software/gsl/doc/html/ode-initval.html</a>)</p>
-<p>All user visible functions have a manual (e.g. run
-<code>&gt; ?ABCMCMC</code> in R)</p>
+<p>Strictly speaking auto-generation of code is not required, the user can also hand-craft the model code and just not use any of the SBtab related functionality. This package only requires either R code for <code>deSolve</code> or C code for <code>gsl_odeiv2</code> (<a href="https://www.gnu.org/software/gsl/doc/html/ode-initval.html" class="external-link uri">https://www.gnu.org/software/gsl/doc/html/ode-initval.html</a>)</p>
+<p>All user visible functions have a manual (e.g. run <code>&gt; ?ABCMCMC</code> in R)</p>
 </div>
 </div>
 </div>
