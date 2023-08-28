@@ -28,7 +28,7 @@ plotTimeSeries <- function(simulations, experiments, show.plot = TRUE){
     experiment <- experiments[[i]]
     
     for(output.idx in 1:num.out.funcs){
-      df.experiments <- data.frame(t=experiment[["outputTimes"]], y=experiment[["outputValues"]][[j]])
+      df.experiments <- data.frame(t=experiment[["outputTimes"]], y=experiment[["outputValues"]][[output.idx]])
       
       y <- c(simulations[[i]]$func[output.idx,,])
       df.simulations <- data.frame(t=rep(experiment[["outputTimes"]],num.simulations), y=y, sim=rep(1:num.simulations,each=length(experiment[["outputTimes"]])))
@@ -36,9 +36,10 @@ plotTimeSeries <- function(simulations, experiments, show.plot = TRUE){
         ggplot(df.simulations,aes(x=t, y=y, group=sim))+
         geom_line(color="blue", alpha = 0.1, size=1.5)+
         geom_point(data=df.experiments, aes(x=t, y=y), inherit.aes=FALSE)+
-        ggtitle(paste0("Experiment: ", names(experiments[i]), "\nOutput: ", names(experiment[["outputValues"]])[j]))
+        ggtitle(paste0("Experiment: ", names(experiments[i]), "\nOutput: ", names(experiment[["outputValues"]])[output.idx]))
     }
   }
+  if(show.plot)  show(do.call(gridExtra::grid.arrange,p))
   return(p)
 }
 
