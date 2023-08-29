@@ -93,15 +93,90 @@
 
     
     
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction-to-uqsa">Introduction to UQSA<a class="anchor" aria-label="anchor" href="#introduction-to-uqsa"></a>
 </h2>
-<p>Uncertainty Quantification and global Sensitivity Analysis are both common tasks in <em>systems biology</em>.</p>
-<p>TODO</p>
+<p>Uncertainty Quantification and global Sensitivity Analysis are both common tasks in <em>systems biology</em>. This package aims to characterize theposterior probability distribution <span class="math inline">\(p(\theta|D)\)</span>. This distribution quantifies the amount of knowledge we have about the internal parameters of a model. In the field of systems biology, the internal parameters are typically quantities like reaction rate coefficients <span class="math inline">\(k_{\{f,b\}}\)</span>, dissociation constants (equilibrium constants) <span class="math inline">\(K_{D}\)</span>, Hill exponents, and other parameters that relate to gene expression, enzyme-substrate interaction, or other biochemical processes.</p>
+<p>We have developed two companion packages: - <a href="icpm-kth/rgsl">rgsl</a> + solves ODEs with an interface organised around <em>simulation experiments</em> + uses solvers from the GNU Scientific Library - <a href="icpm-kth/SBtabVFGEN">SBtabVFGEN</a> + organises the storage and loading of models</p>
 </div>
-  </main>
+<div class="section level2">
+<h2 id="gnu-scientific-library-optional">GNU Scientific Library (optional)<a class="anchor" aria-label="anchor" href="#gnu-scientific-library-optional"></a>
+</h2>
+<p>For the simulation backend using the <a href="https://www.gnu.org/software/gsl/" class="external-link">GNU Scientific Library</a> (gsl, odeiv2), the library needs to be installed in your OS, it is not an R package (it’s a library dependency).</p>
+<p>To compile sources with gsl requires c compiler options related to linking and the librarie’s location. They can look like this: <code>-lgsl -lgslcblas -lm</code>, but also more complex. We use <a href="https://www.freedesktop.org/wiki/Software/pkg-config/" class="external-link">pkg-config</a> to determine the right options. If <code>pkg-config</code> is missing from the system, installation will fail (it is available for MAC, GNU Linux, Unix, BSD, and Windows).</p>
+<table class="table">
+<thead><tr class="header">
+<th align="right">Operating System</th>
+<th align="left">command</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">Debian and Ubuntu</td>
+<td align="left"><code>apt install libgsl-dev</code></td>
+</tr>
+<tr class="even">
+<td align="right">Alpine Linux</td>
+<td align="left"><code>apk add gsl</code></td>
+</tr>
+<tr class="odd">
+<td align="right">Guix</td>
+<td align="left"><code>guix install gsl</code></td>
+</tr>
+<tr class="even">
+<td align="right">Arch Linux</td>
+<td align="left"><code>pacman -S gsl</code></td>
+</tr>
+<tr class="odd">
+<td align="right">Gentoo</td>
+<td align="left"><code>emerge sci-libs/gsl</code></td>
+</tr>
+<tr class="even">
+<td align="right">MACOS</td>
+<td align="left"><code>brew install gsl</code></td>
+</tr>
+</tbody>
+</table>
+<p>Once gsl andpkg-config are available on the system, the <code>icpm-kth/rgsl</code> package should compile.</p>
+</div>
+<div class="section level2">
+<h2 id="installation-of-companion-packages">Installation of Companion packages<a class="anchor" aria-label="anchor" href="#installation-of-companion-packages"></a>
+</h2>
+<p>Both packages in this section are optional</p>
+<div class="section level3">
+<h3 id="rgsl">RGSL<a class="anchor" aria-label="anchor" href="#rgsl"></a>
+</h3>
+<p>This package solves ODE initial value problems, given as lists of simulation experiments, with sudden interventions (like <em>activation</em>, or a sudden signal).</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/rgsl"</span><span class="op">)</span>       <span class="co"># requires gsl in your OS</span></span></code></pre></div>
+<p>This can be replaced with the standard solvers in the deSolve package. In our examples, the solvers in deSolve are always slower.</p>
+</div>
+<div class="section level3">
+<h3 id="sbtab-model-handling">SBtab Model Handling<a class="anchor" aria-label="anchor" href="#sbtab-model-handling"></a>
+</h3>
+<p>This package loads a model written in the SBtab format, which is designed for models in systems biology, but much easier to read than SBML:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/SBtabVFGEN"</span><span class="op">)</span> <span class="co"># if you plan to use SBtab</span></span></code></pre></div>
+<p>This can be replaced, if you have a different method of model creation or want to write the model source files by hand (which is hard for large models).</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="installation-of-uqsa">Installation of UQSA<a class="anchor" aria-label="anchor" href="#installation-of-uqsa"></a>
+</h2>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/uqsa"</span><span class="op">)</span>       <span class="co"># this package</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">uqsa</span><span class="op">)</span>                                  <span class="co"># to load it</span></span></code></pre></div>
+<p>Read the articles on this website, especially the <em>Example</em> articles to learn more: AKAR4, AKAP79, and CaMKII.</p>
+<div class="section level3">
+<h3 id="examples-in-the-package">Examples in the Package<a class="anchor" aria-label="anchor" href="#examples-in-the-package"></a>
+</h3>
+<p>The package itself also includes example models, with a <em>run</em> script for each of them. We advise users to copy the run scripts either from the repository or the installed package and adapt them. The location of a <em>run</em> file can be found like this:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,pat<span class="op">=</span><span class="st">"^run.*R$"</span><span class="op">)</span></span></code></pre></div>
+<p>or by browsing the folders on GitHub (<code>inst/extdata/</code>). Copy one of them and adapt it to your needs.</p>
+</div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
