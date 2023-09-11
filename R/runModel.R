@@ -144,28 +144,38 @@ runModel <- function(experiments, modelName,  parABC, parMap=identity){
 #'    simulate <- simulator.c(experiments, modelName,  parABC)
 #'    yf <- sim(parABC)
 simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE){
-  require(rgsl)
-  ## simulator:
-  sim <- function(parABC){
-    modelPar <- parMap(parABC)
-    yf <- unlist(mclapply(experiments,function(EX) {rgsl::r_gsl_odeiv2_outer(modelName, list(EX), as.matrix(modelPar))}),recursive=FALSE)
-    names(yf) <- names(experiments)
-    if(noise){
-      for(i in 1:length(experiments)){
-        out <- yf[[i]]$func
-        l <- dim(out)[2]
-        n <- ifelse(is.matrix(parABC),ncol(parABC),1)
-        sd <- as.matrix(experiments[[i]]$errorValues)
-        if(!is.null(sd)){
-          sd[is.na(sd)] <- 0.0
-          y <- mclapply(1:n, function(j) {return(out[,,j] + rnorm(l, 0, sd))})
-          yf[[i]]$func[1,,] <- do.call(cbind,y)
-        }
-      }
-    }
-    return(yf)
-  }
-  return(sim)
+	require(rgsl)
+	sim <- function(parABC){
+		modelPar <- parMap(parABC)
+		yf <- unlist(
+			mclapply(
+				experiments,
+				function(EX) {
+					rgsl::r_gsl_odeiv2_outer(modelName, list(EX), as.matrix(modelPar))
+				}
+			),
+			recursive=FALSE)
+		if (length(experiments)==length(yf)) {
+			names(yf) <- names(experiments)
+		} else {
+			warning(sprintf("experiments(%i) should be the same length as simulations(%i), but isn't.",length(experiments),length(yf)))
+		}
+		if(noise){
+			for(i in 1:length(experiments)){
+				out <- yf[[i]]$func
+				l <- dim(out)[2]
+				n <- ifelse(is.matrix(parABC),ncol(parABC),1)
+				sd <- as.matrix(experiments[[i]]$errorValues)
+				if(!is.null(sd)){
+					sd[is.na(sd)] <- 0.0
+					y <- mclapply(1:n, function(j) {return(out[,,j] + rnorm(l, 0, sd))})
+					yf[[i]]$func[1,,] <- do.call(cbind,y)
+				}
+			}
+		}
+		return(yf)
+	}
+	return(sim)
 }
 
 

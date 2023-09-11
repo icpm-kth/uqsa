@@ -60,6 +60,9 @@ sum.of.bin.variance  <- function(hst,binMeans,totalMean){
 #' @export
 #' @return sensitivity S[i,j] of output[i] with respect to parameter[j]
 sensitivity<-function(parSample,outputSample,nBins="Sturges"){
+	isNA <- apply(is.na(outputSample),1,any)
+	parSample <- parSample[!isNA,]
+	outputSample <- outputSample[!isNA,]
 	meanOutput <- colMeans(outputSample)
 	varOutput <- diag(cov(outputSample))
 	SampleSize <- dim(parSample)
@@ -72,10 +75,10 @@ sensitivity<-function(parSample,outputSample,nBins="Sturges"){
 	}
 	# a list, one item per fixed parameter
 	binMeans <- lapply(id,observable.mean.in.bin,outputSample=outputSample)
-	S <- matrix(0,outputSize[2],SampleSize[2])
+	S <- matrix(0.0,outputSize[2],SampleSize[2])
 	for (i in 1:SampleSize[2]){
 		Vi <- sum.of.bin.variance(hst[[i]],binMeans[[i]],totalMean=meanOutput)
-		S[,i] <- Vi/varOutput
+		S[,i] <- Vi/(1e-300+varOutput)
 	}
 	colnames(S) <- colnames(parSample)
 	rownames(S) <- colnames(outputSample)
