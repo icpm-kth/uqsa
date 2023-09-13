@@ -96,7 +96,10 @@
 <div class="section level2">
 <h2 id="example-models">Example Models<a class="anchor" aria-label="anchor" href="#example-models"></a>
 </h2>
-<p>A simple example using the AKAR4 model is available as a Jupyter notebook in the file <a href="https://github.com/icpm-kth/uqsa/blob/master/UQ_AKAR4.ipynb" class="external-link"><code>UQ_AKAR4.ipynb</code></a>. You can run it locally after installing Jupyter (read <a href="https://jupyter.org/install" class="external-link">here</a> for further imformation).</p>
+<p>A simple example using the AKAR4 model is available as a Jupyter notebook in the article <a href="articles/AKAR4.html">AKAR4</a>. You can run it locally using</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">uqsa</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,pat<span class="op">=</span><span class="st">"^runABCMCMC_AKAR4[.]R$"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Three larger examples are available in the form of R scripts and can be run locally or (preferably) on a computer cluster:</p>
 <ul>
 <li><p><a href="./uqsa-AKAP79.html">AKAP79 ODE model</a></p></li>

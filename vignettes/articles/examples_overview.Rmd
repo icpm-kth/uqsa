@@ -12,7 +12,12 @@ knitr::opts_chunk$set(
 
 # Example Models
 
-A simple example using the AKAR4 model is available as a Jupyter notebook in the file [`UQ_AKAR4.ipynb`](https://github.com/icpm-kth/uqsa/blob/master/UQ_AKAR4.ipynb). You can run it locally after installing Jupyter (read [here](https://jupyter.org/install) for further imformation).
+A simple example using the AKAR4 model is available as a Jupyter notebook in the article [AKAR4](articles/AKAR4.html). You can run it locally using
+
+```R
+library(uqsa)
+source(uqsa_example("AKAR4",pat="^runABCMCMC_AKAR4[.]R$"))
+```
 
 Three larger examples are available in the form of R scripts and can be run locally or (preferably) on a computer cluster:
 
