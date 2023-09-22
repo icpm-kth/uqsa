@@ -184,21 +184,23 @@ parUpdate_ProbabilisticAcceptance <- function(acceptanceProbability, curPar, can
 #' @param delta the acceptance threshold.
 #' @return a filtered subset of acceptable parameter draws
 checkFitWithPreviousExperiments <- function(draws, objectiveFunction, delta){
-  cat("\n-Checking fit with previous data\n")
-  nDraws = dim(draws)[1]
-
-  scores <- objectiveFunction(t(draws))
-
-  acceptable <- apply(scores <= delta,2,all)
-
-  if (any(acceptable)){
-    draws <- draws[acceptable,]
-    nPickedDraws <- sum(acceptable)
-    nonFits <- nDraws - nPickedDraws;
-    cat("-- ", nonFits, " samples  did not fit previous datasets")
-  } else {
-    print(scores)
-    warning("none of the draws have been accepted.")
-  }
-  return(draws)
+	cat("\n-Checking fit with previous data\n")
+	nDraws = dim(draws)[1]
+	scores <- objectiveFunction(t(draws))
+	if (is.matrix(scores)){
+		acceptable <- apply(scores <= delta,2,all)
+	} else {
+		acceptable <- (as.numeric(scores) <= delta)
+	}
+	stopifnot(length(acceptable)==nDraws)
+	if (any(acceptable)){
+		draws <- draws[acceptable,]
+		nPickedDraws <- sum(acceptable)
+		nonFits <- nDraws - nPickedDraws;
+		cat("-- ", nonFits, " samples  did not fit previous datasets")
+	} else {
+		print(scores)
+		warning("none of the draws have been accepted.")
+	}
+	return(draws)
 }
