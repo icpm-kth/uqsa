@@ -26,21 +26,60 @@ fisherInformationFromGSA <- function(Sample,yf,E){
 	return(fi)
 }
 
-
-metricTensorApprox <- function(Sample,yf,E,model){
-	fi <- fisherInformationFromGSA(Sample,yf,E)
-	mcmcDim <- dim(Sample)
-	n <- mcmcDim[2]
-	G <- function(sim,p,a){
-		for (i in 1:length(E)){
-			pu <- c(parMap(p),E[[i]]$input)
-			t <- E[[i]]$outputTimes
-			for (j in 1:length(t)){
-				K <- model$jacp(t[j],sim[[i]]$state[,j,1],pu)[,1:n] # this should be the output jacobian (we don't make one of those yet) and perhaps also Hessian?
-				fi  <- fi + a * t(K) %*% K
-			}
-		}
-		return(solve(fi))
+fisherInformation <- function(experiments,simulations,model,sensitivity=NULL, par=NULL, parMap=identity){
+	stopifnot(is.list(S))
+	stopifnot(is.list(experiments))
+	stopifnot(length(S)==length(experiments))
+	nP <- dim(S[[1]])[2]
+	nF <- length(model$func(0.0,model$init(),model$par()))
+	fi  <- matrix(0.0,nP,nP)
+	if (missing(sensitivity)){
+		sensitivity <- sensitivityEquilibriumApprox(experiments, simulations, model, par, parMap)
 	}
-	return(G)
+	if (missing(par)) {
+		p <- model$par()
+	} else {
+		p <- c(parMap(par),experiments[[1]]$input)
+	}
+	for (i in seq(length(S))){
+		errF <- t(experiments[[i]]$errorValues)
+		errF[is.na(errF)] <- Inf
+		nT <- length(experiments[[i]]$outputTimes)
+		t <- experiments[[i]]$outputTimes
+		for (j in 1:nT){
+			u <- experiments[[i]]$input
+			u_pos <- seq(length(p)-length(u)+1,length(p))
+			p[u_pos] <- u
+			sigma <- matrix(errF[,j],nF,nP)
+			x <- simulations[[i]]$state[,j,1]
+			S <- (model$funcJac(t[j],x,p) %*% sensitivity[[i]][,,j] + model$funcJacp(t[j],x,p))/sigma
+			fi  <-  fi + t(S) %*% S
+		}
+	}
+	return(fi)
 }
+
+sensitivityEquilibriumApprox <- function(experiments, simulations, model, par=NULL, parMap=identity){
+	S <- list()
+	for (i in seq(length(experiments))){
+		t <- experiments[[i]]$outputTimes
+		t0 <- experiments[[i]]$initialTime
+		if (missing(par)) {
+			p <- model$par()
+		} else {
+			p <- c(parMap(par),experiments[[1]]$input)
+		}
+		for (j in seq(length(t))){
+			u <- experiments[[i]]$input
+			u_pos <- seq(length(p)-length(u)+1,length(p))
+			p[u_pos] <- u
+			A <- model$jac(t[j],simulations[[i]]$state[,j,1],p)
+			B <- model$jacp(t[j],simulations[[i]]$state[,j,1],p)
+			AB <- solve(A+diag(.Machine$double.eps,n,n),B)
+			S[[i]][,,j] <- (pracma::expm((t[j]-t0)*A) %*% AB) - AB
+		}
+	}
+	return(S)
+}
+
+sea <- sensitivityEquilibriumApprox
