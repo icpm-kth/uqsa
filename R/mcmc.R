@@ -27,15 +27,16 @@ fisherInformationFromGSA <- function(Sample,yf,E){
 }
 
 fisherInformation <- function(experiments,simulations,model,sensitivity=NULL, par=NULL, parMap=identity){
-	stopifnot(is.list(S))
-	stopifnot(is.list(experiments))
-	stopifnot(length(S)==length(experiments))
-	nP <- dim(S[[1]])[2]
-	nF <- length(model$func(0.0,model$init(),model$par()))
-	fi  <- matrix(0.0,nP,nP)
-	if (missing(sensitivity)){
+	#stopifnot(is.list(S))
+	#stopifnot(is.list(experiments))
+	#stopifnot(length(S)==length(experiments))
+	if (missing(sensitivity) || is.null(sensitivity)){
 		sensitivity <- sensitivityEquilibriumApprox(experiments, simulations, model, par, parMap)
 	}
+	print(sensitivity)
+	nP <- dim(sensitivity[[1]])[2]
+	nF <- length(model$func(0.0,model$init(),model$par()))
+	fi  <- matrix(0.0,nP,nP)
 	if (missing(par)) {
 		p <- model$par()
 	} else {
@@ -61,6 +62,9 @@ fisherInformation <- function(experiments,simulations,model,sensitivity=NULL, pa
 
 sensitivityEquilibriumApprox <- function(experiments, simulations, model, par=NULL, parMap=identity){
 	S <- list()
+	y0 <- model$init(0.0)
+	n  <- length(y0)
+	I <- diag(1e-14,n)
 	for (i in seq(length(experiments))){
 		t <- experiments[[i]]$outputTimes
 		t0 <- experiments[[i]]$initialTime
@@ -69,14 +73,18 @@ sensitivityEquilibriumApprox <- function(experiments, simulations, model, par=NU
 		} else {
 			p <- c(parMap(par),experiments[[1]]$input)
 		}
+		S[[i]] <- array(0.0,dim=c(n,length(p),length(t)))
 		for (j in seq(length(t))){
+			if (abs(t[j]-t0)>1e-15){
 			u <- experiments[[i]]$input
 			u_pos <- seq(length(p)-length(u)+1,length(p))
 			p[u_pos] <- u
-			A <- model$jac(t[j],simulations[[i]]$state[,j,1],p)
-			B <- model$jacp(t[j],simulations[[i]]$state[,j,1],p)
-			AB <- solve(A+diag(.Machine$double.eps,n,n),B)
-			S[[i]][,,j] <- (pracma::expm((t[j]-t0)*A) %*% AB) - AB
+			A <- model$jac(t[j], simulations[[i]]$state[,j,1], p)
+			B <- model$jacp(t[j], simulations[[i]]$state[,j,1], p)
+			AB <- solve(A,B)
+			C <- (pracma::expm((t[j]-t0)*A) %*% AB) - AB
+			S[[i]][,,j] <- C
+			}
 		}
 	}
 	return(S)

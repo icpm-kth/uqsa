@@ -2,72 +2,7 @@ require(rgsl)
 require(SBtabVFGEN)
 library(uqsa)
 library(parallel)
-
-# Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 1000 # Size of the sub-sample from each chain
-npc <- 5000 # pre-calibration sample size
-nChains <- 4
-# Define ABC-MCMC Settings
-delta <- 0.01
-
-model.tsv <- uqsa_example("AKAP79")
-model.tab <- sbtab_from_tsv(model.tsv)
-
-# source all R functions for this model, this also loads a variable called "model"
-source(uqsa_example("AKAP79",pat="^AKAP79[.]R$"))
-source(uqsa_example("AKAP79",pat="^AKAP79_plots[.]R$"))
-
-experiments <- sbtab.data(model.tab)
-
-print(comment(model.tab))
-modelName <- checkModel(comment(model.tab),uqsa_example("AKAP79",pat="_gvf.c"))
-
-numPar <- nrow(model.tab$Parameter)
-parVal <- model$par()[1:numPar]
-parNames <- row.names(model.tab$Parameter)
-
-
-parMap <- function(parABC){
-	return(10^parABC)
-}
-
-# scale to determine prior values
-defRange <- 1000
-
-# Define Lower and Upper Limits for logUniform prior distribution for the parameters
-ll <- c(parVal[1:19]/defRange, parVal[20]/1.9, parVal[21]/defRange, parVal[22:24]/1.25, parVal[25:26]/1.5, parVal[27]/2)
-ul <- c(parVal[1:19]*defRange, parVal[20]*1.9, parVal[21]*defRange, parVal[22:24]*1.25, parVal[25:26]*1.5, parVal[27]*2)
-ll = log10(ll) # log10-scale
-ul = log10(ul) # log10-scale
-
-# Define the number of Cores for the parallelization
-nCores <- parallel::detectCores() %/% nChains
-
-set.seed(7619201)
-
-distanceMeasure <- function(funcSim, dataExpr=Inf, dataErr=Inf){
-  if (all(is.finite(funcSim))){
-    distance <- mean((1/71.67*(funcSim-as.matrix(dataExpr))/as.matrix(dataErr))^2, na.rm=TRUE)
-  } else {
-    distance <- Inf
-  }
-  return(distance)
-}
-
-save_sample <- function(ABCMCMCoutput){
-  timeStr <- gsub("[ :]","_", Sys.time())
-  if (!dir.exists("./PosteriorSamples")) {
-    dir.create("./PosteriorSamples")
-  }
-  outFileR <- paste("./PosteriorSamples/Draws",modelName,"nChains",nChains,"ns",ns,"npc",npc,timeStr,".RData",collapse="_",sep="_")
-  save(ABCMCMCoutput, file=outFileR)
-}
-
-
-getAcceptanceProbability <- function(yy_sim, yy_exp, yy_expErr){
-  return(exp(-distanceMeasure(yy_sim,yy_exp,yy_expErr)/(delta)))
-}
-
+source(uqsa_example("AKAP79",pat="^config.*R$"))
 start_time = Sys.time()
 
 simulate <- simulator.c(experiments,modelName,parMap)
@@ -78,9 +13,9 @@ acceptanceProbability <- NULL
 message("- Initial Prior: uniform product distribution")
 
 #rprior <- rUniformPrior(ll, ul)
-rprior <- rNormalPrior(mean = (ll+ul)/2, sd = (ul-ll)/5) 
+rprior <- rNormalPrior(mean = (ll+ul)/2, sd = (ul-ll)/5)
 # with this choice of sd, each component has 98.8% probability
-# of being in its interval [ll,ul], 
+# of being in its interval [ll,ul],
 # and the vector has (98.8%)^27 = 71.2% probability of being in the hyperrectangle
 # defined by ll and ul
 

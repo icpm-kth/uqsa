@@ -2,14 +2,14 @@
 <sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" version="4">
   <model id="AKAP79">
     <listOfUnitDefinitions>
-      <unitDefinition id="time">
-        <listOfUnits>
-          <unit kind="second" exponent="1" scale="-3" multiplier="1"/>
-        </listOfUnits>
-      </unitDefinition>
       <unitDefinition id="substance">
         <listOfUnits>
-          <unit kind="mole" exponent="1" scale="-3" multiplier="1"/>
+          <unit kind="mole" exponent="1" scale="-6" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="time">
+        <listOfUnits>
+          <unit kind="second" exponent="1" scale="0" multiplier="1"/>
         </listOfUnits>
       </unitDefinition>
       <unitDefinition id="volume">
@@ -19,17 +19,26 @@
       </unitDefinition>
       <unitDefinition id="area">
         <listOfUnits>
-          <unit kind="metre" exponent="2" scale="-9" multiplier="1"/>
+          <unit kind="metre" exponent="2" scale="-6" multiplier="1"/>
         </listOfUnits>
       </unitDefinition>
       <unitDefinition id="length">
         <listOfUnits>
-          <unit kind="metre" exponent="1" scale="-9" multiplier="1"/>
+          <unit kind="metre" exponent="1" scale="-6" multiplier="1"/>
         </listOfUnits>
       </unitDefinition>
-      <unitDefinition id="dimensionless">
+      <unitDefinition id="one_over_s">
         <listOfUnits>
           <unit kind="dimensionless" exponent="1" scale="0" multiplier="1"/>
+          <unit kind="second" exponent="-1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="one_over_micromolarity_s">
+        <listOfUnits>
+          <unit kind="dimensionless" exponent="1" scale="0" multiplier="1"/>
+          <unit kind="mole" exponent="-1" scale="-6" multiplier="1"/>
+          <unit kind="litre" exponent="1" scale="0" multiplier="1"/>
+          <unit kind="second" exponent="-1" scale="0" multiplier="1"/>
         </listOfUnits>
       </unitDefinition>
       <unitDefinition id="micromole_per_liter">
@@ -52,6 +61,17 @@
           <unit kind="second" exponent="-1" scale="0" multiplier="1"/>
         </listOfUnits>
       </unitDefinition>
+      <unitDefinition id="micromolarity">
+        <listOfUnits>
+          <unit kind="mole" exponent="1" scale="-6" multiplier="1"/>
+          <unit kind="litre" exponent="-1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="dimensionless">
+        <listOfUnits>
+          <unit kind="dimensionless" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
       <unitDefinition id="liter">
         <listOfUnits>
           <unit kind="litre" exponent="1" scale="0" multiplier="1"/>
@@ -62,22 +82,22 @@
       <compartment id="Compartment" name="Compartment" size="1" units="liter"/>
     </listOfCompartments>
     <listOfSpecies>
-      <species id="Rii" name="Rii" compartment="Compartment" initialConcentration="6.3" substanceUnits="substance"/>
-      <species id="cAMP" name="cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
-      <species id="RiiP" name="RiiP" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
-      <species id="Rii_C" name="Rii_C" compartment="Compartment" initialConcentration="0.63" substanceUnits="substance"/>
-      <species id="RiiP_cAMP" name="RiiP_cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
-      <species id="RiiP_C" name="RiiP_C" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
-      <species id="RiiP_C_cAMP" name="RiiP_C_cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
-      <species id="C" name="C" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
-      <species id="Rii_cAMP" name="Rii_cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
-      <species id="Rii_C_cAMP" name="Rii_C_cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
-      <species id="CaN" name="CaN" compartment="Compartment" initialConcentration="1.5" substanceUnits="substance"/>
-      <species id="RiiP_CaN" name="RiiP_CaN" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
-      <species id="RiiP_cAMP_CaN" name="RiiP_cAMP_CaN" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
-      <species id="AKAR4" name="AKAR4" compartment="Compartment" initialConcentration="0.2" substanceUnits="substance"/>
-      <species id="AKAR4_C" name="AKAR4_C" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
-      <species id="AKAR4p" name="AKAR4p" compartment="Compartment" initialConcentration="0" substanceUnits="substance"/>
+      <species id="Rii" name="Rii" compartment="Compartment" initialConcentration="6.3" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="cAMP" name="cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="RiiP" name="RiiP" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="Rii_C" name="Rii_C" compartment="Compartment" initialConcentration="0.63" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="RiiP_cAMP" name="RiiP_cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="RiiP_C" name="RiiP_C" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="RiiP_C_cAMP" name="RiiP_C_cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="C" name="C" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="Rii_cAMP" name="Rii_cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="Rii_C_cAMP" name="Rii_C_cAMP" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="CaN" name="CaN" compartment="Compartment" initialConcentration="1.5" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="RiiP_CaN" name="RiiP_CaN" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="RiiP_cAMP_CaN" name="RiiP_cAMP_CaN" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="AKAR4" name="AKAR4" compartment="Compartment" initialConcentration="0.2" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="AKAR4_C" name="AKAR4_C" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="AKAR4p" name="AKAR4p" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
       <species id="kf_RiiP_cAMP_CaN__CaNXRii_cAMP" name="kf_RiiP_cAMP_CaN__CaNXRii_cAMP" compartment="Compartment" boundaryCondition="true"/>
       <species id="kb_RiiPxCaN__RiiP_CaN" name="kb_RiiPxCaN__RiiP_CaN" compartment="Compartment" boundaryCondition="true"/>
       <species id="kf_RiiP_CaN__RiixCaN" name="kf_RiiP_CaN__RiixCaN" compartment="Compartment" boundaryCondition="true"/>
@@ -112,9 +132,9 @@
       <parameter id="kf_C_AKAR4" name="kf_C_AKAR4" value="0.018" units="one_over_micromolarity_second"/>
       <parameter id="kb_C_AKAR4" name="kb_C_AKAR4" value="0.106" units="one_over_second"/>
       <parameter id="kcat_AKARp" name="kcat_AKARp" value="10.2" units="one_over_second"/>
-      <parameter id="kmOFF" name="kmOFF" value="100" units="one_over_second"/>
-      <parameter id="kmON" name="kmON" value="1" units="one_over_second"/>
-      <parameter id="KD_T" name="KD_T" value="0.7" units="one_over_second"/>
+      <parameter id="kmOFF" name="kmOFF" value="100" units="micromolarity"/>
+      <parameter id="kmON" name="kmON" value="1" units="micromolarity"/>
+      <parameter id="KD_T" name="KD_T" value="0.7" units="micromolarity"/>
       <parameter id="b_AKAP" name="b_AKAP" value="0" units="dimensionless"/>
     </listOfParameters>
     <listOfRules>
@@ -585,7 +605,7 @@
           </math>
         </kineticLaw>
       </reaction>
-      <reaction id="reaction_44_" name="reaction_44_" reversible="true">
+      <reaction id="reaction_44" name="reaction_44" reversible="true">
         <listOfReactants>
           <speciesReference species="RiiP"/>
           <speciesReference species="CaN"/>
@@ -616,7 +636,7 @@
           </math>
         </kineticLaw>
       </reaction>
-      <reaction id="reaction_33_" name="reaction_33_" reversible="true">
+      <reaction id="reaction_33" name="reaction_33" reversible="true">
         <listOfReactants>
           <speciesReference species="CaN"/>
           <speciesReference species="RiiP_cAMP"/>
@@ -647,7 +667,7 @@
           </math>
         </kineticLaw>
       </reaction>
-      <reaction id="reaction_4_8" name="reaction_4_8" reversible="false">
+      <reaction id="reaction_48" name="reaction_48" reversible="false">
         <listOfReactants>
           <speciesReference species="RiiP_CaN"/>
         </listOfReactants>
@@ -666,7 +686,7 @@
           </math>
         </kineticLaw>
       </reaction>
-      <reaction id="reaction_3_7" name="reaction_3_7" reversible="false">
+      <reaction id="reaction_37" name="reaction_37" reversible="false">
         <listOfReactants>
           <speciesReference species="RiiP_cAMP_CaN"/>
         </listOfReactants>
