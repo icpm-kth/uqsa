@@ -958,7 +958,7 @@ AKAP79_funcJac<-function(t, state, parameters)
 # column 11 (dF/dp_11)
 	jac_[1,11] <- 358.35
 	rownames(jac_) <- c("AKAR4pOUT")
-	colnames(jac_) <- c("RiiP", "RiiP_cAMP", "RiiP_C", "RiiP_C_cAMP", "C", "Rii_cAMP", "Rii_C_cAMP", "RiiP_CaN", "RiiP_cAMP_CaN", "AKAR4_C", "AKAR4p", )
+	colnames(jac_) <- c("RiiP", "RiiP_cAMP", "RiiP_C", "RiiP_C_cAMP", "C", "Rii_cAMP", "Rii_C_cAMP", "RiiP_CaN", "RiiP_cAMP_CaN", "AKAR4_C", "AKAR4p")
 	return(jac_)
 }
 # output function parameter Jacobian dF(t,y;p)/dp
