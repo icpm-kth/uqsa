@@ -7,8 +7,9 @@
 makeAcceptanceProbability(
   experiments,
   modelName,
-  getAcceptanceProbability,
-  parMap = identity
+  getAcceptanceProbability = defaultAcceptance,
+  parMap = identity,
+  simulate = NULL
 )
 }
 \arguments{

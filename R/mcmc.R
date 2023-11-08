@@ -29,18 +29,18 @@ fisherInformationFromGSA <- function(Sample,yf=NULL,E){
 fisherInformation <- function(model, experiments, parMap=identity, sensitivityMap="log10"){
 	nF <- length(model$func(0.0,model$init(),model$par()))
 	l10 <- log(10)
-	FI <- function(p, sensitivity=NULL, simulations=NULL, simulate=NULL){
-		np <- length(p)
+	FI <- function(parMCMC, sensitivity=NULL, simulations=NULL, simulate=NULL){
+		np <- length(parMCMC)
 		fi  <- matrix(0.0,np,np)
 		if (missing(simulate)) stopifnot(is.list(simulations))
-		if (is.null(simulations)) simulations <- simulate(p)
+		if (is.null(simulations)) simulations <- simulate(parMCMC)
 		for (i in seq(length(experiments))){
 			errF <- t(experiments[[i]]$errorValues)
 			errF[is.na(errF)] <- Inf
 			oT <- experiments[[i]]$outputTimes
 			for (j in seq(length(oT))){
 				u <- experiments[[i]]$input
-				modelPar <- c(parMap(p),u)
+				modelPar <- c(parMap(parMCMC),u)
 				sigma_j <- matrix(errF[,j],nF,np)
 				x_ij <- simulations[[i]]$state[,j,1]
 				# output function sensitivity:
@@ -63,7 +63,7 @@ fisherInformation <- function(model, experiments, parMap=identity, sensitivityMa
 	return(FI)
 }
 
-sensitivityEquilibriumApproximator <- function(experiments, simulations, model, par=NULL, parMap=identity){
+sensitivityEquilibriumApproximator <- function(experiments, simulations, model, parMCMC=NULL, parMap=identity){
 	S <- list()
 	y0 <- model$init(0.0)
 	n  <- length(y0)
@@ -71,10 +71,10 @@ sensitivityEquilibriumApproximator <- function(experiments, simulations, model, 
 	for (i in seq(length(experiments))){
 		t <- experiments[[i]]$outputTimes
 		t0 <- experiments[[i]]$initialTime
-		if (missing(par)) {
+		if (missing(parMCMC)) {
 			p <- model$par()
 		} else {
-			p <- c(parMap(par),experiments[[1]]$input)
+			p <- c(parMap(parMCMC),experiments[[1]]$input)
 		}
 		S[[i]] <- array(0.0,dim=c(n,length(p),length(t)))
 		for (j in seq(length(t))){

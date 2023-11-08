@@ -300,7 +300,7 @@ checkModel <- function(modelName,modelFile=NULL){
 		stopifnot(file.exists(modelFile))
 		message('building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).')
 		LIBS <- "`pkg-config --libs gsl`"
-		CFLAGS <- "-shared -fPIC `pkg-config --cflags gsl`"
+		CFLAGS <- "-shared -fPIC -O2 -march=native `pkg-config --cflags gsl`"
 		so <- sprintf("./%s.so",modelName)
 		command_args <- sprintf("%s -o '%s' '%s' %s",CFLAGS,so,modelFile,LIBS)
 		message(paste("cc",command_args))
@@ -345,12 +345,48 @@ checkModel <- function(modelName,modelFile=NULL){
 #'     defaults to the maximum data value.
 defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 	if (all(is.finite(funcSim))){
-		distance <- mean(abs(funcSim-t(dataExpr))/t(dataErr), na.rm=TRUE)
+		distance <- mean(abs(funcSim-t(dataVAL))/t(dataERR), na.rm=TRUE)
 	} else {
 		distance <- Inf
 	}
 	return(distance)
 }
+
+#' default ABC acceptance probability function for one experiment
+#'
+#' if each experiment corresponds to one simulation and is fully
+#' quanitified by itself, then calculating the overall distance
+#' between data and experiment can be done one by one. This function
+#' describes the default way a simulation is compared to data.
+#'
+#' If the data is more complex, and two or more simulations are needed
+#' to calculate one distance value then the objective-Function needs
+#' to be entirely user-supplied. This is the case with experiments
+#' that have a "control" -- this is needed when the measurement is in
+#' arbitrary units and only makes sense comparatively to a secondary
+#' (control) scenario.
+#'
+#' This function will be used if none is provided by the user.
+#'
+#' The funcSim values need to be supplied as a matrix of size N×T with
+#' N the length of the model's output vectors and T the amount of
+#' measurement times (this is how the rgsl package returns the
+#' simulation results).
+#' @param funcSim a matrix, contains model solution (output values),
+#'     columns of output vectors
+#' @param dataVAL a data.frame of experimental data
+#' @param dataERR a data.frame of measurement errors, if available,
+#'     defaults to the maximum data value.
+defaultAcceptance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
+	n <- prod(dim(funcSim))
+	if (all(is.finite(funcSim))){
+		ABCP <- exp(-0.5*sum((abs(funcSim-t(dataVAL))/t(dataERR))^2, na.rm=TRUE))#/(sqrt(2*pi)^n*prod(as.numeric(dataERR)))
+	} else {
+		ABCP <- 0.0
+	}
+	return(ABCP)
+}
+
 
 #' creates Objective functions from ingredients
 #'
@@ -370,10 +406,10 @@ makeObjective <- function(experiments,modelName=NULL,distance=defaultDistance,pa
 			return(runModel(experiments, modelName,  par, parMap))
 		}
 	}
+	N <- length(experiments)
 	Objective <- function(parABC){
 		out <- simulate(parABC)
 		n <- ifelse(is.matrix(parABC),ncol(parABC),1)
-		N <- length(experiments)
 		S <- matrix(Inf,nrow=N,ncol=n)
 		rownames(S) <- names(experiments)
 		if (is.null(out)) return(S)
@@ -398,12 +434,20 @@ makeObjective <- function(experiments,modelName=NULL,distance=defaultDistance,pa
 #' @param getAcceptanceProbability an R function that mape the results of a simulation and experimental data to an acceptance probability
 #' @param parMap an optional mapping between sampling parameters (parABC) and model parameters (e.g. rescaling,re-ordering).
 #' @return a function that calculates probabilities given only parABC as input; it implicitly uses all the argiments to this function.
-makeAcceptanceProbability <- function(experiments, modelName, getAcceptanceProbability, parMap=identity){
+makeAcceptanceProbability <- function(experiments, modelName, getAcceptanceProbability=defaultAcceptance, parMap=identity, simulate=NULL){
+	if (is.null(simulate) && !is.null(modelName)){
+		simulate <- function(par){
+			return(runModel(experiments, modelName,  par, parMap))
+		}
+	}
+	N <- length(experiments)
 	acceptanceProbability <- function(parABC){
-		out <- runModel(experiments, modelName,  parABC, parMap)
-		S <- c()
-		for(i in 1:length(experiments)){
-		  S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) getAcceptanceProbability(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues))))
+		out <- simulate(parABC)
+		n <- ifelse(is.matrix(parABC),ncol(parABC),1)
+		stopifnot(n==dim(out[[1]]$func)[3])
+		S <- matrix(Inf,nrow=N,ncol=n)
+		for(i in seq(length(experiments))){
+			S[i,] <- unlist(mclapply(seq(n), function(j) getAcceptanceProbability(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues)))
 		}
 		return(S)
 	}

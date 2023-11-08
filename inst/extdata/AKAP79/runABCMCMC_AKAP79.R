@@ -1,14 +1,33 @@
+#!/usr/bin/env Rscript
 require(rgsl)
 require(SBtabVFGEN)
 library(uqsa)
 library(parallel)
+
+## the config file contains default values and standard definitions
+## it loads the model and creates simulation functions for it
 source(uqsa_example("AKAP79",pat="^config.*R$"))
+cat("these are the loaded variables:",ls())
+
 start_time = Sys.time()
 
-simulate <- simulator.c(experiments,modelName,parMap)
-objectiveFunction <- makeObjective(experiments, modelName, distanceMeasure, parMap, simulate)
-##acceptanceProbability <- makeAcceptanceProbability(experiments, modelName, getAcceptanceProbability, parMap)
-acceptanceProbability <- NULL
+CA <- commandArgs(trailingOnly=TRUE)
+if (length(CA)>0){
+	KEY <- subset(CA,c(TRUE,FALSE))
+	VAL <- subset(CA,c(FALSE,TRUE))
+	for (i in seq(length(KEY))){
+		k <- tolower(KEY[i])
+		v <- as.numeric(VAL[i])
+		switch(k,
+			ns={ns <- v},
+			npc={npc <- v},
+			delta={delta <- v},
+			{cat(sprintf("Option %s with value %g unknown.\n",k,v))}
+		)
+	}
+}
+
+#acceptanceProbability <- NULL
 
 message("- Initial Prior: uniform product distribution")
 
@@ -32,7 +51,7 @@ print(Sys.time()-start_time_preCalibration)
 
 ## Get Starting Parameters from Pre-Calibration
 M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta, num = nChains)
-options(mc.cores=parallel::detectCores() %/% nChains)
+options(mc.cores=nCoresPerChain)
 for(j in 1 : nChains){
   stopifnot(all(dprior(M$startPar[,j])>0))
   cat("Chain", j, "\n")
@@ -45,8 +64,8 @@ for(j in 1 : nChains){
 cat(sprintf("-Running MCMC chains \n"))
 start_time_ABC = Sys.time()
 cl <- makeForkCluster(nChains)
-clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
-out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior, acceptanceProbability))
+clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
+out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction=objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior, acceptanceProbability=NULL))
 stopCluster(cl)
 
 ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
@@ -65,5 +84,4 @@ time_ = end_time - start_time
 cat("\nTotal time:")
 print(time_)
 
-p<-plotAKAP79Simulations(ABCMCMCoutput$draws)
 
