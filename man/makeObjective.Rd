@@ -7,7 +7,7 @@
 makeObjective(
   experiments,
   modelName = NULL,
-  distance,
+  distance = defaultDistance,
   parMap = identity,
   simulate = NULL
 )

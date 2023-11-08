@@ -318,6 +318,40 @@ checkModel <- function(modelName,modelFile=NULL){
 	return(modelName)
 }
 
+#' default distance function for one experiment
+#'
+#' if each experiment corresponds to one simulation and is fully
+#' quanitified by itself, then calculating the overall distance
+#' between data and experiment can be done one by one. This function
+#' describes the default way a simulation is compared to data.
+#'
+#' If the data is more complex, and two or more simulations are needed
+#' to calculate one distance value then the objective-Function needs
+#' to be entirely user-supplied. This is the case with experiments
+#' that have a "control" -- this is needed when the measurement is in
+#' arbitrary units and only makes sense comparatively to a secondary
+#' (control) scenario.
+#'
+#' This function will be used if none is provided by the user.
+#'
+#' The funcSim values need to be supplied as a matrix of size N×T with
+#' N the length of the model's output vectors and T the amount of
+#' measurement times (this is how the rgsl package returns the
+#' simulation results).
+#' @param funcSim a matrix, contains model solution (output values),
+#'     columns of output vectors
+#' @param dataVAL a data.frame of experimental data
+#' @param dataERR a data.frame of measurement errors, if available,
+#'     defaults to the maximum data value.
+defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
+	if (all(is.finite(funcSim))){
+		distance <- mean(abs(funcSim-t(dataExpr))/t(dataErr), na.rm=TRUE)
+	} else {
+		distance <- Inf
+	}
+	return(distance)
+}
+
 #' creates Objective functions from ingredients
 #'
 #' the returned objective function has only one argument (the ABC
@@ -329,7 +363,7 @@ checkModel <- function(modelName,modelFile=NULL){
 #' @param getScore a function that calculates ABC scores
 #' @param parMap a function that transforms ABC variables into acceptable model parameters
 #' @return an objective function
-makeObjective <- function(experiments,modelName=NULL,distance,parMap=identity,simulate=NULL)
+makeObjective <- function(experiments,modelName=NULL,distance=defaultDistance,parMap=identity,simulate=NULL)
 {
 	if (is.null(simulate) && !is.null(modelName)){
 		simulate <- function(par){
@@ -342,6 +376,7 @@ makeObjective <- function(experiments,modelName=NULL,distance,parMap=identity,si
 		N <- length(experiments)
 		S <- matrix(Inf,nrow=N,ncol=n)
 		rownames(S) <- names(experiments)
+		if (is.null(out)) return(S)
 		for(i in 1:N){
 			if (!is.null(experiments[[i]]) && !is.null(out[[i]])){
 				S[i,] <- unlist(mclapply(1:n, function(j) distance(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues)))

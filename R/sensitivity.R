@@ -59,7 +59,7 @@ sum.of.bin.variance  <- function(hst,binMeans,totalMean){
 #' @param nBins number of bins, if unset defaults to the default of the hist function
 #' @export
 #' @return sensitivity S[i,j] of output[i] with respect to parameter[j]
-sensitivity<-function(parSample,outputSample,nBins="Sturges"){
+globalSensitivity<-function(parSample,outputSample,nBins="Sturges"){
 	isNA <- apply(is.na(outputSample),1,any)
 	parSample <- parSample[!isNA,]
 	outputSample <- outputSample[!isNA,]
@@ -92,7 +92,7 @@ sensitivity<-function(parSample,outputSample,nBins="Sturges"){
 #' @export
 #' @param u the values of the x-axis for the plot, if named, the names
 #'     are put at the tick-marks
-#' @param S the sensitivity matrix as returned by `sensitivity()`,
+#' @param S the sensitivity matrix as returned by `globalSensitivity()`,
 #'     S[i,j] is with respect to model output i and parameter j
 #' @param color the list of colors to use for the shaded areas, e.g.:
 #'     rainbow(24)
