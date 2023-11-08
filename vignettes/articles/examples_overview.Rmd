@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
 
 # Example Models
 
-A simple example using the AKAR4 model is available as a Jupyter notebook in the article [AKAR4](articles/AKAR4.html). You can run it locally using
+A simple example using the AKAR4 model is available in the article [AKAR4](articles/AKAR4.html). You can run it locally using
 
 ```R
 library(uqsa)
