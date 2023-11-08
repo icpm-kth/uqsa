@@ -44,3 +44,33 @@ metricTensorApprox <- function(Sample,yf,E,model){
 	}
 	return(G)
 }
+
+logLikelihood <- function(experiments,simulations){
+	N <- length(experiments)
+	dimFunc <- dim(simulations[[1]]$func)
+	n <- dimFunc[3]
+	m <- dimFunc[1]*dimFunc[2]
+	logNormalizingConstant <- -0.5*(m*log(2*pi)+sum(experiments[[i]]$errorValue^2))
+	L <- logNormalizingConstant
+	for (i in 1:N){
+		for (k in 1:n){
+			L <- L - 0.5*sum(((t(experiments[[i]]$outputValues) - simulations[[i]]$func[,,k])/t(experiments[[i]]$errorValue))^2)
+		}
+	}
+	return(L)
+}
+
+logLikelihoodHessian <- function(model,experiments,simulation) {
+	N <- length(experiments)
+	dimFunc <- dim(simulations[[1]]$func)
+	n <- dimFunc[3]
+	m <- dimFunc[1]*dimFunc[2]
+	logNormalizingConstant <- -0.5*(m*log(2*pi)+sum(experiments[[i]]$errorValue^2))
+	L <- logNormalizingConstant
+	for (i in 1:N){
+		for (k in 1:n){
+			H[i,j] <- H[i,j] #+ theActualSecondDerivative
+		}
+	}
+	return(L)
+}
