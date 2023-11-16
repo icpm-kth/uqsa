@@ -1,7 +1,19 @@
-mcmcUpdate <- function(parProposal,parGiven){
-	return(NULL)
+#' This function proposes an MCMC candidate variable, and either accepts or rejects the candidate
+#'
+#' This function receives a current MCMC variable, then calculates a
+#' possible successor and returns it in the case of acceptance. It
+#' returns the (old) current state upon rejection of the candidate.
+mcmcUpdate <- function(parGiven, logLikelihood, dprior){
+	r <- runif(1)
+	LGiven <- attr(parGiven,"logLikelihood")
+	LProposal <- logLikelihood(parProposal)
+	attr(parProposal,"logLikelihood") <- LProposal
+	if (r < exp(LProposal - LGiven) * (dprior(parProposal)/dprior(parGiven))){
+		return(parProposal)
+	} else {
+		return(parGiven)
+	}
 }
-
 
 fisherInformationFromGSA <- function(Sample,yf=NULL,E){
 	funcDim <- dim(yf[[1]]$func)
@@ -63,7 +75,31 @@ fisherInformation <- function(model, experiments, parMap=identity, sensitivityMa
 	return(FI)
 }
 
-sensitivityEquilibriumApproximator <- function(experiments, simulations, model, parMCMC=NULL, parMap=identity){
+#' Equilibrium state approximation of the solution sensitivity for ODE systems
+#'
+#' In this context, the sensitivity S(t;x,p) is dx(t;p)/dp, where
+#' x(t;p) is the parameterized solution to an initial value problem
+#' for ordinary differential equations: x'=f(t,x;p). In cases where
+#' you have a proxy variable for p, e.g. r=log(p), the chain rule
+#' applies. Similarly, we also have an output sensitivity for the
+#' function g(x(t;p)).  The equilibrium approximation is correct for
+#' state-variable values close to an equilibrium point q(p)
+#' (fixed-point): f(t,q(p);p)=0.
+#'
+#' Typically, the sensitivity needs to be known at different
+#' time-points t_k, therefore, this function returns S as a
+#' 3-dimensional array S[i,j,k], where the index k corrsponds to time
+#' t_k.
+#'
+#' This function requires pracma::expm to work.
+#' 
+#' @param experiments a list of simulation experiments
+#' @param simulations an equivalent list of simulation results, for one parameter vector
+#' @param model a list of functions for the model the experiments are applicable to
+#' @param parMCMC the parameters that are used in Markov chain Monte Carlo as the MC variable
+#' @param parMap a map to transform parMCMC into p, parameters the model accepts
+#' @return S, the state sensitivity matrix length(x) × length(p) × length(t)
+sensitivityEquilibriumApproximation <- function(experiments, simulations, model, parMCMC=NULL, parMap=identity){
 	S <- list()
 	y0 <- model$init(0.0)
 	n  <- length(y0)
@@ -93,24 +129,6 @@ sensitivityEquilibriumApproximator <- function(experiments, simulations, model, 
 	return(S)
 }
 
-metricTensorApprox <- function(Sample,yf,E,model){
-	fi <- fisherInformationFromGSA(Sample,yf,E)
-	mcmcDim <- dim(Sample)
-	n <- mcmcDim[2]
-	G <- function(sim,p,a){
-		for (i in 1:length(E)){
-			pu <- c(parMap(p),E[[i]]$input)
-			t <- E[[i]]$outputTimes
-			for (j in 1:length(t)){
-				K <- model$jacp(t[j],sim[[i]]$state[,j,1],pu)[,1:n] # this should be the output jacobian (we don't make one of those yet) and perhaps also Hessian?
-				fi  <- fi + a * t(K) %*% K
-			}
-		}
-		return(solve(fi))
-	}
-	return(G)
-}
-
 logLikelihood <- function(experiments,simulations){
 	N <- length(experiments)
 	dimFunc <- dim(simulations[[1]]$func)
@@ -126,17 +144,3 @@ logLikelihood <- function(experiments,simulations){
 	return(L)
 }
 
-logLikelihoodHessian <- function(model,experiments,simulation) {
-	N <- length(experiments)
-	dimFunc <- dim(simulations[[1]]$func)
-	n <- dimFunc[3]
-	m <- dimFunc[1]*dimFunc[2]
-	logNormalizingConstant <- -0.5*(m*log(2*pi)+sum(experiments[[i]]$errorValue^2))
-	L <- logNormalizingConstant
-	for (i in 1:N){
-		for (k in 1:n){
-			H[i,j] <- H[i,j] #+ theActualSecondDerivative
-		}
-	}
-	return(L)
-}
