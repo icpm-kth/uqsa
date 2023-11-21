@@ -1,3 +1,9 @@
+mcmc <- function(N=1000,simulate,parMCMC){
+	for (i in seq(N)){
+		sim <- simulate(parMCMC)
+	}
+}
+
 #' This function proposes an MCMC candidate variable, and either accepts or rejects the candidate
 #'
 #' This function receives a current MCMC variable, then calculates a
