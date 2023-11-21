@@ -1,6 +1,13 @@
-mcmc <- function(N=1000,simulate,parMCMC){
+mcmc <- function(N=1000,simulate,experiments,parMCMC,logLikelihood,gradLogLikelihood,dprior){
+	simulations <- simulate(parMCMC)
+	attr(parMCMC,"logLikelihood") <- logLikelihood(experiments,simulations)
+	attr(parMCMC,"fisherInformation") <- fisherInformation(parMCMC)
+	attr(parMCMC,"gradLogLikelihood") <- gradLogLikelihood(parMCMC)
+	
 	for (i in seq(N)){
-		sim <- simulate(parMCMC)
+		simulations <- simulate(parMCMC)
+		attr(parMCMC,"logLikelihood") <- logLikelihood(experiments,simulations)
+		parMCMC <- mcmcUpdate(parMCMC,logLikelihood,dprior)
 	}
 }
 
@@ -9,12 +16,44 @@ mcmc <- function(N=1000,simulate,parMCMC){
 #' This function receives a current MCMC variable, then calculates a
 #' possible successor and returns it in the case of acceptance. It
 #' returns the (old) current state upon rejection of the candidate.
-mcmcUpdate <- function(parGiven, logLikelihood, dprior){
+#'
+#' The Markov chain has a current state (the MCMC variable, often x in
+#' literature), but in the context of sampling the MCMC variables are
+#' used as the parameters to a scientific model of some sort (and
+#' these often have state variables, also x, or y). This is why we
+#' call the variables parMCMC (parABC), or
+#' par{Current|Given|Proposal}, and similar.
+#'
+#' @export
+#' @param parGiven the current state of the Markov chain
+#' @param logLikelihood function, returns log(p(simulations|experiments))
+#' @param dprior prior probability density function
+#' @return possibly updated state of the Markov chain
+mcmcUpdate <- function(parGiven, logLikelihood, dprior, eps=1e-5){
 	r <- runif(1)
 	LGiven <- attr(parGiven,"logLikelihood")
+	fiGiven <- attr(parGiven,"fisherInformation")
+	gradLGiven <- attr(parGiven,"gradLogLikelihood")
+	n <- length(parGiven)
+## the very important step: suggest a successor to parGiven
+	parProposal <- mvtnorm::rmvnorm(1,
+		mu=parGiven+0.5*eps*eps*solve(fiGiven,gradLGiven),
+		sigma=eps*eps*fiGiven)
+## re-calculate things that depend on parProposal
 	LProposal <- logLikelihood(parProposal)
-	attr(parProposal,"logLikelihood") <- LProposal
-	if (r < exp(LProposal - LGiven) * (dprior(parProposal)/dprior(parGiven))){
+	fiProposal <- fisherInformation(parProposal)
+	gradLProposal <- gradLogLikelihood(parProposal)
+## in this specific case, the proposal is asymmetric, so we need the forward and backward transition densitity values
+	fwdDensity <- mvtnorm::dmvnorm(parProposal,
+		mu=parGiven+0.5*eps*eps*solve(fiGiven,gradLGiven),
+		sigma=eps*eps*fiGiven))
+	bwdDensity <- mvtnorm::dmvnorm(parGiven,
+		mu=parProposal+0.5*eps*eps*solve(fiProposal,gradLProposal),
+		sigma=eps*eps*fiProposal)
+	if (r < exp(LProposal - LGiven) * (dprior(parProposal)/dprior(parGiven)) * (bwdDensity/fwdDensity)){
+		attr(parProposal,"logLikelihood") <- LProposal
+		attr(parProposal,"fisherInformation") <- fiProposal
+		attr(parProposal,"gradLogLikelihood") <- gradLProposal
 		return(parProposal)
 	} else {
 		return(parGiven)
@@ -85,8 +124,9 @@ fisherInformation <- function(model, experiments, parMap=identity, sensitivityMa
 #'
 #' In this context, the sensitivity S(t;x,p) is dx(t;p)/dp, where
 #' x(t;p) is the parameterized solution to an initial value problem
-#' for ordinary differential equations: x'=f(t,x;p). In cases where
-#' you have a proxy variable for p, e.g. r=log(p), the chain rule
+#' for ordinary differential equations and t is the independent varibale: x'=f(t,x;p), where «'»
+#' indicates the derivative with respect to t. In cases where you
+#' have a proxy variable for p, e.g. r=log(p), the chain rule
 #' applies. Similarly, we also have an output sensitivity for the
 #' function g(x(t;p)).  The equilibrium approximation is correct for
 #' state-variable values close to an equilibrium point q(p)
@@ -95,17 +135,19 @@ fisherInformation <- function(model, experiments, parMap=identity, sensitivityMa
 #' Typically, the sensitivity needs to be known at different
 #' time-points t_k, therefore, this function returns S as a
 #' 3-dimensional array S[i,j,k], where the index k corrsponds to time
-#' t_k.
+#' t_k; the closer x(t_k) is to equilibrium, the better the
+#' approximation; near the initial state, the sensitivity is also
+#' correct (only the intermediate time-span is approximate).
 #'
 #' This function requires pracma::expm to work.
-#' 
+#'
 #' @param experiments a list of simulation experiments
 #' @param simulations an equivalent list of simulation results, for one parameter vector
 #' @param model a list of functions for the model the experiments are applicable to
 #' @param parMCMC the parameters that are used in Markov chain Monte Carlo as the MC variable
 #' @param parMap a map to transform parMCMC into p, parameters the model accepts
 #' @return S, the state sensitivity matrix length(x) × length(p) × length(t)
-sensitivityEquilibriumApproximation <- function(experiments, simulations, model, parMCMC=NULL, parMap=identity){
+sensitivityEquilibriumApproximation <- function(experiments, simulations, model, parMCMC, parMap=identity){
 	S <- list()
 	y0 <- model$init(0.0)
 	n  <- length(y0)
@@ -113,11 +155,7 @@ sensitivityEquilibriumApproximation <- function(experiments, simulations, model,
 	for (i in seq(length(experiments))){
 		t <- experiments[[i]]$outputTimes
 		t0 <- experiments[[i]]$initialTime
-		if (missing(parMCMC)) {
-			p <- model$par()
-		} else {
-			p <- c(parMap(parMCMC),experiments[[1]]$input)
-		}
+		p <- c(parMap(parMCMC),experiments[[1]]$input)
 		S[[i]] <- array(0.0,dim=c(n,length(p),length(t)))
 		for (j in seq(length(t))){
 			if (abs(t[j]-t0)>1e-15){
@@ -142,11 +180,39 @@ logLikelihood <- function(experiments,simulations){
 	m <- dimFunc[1]*dimFunc[2]
 	logNormalizingConstant <- -0.5*(m*log(2*pi)+sum(experiments[[i]]$errorValue^2))
 	L <- logNormalizingConstant
-	for (i in 1:N){
-		for (k in 1:n){
-			L <- L - 0.5*sum(((t(experiments[[i]]$outputValues) - simulations[[i]]$func[,,k])/t(experiments[[i]]$errorValue))^2)
+	for (i in seq(N)){
+		for (k in seq(n)){
+			L <- L - 0.5*sum(((t(experiments[[i]]$outputValues) - simulations[[i]]$func[,,k])/t(experiments[[i]]$errorValues))^2)
 		}
 	}
 	return(L)
 }
 
+defaultParMap <- function(parMCMC){
+	return(10^(parMCMC))
+}
+
+defaultParMapGradient <- function(parMCMC){
+	return(10^(parMCMC) * log(10))
+}
+
+gradLogLikelihood <- function(parMCMC,experiments,simulations,model,parMap=defaultParMap,gradParMap=defaultParMapGradient}){
+	N <- length(experiments)
+	lMCMC <- length(parMCMC) # the dimension of the MCMC variable (parMCMC)
+	gL <- rep(0,length(parMCMC))
+	S  <- sensitivityEquilibriumApproximation(experiments, simulations, model, parMCMC, parMap)
+	l10 <- log(10)
+	for (i in seq(N)){
+		T <- length(simulations[[i]]$time)
+		y <- t(experiments[[i]]$outputValues)
+		h <- simulations[[i]]$func[,,1]
+		stdv <- t(experiments[[i]]$errorValues)
+		p <- c(parMap(parMCMC),experiments[[i]]$input)
+		gradP <- matrix(gradParMap(parMCMC),length(experiments[[i]]$outputValues),lMCMC,byrow=TRUE)
+		for (j in seq(T)){
+			tj <- experiments[[i]]$outputTimes[j]
+			Sh <- model$funcJac(tj,y[,j],p) %*% S[[i]][,,j] + model$funcJacp(tj,y[,j],p)
+			gL <- gL + (((y[,j] - h[,j])/stdv[,j]^2) %*% Sh[,seq(lMCMC),drop=FALSE]*gradP)
+		}
+	}
+}
