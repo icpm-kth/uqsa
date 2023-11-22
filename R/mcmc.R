@@ -173,16 +173,77 @@ sensitivityEquilibriumApproximation <- function(experiments, simulations, model,
 	return(S)
 }
 
+#' funcSensitivity transforms state sensitivity into the sensitivity of output functions
+#'
+#' The state sensitivity matrix:
+#'
+#'            d state(time[k],state, param)[i]
+#' S[i,j,k] = --------------------------------  ,
+#'            d param[j]
+#'
+#' where param are the raw model parameters.
+#' This matrix is calculated as an intermediate and then transformed into:
+#'
+#'             d func(time[k], state, c(parMap(parMCMC),input))[i]
+#' Sh[i,j,k] = --------------------------------------------------
+#'             d parMCMC[j]
+#'
+#' where parMCMC is the Markov chain variable and usually shorter than
+#' param as we typically don't sample all of the model's
+#' parameters. Some model parameters may be known, some may be input
+#' parameters not intrinsic to the model but related to the
+#' experimental setup (that is why parMCMC and param are different).
+#'
+#' This transformation requires the output function jacobian (funcJac)
+#' and the parameter jacobian (funcJacp) in the model variable.
+#'
+#' As we transform the parameters themselves, the chain rule requests
+#' parMapJac[l,k] = d param[l] / d parMCMC[k]
+#'
+#' @param parMCMC Markov chain variables
+#' @param experiments list of experiments
+#' @param simulations list of simulation results
+#' @param model a list of model functions, including funcJac, and funcJacp
+#' @param parMap a parameter transformation function
+#' @param parMapJac transformation jacobian: t(∇) %*% parMap
+#' @return Sh[[i]][,,k] a list of 3d-arrays, one item per expariment
+#'     (i), and a third dimension for the time variable (finite set of
+#'     observations)
+#' @export
+funcSensitivity <- function(parMCMC,experiments,simulations,model,parMap=defaultParMap,parMapJac=defaultParMapJac){
+	N <- length(experiments)
+	lMCMC <- length(parMCMC) # the dimension of the MCMC variable (parMCMC)
+	S  <- sensitivityEquilibriumApproximation(experiments, simulations, model, parMCMC, parMap)
+	Sh <- list()
+	for (i in seq(N)){
+		T <- length(simulations[[i]]$time)
+		F <- length(experiments[[i]]$outputValues)
+		y <- t(experiments[[i]]$outputValues)
+		parMapped <- parMap(parMCMC)
+		parODE <- c(parMapped,experiments[[i]]$input)
+		Sh[[i]] <- array(0,dim=c(F,lMCMC,T))
+		for (j in seq(T)){
+			tj <- experiments[[i]]$outputTimes[j]
+			ShODE <- model$funcJac(tj,y[,j],parODE) %*% S[[i]][,,j] + model$funcJacp(tj,y[,j],parODE)
+			Sh[[i]][,,j] <- ShODE[,seq(lMCMC),drop=FALSE] %*% parMapJac(parMCMC)
+		}
+	}
+	return(Sh)
+}
+
+
 logLikelihood <- function(experiments,simulations){
 	N <- length(experiments)
 	dimFunc <- dim(simulations[[1]]$func)
 	n <- dimFunc[3]
 	m <- dimFunc[1]*dimFunc[2]
-	logNormalizingConstant <- -0.5*(m*log(2*pi)+sum(experiments[[i]]$errorValue^2))
-	L <- logNormalizingConstant
+	L <- rep(-0.5*m*N*log(2*pi),n)
 	for (i in seq(N)){
+		y <- t(experiments[[i]]$outputValues)
+		stdv <- t(experiments[[i]]$errorValues)
 		for (k in seq(n)){
-			L <- L - 0.5*sum(((t(experiments[[i]]$outputValues) - simulations[[i]]$func[,,k])/t(experiments[[i]]$errorValues))^2)
+			h <- simulations[[i]]$func[,,k]
+			L[k] <- L[k] - 0.5*sum(((y - h)/stdv)^2,na.rm=TRUE) + sum(log(stdv))
 		}
 	}
 	return(L)
@@ -192,27 +253,24 @@ defaultParMap <- function(parMCMC){
 	return(10^(parMCMC))
 }
 
-defaultParMapGradient <- function(parMCMC){
-	return(10^(parMCMC) * log(10))
+defaultParMapJac <- function(parMCMC){
+	return(diag(10^(parMCMC) * log(10)))
 }
 
-gradLogLikelihood <- function(parMCMC,experiments,simulations,model,parMap=defaultParMap,gradParMap=defaultParMapGradient}){
+gradLogLikelihood <- function(parMCMC,experiments,simulations,model,parMap=defaultParMap,parMapJac=defaultParMapJac}){
 	N <- length(experiments)
 	lMCMC <- length(parMCMC) # the dimension of the MCMC variable (parMCMC)
 	gL <- rep(0,length(parMCMC))
-	S  <- sensitivityEquilibriumApproximation(experiments, simulations, model, parMCMC, parMap)
-	l10 <- log(10)
+	Sh <- funcSensitivity(parMCMC,experiments,simulations,model,parMap,parMapJac)
 	for (i in seq(N)){
 		T <- length(simulations[[i]]$time)
 		y <- t(experiments[[i]]$outputValues)
 		h <- simulations[[i]]$func[,,1]
 		stdv <- t(experiments[[i]]$errorValues)
-		p <- c(parMap(parMCMC),experiments[[i]]$input)
-		gradP <- matrix(gradParMap(parMCMC),length(experiments[[i]]$outputValues),lMCMC,byrow=TRUE)
 		for (j in seq(T)){
-			tj <- experiments[[i]]$outputTimes[j]
-			Sh <- model$funcJac(tj,y[,j],p) %*% S[[i]][,,j] + model$funcJacp(tj,y[,j],p)
-			gL <- gL + (((y[,j] - h[,j])/stdv[,j]^2) %*% Sh[,seq(lMCMC),drop=FALSE]*gradP)
+			gL <- gL + (((y[,j] - h[,j])/stdv[,j]^2) %*% Sh[[i]][,,j]
 		}
 	}
+	return(gL)
 }
+
