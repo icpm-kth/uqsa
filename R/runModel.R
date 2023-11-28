@@ -316,8 +316,9 @@ checkModel <- function(modelName,modelFile=NULL){
 #' @export
 #' @param experiments a list of simulation experiments
 #' @param modelName and model storage file as comment
-#' @param getScore a function that calculates ABC scores
+#' @param distance a function that calculates ABC scores
 #' @param parMap a function that transforms ABC variables into acceptable model parameters
+#' @param simulate closure that simulates the model
 #' @return an objective function
 makeObjective <- function(experiments,modelName=NULL,distance,parMap=identity,simulate=NULL)
 {
@@ -340,27 +341,4 @@ makeObjective <- function(experiments,modelName=NULL,distance,parMap=identity,si
 		return(S)
 	}
 	return(Objective)
-}
-
-#' Ths function Creates an acceptanceProbability function
-#'
-#' The returned closure needs only the sampling variables (parABC) as
-#' inputand calculates a probability of accepting Markov chainmoves.
-#'
-#' @export
-#' @param experiments a list of experiments
-#' @param modelName an annotated string, with the model name and model file as comment
-#' @param getAcceptanceProbability an R function that mape the results of a simulation and experimental data to an acceptance probability
-#' @param parMap an optional mapping between sampling parameters (parABC) and model parameters (e.g. rescaling,re-ordering).
-#' @return a function that calculates probabilities given only parABC as input; it implicitly uses all the argiments to this function.
-makeAcceptanceProbability <- function(experiments, modelName, getAcceptanceProbability, parMap=identity){
-	acceptanceProbability <- function(parABC){
-		out <- runModel(experiments, modelName,  parABC, parMap)
-		S <- c()
-		for(i in 1:length(experiments)){
-		  S <- c(S, unlist(mclapply(1:dim(out[[i]]$func)[3], function(j) getAcceptanceProbability(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues))))
-		}
-		return(S)
-	}
-	return(acceptanceProbability)
 }
