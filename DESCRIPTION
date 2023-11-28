@@ -26,6 +26,9 @@ Suggests:
     knitr,
     rmarkdown,
     hexbin
+Remotes:
+	icpm-kth/SBtabVFGEN
+	icpm-kth/rgsl
 RoxygenNote: 7.2.3
 Config/testthat/edition: 3
 VignetteBuilder: knitr
