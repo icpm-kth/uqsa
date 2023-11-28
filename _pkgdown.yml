@@ -3,12 +3,20 @@ template:
   bootstrap: 5
 navbar:
   structure:
-    left:  [intro, articles, tutorials, reference, news]
+    left:  [intro, installation, articles, tutorials, reference, news]
     right: [search, github]
   components:
+    installation:
+      text: Installation
+      href: articles/install.html
     articles:
       text: Documentation
       menu:
+      - text: Introduction
+      - text: Uncertainty Quantification
+        href: articles/uq.html
+      - text: Sensiticity Analysis
+        href: articles/sa.html
       - text: Model and data management
       - text: SBtab
         href: articles/SBtab.html
