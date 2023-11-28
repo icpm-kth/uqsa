@@ -19,19 +19,10 @@
 #' to adjust this delta value.
 #'
 #' @export
-#' @param experiments a list of simulation experiments. Same as for
-#'     ABCMCMC.
-#' @param modelName this name will be used to find the file and
-#'     functions within the file according to naming conventions (the
-#'     model name and file can differ, the file-name can be attached
-#'     to the name as a comment).
-#' @param parMap a remapping function that takes ABC sampling
-#'     variables and returns valid model parameters
-#' @param npc sample size of pre-calibration.
+#' @param objectiveFunction 
+#' @param npc sample size of pre-calibration
 #' @param rprior a function that generates random ABC variables,
-#'     distributed according to the prior.
-#' @param getScore a function that maps the model's output values to
-#'     ABC score values (in comparison to data).
+#'     distributed according to the prior
 #' @param rep number of repetitions of the preCalibration process
 #' @return list with entries preDelta and prePar, final values of
 #'     calibration run
