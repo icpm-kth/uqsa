@@ -149,7 +149,7 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE){
   sim <- function(parABC){
     modelPar <- parMap(parABC)
     yf <- unlist(mclapply(experiments,function(EX) {rgsl::r_gsl_odeiv2_outer(modelName, list(EX), as.matrix(modelPar))}),recursive=FALSE)
-    names(yf) <- names(experiment)
+    names(yf) <- names(experiments)
     if(noise){
       for(i in 1:length(experiments)){
         out <- yf[[i]]$func
