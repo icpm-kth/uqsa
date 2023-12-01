@@ -16,49 +16,96 @@ library(SBtabVFGEN)
 library(rgsl)
 ```
 
-We load the model from a collection of TSV files, convert the contents
-to a list of `data.frames` and also load the R functions of the
-model. The R file we source includes a variable called `model`, it is
-a list of functions, onme of which is called `model$par()` and returns
+We load the model from a collection of TSV files (`inst/extdata/AKAR4`
+on github), the function below locates the tsv files after package
+installation:
+
+```{r, setup}
+modelFiles <- uqsa_example("AKAR4",full.names=TRUE)
+```
+Then we import the contents as a list of `data.frames`
+
+```{r, import}
+SBtab <- sbtab_from_tsv(modelFiles) # SBtabVFGEN
+```
+We load the R functions of the
+model (e.g. the jacobian of the model).
+
+The R file we source includes a variable called `model`, it is
+a list of functions, one of which is called `model$par()` and returns
 the default parameters of the model in linear space:
 
-```{r setup}
-model.tsv <- uqsa_example("AKAR4",full.names=TRUE)
-model.tab <- sbtab_from_tsv(model.tsv) # SBtabVFGEN
-source(uqsa_example("AKAR4",pat="^AKAR4[.]R$"))
+```{r, label="source the model files"}
+source(uqsa_example("AKAR4",pat="^AKAR4[.]R$")) # loads "model"
+model$name   # AKAR4
+model$par()  # default values for parameters
+model$init() # default initial values for ODE state variables
+```
 
-modelName <- checkModel(comment(model.tab),uqsa_example("AKAR4",pat="_gvf[.]c$")) # SBtabVFGEN
+The model exists in R and C form:
+- `AKAR4.R`
+- `AKAR4_gvf.c`
 
-numPar <- nrow(model.tab$Parameter)
-parNames <- row.names(model.tab$Parameter)
-parVal <- model$par()[1:numPar]
-parMap <- function (parABC=0) {
-	return(10^parABC)
-}
+The file ending in `gvf.c` contains functions used for
+simulations. The functions in `.R` can be used more freely in R, and
+are functionally identical (they describe the same model).
 
+The next function call checks that the model `[...]_gvf.c` file exist,
+and builds a shared library `.so` from these sources. It attaches a
+comment to its return value that indicates how the shared library for
+this model is named:
+
+```{r, label="make shared library"}
+modelName <- checkModel("AKAR4",uqsa_example("AKAR4",pat="_gvf[.]c$")) # SBtabVFGEN
+comment(modelName) # should be AKAR4.so
 ```
 
 We want to sample in logarithmic space, so we set up a mapping
-function that the sampler will call before it simulates the model.
+function `parMap`. The sampler will call this function on the sampling
+variable `parABC` before it simulates the model.
 
-Next, we load the list of experiments from the same list of data.frames (SBtab content):
-```{r load-experiments}
-experiments <- sbtab.data(model.tab)
+```{r, label="describe parameter space"}
+parMap <- function (parABC=0) {
+	return(10^parABC)
+}
 ```
 
-Define lower and upper Limits for log-uniform prior distribution for the parameters:
+The ODE model receives a parameter vector `p` for each experiment. It
+consists of the biological model parameters (which are the same fro
+all experiments), and input parameters (which together with initial
+conditions distinguish the experimental setups). These two different
+kinds of parameters are concatenated into one big numeric vector
+inside of the solver. The model function `AKAR4_default()` returns the
+default values for `p`.
+
+In SBtab, we make a clear distinction between the two: biological
+paramteters go into the `SBtab$Parameter` table, while input
+parameters can be found in `SBtab$Input`. The input values are adjusted in
+the rows of the `SBtab$Experiments` table.
+
+We use the SBtab information to determine the length of the biological parameters `numPar` and shorten the value of  default
+parameter values in `SBtab` to start sampling:
+
+```{r, "starting value"}
+numPar <- nrow(SBtab$Parameter)
+parNames <- row.names(SBtab$Parameter)
+parVal <- model$par()[1:numPar]
+```
+
+Next, we load the list of experiments from the same list of `data.frames` (SBtab content):
+```{r, "load-experiments"}
+experiments <- sbtab.data(SBtab)
+```
+
+Define lower and upper limits for log-uniform prior distribution for the parameters:
 
 ```{r limits}
-defRange <- 1000
-ll <- c(parVal/defRange)
-ul <- c(parVal*defRange)
-ll <- log10(ll) # log10-scale
-ul <- log10(ul) # log10-scale
+ll <- log10(parVal) - 3
+ul <- log10(parVal) + 3
 ```
 
-Define Number of Samples for the Precalibration (npc) and each
-ABC-MCMC chain (ns). During ABC, we save every 100th point, so this
-number should be lower than the pre-calibration size.
+Define Number of Samples for the pre-calibration `npc` and each
+ABC-MCMC chain `ns`. During ABC, we save every 100-th point, so `work(nChains*ns*100) ≈ work(npc)`:
 
 ```{r sample-size}
 ns <- 800   # ABC-MCMC sample size
