@@ -12,14 +12,14 @@ knitr::opts_chunk$set(
 
 # Installation
 
-```R
+```{r remotes}
 # requires the 'remotes' package
 remotes::install_github("icpm-kth/uqsa")
 ```
 
 Alternatively, download a release `tar.gz` or `zip` file and run
 
-```sh
+```{sh CMD}
 R CMD INSTALL uqsa*.{tar.gz,zip}
 ```
 
