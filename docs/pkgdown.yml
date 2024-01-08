@@ -10,12 +10,17 @@ articles:
   cite: cite.html
   data: data.html
   examples_overview: examples_overview.html
+  install: install.html
   installation: installation.html
   literature_references: literature_references.html
   models: models.html
+  sa: sa.html
   simulate: simulate.html
+  tsv: tsv.html
+  uq: uq.html
   uqsa: uqsa.html
-last_built: 2023-08-28T09:20Z
+  user_model: user_model.html
+last_built: 2024-01-08T11:45Z
 urls:
   reference: https://icpm-kth.github.io/uqsa/reference
   article: https://icpm-kth.github.io/uqsa/articles

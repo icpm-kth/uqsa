@@ -32,8 +32,18 @@ function.'><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
   <a class="nav-link" href="../articles/uqsa.html">Get started</a>
 </li>
 <li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-installation">Installation</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-installation">
+    <a class="dropdown-item" href="../articles/install.html">Full Installation Instructions</a>
+    <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
+  </div>
+</li>
+<li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
+    <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
+    <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
+    <a class="dropdown-item" href="../articles/sa.html">Sensiticity Analysis</a>
     <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
@@ -113,19 +123,19 @@ mean)</p></dd>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">rnp</span><span class="op">&lt;-</span><span class="fu">rNormalPrior</span><span class="op">(</span>mean<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,sd<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rnp</span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]       [,2]       [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,]  0.1577220  2.9925189  2.0908125</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] -0.6569477 -0.1833405 -1.4056449</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]  0.1180809  6.6900798  6.3835301</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,]  3.2813862 -0.5982630  3.3645340</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,]  0.6506169  1.7254930 -1.9418089</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,]  0.7774746  3.3207347 -5.8779895</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]  1.0202616 -1.2108629  0.8152898</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] -0.3748794  0.9061205 -3.1396751</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] -0.6588300 -0.2017509 -0.6076558</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] -0.6764666  0.3155870  1.7079299</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] -1.1930132  0.3212458  3.9614557</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,]  0.6595706  1.0547077  3.7947997</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]        [,2]        [,3]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] -0.9173328 -3.68894207 -3.80256561</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]  0.7334925  1.44514157 -0.00106719</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] -1.8173746  6.61132791  0.49095702</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,]  2.0476115 -6.21068912 -4.71647552</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] -0.1675068  2.22777251  5.84974601</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] -0.4045838  3.17281824  9.40196289</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]  0.6199143  0.09107322  6.01653164</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] -0.6611063  1.31800764  3.40265112</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,]  1.6064745  4.37533190  4.82936887</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] -0.8863370  0.72490022 -0.07950022</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,]  0.3716617  1.61024495  2.15678531</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,]  0.5845085  1.06508411  2.09800384</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

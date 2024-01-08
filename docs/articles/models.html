@@ -38,15 +38,19 @@
 <li class="nav-item">
   <a class="nav-link" href="../articles/uqsa.html">Get started</a>
 </li>
-<li class="nav-item">
-  <a class="nav-link" href="../articles/install.html">Installation</a>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-installation">Installation</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-installation">
+    <a class="dropdown-item" href="../articles/install.html">Full Installation Instructions</a>
+    <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
+  </div>
 </li>
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
     <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
     <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
-    <a class="dropdown-item" href="../sa.html">Sensiticity Analysis</a>
+    <a class="dropdown-item" href="../articles/sa.html">Sensiticity Analysis</a>
     <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
@@ -105,7 +109,7 @@
 <span><span class="va">model.tab</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">model.tsv</span><span class="op">)</span></span>
 <span><span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">sbtab_to_vfgen</a></span><span class="op">(</span><span class="va">model.tab</span>,cla<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p>this will write a file called MODEL.vf (where MODEL is whatever you chose as the model name); MODEL.vf encodes the model as an ODE. This file is compatible with the <a href="https://warrenweckesser.github.io/vfgen/" class="external-link">vfgen</a> tool; it creates code in many languages from this <code>vf</code> file.</p>
-<p>Alternatively, you can use our tool: <a href="icpm-kth/RPN-derivative">icpm-kth/RPN-derivative</a>, which contains a shell script <a href="icpm-kth/RPN/derivative/sh/ode.sh">ode.sh</a>; this script uses either the derivative binary from RPN-derivative, <a href="https://maxima.sourceforge.io/" class="external-link">maxima</a>, or <a href="https://yacas.readthedocs.io/en/latest/" class="external-link">yacas</a> to calculate analytical derivative functions for the jacobian (vfgen uses the <a href="https://www.ginac.de/" class="external-link">ginac</a> library). Our own tool also accepts the <code>.zip</code> file or <code>.tar.gz</code> file that <code>sbtab_to_vfgen()</code> creates.</p>
+<p>Alternatively, you can use our tool: <a href="icpm-kth/RPN-derivative">icpm-kth/RPN-derivative</a>, which contains a shell script <a href="icpm-kth/RPN/derivative/sh/ode.sh">ode.sh</a>; this script uses either the derivative binary from RPN-derivative, <a href="https://maxima.sourceforge.io/" class="external-link">maxima</a>, or <a href="https://yacas.readthedocs.io/en/latest/" class="external-link">yacas</a> to calculate analytical derivative functions for the jacobian (vfgen uses the <a href="https://www.ginac.de/" class="external-link">ginac</a> library). Our own tool also accepts the <code>.zip</code> file or <code>.tar.gz</code> file that <code><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">sbtab_to_vfgen()</a></code> creates.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>$ <span class="fu">git</span> clone https://github.com/icpm-kth/RPN-derivative.git</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>$ <span class="bu">cd</span> RPN-derivative</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>$ <span class="ex">sh/ode.sh</span> -R --maxima <span class="va">${MODEL:-</span>myModel<span class="va">}</span>.vf</span></code></pre></div>

@@ -39,8 +39,18 @@
   <a class="nav-link" href="../articles/uqsa.html">Get started</a>
 </li>
 <li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-installation">Installation</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-installation">
+    <a class="dropdown-item" href="../articles/install.html">Full Installation Instructions</a>
+    <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
+  </div>
+</li>
+<li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
+    <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
+    <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
+    <a class="dropdown-item" href="../articles/sa.html">Sensiticity Analysis</a>
     <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
@@ -98,53 +108,96 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">parallel</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">rgsl</span><span class="op">)</span></span></code></pre></div>
-<p>We load the model from a collection of TSV files, convert the contents to a list of <code>data.frames</code> and also load the R functions of the model. The R file we source includes a variable called <code>model</code>, it is a list of functions, onme of which is called <code>model$par()</code> and returns the default parameters of the model in linear space:</p>
+<p>We load the model from a collection of TSV files (<code>inst/extdata/AKAR4</code> on github), the function below locates the tsv files after package installation:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">model.tsv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,full.names<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">model.tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">model.tsv</span><span class="op">)</span> <span class="co"># SBtabVFGEN</span></span>
-<span><span class="co">#&gt; [tsv] file[1] «/tmp/Rtmp1oLWAL/temp_libpathc7213b9eabbf/uqsa/extdata/AKAR4/AKAR4_100nM.tsv» belongs to Document «AKAR4»</span></span>
-<span><span class="co">#&gt;  I'll take this as the Model Name.</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,pat<span class="op">=</span><span class="st">"^AKAR4[.]R$"</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">modelFiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,full.names<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>Then we import the contents as a list of <code>data.frames</code></p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">SBtab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">modelFiles</span><span class="op">)</span> <span class="co"># SBtabVFGEN</span></span>
+<span><span class="co">#&gt; [tsv] file[1] «/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_100nM.tsv» belongs to Document «AKAR4»</span></span>
+<span><span class="co">#&gt;  I'll take this as the Model Name.</span></span></code></pre></div>
+<p>We load the R functions of the model (e.g. the jacobian of the model):</p>
+<ul>
+<li>
+<code>AKAR4_vf</code>, the vector field,</li>
+<li>
+<code>AKAR4_jac</code>, the jacobian,</li>
+<li>
+<code>AKAR4_default</code>, the default parameters</li>
+</ul>
+<p>The R file we source additionally includes a variable called <code>model</code>, which serves the purpose of having generic names for all model constituents, to make it easier to write generic scripts:</p>
+<ul>
+<li>
+<code>model$vf()</code> corresponds to <code>AKAR4_vf()</code>
+<ul>
+<li>but does nt use AKAR4 in the name</li>
+</ul>
+</li>
+<li>
+<code>model$jac()</code> corresponds to <code>AKAR4_jac()</code>
+</li>
+<li>
+<code>model$name</code> is a string, <code>"AKAR4"</code> in this case</li>
+</ul>
+<p>You can investigate the sourced file to find out more.</p>
+<p>Generally, <code>model</code> is a list of functions, one of which is called <code>model$par()</code> and returns the default parameters of the model in linear space:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,pat<span class="op">=</span><span class="st">"^AKAR4[.]R$"</span><span class="op">)</span><span class="op">)</span> <span class="co"># loads "model"</span></span>
 <span><span class="co">#&gt; Loading required package: deSolve</span></span>
-<span></span>
-<span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">model.tab</span><span class="op">)</span>,<span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,pat<span class="op">=</span><span class="st">"_gvf[.]c$"</span><span class="op">)</span><span class="op">)</span> <span class="co"># SBtabVFGEN</span></span>
+<span><span class="va">model</span><span class="op">$</span><span class="va">name</span>   <span class="co"># AKAR4</span></span>
+<span><span class="co">#&gt; [1] "AKAR4"</span></span>
+<span><span class="va">model</span><span class="op">$</span><span class="fu">par</span><span class="op">(</span><span class="op">)</span>  <span class="co"># default values for parameters</span></span>
+<span><span class="co">#&gt; kf_C_AKAR4 kb_C_AKAR4 kcat_AKARp </span></span>
+<span><span class="co">#&gt;      0.018      0.106     10.200</span></span>
+<span><span class="va">model</span><span class="op">$</span><span class="fu">init</span><span class="op">(</span><span class="op">)</span> <span class="co"># default initial values for ODE state variables</span></span>
+<span><span class="co">#&gt;   AKAR4 AKAR4_C  AKAR4p       C </span></span>
+<span><span class="co">#&gt;     0.2     0.0     0.0     0.0</span></span></code></pre></div>
+<p>The model exists in R and C form: - <code>AKAR4.R</code> - <code>AKAR4_gvf.c</code></p>
+<p>The file ending in <code>_gvf.c</code> contains functions used for simulations with <code><a href="https://rdrr.io/pkg/rgsl/man/r_gsl_odeiv2_outer.html" class="external-link">rgsl::r_gsl_odeiv2_outer()</a></code> (<code>_gvf.c</code> needs to be compiled). The functions in <code>.R</code> can be used more freely in R, and are functionally identical (they describe the same model, but solutions are slower in R).</p>
+<p>The next function call checks that the model <code>[...]_gvf.c</code> file exist, and builds a shared library <code>.so</code> from these sources. It attaches a comment to its return value that indicates how the shared library for this model is named:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,<span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,pat<span class="op">=</span><span class="st">"_gvf[.]c$"</span><span class="op">)</span><span class="op">)</span> <span class="co"># SBtabVFGEN</span></span>
 <span><span class="co">#&gt; building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).</span></span>
-<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './AKAR4.so' '/tmp/Rtmp1oLWAL/temp_libpathc7213b9eabbf/uqsa/extdata/AKAR4/AKAR4_gvf.c' `pkg-config --libs gsl`</span></span>
-<span></span>
-<span><span class="va">numPar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">model.tab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span></span>
-<span><span class="va">parNames</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/row.names.html" class="external-link">row.names</a></span><span class="op">(</span><span class="va">model.tab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span></span>
-<span><span class="va">parVal</span> <span class="op">&lt;-</span> <span class="va">model</span><span class="op">$</span><span class="fu">par</span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">numPar</span><span class="op">]</span></span>
-<span><span class="va">parMap</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">parABC</span><span class="op">=</span><span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './AKAR4.so' '/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_gvf.c' `pkg-config --libs gsl`</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">modelName</span><span class="op">)</span> <span class="co"># should be AKAR4.so</span></span>
+<span><span class="co">#&gt; [1] "./AKAR4.so"</span></span></code></pre></div>
+<p>The comment will be used to find the <code>.so</code> file (if you move that file, adjust the comment on the <code>modelName</code>).</p>
+<p>We want to sample in logarithmic space, so we set up a mapping function <code>parMap</code>. The sampler will call this function on the sampling variable <code>parABC</code> before it simulates the model.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">parMap</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">parABC</span><span class="op">=</span><span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fl">10</span><span class="op">^</span><span class="va">parABC</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>We want to sample in logarithmic space, so we set up a mapping function that the sampler will call before it simulates the model.</p>
-<p>Next, we load the list of experiments from the same list of data.frames (SBtab content):</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">experiments</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">model.tab</span><span class="op">)</span></span></code></pre></div>
-<p>Define lower and upper Limits for log-uniform prior distribution for the parameters:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">defRange</span> <span class="op">&lt;-</span> <span class="fl">1000</span></span>
-<span><span class="va">ll</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">parVal</span><span class="op">/</span><span class="va">defRange</span><span class="op">)</span></span>
-<span><span class="va">ul</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">parVal</span><span class="op">*</span><span class="va">defRange</span><span class="op">)</span></span>
-<span><span class="va">ll</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">ll</span><span class="op">)</span> <span class="co"># log10-scale</span></span>
-<span><span class="va">ul</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">ul</span><span class="op">)</span> <span class="co"># log10-scale</span></span></code></pre></div>
-<p>Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns). During ABC, we save every 100th point, so this number should be lower than the pre-calibration size.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>The ODE model receives a parameter vector <code>p</code> for each experiment. It consists of the biological model parameters (which are the same fro all experiments), and input parameters (which together with initial conditions distinguish the experimental setups). These two different kinds of parameters are concatenated into one big numeric vector inside of the solver. The model function <code>AKAR4_default()</code> returns the default values for <code>p</code>.</p>
+<p>In SBtab, we make a clear distinction between the two: biological paramteters go into the <code>SBtab$Parameter</code> table, while input parameters can be found in <code>SBtab$Input</code>. The input values are adjusted in the rows of the <code>SBtab$Experiments</code> table. The ODE model makes no such distinction, the ODE parameters are a dirct sum of the two: <code>odePar &lt;- c(SBtab$Parameter,SBtab$Input)</code>. But, only the biological parameters are unknown, so we sample that subset.</p>
+<p>We use the SBtab information to determine the length of the biological parameters <code>numPar</code> and shorten the value of default parameter values in <code>SBtab</code> to start sampling:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">numPar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">SBtab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span></span>
+<span><span class="va">parNames</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/row.names.html" class="external-link">row.names</a></span><span class="op">(</span><span class="va">SBtab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span></span>
+<span><span class="va">parVal</span> <span class="op">&lt;-</span> <span class="va">model</span><span class="op">$</span><span class="fu">par</span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">numPar</span><span class="op">]</span></span></code></pre></div>
+<p>Next, we load the list of experiments from the same list of <code>data.frames</code> (SBtab content):</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">experiments</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">SBtab</span><span class="op">)</span></span></code></pre></div>
+<p>Define lower and upper limits for log-uniform prior distribution for the parameters:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ll</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">parVal</span><span class="op">)</span> <span class="op">-</span> <span class="fl">3</span></span>
+<span><span class="va">ul</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">parVal</span><span class="op">)</span> <span class="op">+</span> <span class="fl">3</span></span></code></pre></div>
+<p>Define Number of Samples for the pre-calibration <code>npc</code> and each ABC-MCMC chain <code>ns</code>. During ABC, we save every 100-th point, so <code>work(nChains*ns*100) ≈ work(npc)</code>:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ns</span> <span class="op">&lt;-</span> <span class="fl">800</span>   <span class="co"># ABC-MCMC sample size</span></span>
 <span><span class="va">npc</span> <span class="op">&lt;-</span> <span class="fl">50000</span> <span class="co"># pre-calibration size</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">delta</span> <span class="op">&lt;-</span> <span class="fl">0.02</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2022</span><span class="op">)</span></span>
 <span><span class="va">nCores</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>mc.cores<span class="op">=</span><span class="va">nCores</span><span class="op">)</span></span></code></pre></div>
 <p>We define a function that measures the distance between experiment and simulation:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">distanceMeasure</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">funcSim</span>, <span class="va">dataExpr</span>, <span class="va">dataErr</span> <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">distance</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="op">(</span><span class="va">funcSim</span><span class="op">-</span><span class="va">dataExpr</span><span class="op">$</span><span class="va">AKAR4pOUT</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">dataExpr</span><span class="op">$</span><span class="va">AKAR4pOUT</span><span class="op">)</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">distance</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>We divide the workload into chunks and loop over the chunks:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chunks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,<span class="fl">3</span><span class="op">)</span></span>
 <span><span class="va">priorPDF</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dUniformPrior.html">dUniformPrior</a></span><span class="op">(</span><span class="va">ll</span>, <span class="va">ul</span><span class="op">)</span></span>
 <span><span class="va">rprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rUniformPrior.html">rUniformPrior</a></span><span class="op">(</span><span class="va">ll</span>, <span class="va">ul</span><span class="op">)</span></span>
@@ -176,92 +229,96 @@
 <span>    <span class="va">priorPDF</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dCopulaPrior.html">dCopulaPrior</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span></span>
 <span>    <span class="va">rprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rCopulaPrior.html">rCopulaPrior</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="co">#&gt;   - time spent on precalibration: 35.1048 s</span></span>
+<span><span class="co">#&gt;   - time spent on precalibration: 54.7074 s</span></span>
 <span><span class="co">#&gt; Started chain.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 10000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839079 98.3    2856321 152.6  2856321 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3358046 25.7    8388608  64.0  8388165  64.0</span></span>
+<span><span class="co">#&gt; Ncells 1793508 95.8    2851467 152.3  2851467 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3308372 25.3    8388608  64.0  8385543  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 20000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839243 98.3    2856321 152.6  2856321 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3358408 25.7    8388608  64.0  8388165  64.0</span></span>
+<span><span class="co">#&gt; Ncells 1793514 95.8    2851467 152.3  2851467 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3308399 25.3    8388608  64.0  8385543  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 30000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839246 98.3    2856321 152.6  2856321 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3358440 25.7    8388608  64.0  8388165  64.0</span></span>
+<span><span class="co">#&gt; Ncells 1793517 95.8    2851467 152.3  2851467 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3308431 25.3    8388608  64.0  8385543  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 40000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839249 98.3    2856321 152.6  2856321 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3358464 25.7    8388608  64.0  8388165  64.0</span></span>
+<span><span class="co">#&gt; Ncells 1793519 95.8    2851467 152.3  2851467 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3308451 25.3    8388608  64.0  8385543  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 50000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839252 98.3    2856321 152.6  2856321 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3358491 25.7    8388608  64.0  8388165  64.0</span></span>
+<span><span class="co">#&gt; Ncells 1793522 95.8    2851467 152.3  2851467 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3308478 25.3    8388608  64.0  8385543  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 60000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839256 98.3    2856322 152.6  2856322 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3358523 25.7    8388608  64.0  8388165  64.0</span></span>
+<span><span class="co">#&gt; Ncells 1793526 95.8    2851467 152.3  2851467 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3308510 25.3    8388608  64.0  8385543  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 70000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839258 98.3    2856322 152.6  2856322 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3358547 25.7    8388608  64.0  8388165  64.0</span></span>
+<span><span class="co">#&gt; Ncells 1793528 95.8    2851467 152.3  2851467 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3308534 25.3    8388608  64.0  8385543  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 80000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839261 98.3    2856322 152.6  2856322 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3358575 25.7    8388608  64.0  8388165  64.0</span></span>
-<span><span class="co">#&gt;   - time spent on ABC-MCMC: 14.9937 s</span></span>
-<span><span class="co">#&gt;   - time spent on precalibration: 24.5917 s</span></span>
+<span><span class="co">#&gt; Ncells 1793531 95.8    2851467 152.3  2851467 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3308562 25.3    8388608  64.0  8385543  64.0</span></span>
+<span><span class="co">#&gt;   - time spent on ABC-MCMC: 15.941 s</span></span>
+<span><span class="co">#&gt;   - time spent on precalibration: 37.5317 s</span></span>
 <span><span class="co">#&gt; Started chain.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; n = 10000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896255 101.3    2856322 152.6  2856322 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3492637  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; n = 10000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
+<span><span class="co">#&gt; Ncells 1850542 98.9    2851468 152.3  2851468 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3442749 26.3    8388608  64.0  8388608  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; n = 20000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896259 101.3    2856323 152.6  2856323 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3492669  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; n = 20000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
+<span><span class="co">#&gt; Ncells 1850545 98.9    2851469 152.3  2851469 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3442773 26.3    8388608  64.0  8388608  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; n = 30000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896262 101.3    2856324 152.6  2856324 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3492697  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; n = 30000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
+<span><span class="co">#&gt; Ncells 1850547 98.9    2851469 152.3  2851469 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3442793 26.3    8388608  64.0  8388608  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; n = 40000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896264 101.3    2856324 152.6  2856324 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3492721  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; n = 40000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
+<span><span class="co">#&gt; Ncells 1850548 98.9    2851469 152.3  2851469 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3442809 26.3    8388608  64.0  8388608  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; n = 50000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896268 101.3    2856324 152.6  2856324 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3492753  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; n = 50000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
+<span><span class="co">#&gt; Ncells 1850550 98.9    2851470 152.3  2851470 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3442829 26.3    8388608  64.0  8388608  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; n = 60000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896270 101.3    2856325 152.6  2856325 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3492777  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; n = 60000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
+<span><span class="co">#&gt; Ncells 1850552 98.9    2851471 152.3  2851471 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3442849 26.3    8388608  64.0  8388608  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; n = 70000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896273 101.3    2856325 152.6  2856325 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3492805  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; n = 70000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
+<span><span class="co">#&gt; Ncells 1850554 98.9    2851471 152.3  2851471 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3442869 26.3    8388608  64.0  8388608  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; n = 80000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896276 101.3    2856325 152.6  2856325 152.6</span></span>
-<span><span class="co">#&gt; Vcells 3492833  26.7    8388608  64.0  8388608  64.0</span></span>
-<span><span class="co">#&gt;   - time spent on ABC-MCMC: 7.30149 s</span></span>
+<span><span class="co">#&gt; n = 80000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
+<span><span class="co">#&gt; Ncells 1850556 98.9    2851472 152.3  2851472 152.3</span></span>
+<span><span class="co">#&gt; Vcells 3442889 26.3    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt;   - time spent on ABC-MCMC: 6.34552 s</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -Checking fit with previous data</span></span>
-<span><span class="co">#&gt; --  177  samples  did not fit previous datasets</span></span>
+<span><span class="co">#&gt; --  165  samples  did not fit previous datasets</span></span>
 <span><span class="va">end_time</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">time_</span> <span class="op">=</span> <span class="va">end_time</span> <span class="op">-</span> <span class="va">start_time</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">time_</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Time difference of 23.37487 mins</span></span></code></pre></div>
+<span><span class="co">#&gt; Time difference of 23.89496 mins</span></span></code></pre></div>
 <p>We plot the sample as a two dimensional histogram plot-matrix using the hexbin package:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">mcmc</span><span class="op">$</span><span class="va">draws</span><span class="op">)</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">parVal</span><span class="op">)</span></span>
 <span><span class="fu">hexbin</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/hexbin/man/hexplom.html" class="external-link">hexplom</a></span><span class="op">(</span><span class="va">mcmc</span><span class="op">$</span><span class="va">draws</span><span class="op">)</span></span></code></pre></div>
 <p><img src="AKAR4_files/figure-html/sample-density-1.png" width="700"></p>
 <p>A sensitivity plot using the results of the above loop:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">mcmc</span><span class="op">$</span><span class="va">draws</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">f</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/aperm.html" class="external-link">aperm</a></span><span class="op">(</span><span class="va">y</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span><span class="op">)</span> <span class="co"># aperm makes the sample-index (3rd) the first index of f, default permutation</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">y</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1]   1 225 635</span></span></code></pre></div>
+<p>where <code>y[[1]]</code> refers to the simulation corresponding to the first experiment: <code>experiment[[1]]</code>, and <code>$func</code> refers to the output function values (rather than state variables). The outout functions are defined in the table <code>SBtab$Output</code>.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">f</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/aperm.html" class="external-link">aperm</a></span><span class="op">(</span><span class="va">y</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span><span class="op">)</span> <span class="co"># aperm makes the sample-index (3rd) the first index of f, default permutation</span></span>
 <span><span class="va">S</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span><span class="op">(</span><span class="va">mcmc</span><span class="op">$</span><span class="va">draws</span>,<span class="va">f</span><span class="op">)</span></span>
 <span><span class="va">S</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span><span class="op">&lt;-</span><span class="fl">0</span> <span class="co"># the first index of S is time, and initially sensitivity is 0</span></span>
 <span><span class="va">cuS</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">S</span>,<span class="fl">1</span>,<span class="va">cumsum</span><span class="op">)</span><span class="op">)</span></span>

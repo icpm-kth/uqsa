@@ -8,7 +8,11 @@ navbar:
   components:
     installation:
       text: Installation
-      href: articles/install.html
+      menu:
+      - text: Full Installation Instructions
+        href: articles/install.html
+      - text: Short Instructions
+        href: articles/installation.html
     articles:
       text: Documentation
       menu:
@@ -24,6 +28,9 @@ navbar:
         href: articles/models.html
       - text: Importing data
         href: articles/data.html
+      - text: -------
+      - text: Build your own Model
+        href: articles/user_model.html
       - text: -------
       - text: Paremeter estimation and uncertainty quantification
       - text: Simulating a model
@@ -91,3 +98,6 @@ reference:
   - propensity
   - sum.of.bin.variance
   - uqsa-package
+  - getDose
+  - plotDoseResponse
+  - plotTimeSeries
