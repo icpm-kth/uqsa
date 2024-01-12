@@ -4,7 +4,13 @@
 \alias{simulator.c}
 \title{This creates a closure that simulates the model}
 \usage{
-simulator.c(experiments, modelName, parMap = identity, noise = FALSE)
+simulator.c(
+  experiments,
+  modelName,
+  parMap = identity,
+  noise = FALSE,
+  sensApprox = NULL
+)
 }
 \arguments{
 \item{experiments}{a list of experiments to simulate: inital values, inputs, time vectors, initial times}
