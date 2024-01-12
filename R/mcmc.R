@@ -3,7 +3,7 @@ mcmc <- function(N=1000,simulate,experiments,parMCMC,logLikelihood,gradLogLikeli
 	attr(parMCMC,"logLikelihood") <- logLikelihood(experiments,simulations)
 	attr(parMCMC,"fisherInformation") <- fisherInformation(parMCMC)
 	attr(parMCMC,"gradLogLikelihood") <- gradLogLikelihood(parMCMC)
-	
+
 	for (i in seq(N)){
 		simulations <- simulate(parMCMC)
 		attr(parMCMC,"logLikelihood") <- logLikelihood(experiments,simulations)
@@ -268,7 +268,7 @@ gradLogLikelihood <- function(parMCMC,experiments,simulations,model,parMap=defau
 		h <- simulations[[i]]$func[,,1]
 		stdv <- t(experiments[[i]]$errorValues)
 		for (j in seq(T)){
-			gL <- gL + (((y[,j] - h[,j])/stdv[,j]^2) %*% Sh[[i]][,,j]
+			gL <- gL + ((y[,j] - h[,j])/stdv[,j]^2) %*% Sh[[i]][,,j]
 		}
 	}
 	return(gL)
