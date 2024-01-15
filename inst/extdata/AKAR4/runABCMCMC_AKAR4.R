@@ -58,7 +58,6 @@ distanceMeasure <- function(funcSim, dataExpr, dataErr = 1.0){
   return(distance)
 }
 
-
 nCores <- parallel::detectCores()
 # Loop through the Different Experimental Settings
 start_time = Sys.time()
@@ -69,6 +68,9 @@ chunks <- list(c(1,2),3)
 for (i in seq(length(chunks))){
 	expInd <- chunks[[i]]
 	simulate <- simulator.c(experiments[expInd],modelName,parMap)
+	
+	likelihood <- makeLikelihood(experiments,modelName,distanceMeasure,parMap,simulate)
+	
 	Obj <- makeObjective(experiments[expInd],modelName,distanceMeasure,parMap,simulate)
 	cat("#####Starting run for Experiments ", expInd, "######\n")
 	## If First Experimental Setting, Create an Independente Colupla
@@ -95,6 +97,22 @@ for (i in seq(length(chunks))){
 
 	## Get Starting Parameters from Pre-Calibration
 	M <- getMCMCPar(pC$prePar, pC$preDelta, delta, num=1)
+	
+	## Run Metropolis-Hastings algorithm
+	time_RWMH <- Sys.time()
+	mcmc <- RWMH(as.numeric(M$startPar), ns, M$Sigma, priorPDF, likelihood)
+	time_RWMH <- Sys.time() - time_RWMH
+	cat(sprintf("- time spent on MH: \n"))
+	print(time_RWMH)
+	
+	par(mfrow=c(3,2))
+	for(j in 1:3){
+	  plot(mcmc$draws[,j], main = c("Par", i))
+	  hist(mcmc$draws[,j], breaks = 100, probability = TRUE, main = paste0("AKAR4 - Par ", i), col="skyblue", xlab = parNames[i], xlim = c(ll[i],ul[i]), plot = TRUE)
+	  abline(v=ll[i], col="red")
+	  abline(v=ul[i], col="green")
+	}
+	
 	## Run ABC-MCMC Sampling
 	cat(sprintf("- Running MCMC\n"))
 	time_ABC <- Sys.time()
@@ -125,3 +143,5 @@ for (i in seq(length(chunks))){
 }
 end_time = Sys.time()
 time_ = end_time - start_time
+
+

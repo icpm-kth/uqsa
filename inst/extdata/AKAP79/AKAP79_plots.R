@@ -31,9 +31,9 @@ plotAKAP79Simulations <- function(draws, num.sub.samples = 100, show.plot = TRUE
   }
   
   p<-list()
-  for(i in 1:12){
+  for(i in 1:18){
     simulate <- simulator.c(experiments[i], modelName, parMap, noise = TRUE)
-    #output_yy <- simulate(t(ABCMCMCoutput$draws[(ABCMCMCoutput$scores %in% sort(ABCMCMCoutput$scores)[1:300]),]))
+    #output_yy <- simulate(t(draws[order(ABCMCMCoutput$scores)[1:100],]))
     output_yy <- simulate(t(draws[sample(1:dim(draws)[1],num.sub.samples),]))
     
     experiment <- experiments[[i]]

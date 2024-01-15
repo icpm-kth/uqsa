@@ -106,7 +106,7 @@ options(mc.cores=nCoresPerChain)
 ABC related settings:
 
 ```{r ABC, eval=FALSE}
-delta <- 1
+delta <- 0.01
 
 set.seed(7619201)
 
@@ -163,8 +163,23 @@ for (i in 1:length(experimentsIndices)){
 	stopCluster(cl)
 
 	ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
+	
+	
+	if(i == 1){
+	  
+	  C <- fitCopula(ABCMCMCoutput$draws, nCoresPerChain)
+	  
+	} else { # Keep the draws that also fit the experiments considered in previous loops
+	  
+	  objectiveFunction <- makeObjective(experiments[unlist(experimentsIndices[1:(i-1)])], modelName, distanceMeasure, parMap)
+	  # We relax the delta from 0.01 to 0.05
+	  ABCMCMCoutput$drawsAfterCheckFit <- checkFitWithPreviousExperiments(ABCMCMCoutput$draws,objectiveFunction,delta = 0.05)
+	C <- fitCopula(ABCMCMCoutput$drawsAfterCheckFit, nCoresPerChain)
+	
+	}
+	
 	save_sample(expInd,ABCMCMCoutput)
-	C <- fitCopula(ABCMCMCoutput$draws, nCoresPerChain)
+	
 	rprior <- rCopulaPrior(C)
 	dprior <- dCopulaPrior(C)
 }
@@ -174,7 +189,7 @@ time_ = end_time - start_time
 cat("Total time:\n",time_)
 ```
 
-The sampling loop ran for ~12.5 minutes on a machine with the following specs:
+The sampling loop ran for ~24.5 minutes on a machine with the following specs:
 
 |MacBook Pro |(13-inch, M1, 2020)|
 |-----------:|:------------------|
@@ -182,5 +197,16 @@ The sampling loop ran for ~12.5 minutes on a machine with the following specs:
 |Memory: |16 GB|
 
 The result is a collection of intermediate samples (2 files) and a final posterior sample (1 file).
+
+Here we plot data from experimental time series with simulations from a subsample of the draws from the posterior distribution.
+
+```{r plot, eval=FALSE}
+draws <- ABCMCMCoutput$drawsAfterCheckFit
+
+simulate <- simulator.c(experiments[unlist(experimentsIndices)],modelName,parMap, noise = TRUE)
+output_yy <- simulate(t(draws[sample(1:dim(draws)[1],min(100,dim(draws)[1])),]))
+p<-plotTimeSeries(output_yy,experiments[unlist(experimentsIndices)])
+
+```
 
 

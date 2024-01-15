@@ -42,7 +42,11 @@ plotSimualtionsFromSBtab <- function(SBtabDir, paramVal, plotDir = NULL, width =
   }
 
   # Simualte the model
-  output_yy <- runModel(experiments, modelName, paramVal, parMap = parMap)
+  simulate <- simulator.c(experiments,modelName,parMap)
+  output_yy <- simulate(paramVal)
+  
+  # old (when we used to use runModel)
+  #output_yy <- runModel(experiments, modelName, paramVal, parMap = parMap)
 
   # Create folder for plots (if not provided in input)
   if(is.null(plotDir)){
@@ -60,6 +64,7 @@ plotSimualtionsFromSBtab <- function(SBtabDir, paramVal, plotDir = NULL, width =
     # Save also the experimental data as a dataframe
     yy_exp <- experiments[[i]][["outputValues"]]
     dfExp <- data.frame(t = experiments[[i]][["outputTimes"]],y = yy_exp)
+    names(dfExp)[2] <- "y"
 
     pl <- ggplot(df, aes(x = t, y = y)) + geom_line(color = "blue") + geom_point(data = na.omit(dfExp), aes(x = t, y = y)) + ggtitle(model$Experiments[["!Name"]])
     print(pl)
