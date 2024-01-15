@@ -1,0 +1,43 @@
+---
+title: "Uncertainty Quantification"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(uqsa)
+```
+
+# Introduction to UQ
+
+Uncertainty Quantification and global Sensitivity Analysis are both
+common tasks in *systems biology*. Uncertainty quantification aims to
+establish the amount of knowledge we have (or indeed lack) about the
+possible values of model parameters. The knowledge is expressed in the
+form of probability distributions over the parameters, even though the
+parameters are not *random variables*. In this case the probability is
+related to the randomness within the observed of data: the measurement
+noise. The noise has direct implications for the possible parameters:
+parameters with high probability density values can easily explain the
+data, while unlikely parameters require the random noise to have had
+uncharacteristically large values for the given measurements
+
+This package aims to characterize the posterior probability
+distribution $p(\theta|D)$, where $\theta$ is a vector that directly
+maps to the model parameters and is used as a Markov chain variable,
+e.g.: $\rho = exp(\theta)$, where $\rho$ are the real model
+parameters.
+
+This target distribution quantifies the amount of knowledge we have
+about $\theta$, and indirectly also about the internal parameters of
+the model. In the field of systems biology, the internal parameters $\rho$
+are typically quantities like reaction rate coefficients
+$k_{\{f,b\}}$, dissociation constants (equilibrium constants) $K_{D}$,
+Hill exponents $m$, and other parameters that relate to gene expression,
+enzyme-substrate interaction, or other biochemical processes.
+

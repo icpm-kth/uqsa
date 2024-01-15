@@ -3,8 +3,9 @@ require(SBtabVFGEN)
 require(parallel)
 library(uqsa)
 
-nChains <- 4
-options(mc.cores=parallel::detectCores() %/% nChains)
+nCores <- parallel::detectCores()
+nChains <- max(1,nCores %/% 2)
+coresPerChain <- max(1,nCores %/% nChains)
 
 model.tsv <- uqsa_example("CaMKII",full.names=TRUE)
 model.tab <- sbtab_from_tsv(model.tsv)
@@ -20,42 +21,18 @@ modelName <- checkModel(comment(model.tab), uqsa_example("CaMKII",pat="_gvf[.]c$
 ns <- 5000 # Size of the sub-sample from each chain
 npc <- 10000 # pre-calibration sample size
 
-## model is a list variable defined in CaMKIIs.R, model$par() is the
-## CaMKII_default() function from the same file.  But, model$par() is
-## a more generic name that is defined for any model made by the same
-## tool (RPN-derivative/sh/ode.sh).  These functions takes the
-## "!Scale" mentioned in SBtab into account and always return the
-## parameters in linear scale. So, if the SBtab gives us the
-## logarithmic values, this function has the converted values:
 numPar <- nrow(model.tab$Parameter)
 parVal <- model$par()[1:numPar]
-## There is one caveat: in our SBtab files we make a distinction
-## between *model parameters* and *input parameters*. The input
-## parameters represent something we did to the system during the
-## experiment (known values), while the model parameters represent
-## internal properties of the system (unknown). The ODE model file
-## makes no such distinction (it just has ODE parameters). So, the
-## parameters the model accepts are more numerous than what we need to
-## estimate using ABC. We assume the internal model parameters to come
-## first and input parameters last. During sampling (or optimization)
-## we only want to consider the not-so-well-known internal parameters:
-## that's why we do [1:numPar].
-
-# we sample in logarithmic space, so the model gets a transformation
-# function to compensate:
 parMap <- function(parABC){
 	return(10^parABC)
 }
 
 ## scale to determine prior values
-defRange <- 100
+defRange <- 10
 
 ## Define Lower and Upper Limits for logUniform prior distribution for the parameters
 ll <- log10(parVal/defRange)
 ul <- log10(parVal*defRange)
-## parameter 23 should not vary quite as much:
-ll[23] <- log10(parVal[23]/10)
-ul[23] <- log10(parVal[23]*10)
 
 ## Define the experiments that have to be considered in each iteration of the for loop to compare simulations with experimental data
 experimentsIndices <- list(
@@ -92,33 +69,21 @@ save_sample <- function(ind,ABCMCMCoutput){
 }
 
 start_time = Sys.time()
+rprior <- rUniformPrior(ll, ul)
+dprior <- dUniformPrior(ll, ul)
+
+
 for (i in 1:length(experimentsIndices)){
 	expInd <- experimentsIndices[[i]]
 	simulate <- simulator.c(experiments[expInd], modelName, parMap)
 	objectiveFunction <- makeObjective(experiments[expInd], modelName, distanceMeasure, parMap, simulate)
 
 	cat("#####Starting run for Experiments ", expInd, "######\n")
-	if(i==1){
-		message("- Initial Prior: uniform product distribution")
-		rprior <- rUniformPrior(ll, ul)
-		dprior <- dUniformPrior(ll, ul)
-		## Otherwise, Take Copula from the Previous Exp Setting and Use as a Prior
-	} else {
-		start_time_fitCopula <- Sys.time()
-		message("- New Prior: fitting Copula based on previous MCMC runs")
-		C <- fitCopula(ABCMCMCoutput$draws)
-		rprior <- rCopulaPrior(C)
-		dprior <- dCopulaPrior(C)
-		cat("\nFitting copula:")
-		print(Sys.time()-start_time_fitCopula)
-	}
 
 	## Run Pre-Calibration Sampling
 	message("- Precalibration")
 	start_time_preCalibration <- Sys.time()
-
-	## Pre-Calibration uses only mclapply calls, we set up no cluster for this.
-	options(mc.cores=parallel::detectCores())
+	options(mc.cores=nCores)
 	pC <- preCalibration(objectiveFunction, npc, rprior, rep=3)
 	cat("\nPreCalibration:")
 	print(Sys.time()-start_time_preCalibration)
@@ -138,7 +103,7 @@ for (i in 1:length(experimentsIndices)){
 
 	## here we set up a cluster and start n parallel MCMC chains
 	## so, we reduce the number of cores per chain (the chains are on the same computing node)
-	options(mc.cores=parallel::detectCores() %/% nChains)
+	options(mc.cores=coresPerChain)
 	cl <- makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
 	clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
 	out_ABCMCMC <- parLapply( # parallel block
@@ -161,8 +126,17 @@ for (i in 1:length(experimentsIndices)){
 	time_ = end_time - start_time_ABC
 	cat("\nABCMCMC for experimental set",i,":")
 	print(time_)
+
 	cat("\nRegularizations:", ABCMCMCoutput$nRegularizations)
 	cat("\nAcceptance rate:", ABCMCMCoutput$acceptanceRate)
+
+	start_time_fitCopula <- Sys.time()
+	message("- New Prior: fitting Copula based on previous MCMC runs")
+	C <- fitCopula(ABCMCMCoutput$draws)
+	rprior <- rCopulaPrior(C)
+	dprior <- dCopulaPrior(C)
+	cat("\nFitting copula:")
+	print(Sys.time()-start_time_fitCopula)
 
 	cat("\n-Saving sample \n")
 	save_sample(experimentsIndices[[1]],ABCMCMCoutput)

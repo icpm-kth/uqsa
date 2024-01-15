@@ -63,17 +63,10 @@ save_sample <- function(ABCMCMCoutput){
   save(ABCMCMCoutput, file=outFileR)
 }
 
-
-getAcceptanceProbability <- function(yy_sim, yy_exp, yy_expErr){
-  return(exp(-distanceMeasure(yy_sim,yy_exp,yy_expErr)/(delta)))
-}
-
 start_time = Sys.time()
 
 simulate <- simulator.c(experiments,modelName,parMap)
 objectiveFunction <- makeObjective(experiments, modelName, distanceMeasure, parMap, simulate)
-##acceptanceProbability <- makeAcceptanceProbability(experiments, modelName, getAcceptanceProbability, parMap)
-acceptanceProbability <- NULL
 
 message("- Initial Prior: uniform product distribution")
 
@@ -112,8 +105,8 @@ for(j in 1 : nChains){
 cat(sprintf("-Running MCMC chains \n"))
 start_time_ABC = Sys.time()
 cl <- makeForkCluster(nChains)
-clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior", "acceptanceProbability"))
-out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior, acceptanceProbability))
+clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
+out_ABCMCMC <- parLapply(cl, 1:nChains, function(j) ABCMCMC(objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior))
 stopCluster(cl)
 
 ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))

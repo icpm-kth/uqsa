@@ -1,5 +1,5 @@
 ---
-title: "Data"
+title: "Importing Data"
 ---
 
 ```{r, include = FALSE}
@@ -33,15 +33,29 @@ labelled as `>outputFunctionID` (values) and `~outputFunctionID` (error estimate
 
 ## Time Series
 
-|label| example | meaning|
-|----:|:-------:|:-------|
-|!TimePoint|`Experiment0Time0`|same as !ID, but for times (a unique string)|
-|!Time|`-0.5`|a floating point constant|
-|>outputFunctionID|`>Calcium_Out`|values that are meant to be compared to the Output called `Calcium_Out`|
-|~outputFunctionID|`~Calcium_Out`|error estimated for the values in *>outputFunctionID*|
+|             label | example            | meaning                                                                 |
+|------------------:|:------------------:|:------------------------------------------------------------------------|
+|        !TimePoint | `Experiment0Time0` | same as !ID, but for times (a unique string)                            |
+|             !Time | `-0.5`             | a floating point constant                                               |
+| >outputFunctionID | `>Calcium_Out`     | values that are meant to be compared to the Output called `Calcium_Out` |
+|                   |                    |                                                                         |
+| ~outputFunctionID | `~Calcium_Out`     | error estimated for the values in *>outputFunctionID*                   |
 
 Each time series typically requires one model simulation to reproduce
 (unless scheduled events are happening).
+
+### Example Time Series
+
+```
+!!SBtab Document='myModel' TableType='QuantityMatrix' TableName='AutorYEARfigureS1a' TableTitle='Data originally published in CITATION'
+```
+
+| !TimePoint | !Time | `>A_out` | `~A_out` | `>totalB` | `~totalB` |
+|-----------:|------:|---------:|:---------|----------:|:----------|
+|       E0T0 |  -1.0 |     1.20 | 0.012    |     201.1 | 12        |
+|       E0T1 |  +0.0 |     11.8 | 0.12     |     203.2 | 11        |
+|       E0T2 |  +1.0 |     31.7 | 0.19     |     198.7 | 13        |
+
 
 ## Dose Response
 
@@ -51,14 +65,27 @@ dose. These dose-response curves will be transformed into *n*
 time-series experiments during parsing, where *n* is the number of
 content-rows (without headers).
 
-|label| example | meaning|
-|----:|:-------:|:-------|
-|!ID|`Experiment0Dose0`|a unique string, identifying this dose|
-|>anInput|`300`|a valid value for one of the input parameters|
-|>outputFunctionID|`>Calcium_Out`|values that are meant to be compared to the Output called `Calcium_Out`|
-|~outputFunctionID|`~Calcium_Out`|error estimated for the values in *>outputFunctionID*|
+|             label | example            | meaning                                                                 |
+|------------------:|:------------------:|:------------------------------------------------------------------------|
+|               !ID | `Experiment0Dose0` | a unique string, identifying this dose                                  |
+|          >anInput | `300`              | a valid value for one of the input parameters                           |
+| >outputFunctionID | `>Calcium_Out`     | values that are meant to be compared to the Output called `Calcium_Out` |
+|                   |                    |                                                                         |
+| ~outputFunctionID | `~Calcium_Out`     | error estimated for the values in *>outputFunctionID*                   |
 
 A dose response curve requires *n* simulations of the model to reproduce.
+
+### Example Dose Response Curve
+
+```
+!!SBtab Document='myModel' TableType='QuantityMatrix' TableName='AutorYEARfigureS1b' TableTitle='Data originally published in CITATION'
+```
+|  !ID | `>treatment_dose` | `>treatment_duration` | `>A_final` | `~A_final` |
+|-----:|:---------------:|:-------------------:|---------:|:---------|
+| E0D0 | 200             | 50                  |     50.1 | 1.2      |
+| E0D1 | 1000            | 50                  |     83.2 | 0.9      |
+| E0D2 | 7000            | 25                  |     74.7 | 1.8      |
+|      |                 |                     |          |          |
 
 # Scheduled Events
 
@@ -112,15 +139,16 @@ experiments <- SBtabVFGEN::sbtab.data(model.tab)    # a list of simulation exper
 
 The `experiments` variable is a list, each member (itself a list), describes a simulation experiment. Each experiment may result in one or more calls to the simulator (in C this amounts to resetting the driver of the chosen solver). An experiment has the properties:
 
-|item|type|meaning|
-|---:|:------:|:---|
-|input|numeric vector|known input parameters|
-|initialTime|numeric vector|a scalar time $t_0$ |
-|initialState|numeric vector|initial state $x_0$ of the ode $\dot x = f(x(t),t,p=c(k,u))$, $x(t_0)=x_0$ |
-|outputTimes|numeric vector|a time vector that corresponds to when measurements were taken|
-|outputValues|data.frame|the values of the data at the above outputTimes|
-|errorValues|data.frame|an indication of the measurement error/noise|
-|events|list|a sudden transformation event|
+|         item | type           | meaning                                                                    |
+|-------------:|:--------------:|:---------------------------------------------------------------------------|
+|        input | numeric vector | known input parameters                                                     |
+|  initialTime | numeric vector | a scalar time $t_0$                                                        |
+| initialState | numeric vector | initial state $x_0$ of the ode $\dot x = f(x(t),t,p=c(k,u))$, $x(t_0)=x_0$ |
+|  outputTimes | numeric vector | a time vector that corresponds to when measurements were taken             |
+|              |                |                                                                            |
+| outputValues | data.frame     | the values of the data at the above outputTimes                            |
+|  errorValues | data.frame     | an indication of the measurement error/noise                               |
+|       events | list           | a sudden transformation event                                              |
 
 
 # Gaussian Measurement errors

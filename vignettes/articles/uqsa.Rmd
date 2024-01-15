@@ -9,13 +9,21 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(uqsa)
-```
+UQSA is an R-package for modelling and calibration of biochemical reaction networks.
 
-# Introduction to UQSA
+1. In order to use this package you need to install the [R
+language](https://www.r-project.org/) (or
+[R-studio](https://posit.co/download/rstudio-desktop/)).
+2. Once R is available, you can install the UQSA package foolowing the
+   [installation instructions](install.html).
+3. After installation, to test that everything is working and to get
+   to know UQSA run the introductory example:
+   [AKAR4](AKAR4.html)
+4. It could be useful to read about the model and data format that we
+   use in our examples, [SBtab](https://sbtab.net), and our short [intro to
+   SBtab](SBtab.html).
+5. Look into more [examples](examples_overview.html).
 
-Uncertainty Quantification and global Sensitivity Analysis are both common tasks in *systems biology*.
-
-TODO
+For very large examples you need to be able to run the sampling
+problem (ABC, MCMC) on a cluster (High Performance Computing).
 

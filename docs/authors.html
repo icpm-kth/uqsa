@@ -22,12 +22,24 @@
   <a class="nav-link" href="articles/uqsa.html">Get started</a>
 </li>
 <li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-installation">Installation</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-installation">
+    <a class="dropdown-item" href="articles/install.html">Full Installation Instructions</a>
+    <a class="dropdown-item" href="articles/installation.html">Short Instructions</a>
+  </div>
+</li>
+<li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
+    <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
+    <a class="dropdown-item" href="articles/uq.html">Uncertainty Quantification</a>
+    <a class="dropdown-item" href="articles/sa.html">Sensiticity Analysis</a>
     <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="articles/data.html">Importing data</a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="articles/user_model.html">Build your own Model</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="articles/simulate.html">Simulating a model</a>
@@ -42,6 +54,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="articles/examples_overview.html">Overview</a>
     <a class="dropdown-item" href="articles/AKAP79.html">AKAP79</a>
+    <a class="dropdown-item" href="articles/AKAR4.html">AKAR4</a>
   </div>
 </li>
 <li class="nav-item">
@@ -90,7 +103,7 @@
 
       <p>Kramer A, Milinanni F, Nyquist P, Jauhiainen A, Eriksson O (2023).
 “UQSA – An R-Package for Uncertainty Quantification and Sensitivity Analysis for Biochemical Reaction Network Models.”
-<a href="https://doi.org/10.48550/arXiv.2308.05527" class="external-link">doi:10.48550/arXiv.2308.05527</a>, 2308.05527. 
+doi: <a href="https://doi.org/10.48550/arXiv.2308.05527" class="external-link">10.48550/arXiv.2308.05527</a>, 2308.05527. 
 </p>
       <pre>@Misc{,
   title = {UQSA -- An R-Package for Uncertainty Quantification and Sensitivity Analysis for Biochemical Reaction Network Models},
@@ -101,11 +114,11 @@
   primaryclass = {q-bio.QM},
   doi = {https://doi.org/10.48550/arXiv.2308.05527},
 }</pre>
-      <p>Jauhiainen Alexandra, Eriksson Olivia, Milinanni Federica, Kramer Andrei, (2023). uqsa: Uncertainty Quanitification and Global Sensitivity Analysis via ABC sampling. R package version 0.1.4, https://icpm-kth.github.io/uqsa/</p>
+      <p>Jauhiainen Alexandra, Eriksson Olivia, Milinanni Federica, Kramer Andrei, (2024). uqsa: Uncertainty Quanitification and Global Sensitivity Analysis via ABC sampling. R package version 0.1.4, https://icpm-kth.github.io/uqsa/</p>
       <pre>@Manual{,
   title = {{uqsa}: Uncertainty Quanitification and Global Sensitivity Analysis via ABC sampling},
   author = {Alexandra Jauhiainen and Olivia Eriksson and Federica Milinanni and Andrei Kramer},
-  year = {2023},
+  year = {2024},
   note = {R package version 0.1.4},
   url = {https://icpm-kth.github.io/uqsa/},
 }</pre>

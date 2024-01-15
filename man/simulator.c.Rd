@@ -2,7 +2,7 @@
 % Please edit documentation in R/runModel.R
 \name{simulator.c}
 \alias{simulator.c}
-\title{This creates a closure that simulates the model}
+\title{This creates a closure that simulates Experiments using the ODE Model}
 \usage{
 simulator.c(experiments, modelName, parMap = identity, noise = FALSE)
 }
@@ -23,9 +23,24 @@ deterministic solution of the ODE system.}
 a closure that returns the model's output for a given parameter vector
 }
 \description{
-This is a shorter alternative to the runModel function (C backend).
+Simulation experiments consist at least of initial values for the
+state variables, a parameter vector, and a list of times at which
+the solution needs to be known.
 }
 \details{
+This function will use the GSL solvers.  In
+addition, a model usually has observables: values that depend on
+the state variables and can be measured in a real experiment. These
+are modeled by output functions.
+
+We distinguish normal parameters and input parameters. Input
+parameters are known and not subject to any estimation
+procedure. Furthermore, they are meant to represent the
+experimental conditions, so they are either under direct control of
+the experimenter or very carefully measured. The inputs are
+probably different for each simulation experiment in at least one
+value.
+
 It returns a closure around:
     - experiments,
     - the model, and

@@ -1,0 +1,225 @@
+---
+title: "AKAR4"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r packages}
+library(uqsa)
+library(parallel)
+library(SBtabVFGEN)
+library(rgsl)
+```
+
+We load the model from a collection of TSV files (`inst/extdata/AKAR4`
+on github), the function below locates the tsv files after package
+installation:
+
+```{r, setup}
+modelFiles <- uqsa_example("AKAR4",full.names=TRUE)
+```
+Then we import the contents as a list of `data.frames`
+
+```{r, import}
+SBtab <- sbtab_from_tsv(modelFiles) # SBtabVFGEN
+```
+We load the R functions of the
+model (e.g. the jacobian of the model):
+
+- `AKAR4_vf`, the vector field,
+- `AKAR4_jac`, the jacobian,
+- `AKAR4_default`, the default parameters
+
+The R file we source additionally includes a variable called `model`, which serves the purpose of having generic names for all model constituents, to make it easier to write generic scripts:
+
+- `model$vf()` corresponds to `AKAR4_vf()`
+    + but does nt use AKAR4 in the name
+- `model$jac()` corresponds to `AKAR4_jac()`
+- `model$name` is a string, `"AKAR4"` in this case
+
+You can investigate the sourced file to find out more.
+
+Generally, `model` is a list of functions, one of which is called
+`model$par()` and returns the default parameters of the model in
+linear space:
+
+```{r, label="source the model files"}
+source(uqsa_example("AKAR4",pat="^AKAR4[.]R$")) # loads "model"
+model$name   # AKAR4
+model$par()  # default values for parameters
+model$init() # default initial values for ODE state variables
+```
+
+The model exists in R and C form:
+- `AKAR4.R`
+- `AKAR4_gvf.c`
+
+The file ending in `_gvf.c` contains functions used for simulations
+with `rgsl::r_gsl_odeiv2_outer()` (`_gvf.c` needs to be compiled). The
+functions in `.R` can be used more freely in R, and are functionally
+identical (they describe the same model, but solutions are slower in
+R).
+
+The next function call checks that the model `[...]_gvf.c` file exist,
+and builds a shared library `.so` from these sources. It attaches a
+comment to its return value that indicates how the shared library for
+this model is named:
+
+```{r, label="make shared library"}
+modelName <- checkModel("AKAR4",uqsa_example("AKAR4",pat="_gvf[.]c$")) # SBtabVFGEN
+comment(modelName) # should be AKAR4.so
+```
+
+The comment will be used to find the `.so` file (if you move that
+file, adjust the comment on the `modelName`).
+
+We want to sample in logarithmic space, so we set up a mapping
+function `parMap`. The sampler will call this function on the sampling
+variable `parABC` before it simulates the model.
+
+```{r, label="describe parameter space"}
+parMap <- function (parABC=0) {
+	return(10^parABC)
+}
+```
+
+The ODE model receives a parameter vector `p` for each experiment. It
+consists of the biological model parameters (which are the same fro
+all experiments), and input parameters (which together with initial
+conditions distinguish the experimental setups). These two different
+kinds of parameters are concatenated into one big numeric vector
+inside of the solver. The model function `AKAR4_default()` returns the
+default values for `p`.
+
+In SBtab, we make a clear distinction between the two: biological
+paramteters go into the `SBtab$Parameter` table, while input
+parameters can be found in `SBtab$Input`. The input values are
+adjusted in the rows of the `SBtab$Experiments` table. The ODE model
+makes no such distinction, the ODE parameters are a dirct sum of the
+two: `odePar <- c(SBtab$Parameter,SBtab$Input)`. But, only the
+biological parameters are unknown, so we sample that subset.
+
+We use the SBtab information to determine the length of the biological
+parameters `numPar` and shorten the value of default parameter values
+in `SBtab` to start sampling:
+
+```{r, "starting value"}
+numPar <- nrow(SBtab$Parameter)
+parNames <- row.names(SBtab$Parameter)
+parVal <- model$par()[1:numPar]
+```
+
+Next, we load the list of experiments from the same list of `data.frames` (SBtab content):
+```{r, "load-experiments"}
+experiments <- sbtab.data(SBtab)
+```
+
+Define lower and upper limits for log-uniform prior distribution for the parameters:
+
+```{r limits}
+ll <- log10(parVal) - 3
+ul <- log10(parVal) + 3
+```
+
+Define Number of Samples for the pre-calibration `npc` and each
+ABC-MCMC chain `ns`. During ABC, we save every 100-th point, so `work(nChains*ns*100) ≈ work(npc)`:
+
+```{r sample-size}
+ns <- 800   # ABC-MCMC sample size
+npc <- 50000 # pre-calibration size
+```
+
+```{r ABC-settings}
+delta <- 0.02
+set.seed(2022)
+nCores <- parallel::detectCores()
+options(mc.cores=nCores)
+```
+
+We define a function that measures the distance between experiment and simulation:
+
+```{r distance}
+distanceMeasure <- function(funcSim, dataExpr, dataErr = 1.0){
+  distance <- mean(((funcSim-dataExpr$AKAR4pOUT)/max(dataExpr$AKAR4pOUT))^2,na.rm=TRUE)
+  return(distance)
+}
+```
+
+We divide the workload into chunks and loop over the chunks:
+
+```{r ABC}
+chunks <- list(c(1,2),3)
+priorPDF <- dUniformPrior(ll, ul)
+rprior <- rUniformPrior(ll, ul)
+
+start_time = Sys.time()
+for (i in seq(length(chunks))){
+    expInd <- chunks[[i]]
+    simulate <- simulator.c(experiments[expInd],modelName,parMap,noise=TRUE)
+    Obj <- makeObjective(experiments[expInd],modelName,distanceMeasure,parMap,simulate)
+    time_pC <- Sys.time()
+
+    pC <- preCalibration(Obj, npc, rprior, rep=3)
+    M <- getMCMCPar(pC$prePar, pC$preDelta, delta, num=1)
+    time_pC <- Sys.time() - time_pC
+    cat(sprintf("\t - time spent on precalibration: %g s\n",time_pC))
+
+    time_ABC <- Sys.time()
+    mcmc <- ABCMCMC(Obj, as.numeric(M$startPar), ns, M$Sigma, delta, priorPDF)
+    time_ABC <- Sys.time() - time_ABC
+    cat(sprintf("\t - time spent on ABC-MCMC: %g s\n",time_ABC))
+
+    if (i>1){
+        simulate <- simulator.c(experiments[chunks[[1]]],modelName,parMap)
+        Obj <- makeObjective(experiments[chunks[[1]]],modelName,distanceMeasure,parMap,simulate)
+        mcmc$draws <- checkFitWithPreviousExperiments(mcmc$draws, Obj, delta)
+    }
+
+    C <- fitCopula(mcmc$draws)
+    priorPDF <- dCopulaPrior(C)
+    rprior <- rCopulaPrior(C)
+}
+end_time = Sys.time()
+time_ = end_time - start_time
+print(time_)
+```
+
+We plot the sample as a two dimensional histogram plot-matrix using
+the hexbin package:
+
+```{r sample-density}
+colnames(mcmc$draws)<-names(parVal)
+hexbin::hexplom(mcmc$draws)
+```
+
+A sensitivity plot using the results of the above loop:
+
+```{r simulate}
+y<-simulate(t(mcmc$draws))
+dim(y[[1]]$func)
+```
+
+where `y[[1]]` refers to the simulation corresponding to the first
+experiment: `experiment[[1]]`, and `$func` refers to the output
+function values (rather than state variables). The outout functions
+are defined in the table `SBtab$Output`.
+
+
+```{r plot}
+f<-aperm(y[[1]]$func[1,,]) # aperm makes the sample-index (3rd) the first index of f, default permutation
+S<-sensitivity(mcmc$draws,f)
+S[1,]<-0 # the first index of S is time, and initially sensitivity is 0
+cuS<-t(apply(S,1,cumsum))
+plot.new()
+tm<-experiments[[3]]$outputTimes
+plot(tm,cuS[,3],type="l")
+## this section makes a little sensitivity plot:
+for (si in dim(S)[2]:1){
+	polygon(c(tm,rev(tm)),c(cuS[,si],numeric(length(tm))),col=si+1)
+}
+```

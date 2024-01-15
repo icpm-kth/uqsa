@@ -43,12 +43,24 @@
   <a class="nav-link" href="articles/uqsa.html">Get started</a>
 </li>
 <li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-installation">Installation</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-installation">
+    <a class="dropdown-item" href="articles/install.html">Full Installation Instructions</a>
+    <a class="dropdown-item" href="articles/installation.html">Short Instructions</a>
+  </div>
+</li>
+<li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
+    <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
+    <a class="dropdown-item" href="articles/uq.html">Uncertainty Quantification</a>
+    <a class="dropdown-item" href="articles/sa.html">Sensiticity Analysis</a>
     <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="articles/data.html">Importing data</a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="articles/user_model.html">Build your own Model</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="articles/simulate.html">Simulating a model</a>
@@ -63,6 +75,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="articles/examples_overview.html">Overview</a>
     <a class="dropdown-item" href="articles/AKAP79.html">AKAP79</a>
+    <a class="dropdown-item" href="articles/AKAR4.html">AKAR4</a>
   </div>
 </li>
 <li class="nav-item">
@@ -87,73 +100,13 @@
 <div class="page-header"><h1 id="uncertainty-quantification-uq-and-sensitivity-analysis-sa">Uncertainty Quantification (UQ) and Sensitivity Analysis (SA)<a class="anchor" aria-label="anchor" href="#uncertainty-quantification-uq-and-sensitivity-analysis-sa"></a>
 </h1></div>
 <p>This is an R package that performs <em>parameter estimation</em>, <em>uncertainty quantification</em>, and <em>global sensitivity analysis</em> using Bayesian methods and ABC-MCMC sampling.</p>
-<ul>
-<li>
+<ul><li>
 <strong>Source code:</strong> <a href="https://github.com/icpm-kth/uqsa/" class="external-link uri">https://github.com/icpm-kth/uqsa/</a>
-</li>
-</ul>
-<div class="section level2">
-<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
-</h2>
-<p>The Articles on this page are a user guide to this package. The function reference is also accessible through R (<code><a href="reference/ABCMCMC.html">?uqsa::ABCMCMC</a></code>).</p>
-<p>The package itself includes example models and a <em>run</em> script. We advise users to copy the run scripts either from github or the package and adapt them. The location of a <em>run</em> file can be found like this:</p>
+</li></ul>
+<p>The Articles on this page are a user guide to this package. As always, the function reference is also accessible within R (<code><a href="reference/ABCMCMC.html">?uqsa::ABCMCMC</a></code>), after installation. See <em>Get Started</em> for detailed installation instructions.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,pat<span class="op">=</span><span class="st">"^run.*R$"</span><span class="op">)</span></span></code></pre></div>
-<p>Or by browsing the folders on GitHub (<code>inst/extdata/</code>)</p>
-<p>These examples are also covered by the articles: AKAR4, AKAP79, and CaMKII.</p>
-</div>
-<div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h2>
-<p>The first two packages are optional in your own work, but you will need them for our examples:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/rgsl"</span><span class="op">)</span>       <span class="co"># requires gsl in your OS</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/SBtabVFGEN"</span><span class="op">)</span> <span class="co"># if you plan to use SBtab</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/uqsa"</span><span class="op">)</span>       <span class="co"># this package</span></span></code></pre></div>
-<ul>
-<li>
-<code>rgsl</code> is an interface between R and the ODE solvers in the GNU Scientific Library</li>
-<li>
-<code>SBtabVFGEN</code> is an R package that works with models written in the SBtab format</li>
-</ul>
-<div class="section level3">
-<h3 id="gnu-scientific-library-optional">GNU Scientific Library (optional)<a class="anchor" aria-label="anchor" href="#gnu-scientific-library-optional"></a>
-</h3>
-<p>For the simulation backend using the <a href="https://www.gnu.org/software/gsl/" class="external-link">GNU Scientific Library</a> (gsl) needs to be installed in your OS.</p>
-<table class="table">
-<thead><tr class="header">
-<th align="right">Operating System</th>
-<th align="left">command</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="right">Debian and Ubuntu:</td>
-<td align="left"><code>apt install libgsl-dev</code></td>
-</tr>
-<tr class="even">
-<td align="right">Alpine Linux:</td>
-<td align="left"><code>apk add gsl</code></td>
-</tr>
-<tr class="odd">
-<td align="right">Guix</td>
-<td align="left"><code>guix install gsl</code></td>
-</tr>
-<tr class="even">
-<td align="right">Arch Linux</td>
-<td align="left"><code>pacman -S gsl</code></td>
-</tr>
-<tr class="odd">
-<td align="right">Gentoo</td>
-<td align="left"><code>emerge sci-libs/gsl</code></td>
-</tr>
-<tr class="even">
-<td align="right">MACOX</td>
-<td align="left"><code>brew install gsl</code></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/uqsa"</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><div class="license">
 <h2 data-toc-skip>License</h2>

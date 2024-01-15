@@ -17,9 +17,11 @@ makeObjective(
 
 \item{modelName}{and model storage file as comment}
 
+\item{distance}{a function that calculates ABC scores}
+
 \item{parMap}{a function that transforms ABC variables into acceptable model parameters}
 
-\item{getScore}{a function that calculates ABC scores}
+\item{simulate}{closure that simulates the model}
 }
 \value{
 an objective function

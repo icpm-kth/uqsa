@@ -39,8 +39,18 @@
   <a class="nav-link" href="../articles/uqsa.html">Get started</a>
 </li>
 <li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-installation">Installation</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-installation">
+    <a class="dropdown-item" href="../articles/install.html">Full Installation Instructions</a>
+    <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
+  </div>
+</li>
+<li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
+    <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
+    <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
+    <a class="dropdown-item" href="../articles/sa.html">Sensiticity Analysis</a>
     <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
@@ -59,6 +69,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
   </div>
 </li>
 <li class="nav-item">
@@ -81,8 +92,7 @@
 
 
 
-
-<div class="row">
+<script src="uqsa_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>uqsa</h1>
             
@@ -93,15 +103,16 @@
 
     
     
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span></code></pre></div>
-<div class="section level2">
-<h2 id="introduction-to-uqsa">Introduction to UQSA<a class="anchor" aria-label="anchor" href="#introduction-to-uqsa"></a>
-</h2>
-<p>Uncertainty Quantification and global Sensitivity Analysis are both
-common tasks in <em>systems biology</em>.</p>
-<p>TODO</p>
-</div>
+<p>UQSA is an R-package for modelling and calibration of biochemical reaction networks.</p>
+<ol style="list-style-type: decimal">
+<li>In order to use this package you need to install the <a href="https://www.r-project.org/" class="external-link">R language</a> (or <a href="https://posit.co/download/rstudio-desktop/" class="external-link">R-studio</a>).</li>
+<li>Once R is available, you can install the UQSA package foolowing the <a href="install.html">installation instructions</a>.</li>
+<li>After installation, to test that everything is working and to get to know UQSA run the introductory example: <a href="AKAR4.html">AKAR4</a>
+</li>
+<li>It could be useful to read about the model and data format that we use in our examples, <a href="https://sbtab.net" class="external-link">SBtab</a>, and our short <a href="SBtab.html">intro to SBtab</a>.</li>
+<li>Look into more <a href="examples_overview.html">examples</a>.</li>
+</ol>
+<p>For very large examples you need to be able to run the sampling problem (ABC, MCMC) on a cluster (High Performance Computing).</p>
   </main>
 </div>
 

@@ -44,9 +44,12 @@ plotSimualtionsFromSBtab <- function(SBtabDir, paramVal, plotDir = NULL, width =
   # Simualte the model
   simulate <- simulator.c(experiments,modelName,parMap)
   output_yy <- simulate(paramVal)
+<<<<<<< HEAD
   
   # old (when we used to use runModel)
   #output_yy <- runModel(experiments, modelName, paramVal, parMap = parMap)
+=======
+>>>>>>> bfe23a4858fefc378f942dfe5b801def1e063668
 
   # Create folder for plots (if not provided in input)
   if(is.null(plotDir)){
@@ -65,7 +68,11 @@ plotSimualtionsFromSBtab <- function(SBtabDir, paramVal, plotDir = NULL, width =
     yy_exp <- experiments[[i]][["outputValues"]]
     dfExp <- data.frame(t = experiments[[i]][["outputTimes"]],y = yy_exp)
     names(dfExp)[2] <- "y"
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> bfe23a4858fefc378f942dfe5b801def1e063668
     pl <- ggplot(df, aes(x = t, y = y)) + geom_line(color = "blue") + geom_point(data = na.omit(dfExp), aes(x = t, y = y)) + ggtitle(model$Experiments[["!Name"]])
     print(pl)
     ggsave(paste0(plotDir,"/",modelName,"_PlotExperimentAndSimulation_",model$Experiments[["!Name"]][i],".pdf"), plot = pl, width = width, height = heigth, units = "cm")

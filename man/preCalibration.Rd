@@ -7,26 +7,14 @@
 preCalibration(objectiveFunction, npc = 1000, rprior, rep = 1)
 }
 \arguments{
-\item{npc}{sample size of pre-calibration.}
+\item{objectiveFunction}{}
+
+\item{npc}{sample size of pre-calibration}
 
 \item{rprior}{a function that generates random ABC variables,
-distributed according to the prior.}
+distributed according to the prior}
 
 \item{rep}{number of repetitions of the preCalibration process}
-
-\item{experiments}{a list of simulation experiments. Same as for
-ABCMCMC.}
-
-\item{modelName}{this name will be used to find the file and
-functions within the file according to naming conventions (the
-model name and file can differ, the file-name can be attached
-to the name as a comment).}
-
-\item{parMap}{a remapping function that takes ABC sampling
-variables and returns valid model parameters}
-
-\item{getScore}{a function that maps the model's output values to
-ABC score values (in comparison to data).}
 }
 \value{
 list with entries preDelta and prePar, final values of
