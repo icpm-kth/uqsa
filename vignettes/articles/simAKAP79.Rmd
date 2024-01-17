@@ -14,16 +14,18 @@ require(SBtabVFGEN)
 library(uqsa)
 ```
 
-This article provides code to simulate the AKAP79 model (one time, no sampling).
+This article provides code to simulate the AKAP79 model (one time, no
+sampling).  We are plotting the model with default parameters which
+are not expected to fit the data (this is the starting point).
 
 # Load the Model
 
 This model is included with the package. To load your own model, see
-the [user model](articles/user_model.html) article.
+the [user model](user_model.html) article.
 
 ```{r}
 modelFiles <- uqsa_example("AKAP79",full.names=TRUE)
-SBtab <- sbtab_from_tsv(modelFiles)                  # SBtabVFGEN
+SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
 modelName <- checkModel("AKAP79",uqsa_example("AKAP79",pat="_gvf[.]c$"))
 comment(modelName)
 
@@ -38,11 +40,14 @@ This also includes instructions for the simulator.
 
 ```{r, experiments}
 experiments <- sbtab.data(SBtab)
-experiments[[1]]$input
-experiments[[1]]$initialState
+# for example, these are the input
+# and initial state of experiment 1:
+print(experiments[[1]]$input)
+print(experiments[[1]]$initialState)
 # pick prameters for simulation
 nInput <- length(experiments[[1]]$input)
 p <- head(AKAP79_default(),-nInput)
+print(p)
 ```
 
 # Simulate
@@ -71,10 +76,26 @@ plot(tm,
      ylim=c(90,130), ylab="AKAR4p",
      xlab="t",
      main=sprintf("Experiment %i",E),
-     lwd=2
+     lwd=1.5,
+     col="purple"
 )
 
 points(tm,out)
-arrows(x0=tm,x1=tm,y0=out,y1=out+err,angle=90)
-arrows(x0=tm,x1=tm,y0=out,y1=out-err,angle=90)
+arrows(x0=tm,x1=tm,y0=out,y1=out+err,angle=90,length=0.025)
+arrows(x0=tm,x1=tm,y0=out,y1=out-err,angle=90,length=0.025)
+```
+
+# gg-Plot
+
+```{r, ggplot}
+require(ggplot2)
+
+D<-data.frame(time=experiments[[E]]$outputTime,
+              AKAR4p=experiments[[E]]$outputValues$AKAR4pOUT,
+              AKAR4pERR=experiments[[E]]$errorValues$AKAR4pOUT,
+              sim=y[[E]]$func[1,,1])
+ggplot(D) +
+  geom_linerange(mapping=aes(x=time,y=AKAR4p,ymin=AKAR4p-AKAR4pERR,ymax=AKAR4p+AKAR4pERR),na.rm=TRUE) +
+  geom_point(mapping=aes(x=time,y=AKAR4p),na.rm=TRUE) +
+  geom_line(mapping=aes(x=time,y=sim),color="purple",lwd=1.2)
 ```
