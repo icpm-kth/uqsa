@@ -20,7 +20,7 @@ not possible to tell apart which part of a kinetic law is which.
 But for mass action kinetics, and positive reaction rate
 coefficients, the expressions mostly look like this:
 
-kf*prod(reactants.concentration) - kb*prod(product.concentrations)
+kf\emph{prod(reactants.concentration) - kb}prod(product.concentrations)
 
 this functions splits at '-', and if none is present, then the
 reaction is assumed to be irreversible.

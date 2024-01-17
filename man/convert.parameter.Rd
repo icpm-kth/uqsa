@@ -11,7 +11,7 @@ convert.parameter(k, n = 0, LV = 602214076)
 
 \item{n}{multiplicity of each reactant, if any (order > 0); omit for zero-order}
 
-\item{LV}{L*V -- product of _Avogadro's number_ and _volume_ [defaults to 6.02214076e+8]}
+\item{LV}{L*V -- product of \emph{Avogadro's number} and \emph{volume} \link{defaults to 6.02214076e+8}}
 }
 \value{
 rescaled parameter for stochastic simulation with a comment of how to re-scale it

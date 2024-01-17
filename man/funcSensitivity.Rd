@@ -24,27 +24,27 @@ funcSensitivity(
 
 \item{parMap}{a parameter transformation function}
 
-\item{parMapJac}{transformation jacobian: t(∇) %*% parMap}
+\item{parMapJac}{transformation jacobian: t(∇) × parMap}
 }
 \value{
-Sh[[i]][,,k] a list of 3d-arrays, one item per expariment
-    (i), and a third dimension for the time variable (finite set of
-    observations)
+Sh[\link{i}][,,k] a list of 3d-arrays, one item per expariment
+(i), and a third dimension for the time variable (finite set of
+observations)
 }
 \description{
-The state sensitivity matrix:
+funcSensitivity transforms state sensitivity into the sensitivity of output functions
 }
 \details{
-d state(time[k],state, param)[i]
+The state sensitivity matrix:\preformatted{           d state(time[k],state, param)[i]
 S[i,j,k] = --------------------------------  ,
            d param[j]
+}
 
 where param are the raw model parameters.
-This matrix is calculated as an intermediate and then transformed into:
-
-            d func(time[k], state, c(parMap(parMCMC),input))[i]
+This matrix is calculated as an intermediate and then transformed into:\preformatted{            d func(time[k], state, c(parMap(parMCMC),input))[i]
 Sh[i,j,k] = --------------------------------------------------
             d parMCMC[j]
+}
 
 where parMCMC is the Markov chain variable and usually shorter than
 param as we typically don't sample all of the model's
@@ -56,5 +56,5 @@ This transformation requires the output function jacobian (funcJac)
 and the parameter jacobian (funcJacp) in the model variable.
 
 As we transform the parameters themselves, the chain rule requests
-parMapJac[l,k] = d param[l] / d parMCMC[k]
+parMapJac\link{l,k} = d param\link{l} / d parMCMC\link{k}
 }

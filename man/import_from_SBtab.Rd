@@ -7,12 +7,12 @@
 import_from_SBtab(SBtabDir)
 }
 \arguments{
-\item{SBtabDir}{the directory that contains `.tsv` files (with SBtab content)}
+\item{SBtabDir}{the directory that contains \code{.tsv} files (with SBtab content)}
 }
 \value{
 a model as a list of data.frames, one per tsv file, the
-    Document title is attached as a comment attribute:
-    comment(model) = Document Title
+Document title is attached as a comment attribute:
+comment(model) = Document Title
 }
 \description{
 This function uses SBtabVFGEN to read a series of tsv files, each

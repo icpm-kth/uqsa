@@ -17,9 +17,9 @@ Imports:
 	VineCopula,
 	MASS,
 	ks,
-	SBtabVFGEN
+	SBtabVFGEN,
+	rgsl
 Suggests:
-    rgsl,
     deSolve,
     ggplot2,
     testthat (>= 3.0.0),
@@ -27,6 +27,7 @@ Suggests:
     rmarkdown,
     hexbin
 RoxygenNote: 7.2.3
+Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://icpm-kth.github.io/uqsa/

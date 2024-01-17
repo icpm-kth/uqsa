@@ -23,9 +23,9 @@ This is a shorter alternative to the runModel function (R, deSolve backend).
 }
 \details{
 It returns a closure around:
-    - experiments,
-    - the model, and
-    - parameter mapping
+- experiments,
+- the model, and
+- parameter mapping
 
 The returned function depends only on parABC (the sampling parameters).
 }

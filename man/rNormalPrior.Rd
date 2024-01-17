@@ -14,11 +14,11 @@ mean)}
 }
 \value{
 an independentent multivariate normal random vector generating function: rprior(n),
-    where n is the requested number of vectors (rows)
+where n is the requested number of vectors (rows)
 }
 \description{
 The return value is a function that generates random vectors of the
-same size as mean and sd from a multivariate normal distribution with 
+same size as mean and sd from a multivariate normal distribution with
 independent components with mean "mean" and standard deviation "sd".
 The random vectors are returned as n
 rows of a matrix, where n is the only argument of the returned

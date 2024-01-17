@@ -33,9 +33,9 @@ This is a shorter alternative to the runModel function (C backend).
 }
 \details{
 It returns a closure around:
-    - experiments,
-    - the model, and
-    - parameter mapping
+- experiments,
+- the model, and
+- parameter mapping
 
 The returned function depends only on parABC (the sampling
 parameters). The simulation will be done suing the rgsl backend.

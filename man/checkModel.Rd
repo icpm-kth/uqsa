@@ -28,7 +28,7 @@ comment(modelName) <- "test_ode_model.so" # or .R
 This function will not attempt to find a model file, other than in
 the current directory. But, checkModel will compile a GSL
 compatible C source file into a shared object if modelFile ends
-with `.c` and stop if that doesn't work.
+with \code{.c} and stop if that doesn't work.
 
 In any case, this function stops execution if the model file
 doesn't exist.

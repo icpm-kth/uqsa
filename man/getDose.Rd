@@ -11,7 +11,7 @@ getDose(experiments)
 }
 \value{
 vector of inputs (i.e. dose) that varies among the experiments provided to the function.
-        The name of the input is saved in "comment(dose)".
+The name of the input is saved in "comment(dose)".
 }
 \description{
 This function finds the vector of inputs that  varies among a series of experiments

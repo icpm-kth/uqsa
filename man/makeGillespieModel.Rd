@@ -7,7 +7,7 @@
 makeGillespieModel(SBtab, LV = NULL, strip.null = TRUE)
 }
 \arguments{
-\item{SBtab}{a series of tables as returned by `sbtab_from_tsv()`}
+\item{SBtab}{a series of tables as returned by \code{sbtab_from_tsv()}}
 
 \item{LV}{is the product of Avogadro's constant L and the system's
 volume V in litres; if unspecified this information is retrieved
@@ -22,7 +22,7 @@ This function takes a series of SBtab tables, as returned by
 SBtabVFGEN::sbtab_from_tsv() and creates GillespieSSA2 reactions
 from them. Reactions arfe made pairwise, as forward and backward
 reaction pairs. If a backward reaction doesn't exist, the list item
-is NULL. A valid set of reactions can be obtained with `!is.null(reactions)`
+is NULL. A valid set of reactions can be obtained with \code{!is.null(reactions)}
 }
 \examples{
  model.tsv<-dir(pattern="[.]tsv$")

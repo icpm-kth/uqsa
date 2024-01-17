@@ -137,18 +137,22 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 
 #' funcSensitivity transforms state sensitivity into the sensitivity of output functions
 #'
-#' The state sensitivity matrix:
+#' @details The state sensitivity matrix:
 #'
+#' ```
 #'            d state(time[k],state, param)[i]
 #' S[i,j,k] = --------------------------------  ,
 #'            d param[j]
+#' ```
 #'
 #' where param are the raw model parameters.
 #' This matrix is calculated as an intermediate and then transformed into:
 #'
+#' ```
 #'             d func(time[k], state, c(parMap(parMCMC),input))[i]
 #' Sh[i,j,k] = --------------------------------------------------
 #'             d parMCMC[j]
+#' ```
 #'
 #' where parMCMC is the Markov chain variable and usually shorter than
 #' param as we typically don't sample all of the model's
@@ -167,7 +171,7 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 #' @param simulations list of simulation results
 #' @param model a list of model functions, including funcJac, and funcJacp
 #' @param parMap a parameter transformation function
-#' @param parMapJac transformation jacobian: t(∇) %*% parMap
+#' @param parMapJac transformation jacobian: t(∇) × parMap
 #' @return Sh[[i]][,,k] a list of 3d-arrays, one item per expariment
 #'     (i), and a third dimension for the time variable (finite set of
 #'     observations)
@@ -224,24 +228,28 @@ funcSensitivity <- function(parMCMC,experiments,simulations,model,parMap=default
 #' @param parMCMC the parameters that are used in Markov chain Monte Carlo as the MC variable
 #' @param parMap a map to transform parMCMC into p, parameters the model accepts
 #' @return S, the state sensitivity matrix length(x) × length(p) × length(t)
-sensitivityEquilibriumApproximation <- function(experiments, model, parMap=identity){
+sensitivityEquilibriumApproximation <- function(experiments, model, parMap=identity, parMapJac=1.0){
 	y0 <- model$init(0.0)
 	n  <- length(y0)
+	u <- experiments[[1]]$input
+	p <- c(model$par(),u)
+	d <- length(p)-length(u)
+	u_pos <- seq(d+1,length(p)) # u in p
 	SEA <- function(parMCMC,simulations){
 		for (i in seq(length(experiments))){
 			t <- experiments[[i]]$outputTimes
 			t0 <- experiments[[i]]$initialTime
-			p <- c(parMap(parMCMC),experiments[[1]]$input)
-			simulations[[i]]$sens <- array(0.0,dim=c(n,length(p),length(t)))
+			simulations[[i]]$sens <- array(0.0,dim=c(n,length(parMCMC),length(t)))
 			for (j in seq(length(t))){
-				if (abs(t[j]-t0) > 1e-15){
+				if (abs(t[j]-t0) > 1e-16 * abs(t0)){
 					u <- experiments[[i]]$input
-					u_pos <- seq(length(p)-length(u)+1,length(p))
-					p[u_pos] <- u
+					if (!is.null(u)){
+						p[u_pos] <- u
+					}
 					A <- model$jac(t[j], simulations[[i]]$state[,j,1], p)
-					B <- model$jacp(t[j], simulations[[i]]$state[,j,1], p)
+					B <- head(model$jacp(t[j], simulations[[i]]$state[,j,1], p), c(n,d))
 					AB <- solve(A,B)
-					C <- (pracma::expm((t[j]-t0)*A) %*% AB) - AB
+					C <- ((pracma::expm((t[j]-t0)*A) %*% AB) - AB) %*% parMapJac(parMCMC)
 					simulations[[i]]$sens[,,j] <- C
 				}
 			}

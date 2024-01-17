@@ -30,7 +30,7 @@ ABC score values (in comparison to data).}
 }
 \value{
 list with entries preDelta and prePar, final values of
-    calibration run
+calibration run
 }
 \description{
 In ABC settings a model solution is compared to data with an

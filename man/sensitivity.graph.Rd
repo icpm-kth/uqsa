@@ -18,8 +18,8 @@ sensitivity.graph(
 \item{u}{the values of the x-axis for the plot, if named, the names
 are put at the tick-marks}
 
-\item{S}{the sensitivity matrix as returned by `globalSensitivity()`,
-S[i,j] is with respect to model output i and parameter j}
+\item{S}{the sensitivity matrix as returned by \code{globalSensitivity()},
+S\link{i,j} is with respect to model output i and parameter j}
 
 \item{color}{the list of colors to use for the shaded areas, e.g.:
 rainbow(24)}
