@@ -18,3 +18,4 @@ inst/doc
 .DS_Store
 /doc/
 /Meta/
+*_cache

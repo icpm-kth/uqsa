@@ -1,0 +1,129 @@
+---
+title: "shortMakeSharedLibrary"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(cache=TRUE,
+  eval=FALSE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(uqsa)
+```
+
+This is a short summary of how to make models for the simulator in the
+[rgsl](https://github.com/icpm-kth/rgsl) package.
+
+[RPN-derivative](https://github.com/icpm-kth/RPN-derivative)
+calculates derivatives or offloads that work on maxima or yacas,
+install them if you want to use the `--maxima` or `--yacas` options.
+
+**Note**: SBtab is *content* (tables), several *file-types* can store it.
+
+If you are on MAC, please install the [homebrew](https://brew.sh/)
+package manager to install essential software that everyone should
+have (a C compiler, pkg-config, etc.). We recommend that you do not
+use official apple software like xcode.
+
+# Create a Shared Library
+
+Here we assume that you wrote your own model in SBtab. For testing you
+can also download one of our example models. All code here is meant to
+be run in a terminal with a POSIX shell (bash, zsh, dash, ash) should
+all work (this is not usually pre-installed on windows).
+
+Please be aware that some of the scripts use `awk` and `sed`, which
+may differ on different platforms (there is *one true awk*, GNU
+`gawk`, `mawk`, etc.). They differ in options they accept and regular
+expressions they understand.
+
+We further assume that the format is a collection of tsv files.
+
+The SBtabVFGEN package contains a file called `sbtab_to_vfgen` (it is
+a script, an RScript, R needed). Copy it into the directory of the
+model (or alias itm or symlink it, whatever you prefer)
+
+```{sh}
+./sbtab_to_vfgen *.tsv
+```
+
+Afterwards, the directory should also contain a `.vf` file as well as
+an sbml `.xml` file and a zip file (with essentially the same content
+as the vf file).  you should either download the contents of the `sh`
+directory in the
+[icpm-kth/RPN-derivative](https://github.com/icpm-kth/RPN-derivative),
+or clone the entire repository. You should `alias` the `ode.sh`
+script, so that you can call it from anywhere, or write out the path
+to it. Here we assume that it lies in your home directory.
+
+```{sh}
+alias ode.sh='~/RPN-derivative/sh/ode.sh'
+ode.sh -C --maxima myModel.vf > myModel_gvf.c
+[ -f myModel_gvf.c ] && gcc -shared -fPIC -O2 -o myModel.so myModel_gvf.c
+```
+
+Now you have a `.c` source file and a shared library `.so` file.
+
+# SBtab as XLSX
+
+Here the same procedure applies, but we alias `sbtab_to_vfgen` rather
+than copying it this time. Also, this time we use yacas to calculate
+the derivatives, rather than maxima. We create both C code and R code
+this time.
+
+
+```{sh}
+alias sbtab_to_vfgen='~/SBtabVFGEN/sbtab_to_vfgen'
+alias ode.sh='~/RPN-derivative/sh/ode.sh'
+./sbtab_to_vfgen myModel.xlsx
+ode.sh -C --yacas myModel.vf > myModel_gvf.c
+ode.sh -R --yacas myModel.vf > myModel.R
+[ -f myModel_gvf.c ] && gcc -shared -fPIC -O2 -o myModel.so myModel_gvf.c
+```
+
+# SBtab as ODS
+
+We repeat the same procedure as with XLSX, but the model name is a
+variable, and the C compiler is whatever target `cc` links to:
+
+```{sh}
+modelName='myModel'
+alias sbtab_to_vfgen='~/SBtabVFGEN/sbtab_to_vfgen'
+alias ode.sh='~/RPN-derivative/sh/ode.sh'
+./sbtab_to_vfgen ${modelName}.ods
+ode.sh -C --yacas ${modelName}.vf > ${modelName}_gvf.c
+ode.sh -R --yacas ${modelName}.vf > ${modelName}.R
+[ -f ${modelName}_gvf.c ] && cc -shared -fPIC -O2 -o ${modelName}.so ${modelName}_gvf.c
+```
+
+# Comments
+
+Now you should have C sources and a shared library, or error messages
+about the SBtab content (if the files contain errors).
+
+The simulator can use the shared library directly. But take into
+account that `${modelName}.so` is machine specific and will not work
+if you copy it onto a completely different kind of machine (it may
+work if the two are similar enough).
+
+Please take time to open and inspect the C sources and try to spot
+obvious mistakes.
+
+# RPN-derivative
+
+The RPN-derivative package can also work without maxima or yacas, but
+needs to be compiled for this to work. Do this in the RPN-derivative's root directory:
+
+```{sh}
+make
+make test
+sudo make install
+```
+
+If you get error messages about `pkg-config` not being found, install
+it (you are probably on MAC: `brew install pkg-config`). If you get
+error messages about missing directories, make them (`mkdir
+/path/to/missing/directory`).
