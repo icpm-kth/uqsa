@@ -41,6 +41,8 @@ parameters)"><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="../articles/data.html">Importing data</a>
     <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
     <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
@@ -104,12 +106,16 @@ parameters)</p>
 <dd><p>and model storage file as comment</p></dd>
 
 
+<dt>distance</dt>
+<dd><p>a function that calculates ABC scores</p></dd>
+
+
 <dt>parMap</dt>
 <dd><p>a function that transforms ABC variables into acceptable model parameters</p></dd>
 
 
-<dt>getScore</dt>
-<dd><p>a function that calculates ABC scores</p></dd>
+<dt>simulate</dt>
+<dd><p>closure that simulates the model</p></dd>
 
 </dl></div>
     <div class="section level2">

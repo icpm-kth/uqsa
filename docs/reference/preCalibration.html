@@ -43,6 +43,8 @@ to adjust this delta value."><!-- mathjax --><script src="https://cdnjs.cloudfla
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="../articles/data.html">Importing data</a>
     <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
     <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
@@ -93,39 +95,21 @@ to adjust this delta value.</p>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>npc</dt>
-<dd><p>sample size of pre-calibration.</p></dd>
+    <dl><dt>objectiveFunction</dt>
+<dd></dd>
+
+
+<dt>npc</dt>
+<dd><p>sample size of pre-calibration</p></dd>
 
 
 <dt>rprior</dt>
 <dd><p>a function that generates random ABC variables,
-distributed according to the prior.</p></dd>
+distributed according to the prior</p></dd>
 
 
 <dt>rep</dt>
 <dd><p>number of repetitions of the preCalibration process</p></dd>
-
-
-<dt>experiments</dt>
-<dd><p>a list of simulation experiments. Same as for
-ABCMCMC.</p></dd>
-
-
-<dt>modelName</dt>
-<dd><p>this name will be used to find the file and
-functions within the file according to naming conventions (the
-model name and file can differ, the file-name can be attached
-to the name as a comment).</p></dd>
-
-
-<dt>parMap</dt>
-<dd><p>a remapping function that takes ABC sampling
-variables and returns valid model parameters</p></dd>
-
-
-<dt>getScore</dt>
-<dd><p>a function that maps the model's output values to
-ABC score values (in comparison to data).</p></dd>
 
 </dl></div>
     <div class="section level2">

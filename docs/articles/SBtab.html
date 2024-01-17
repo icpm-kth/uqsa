@@ -56,6 +56,8 @@
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="../articles/data.html">Importing data</a>
     <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
     <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
@@ -68,8 +70,9 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
+    <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4</a>
   </div>
 </li>
 <li class="nav-item">
@@ -160,8 +163,9 @@
 </h2>
 <p>Each file has a header, e.g.:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode txt"><code class="sourceCode default"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>!!SBtab SBtabVersion='1.0' TableName='Reaction' TableType='Reaction' TableTitle='A list of Reactions' Document='myModel'</span></code></pre></div>
+<p>This header doesn’t have columns, it’s a line of text, immediately followed by the actual table. In the sections below, we specify the header like above and then give an example table that can follow this header. You can also include other columns in any order; only some column names have special meanings, unknown columns will not be parsed (they are harmless).</p>
 <p>We don’t parse the version attribute or any other attribute other than <code>TableName</code> and <code>Document</code>. We use the <code>Document</code> attribute to assign a name to each model we read from the files; it is stored as a comment attached to the list of data.frames <code><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">SBtabVFGEN::sbtab_from_tsv()</a></code> generates, <code>comment(model.tab)</code> will print it.</p>
-<p>The second line contains the table column headers. The first column can be called either <code>!ID</code> or <code>!Name</code> (it is harmless to have both, but only the first one counts). If the first column is not called that, the scripts will carry on regardless, assuming that it is some kind of name (so <code>!Id</code>, <code>!id</code>, or <code>ID?</code> may also work). All other columns are found by name, exactly. All other columns can appear in any order. Any amount of columns can be added with names not starting with exclamation points, they are ignored.</p>
+<p>The second line contains the table column headers. The first column can be called either <code>!ID</code> or <code>!Name</code> (it is harmless to have both, but only the first one counts). If the first column is not called that, the scripts will carry on regardless, assuming that it is some kind of name (so <code>!Id</code>, <code>!id</code>, or <code>ID?</code> will also work for us – not for other software). All other columns are found by name, exactly. All other columns can appear in any order. Any amount of columns can be added with names not starting with exclamation points, they are ignored.</p>
 <p>In the following sub-sections we will list the minimum set of columns for each table, the sub-section heading refers to the required <code>TableName</code> attribute for this kind of table. The set of columns are given as example tables. Each time we omit the <code>!!SBtab</code> heading from the table to not mess up formatting.</p>
 <p>There are two generic table-types that can be used if no specific one is applicable: <code>TableType='Quantity'</code> and <code>TableType='QuantityMatrix'</code>. We usually don’t use the <code>TableType</code> property at all, but it is needed for the official (<a href="www.sbtab.net">sbtab.net</a>) tool-set to work.</p>
 <p>If there is a specific table-type setting for a table, we list that setting in the following sections.</p>
@@ -375,6 +379,49 @@
 </tbody>
 </table>
 <p>Possible operations in &gt;<em>OP</em>:<em>ID</em>: <code>SET</code>,<code>ADD</code>,<code>SUB</code>,<code>MUL</code>,<code>DIV</code>, while ID can refer to any parameter or state variable (compound).</p>
+</div>
+<div class="section level3">
+<h3 id="experiments">Experiments<a class="anchor" aria-label="anchor" href="#experiments"></a>
+</h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a>!!<span class="ex">SBtab</span> TableName=<span class="st">'Experiments'</span> Document=<span class="st">'myModel'</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="9%">
+<col width="16%">
+<col width="16%">
+<col width="9%">
+<col width="19%">
+<col width="29%">
+</colgroup>
+<thead><tr class="header">
+<th align="right">!ID</th>
+<th align="center">!Type</th>
+<th align="center">!Time</th>
+<th align="center">!T0</th>
+<th align="center">!Event</th>
+<th align="left">!Citation</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">Bradshaw2003Fig2E</td>
+<td align="center">Dose Response</td>
+<td align="center">600.0</td>
+<td align="center">-100.0</td>
+<td align="center">Activation0</td>
+<td align="left">
+<a href="https://doi.org/10" class="external-link uri">https://doi.org/10</a>.[…]</td>
+</tr>
+<tr class="even">
+<td align="right">…</td>
+<td align="center">…</td>
+<td align="center">…</td>
+<td align="center">…</td>
+<td align="center">…</td>
+<td align="left">…</td>
+</tr>
+</tbody>
+</table>
+<p>where <code>Type</code> is: <code>Time Series</code>, or <code>Dose Response</code>. The initial time for the ODE <span class="math inline">\(t0\)</span> corresponds to the beginning of the experiment setup: <code>!T0</code> (the time value). The plain <code>!Time</code> is the default time of measurements; for dose response experiments, this is the only place to specify the measurement time. <code>!Event</code> names the table that contains instructions for scheduled events (see above). The <code>!Citation</code> column is entirely optional.</p>
 </div>
 </div>
 <div class="section level2">

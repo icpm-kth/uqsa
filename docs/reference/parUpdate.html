@@ -41,6 +41,8 @@ parameters are updated to new values."><!-- mathjax --><script src="https://cdnj
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="../articles/data.html">Importing data</a>
     <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
     <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
@@ -90,7 +92,11 @@ parameters are updated to new values.</p>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>curPar</dt>
+    <dl><dt>objectiveFunction</dt>
+<dd><p>function that, given a (vectorial) parameter as input, simulates the model, and outputs the distance between experimental data and data simulated from the model with the parameter provided in input</p></dd>
+
+
+<dt>curPar</dt>
 <dd><p>current parameter values (as ABC samples them)</p></dd>
 
 
@@ -115,28 +121,6 @@ current state for the chain.</p></dd>
 
 <dt>dprior</dt>
 <dd><p>prior probability density function</p></dd>
-
-
-<dt>experiments</dt>
-<dd><p>list of simulation experiments</p></dd>
-
-
-<dt>modelName</dt>
-<dd><p>(characters), this will be used to find the model
-file and the functions in that file</p></dd>
-
-
-<dt>parMap</dt>
-<dd><p>optional remapping function set for passing parameters to the
-model: parModel&lt;-parMap(parABC)</p></dd>
-
-
-<dt>getScore</dt>
-<dd><p>a scoring function</p></dd>
-
-
-<dt>nCores</dt>
-<dd><p>number of cores to use in mclapply().</p></dd>
 
 </dl></div>
     <div class="section level2">

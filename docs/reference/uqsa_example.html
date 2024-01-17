@@ -43,6 +43,8 @@ tables, but the same documents)."><!-- mathjax --><script src="https://cdnjs.clo
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="../articles/data.html">Importing data</a>
     <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
     <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
@@ -134,18 +136,16 @@ directory).</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">uqsa_example</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AKAP79"    "AKAR4"     "CaMKII"    "README.md"</span>
 <span class="r-in"><span><span class="fu">uqsa_example</span><span class="op">(</span><span class="st">"AKAR4"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_100nM.tsv"          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_25nM.tsv"           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_400nM.tsv"          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_Compound.tsv"       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_Experiments.tsv"    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_Output.tsv"         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_Parameter.tsv"      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_Reaction.tsv"       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_SuggestedInput.tsv" </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_SuggestedOutput.tsv"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/tmp/RtmpSf3wJ9/temp_libpath1327334fa459/uqsa/extdata/AKAR4/AKAR4_100nM.tsv"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2] "/tmp/RtmpSf3wJ9/temp_libpath1327334fa459/uqsa/extdata/AKAR4/AKAR4_25nM.tsv"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [3] "/tmp/RtmpSf3wJ9/temp_libpath1327334fa459/uqsa/extdata/AKAR4/AKAR4_400nM.tsv"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [4] "/tmp/RtmpSf3wJ9/temp_libpath1327334fa459/uqsa/extdata/AKAR4/AKAR4_Compound.tsv"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [5] "/tmp/RtmpSf3wJ9/temp_libpath1327334fa459/uqsa/extdata/AKAR4/AKAR4_Experiments.tsv"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [6] "/tmp/RtmpSf3wJ9/temp_libpath1327334fa459/uqsa/extdata/AKAR4/AKAR4_Output.tsv"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [7] "/tmp/RtmpSf3wJ9/temp_libpath1327334fa459/uqsa/extdata/AKAR4/AKAR4_Parameter.tsv"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [8] "/tmp/RtmpSf3wJ9/temp_libpath1327334fa459/uqsa/extdata/AKAR4/AKAR4_Reaction.tsv"   </span>
 <span class="r-in"><span><span class="fu">uqsa_example</span><span class="op">(</span><span class="st">"AKAR4"</span>,pat<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/tmp/RtmpSf3wJ9/temp_libpath1327334fa459/uqsa/extdata/AKAR4"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

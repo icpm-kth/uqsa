@@ -1,0 +1,80 @@
+---
+title: "Example Simulation"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+require(SBtabVFGEN)
+library(uqsa)
+```
+
+This article provides code to simulate the AKAP79 model (one time, no sampling).
+
+# Load the Model
+
+This model is included with the package. To load your own model, see
+the [user model](articles/user_model.html) article.
+
+```{r}
+modelFiles <- uqsa_example("AKAP79",full.names=TRUE)
+SBtab <- sbtab_from_tsv(modelFiles)                  # SBtabVFGEN
+modelName <- checkModel("AKAP79",uqsa_example("AKAP79",pat="_gvf[.]c$"))
+comment(modelName)
+
+# model related functions, in R, e.g. AKAP79_default() parameters
+source(uqsa_example("AKAP79",pat='^AKAP79[.]R$',full.names=TRUE))
+print(AKAP79_default())
+```
+
+# Load Experiments (data)
+
+This also includes instructions for the simulator.
+
+```{r, experiments}
+experiments <- sbtab.data(SBtab)
+experiments[[1]]$input
+experiments[[1]]$initialState
+# pick prameters for simulation
+nInput <- length(experiments[[1]]$input)
+p <- head(AKAP79_default(),-nInput)
+```
+
+# Simulate
+
+This will make a function `s`, which will always simulate the
+scenarios described in the `experiments` list, but for user supplied
+parameters.
+
+```{r, sim}
+s <- simulator.c(experiments,modelName,noise=TRUE)
+y <- s(p)
+```
+
+# Plot
+
+```{r, plotting}
+E <- 10 # which experiment to plot
+out <- experiments[[E]]$outputValues$AKAR4pOUT
+err <- experiments[[E]]$errorValues$AKAR4pOUT
+tm <- experiments[[E]]$outputTime
+
+par(bty='n',xaxp=c(80,120,4))
+plot(tm,
+     y[[E]]$func[1,,1],
+     type='l',
+     ylim=c(90,130), ylab="AKAR4p",
+     xlab="t",
+     main=sprintf("Experiment %i",E),
+     lwd=2
+)
+
+points(tm,out)
+arrows(x0=tm,x1=tm,y0=out,y1=out+err,angle=90)
+arrows(x0=tm,x1=tm,y0=out,y1=out-err,angle=90)
+```

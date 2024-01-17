@@ -3,7 +3,7 @@ title: "Using your own model"
 ---
 
 ```{r, include = FALSE, eval=FALSE}
-knitr::opts_chunk$set(
+knitr::opts_chunk$set(cache = TRUE,
   collapse = TRUE,
   comment = "#>"
 )
