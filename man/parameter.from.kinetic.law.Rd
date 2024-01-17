@@ -22,7 +22,7 @@ units of a general formula (Michaelis Menten, Hill kinetics, etc.)
 is difficult and dubious in stochastic simulations.
 }
 \details{
-For these reasons, this functions assumes: "kf*A*B*[...]" with the
+For these reasons, this functions assumes: "kf\emph{A}B*\link{...}" with the
 first word "kf" representing the reaction rate coefficient.
 
 Given an SBtab document, this function finds the value (if any) and

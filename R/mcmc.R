@@ -11,7 +11,8 @@
 #' @param fisherInformation a function that calculates the Fisher Information matrix
 #' @return the same starting parameter vector, but with attributes.
 #' @export
-mcmcInit <- function(parMCMC,logLikelihood,gradLogLikelihood=NULL,fisherInformation=NULL){
+mcmcInit <- function(parMCMC,simulate,logLikelihood,gradLogLikelihood=NULL,fisherInformation=NULL){
+	simulations <- simulate(parMCMC)
 	attr(parMCMC,"logLikelihood") <- logLikelihood(simulations)
 	if(!is.null(fisherInformation)) attr(parMCMC,"fisherInformation") <- fisherInformation(parMCMC)
 	if(!is.null(gradLogLikelihood)) attr(parMCMC,"gradLogLikelihood") <- gradLogLikelihood(parMCMC,simulations)
@@ -41,7 +42,7 @@ mcmcInit <- function(parMCMC,logLikelihood,gradLogLikelihood=NULL,fisherInformat
 #' @return M(initiPar,N), a function of initial starting values and
 #'     number of Markov chain steps
 #' @export
-mcmc <- function(simulate,experiments,update,dprior,model){
+mcmc <- function(simulate,experiments,update,model){
 	M <- function(parMCMC,N=1000){
 		simulations <- simulate(parMCMC)
 		sample <- matrix(NA,N,length(parMCMC))
@@ -106,6 +107,14 @@ mcmcUpdate <- function(logLikelihood, gradLogLikelihood, fisherInformation, dpri
 	return(U)
 }
 
+#' Calculate Global Fisher Information
+#'
+#' Given a sample, this performs global sensitivity analysis, and then
+#' squares the sensitivity.
+#'
+#' @param Sample an MCMC sample, or ABC sample
+#' @param yf the simulations of the sample
+#' @param E experiments list
 fisherInformationFromGSA <- function(Sample,yf=NULL,E){
 	funcDim <- dim(yf[[1]]$func)
 	mcmcDim <- dim(Sample)
@@ -152,7 +161,7 @@ fisherInformationFromGSA <- function(Sample,yf=NULL,E){
 fisherInformation <- function(model, experiments, parMap=defaultParMap, parMapJac=defaultParMapJac){
 	nF <- length(model$func(0.0,model$init(),model$par()))
 	l10 <- log(10)
-	F <- function(parMCMC, simulations, sensitivity){
+	F <- function(parMCMC, simulations){
 		np <- length(parMCMC)
 		fi  <- matrix(0.0,np,np)
 		for (i in seq(length(experiments))){
@@ -165,7 +174,7 @@ fisherInformation <- function(model, experiments, parMap=defaultParMap, parMapJa
 				sigma_j <- matrix(errF[,j],nF,np)
 				x_ij <- simulations[[i]]$state[,j,1]
 				# output function sensitivity:
-				Sx <- sensitivity[[i]][,seq(np),j]
+				Sx <- simulations[[i]]$sens[,,j]
 				funcJac <- model$funcJac(oT[j],x_ij,modelPar)
 				funcJacp <- model$funcJacp(oT[j],x_ij,modelPar)[,seq(np)]
 				S <- (funcJac %*% Sx + funcJacp)/sigma_j
@@ -184,8 +193,16 @@ fisherInformation <- function(model, experiments, parMap=defaultParMap, parMapJa
 	return(F)
 }
 
-
-logLikelihood <- function(experiments,simulations){
+#' Default log-likelihood function
+#'
+#' This returns a function f(simulations), which maps simulation
+#' results to log(likelihood) values. The experiments are used
+#' implicitly; simulations is a list as returned by
+#' rgsl::r_gsl_odeiv2_outer().
+#'
+#' @param experiment will be compared tp the simulation results
+#' @export
+logLikelihood <- function(experiments){
 	N <- length(experiments)
 	llf <- function(simulations){
 		dimFunc <- dim(simulations[[1]]$func)
@@ -205,14 +222,39 @@ logLikelihood <- function(experiments,simulations){
 	return(llf)
 }
 
+#' Default parameter mapping used by the MCMC module
+#'
+#' This map is used by the simulator to transform sampling variables
+#' into ODE-model porameters.
+#'
+#' @param parMCMC the sampling variables (numeric vector)
+#' @export
 defaultParMap <- function(parMCMC){
 	return(10^(parMCMC))
 }
 
+#' Default parameter mapping, jacobian
+#'
+#' This map is used by the simulator to transform sampling variables
+#' into ODE-model porameters. As we often calculate sensitivites, we
+#' alos need the jacobian of the map, due to the chain rule of
+#' differentiation.
+#'
+#' @param parMCMC the sampling variables (numeric vector)
+#' @export
 defaultParMapJac <- function(parMCMC){
 	return(diag(10^(parMCMC) * log(10)))
 }
 
+#' Default log-likelihood function, gradient
+#'
+#' This returns a function g(x,simulations), which maps simulation
+#' results and the MCMC variables x to the gradient of log(likelihood)
+#' values withj respect to x. The experiments are used implicitly;
+#' simulations is a list as returned by rgsl::r_gsl_odeiv2_outer().
+#'
+#' @param experiment will be compared tp the simulation results
+#' @export
 gradLogLikelihood <- function(model,experiments,parMap=defaultParMap,parMapJac=defaultParMapJac){
 	N <- length(experiments)
 	gradLL <- function(parMCMC,simulations){

@@ -17,11 +17,11 @@ per row (different rows are results at different parameter
 values)}
 }
 \value{
-M[i,j] the mean of each observable[j] in bin[i]
+M\link{i,j} the mean of each observable\link{j} in bin\link{i}
 }
 \description{
 The model parameters were binned with a histogram function. In each
 bin one of the parameters is almost fixed (it varies much less than
-the other parameters [full range]). This function returns the mean
+the other parameters \link{full range}). This function returns the mean
 of the observable for each bin, as a vector.
 }

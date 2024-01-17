@@ -13,8 +13,8 @@ fitCopula(X, nCores = detectCores())
 }
 \value{
 as list: vineCop, U, Z, and Y where U are marginal
-    probability samples, Z are cummulative density values for U,
-    and Y are the probability density values of U.
+probability samples, Z are cummulative density values for U,
+and Y are the probability density values of U.
 }
 \description{
 Given a sample (from some probability distribution) this function

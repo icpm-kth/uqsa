@@ -4,7 +4,12 @@
 \alias{sensitivityEquilibriumApproximation}
 \title{Equilibrium state approximation of the solution sensitivity for ODE systems}
 \usage{
-sensitivityEquilibriumApproximation(experiments, model, parMap = identity)
+sensitivityEquilibriumApproximation(
+  experiments,
+  model,
+  parMap = identity,
+  parMapJac = 1
+)
 }
 \arguments{
 \item{experiments}{a list of simulation experiments}
@@ -34,7 +39,7 @@ equilibrium point q(p) (fixed-point): f(t,q(p);p)=0.
 \details{
 Typically, the sensitivity needs to be known at different
 time-points t_k, therefore, this function returns S as a
-3-dimensional array S[i,j,k], where the index k corrsponds to time
+3-dimensional array S\link{i,j,k}, where the index k corrsponds to time
 t_k; the closer x(t_k) is to equilibrium, the better the
 approximation; near the initial state, the sensitivity is also
 correct (only the intermediate time-span is approximate).

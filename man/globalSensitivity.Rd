@@ -14,7 +14,7 @@ globalSensitivity(parSample, outputSample, nBins = "Sturges")
 \item{nBins}{number of bins, if unset defaults to the default of the hist function}
 }
 \value{
-sensitivity S[i,j] of output[i] with respect to parameter[j]
+sensitivity S\link{i,j} of output\link{i} with respect to parameter\link{j}
 }
 \description{
 This function performs a binning based estimation of the global

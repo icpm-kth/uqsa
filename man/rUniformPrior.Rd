@@ -14,7 +14,7 @@ ll)}
 }
 \value{
 a uniform random vector generating function: runiform(n),
-    where n is the requested number of vectors (rows)
+where n is the requested number of vectors (rows)
 }
 \description{
 The return value is a function that generates random vectors of the

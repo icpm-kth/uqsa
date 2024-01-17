@@ -15,14 +15,14 @@ if empty, this function lists all available examples.}
 \item{pat}{pattern to find specific files; if NULL, this function
 returns the directory of the example}
 
-\item{f}{alternatively, pat can be set to files ending in f [this
-value]}
+\item{f}{alternatively, pat can be set to files ending in f \link[=this
+value]{this value}}
 }
 \value{
 The location of the examples in the current environment if
-    called with no arguments, the paths to the model files if a
-    modelName was provided or the full path to the example if the
-    file pattern _pat_ is unset
+called with no arguments, the paths to the model files if a
+modelName was provided or the full path to the example if the
+file pattern \emph{pat} is unset
 }
 \description{
 This function finds the path to an example model, given by name.

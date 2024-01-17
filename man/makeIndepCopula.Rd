@@ -7,7 +7,7 @@
 makeIndepCopula(ll, ul)
 }
 \arguments{
-\item{ll}{ll[i] is the lower limit of random variable x[i]}
+\item{ll}{ll\link{i} is the lower limit of random variable x\link{i}}
 
 \item{ul}{upper limit, analogous to ll.}
 }
