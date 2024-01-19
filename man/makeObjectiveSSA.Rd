@@ -38,8 +38,8 @@ GillespieSSA2}
 }
 \value{
 a closure for the objective function that implicitly
-    depends on all of the arguments to this function but explicitly
-    only on the ABC parameters parABC.
+depends on all of the arguments to this function but explicitly
+only on the ABC parameters parABC.
 }
 \description{
 Given a parameter set, this function computes the distance between

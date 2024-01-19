@@ -139,28 +139,23 @@ the experimenter or very carefully measured. The inputs are
 probably different for each simulation experiment in at least one
 value.</p>
 <p>It returns a closure around:
-    - experiments,
-    - the model, and
-    - parameter mapping</p>
+- experiments,
+- the model, and
+- parameter mapping</p>
 <p>The returned function depends only on parABC (the sampling
 parameters). The simulation will be done suing the rgsl backend.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span>   <span class="va">model.sbtab</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span>pattern<span class="op">=</span><span class="st">"[.]tsv$"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in file(con, "r"):</span> invalid 'description' argument</span>
-<span class="r-in"><span>   <span class="va">experiments</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">model.sbtab</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in is.factor(x):</span> object 'model.sbtab' not found</span>
-<span class="r-in"><span>   <span class="va">parABC</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu">sbtab.quantity</span><span class="op">(</span><span class="va">model.sbtab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> 'sbtab.quantity' is not an exported object from 'namespace:SBtabVFGEN'</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">#   model.sbtab &lt;- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))</span></span></span>
+<span class="r-in"><span><span class="co">#   experiments &lt;- SBtabVFGEN::sbtab.data(model.sbtab)</span></span></span>
+<span class="r-in"><span><span class="co">#   parABC &lt;- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>   <span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="checkModel.html">checkModel</a></span><span class="op">(</span><span class="st">"&lt;insert_model_name&gt;_gvf.c"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in checkModel("&lt;insert_model_name&gt;_gvf.c"):</span> !is.null(modelFile) &amp;&amp; length(modelFile) &gt; 0 is not TRUE</span>
-<span class="r-in"><span>   <span class="va">simulate</span> <span class="op">&lt;-</span> <span class="fu">simulator.c</span><span class="op">(</span><span class="va">experiments</span>, <span class="va">modelName</span>,  <span class="va">parABC</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: rgsl</span>
-<span class="r-in"><span>   <span class="va">yf</span> <span class="op">&lt;-</span> <span class="fu">sim</span><span class="op">(</span><span class="va">parABC</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in sim(parABC):</span> could not find function "sim"</span>
+<span class="r-in"><span><span class="co">#   modelName &lt;- checkModel("&lt;insert_model_name&gt;_gvf.c")</span></span></span>
+<span class="r-in"><span><span class="co">#   simulate &lt;- simulator.c(experiments, modelName,  parABC)</span></span></span>
+<span class="r-in"><span><span class="co">#   yf &lt;- sim(parABC)</span></span></span>
+<span class="r-in"></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

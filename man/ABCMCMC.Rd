@@ -7,7 +7,10 @@
 ABCMCMC(objectiveFunction, startPar, nSims, Sigma0, delta, dprior)
 }
 \arguments{
-\item{objectiveFunction}{function that, given a (vectorial) parameter as input, simulates the model, and outputs the distance between experimental data and data simulated from the model with the parameter provided in input}
+\item{objectiveFunction}{function that, given a (vectorial)
+parameter as input, simulates the model, and outputs the
+distance between experimental data and data simulated from the
+model with the parameter provided in input}
 
 \item{startPar}{starting value for the parameter vector}
 
@@ -22,7 +25,8 @@ transition kernel}
 values}
 }
 \value{
-a list containing a sample matrix and a vector of scores (values of delta for each sample)
+a list containing a sample matrix and a vector of scores
+(values of delta for each sample)
 }
 \description{
 Given a set of simulation experiments (list), a model, parameter

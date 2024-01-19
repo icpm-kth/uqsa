@@ -1,5 +1,5 @@
 ---
-title: "shortMakeSharedLibrary"
+title: "Build C and R source for a model"
 ---
 
 ```{r, include = FALSE}
@@ -15,20 +15,30 @@ library(uqsa)
 ```
 
 This is a short summary of how to make models for the simulator in the
-[rgsl](https://github.com/icpm-kth/rgsl) package.
+[rgsl](https://github.com/icpm-kth/rgsl) package:
+
+|   | Steps                             | tl;dr           |
+|--:|:----------------------------------|:---------------:|
+| 1 | convert SBtab to ODE              | biology => math |
+| 2 | convert the ODE to sources        | math => code    |
+| 3 | convert sources to shared library | code => `.so`   |
+
+The GSL solvers that rgsl uses will load this `.so` file
+(`myModel.so`). 
 
 [RPN-derivative](https://github.com/icpm-kth/RPN-derivative)
 calculates derivatives or offloads that work on maxima or yacas,
 install them if you want to use the `--maxima` or `--yacas` options.
 
-**Note**: SBtab is *content* (tables), several *file-types* can store it.
+**Note**: SBtab is a kind of *content*, but several *file-types* can
+store it (see Summary section below).
 
 If you are on MAC, please install the [homebrew](https://brew.sh/)
 package manager to install essential software that everyone should
 have (a C compiler, pkg-config, etc.). We recommend that you do not
 use official apple software like xcode.
 
-# Create a Shared Library
+# Create a Vector Field for ODE solvers
 
 Here we assume that you wrote your own model in SBtab. For testing you
 can also download one of our example models. All code here is meant to
@@ -52,12 +62,23 @@ model (or alias itm or symlink it, whatever you prefer)
 
 Afterwards, the directory should also contain a `.vf` file as well as
 an sbml `.xml` file and a zip file (with essentially the same content
-as the vf file).  you should either download the contents of the `sh`
-directory in the
+as the vf file).
+
+## Make Source Code for your Model
+
+To convert the ordinary differential equations into code for solvers,
+we need to calculate the appropriate expressions for the jacobian. To
+do these calculations you should either download the contents of the
+`sh` directory in the
 [icpm-kth/RPN-derivative](https://github.com/icpm-kth/RPN-derivative),
-or clone the entire repository. You should `alias` the `ode.sh`
-script, so that you can call it from anywhere, or write out the path
-to it. Here we assume that it lies in your home directory.
+or clone the entire repository (and optionally `make install`). 
+
+If you want to run the conversion from ODE to code from any directory,
+the easiest way is to set an alias: so, here we `alias` the `ode.sh`
+script. An alternative is to write out the path to it every time, or
+set a variable with the full path (the script loads other files so
+doesn't work if copied without the others). Here we assume that the
+repository clone lies in your `$HOME` directory.
 
 ```{sh}
 alias ode.sh='~/RPN-derivative/sh/ode.sh'
@@ -65,9 +86,28 @@ ode.sh -C --maxima myModel.vf > myModel_gvf.c
 [ -f myModel_gvf.c ] && gcc -shared -fPIC -O2 -o myModel.so myModel_gvf.c
 ```
 
-Now you have a `.c` source file and a shared library `.so` file.
+Now you have a `.c` source file and a shared library `.so` file
+(unless the model has errors, or the model is too complex for this
+translation).
 
-# SBtab as XLSX
+# Summary
+
+Here you can find code blocks for each storage format.
+
+## SBtab as TSV
+
+This is a summary of the code in the previous section:
+
+```{sh}
+alias sbtab_to_vfgen='~/SBtabVFGEN/sbtab_to_vfgen'
+alias ode.sh='~/RPN-derivative/sh/ode.sh'
+./sbtab_to_vfgen *.tsv
+ode.sh -C myModel.vf > myModel_gvf.c
+ode.sh -R myModel.vf > myModel.R
+[ -f myModel_gvf.c ] && gcc -shared -fPIC -O2 -o myModel.so myModel_gvf.c
+```
+
+## SBtab as XLSX
 
 Here the same procedure applies, but we alias `sbtab_to_vfgen` rather
 than copying it this time. Also, this time we use yacas to calculate
@@ -84,7 +124,7 @@ ode.sh -R --yacas myModel.vf > myModel.R
 [ -f myModel_gvf.c ] && gcc -shared -fPIC -O2 -o myModel.so myModel_gvf.c
 ```
 
-# SBtab as ODS
+## SBtab as ODS
 
 We repeat the same procedure as with XLSX, but the model name is a
 variable, and the C compiler is whatever target `cc` links to:

@@ -7,7 +7,10 @@
 preCalibration(objectiveFunction, npc = 1000, rprior, rep = 1)
 }
 \arguments{
-\item{objectiveFunction}{}
+\item{objectiveFunction}{function that, given a (vectorial)
+parameter as input, simulates the model, and outputs the
+distance between experimental data and data simulated from the
+model with the parameter provided in input}
 
 \item{npc}{sample size of pre-calibration}
 
@@ -18,7 +21,7 @@ distributed according to the prior}
 }
 \value{
 list with entries preDelta and prePar, final values of
-    calibration run
+calibration run
 }
 \description{
 In ABC settings a model solution is compared to data with an

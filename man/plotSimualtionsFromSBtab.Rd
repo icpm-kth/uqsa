@@ -13,7 +13,7 @@ plotSimualtionsFromSBtab(
 )
 }
 \arguments{
-\item{SBtabDir}{the directory that contains `.tsv` files (with SBtab content)}
+\item{SBtabDir}{the directory that contains \code{.tsv} files (with SBtab content)}
 
 \item{paramVal}{parameter vector with which the model has to be simulated}
 

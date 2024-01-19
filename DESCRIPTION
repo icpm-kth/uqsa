@@ -4,8 +4,8 @@ Title: Uncertainty Quanitification and Global Sensitivity Analysis via ABC sampl
 Version: 0.1.4
 Authors@R: c(person("Alexandra","Jauhiainen",email="Alexandra.Jauhiainen@astrazeneca.com",role=c("aut")),
              person("Olivia","Eriksson",email="olivia@mech.kth.se",role=c("aut","cre")),
-	     person("Federica","Milinanni",email="fedmil@kth.se",role="aut"),
-	     person("Andrei","Kramer",email="andreikr@kth.se",role=c("aut","ctb")))
+             person("Federica","Milinanni",email="fedmil@kth.se",role="aut"),
+             person("Andrei","Kramer",email="andreikr@kth.se",role=c("aut","ctb")))
 Description: This package will solve an initial value problem (given an ordinary differential equation)
   for a list of simulation experiments. The simulations will be compared to data, repeatedly.
   The package can sample the parameters of the model via ABC (approximate Bayesian computation) and by doing so quantify the uncertainty that remains within the model even after considering the data. Experiments are evaluated in a sequence, intermediate probability densities are modeled using the VineCopua package.
@@ -13,23 +13,24 @@ License: GPL (>=3)
 Encoding: UTF-8
 LazyData: true
 Imports:
-	parallel,
-	VineCopula,
-	MASS,
-	ks,
-	SBtabVFGEN
+        parallel,
+        VineCopula,
+        MASS,
+        ks,
+        SBtabVFGEN
 Suggests:
-    rgsl,
-    deSolve,
-    ggplot2,
-    testthat (>= 3.0.0),
-    knitr,
-    rmarkdown,
-    hexbin
+        rgsl,
+        deSolve,
+        ggplot2,
+        testthat (>= 3.0.0),
+        knitr,
+        rmarkdown,
+        hexbin
 Remotes:
-	icpm-kth/SBtabVFGEN,
-	icpm-kth/rgsl
+        icpm-kth/SBtabVFGEN,
+        icpm-kth/rgsl
 RoxygenNote: 7.2.3
+Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://icpm-kth.github.io/uqsa/

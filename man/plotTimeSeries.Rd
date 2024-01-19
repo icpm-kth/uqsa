@@ -11,7 +11,7 @@ plotTimeSeries(simulations, experiments, show.plot = TRUE)
 
 \item{experiments}{list of experiments}
 
-\item{show.plot}{boolean variable. Set show.plot=TRUE to display plots
+\item{show.plot}{boolean variable. Set \code{show.plot=TRUE} to display plots
 when running the funcion, FALSE otherwise}
 }
 \value{
@@ -19,6 +19,6 @@ list of plots with simulations and experimental data
 }
 \description{
 This function plots simulations of time series experiments and plots them
-against experimental data. The input in the provided experiments must differ 
+against experimental data. The input in the provided experiments must differ
 only in one vector component.
 }
