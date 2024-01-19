@@ -2,7 +2,7 @@
 title: "Using your own model"
 ---
 
-```{r, include = FALSE, eval=FALSE}
+```{r, include = FALSE}
 knitr::opts_chunk$set(cache = TRUE,
   collapse = TRUE,
   comment = "#>"
@@ -145,7 +145,7 @@ those `.txt` files.
 
 The github repository of
 [SBtabVFGEN](https://www.github.com/icpm-kth/SBtabVFGEN) (systems
-biology table vector field generator) also includes an RScript called `sbtab_to_vfgen.sh`, it begins with:
+biology table vector field generator) also includes an RScript called `sbtab_to_vfgen`, it begins with:
 
 ```{r, sbtab_to_vfgen, eval=FALSE}
 #!/usr/bin/env Rscript
@@ -157,22 +157,25 @@ args <- commandArgs(TRUE)
 So, it can be called directly from the command line, like this:
 
 ```{sh, label="calling sbtab_to_vfgen", eval=FALSE}
-$ ./sbtab_to_vfgen *.tsv
+$ ./sbtab_to_vfgen *.tsv        # no   conservation law analysis
+$ ./sbtab_to_vfgen --cla *.tsv  # with conservation law analysis
 ```
 
 which will just create the `.vf`, `.xml`, and `.MOD` files, as well as
 `ConservationLaws.h5` (an hdf5 file) and an `.RData` file with the
 conservation laws.
 
-*NOTE*: If you wish to turn conservation law analysis off,
-change this script to include the option `cla=FALSE`.
+*NOTE*: If you wish to turn *conservation law analysis* off, don't
+supply the comamnd line option `--cla`. The other file formats should
+also work if you have the R packages to read them (`.ods`, `.xlsx`).
 
 # Data
 
 The data component of the SBtab is extracted using
 
 ```{r, data, eval=FALSE}
-experiments <- SBtabVFGEN::sbtab.data(conservationLaws)
+SBtab <- SBtabVFGEN::sbtab_from_ods("myModel.ods")
+experiments <- SBtabVFGEN::sbtab.data(SBtab,conservationLaws)
 experiments[[1]]$input
 ```
 

@@ -63,8 +63,10 @@ function.'><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
+    <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4</a>
+    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Make a Shared Library</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -126,18 +128,18 @@ mean)</p></dd>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">rnp</span><span class="op">&lt;-</span><span class="fu">rNormalPrior</span><span class="op">(</span>mean<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,sd<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rnp</span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>              [,1]       [,2]       [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] -0.05231652 -0.1164514  3.8618894</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]  0.75136235 -0.1162479  2.0874891</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] -0.05569917  5.4242283  1.7851389</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] -0.44066560  0.7333792  7.7684952</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] -1.23213655  1.3708381  2.6422388</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] -0.36951374  1.6655838  0.9468184</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]  1.27708547  0.2556218  1.3066676</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] -0.40219926  3.6490935  4.6564916</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,]  1.11609915  1.6721281  3.3994301</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] -1.39150704  1.5341277  2.7085202</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] -1.19067254  2.2107145  2.0817948</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,]  0.12442353 -2.7745105 -3.1286778</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,]  1.15549490  2.9724197  1.8282688</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] -0.58412505 -0.8559407  6.0436046</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]  0.15673931  0.2990733  5.9176644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] -1.20063406  3.4246802  0.9075865</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,]  0.05686847  1.4603603 -0.9629744</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] -0.17240746 -0.5326060 -1.9499833</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] -1.46763673  0.8783897  1.1108646</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,]  2.24216592  0.5836114 -1.3234315</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,]  0.07712126  1.9921102  0.7837745</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,]  0.88515146  4.1523841  6.1587384</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,]  1.26981207  0.2458255 -0.5653702</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,]  1.49860254  1.8816649  0.9600372</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

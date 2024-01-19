@@ -70,8 +70,10 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
+    <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4</a>
+    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Make a Shared Library</a>
   </div>
 </li>
 <li class="nav-item">
@@ -116,7 +118,7 @@
 <p>Then we import the contents as a list of <code>data.frames</code></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">SBtab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">modelFiles</span><span class="op">)</span> <span class="co"># SBtabVFGEN</span></span>
-<span><span class="co">#&gt; [tsv] file[1] «/tmp/RtmpSf3wJ9/temp_libpath1327334fa459/uqsa/extdata/AKAR4/AKAR4_100nM.tsv» belongs to Document «AKAR4»</span></span>
+<span><span class="co">#&gt; [tsv] file[1] «/tmp/RtmpIQ7Xkh/temp_libpath13f03910aa14/uqsa/extdata/AKAR4/AKAR4_100nM.tsv» belongs to Document «AKAR4»</span></span>
 <span><span class="co">#&gt;  I'll take this as the Model Name.</span></span></code></pre></div>
 <p>We load the R functions of the model (e.g. the jacobian of the model):</p>
 <ul>
@@ -160,7 +162,7 @@
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,<span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,pat<span class="op">=</span><span class="st">"_gvf[.]c$"</span><span class="op">)</span><span class="op">)</span> <span class="co"># SBtabVFGEN</span></span>
 <span><span class="co">#&gt; building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).</span></span>
-<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './AKAR4.so' '/tmp/RtmpSf3wJ9/temp_libpath1327334fa459/uqsa/extdata/AKAR4/AKAR4_gvf.c' `pkg-config --libs gsl`</span></span>
+<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './AKAR4.so' '/tmp/RtmpIQ7Xkh/temp_libpath13f03910aa14/uqsa/extdata/AKAR4/AKAR4_gvf.c' `pkg-config --libs gsl`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">modelName</span><span class="op">)</span> <span class="co"># should be AKAR4.so</span></span>
 <span><span class="co">#&gt; [1] "./AKAR4.so"</span></span></code></pre></div>
 <p>The comment will be used to find the <code>.so</code> file (if you move that file, adjust the comment on the <code>modelName</code>).</p>
@@ -229,83 +231,83 @@
 <span>    <span class="va">priorPDF</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dCopulaPrior.html">dCopulaPrior</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span></span>
 <span>    <span class="va">rprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rCopulaPrior.html">rCopulaPrior</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="co">#&gt;   - time spent on precalibration: 34.1219 s</span></span>
+<span><span class="co">#&gt;   - time spent on precalibration: 33.9671 s</span></span>
 <span><span class="co">#&gt; Started chain.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 10000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839682 98.3    2853287 152.4  2853287 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3360114 25.7    8388608  64.0  8362713  63.9</span></span>
+<span><span class="co">#&gt; Ncells 1848632 98.8    2856611 152.6  2856611 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3378079 25.8    8388608  64.0  8323579  63.6</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 20000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839689 98.3    2853287 152.4  2853287 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3360145 25.7    8388608  64.0  8362713  63.9</span></span>
+<span><span class="co">#&gt; Ncells 1848638 98.8    2856611 152.6  2856611 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3378106 25.8    8388608  64.0  8323579  63.6</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 30000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839691 98.3    2853287 152.4  2853287 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3360173 25.7    8388608  64.0  8362713  63.9</span></span>
+<span><span class="co">#&gt; Ncells 1848641 98.8    2856611 152.6  2856611 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3378138 25.8    8388608  64.0  8323579  63.6</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 40000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839695 98.3    2853287 152.4  2853287 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3360201 25.7    8388608  64.0  8362713  63.9</span></span>
+<span><span class="co">#&gt; Ncells 1848644 98.8    2856611 152.6  2856611 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3378162 25.8    8388608  64.0  8323579  63.6</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 50000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839697 98.3    2853287 152.4  2853287 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3360224 25.7    8388608  64.0  8362713  63.9</span></span>
+<span><span class="co">#&gt; Ncells 1848648 98.8    2856611 152.6  2856611 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3378193 25.8    8388608  64.0  8323579  63.6</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 60000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839701 98.3    2853287 152.4  2853287 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3360256 25.7    8388608  64.0  8362713  63.9</span></span>
+<span><span class="co">#&gt; Ncells 1848650 98.8    2856611 152.6  2856611 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3378217 25.8    8388608  64.0  8323579  63.6</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 70000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839703 98.3    2853287 152.4  2853287 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3360280 25.7    8388608  64.0  8362713  63.9</span></span>
+<span><span class="co">#&gt; Ncells 1848654 98.8    2856611 152.6  2856611 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3378249 25.8    8388608  64.0  8323579  63.6</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 80000          used (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1839706 98.3    2853287 152.4  2853287 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3360308 25.7    8388608  64.0  8362713  63.9</span></span>
-<span><span class="co">#&gt;   - time spent on ABC-MCMC: 13.9243 s</span></span>
-<span><span class="co">#&gt;   - time spent on precalibration: 22.9503 s</span></span>
+<span><span class="co">#&gt; Ncells 1848657 98.8    2856611 152.6  2856611 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3378277 25.8    8388608  64.0  8323579  63.6</span></span>
+<span><span class="co">#&gt;   - time spent on ABC-MCMC: 13.8504 s</span></span>
+<span><span class="co">#&gt;   - time spent on precalibration: 24.6518 s</span></span>
 <span><span class="co">#&gt; Started chain.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 10000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896704 101.3    2853288 152.4  2853288 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3494382  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; Ncells 1905640 101.8    2856612 152.6  2856612 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3512313  26.8    8388608  64.0  8388604  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 20000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896707 101.3    2853288 152.4  2853288 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3494410  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; Ncells 1905643 101.8    2856615 152.6  2856615 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3512341  26.8    8388608  64.0  8388604  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 30000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896711 101.3    2853288 152.4  2853288 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3494442  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; Ncells 1905646 101.8    2856615 152.6  2856615 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3512369  26.8    8388608  64.0  8388604  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 40000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896714 101.3    2853288 152.4  2853288 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3494470  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; Ncells 1905649 101.8    2856616 152.6  2856616 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3512397  26.8    8388608  64.0  8388604  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 50000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896717 101.3    2853288 152.4  2853288 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3494498  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; Ncells 1905652 101.8    2856616 152.6  2856616 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3512425  26.8    8388608  64.0  8388604  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 60000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896719 101.3    2853288 152.4  2853288 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3494522  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; Ncells 1905656 101.8    2856617 152.6  2856617 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3512457  26.8    8388608  64.0  8388604  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 70000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896723 101.3    2853289 152.4  2853289 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3494554  26.7    8388608  64.0  8388608  64.0</span></span>
+<span><span class="co">#&gt; Ncells 1905659 101.8    2856617 152.6  2856617 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3512485  26.8    8388608  64.0  8388604  64.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; n = 80000          used  (Mb) gc trigger  (Mb) max used  (Mb)</span></span>
-<span><span class="co">#&gt; Ncells 1896726 101.3    2853289 152.4  2853289 152.4</span></span>
-<span><span class="co">#&gt; Vcells 3494582  26.7    8388608  64.0  8388608  64.0</span></span>
-<span><span class="co">#&gt;   - time spent on ABC-MCMC: 7.29444 s</span></span>
+<span><span class="co">#&gt; Ncells 1905661 101.8    2856618 152.6  2856618 152.6</span></span>
+<span><span class="co">#&gt; Vcells 3512509  26.8    8388608  64.0  8388604  64.0</span></span>
+<span><span class="co">#&gt;   - time spent on ABC-MCMC: 7.32202 s</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -Checking fit with previous data</span></span>
-<span><span class="co">#&gt; --  149  samples  did not fit previous datasets</span></span>
+<span><span class="co">#&gt; --  154  samples  did not fit previous datasets</span></span>
 <span><span class="va">end_time</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">time_</span> <span class="op">=</span> <span class="va">end_time</span> <span class="op">-</span> <span class="va">start_time</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">time_</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Time difference of 22.25061 mins</span></span></code></pre></div>
+<span><span class="co">#&gt; Time difference of 22.23162 mins</span></span></code></pre></div>
 <p>We plot the sample as a two dimensional histogram plot-matrix using the hexbin package:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">mcmc</span><span class="op">$</span><span class="va">draws</span><span class="op">)</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">parVal</span><span class="op">)</span></span>
@@ -315,7 +317,7 @@
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">mcmc</span><span class="op">$</span><span class="va">draws</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">y</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1]   1 225 651</span></span></code></pre></div>
+<span><span class="co">#&gt; [1]   1 225 646</span></span></code></pre></div>
 <p>where <code>y[[1]]</code> refers to the simulation corresponding to the first experiment: <code>experiment[[1]]</code>, and <code>$func</code> refers to the output function values (rather than state variables). The outout functions are defined in the table <code>SBtab$Output</code>.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/aperm.html" class="external-link">aperm</a></span><span class="op">(</span><span class="va">y</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span><span class="op">)</span> <span class="co"># aperm makes the sample-index (3rd) the first index of f, default permutation</span></span>

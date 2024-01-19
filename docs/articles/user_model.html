@@ -168,16 +168,17 @@
 <div class="section level3">
 <h3 id="automated-procedure">Automated Procedure<a class="anchor" aria-label="anchor" href="#automated-procedure"></a>
 </h3>
-<p>The github repository of <a href="https://www.github.com/icpm-kth/SBtabVFGEN" class="external-link">SBtabVFGEN</a> (systems biology table vector field generator) also includes an RScript called <code>sbtab_to_vfgen.sh</code>, it begins with:</p>
+<p>The github repository of <a href="https://www.github.com/icpm-kth/SBtabVFGEN" class="external-link">SBtabVFGEN</a> (systems biology table vector field generator) also includes an RScript called <code>sbtab_to_vfgen</code>, it begins with:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#!/usr/bin/env Rscript</span></span>
 <span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span></span>
 <span><span class="va">args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/commandArgs.html" class="external-link">commandArgs</a></span><span class="op">(</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>So, it can be called directly from the command line, like this:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a>$ <span class="ex">./sbtab_to_vfgen</span> *.tsv</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a>$ <span class="ex">./sbtab_to_vfgen</span> *.tsv        # no   conservation law analysis</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a>$ <span class="ex">./sbtab_to_vfgen</span> --cla *.tsv  # with conservation law analysis</span></code></pre></div>
 <p>which will just create the <code>.vf</code>, <code>.xml</code>, and <code>.MOD</code> files, as well as <code>ConservationLaws.h5</code> (an hdf5 file) and an <code>.RData</code> file with the conservation laws.</p>
-<p><em>NOTE</em>: If you wish to turn conservation law analysis off, change this script to include the option <code>cla=FALSE</code>.</p>
+<p><em>NOTE</em>: If you wish to turn <em>conservation law analysis</em> off, don’t supply the comamnd line option <code>--cla</code>. The other file formats should also work if you have the R packages to read them (<code>.ods</code>, <code>.xlsx</code>).</p>
 </div>
 </div>
 <div class="section level2">
@@ -185,7 +186,8 @@
 </h2>
 <p>The data component of the SBtab is extracted using</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">experiments</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">conservationLaws</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">SBtab</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_ods.html" class="external-link">sbtab_from_ods</a></span><span class="op">(</span><span class="st">"myModel.ods"</span><span class="op">)</span></span>
+<span><span class="va">experiments</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">SBtab</span>,<span class="va">conservationLaws</span><span class="op">)</span></span>
 <span><span class="va">experiments</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span></span></code></pre></div>
 <p>which returns a list with one element per entry in the <code>Experiments</code> table (<code>SBtab$Experiments</code> in R). Each list item contains the data set (as two data frames, the second for measurement error estimates), but also inputs for the model that are meant to fit the data, and initial values for all state variables. These simulation instructions always accompany the data, and can include scheduled events (sudden changes in the system).</p>
 </div>
