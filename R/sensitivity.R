@@ -134,10 +134,19 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 	legend(x="topright",fill=color[1:d[2]],legend=colnames(S),ncol=2)
 }
 
-
-#' funcSensitivity transforms state sensitivity into the sensitivity of output functions
+#' Equilibrium state approximation of the solution sensitivity for ODE systems
 #'
-#' @details The state sensitivity matrix:
+#' In this context, the sensitivity S(t;x,p) is dx(t;p)/dp, where
+#' x(t;p) is the parameterized solution to an initial value problem
+#' for ordinary differential equations and t is the independent
+#' varibale: x'=f(t,x;p), where «'» indicates the derivative with
+#' respect to t. In cases where you have a proxy variable for p,
+#' e.g. r=log(p), the chain rule applies. Similarly, we also have an
+#' output sensitivity for the function g(x(t;p)).  The equilibrium
+#' approximation is exact for state-variable values close to an
+#' equilibrium point q(p) (fixed-point): f(t,q(p);p)=0.
+#'
+#' The state sensitivity matrix:
 #'
 #' ```
 #'            d state(time[k],state, param)[i]
@@ -166,91 +175,63 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 #' As we transform the parameters themselves, the chain rule requests
 #' parMapJac[l,k] = d param[l] / d parMCMC[k]
 #'
-#' @param parMCMC Markov chain variables
-#' @param experiments list of experiments
-#' @param simulations list of simulation results
-#' @param model a list of model functions, including funcJac, and funcJacp
-#' @param parMap a parameter transformation function
-#' @param parMapJac transformation jacobian: t(∇) × parMap
-#' @return Sh[[i]][,,k] a list of 3d-arrays, one item per expariment
-#'     (i), and a third dimension for the time variable (finite set of
-#'     observations)
-#' @export
-funcSensitivity <- function(parMCMC,experiments,simulations,model,parMap=defaultParMap,parMapJac=defaultParMapJac){
-	N <- length(experiments)
-	fSens <- function(parMCMC,experiments){
-		lMCMC <- length(parMCMC) # the dimension of the MCMC variable (parMCMC)
-		S  <- sensitivityEquilibriumApproximation(experiments, simulations, model, parMCMC, parMap)
-		Sh <- list()
-		for (i in seq(N)){
-			T <- length(simulations[[i]]$time)
-			F <- length(experiments[[i]]$outputValues)
-			y <- t(experiments[[i]]$outputValues)
-			parMapped <- parMap(parMCMC)
-			parODE <- c(parMapped,experiments[[i]]$input)
-			Sh[[i]] <- array(0,dim=c(F,lMCMC,T))
-			for (j in seq(T)){
-				tj <- experiments[[i]]$outputTimes[j]
-				ShODE <- model$funcJac(tj,y[,j],parODE) %*% S[[i]][,,j] + model$funcJacp(tj,y[,j],parODE)
-				Sh[[i]][,,j] <- ShODE[,seq(lMCMC),drop=FALSE] %*% parMapJac(parMCMC)
-			}
-		}
-		return(Sh)
-	}
-	return(fSens)
-}
-
-#' Equilibrium state approximation of the solution sensitivity for ODE systems
-#'
-#' In this context, the sensitivity S(t;x,p) is dx(t;p)/dp, where
-#' x(t;p) is the parameterized solution to an initial value problem
-#' for ordinary differential equations and t is the independent
-#' varibale: x'=f(t,x;p), where «'» indicates the derivative with
-#' respect to t. In cases where you have a proxy variable for p,
-#' e.g. r=log(p), the chain rule applies. Similarly, we also have an
-#' output sensitivity for the function g(x(t;p)).  The equilibrium
-#' approximation is exact for state-variable values close to an
-#' equilibrium point q(p) (fixed-point): f(t,q(p);p)=0.
-#'
 #' Typically, the sensitivity needs to be known at different
-#' time-points t_k, therefore, this function returns S as a
-#' 3-dimensional array S[i,j,k], where the index k corrsponds to time
+#' time-points t_k. The 3-dimensional array S[i,j,k], where the index k corrsponds to time
 #' t_k; the closer x(t_k) is to equilibrium, the better the
 #' approximation; near the initial state, the sensitivity is also
 #' correct (only the intermediate time-span is approximate).
 #'
 #' This function requires pracma::expm to work.
 #'
+#' The f
+#'
 #' @export
 #' @param experiments a list of simulation experiments
-#' @param simulations an equivalent list of simulation results, for one parameter vector
-#' @param model a list of functions for the model the experiments are applicable to
-#' @param parMCMC the parameters that are used in Markov chain Monte Carlo as the MC variable
-#' @param parMap a map to transform parMCMC into p, parameters the model accepts
-#' @return S, the state sensitivity matrix length(x) × length(p) × length(t)
+#' @param simulations an equivalent list of simulation results, for
+#'     one parameter vector
+#' @param model a list of functions for the model the experiments are
+#'     applicable to
+#' @param parMCMC the parameters that are used in Markov chain Monte
+#'     Carlo as the MC variable
+#' @param parMap a map to transform parMCMC into p, parameters the
+#'     model accepts
+#' @return a function S(parMCMC,simulations) ->
+#'     simulations_with_sensitivity, which attaches the state
+#'     sensitivity matrix array length(x) × length(p) × length(t) to
+#'     the simulations (solutions to the ODE).
+#' @examples \dontrun{
+#' y <- simulate(parMCMC)
+#' S <- sensitivityEquilibriumApproximation(experiments, model, parMap, parMapJac)
+#' y <- S(parMap,y)
+#' }
 sensitivityEquilibriumApproximation <- function(experiments, model, parMap=identity, parMapJac=1.0){
 	y0 <- model$init(0.0)
 	n  <- length(y0)
+	m  <- ncol(experiments[[1]]$outputValues)
 	u <- experiments[[1]]$input
-	p <- c(model$par(),u)
-	d <- length(p)-length(u)
-	u_pos <- seq(d+1,length(p)) # u in p
+	nu <- length(u)
+	defaultPar <- c(model$par(),u)
+	np <- length(defaultPar)
+	d <- np - nu
 	SEA <- function(parMCMC,simulations){
 		for (i in seq(length(experiments))){
-			t <- experiments[[i]]$outputTimes
+			p <- c(parMap(parMCMC),experiments[[i]]$input)
+			tm <- experiments[[i]]$outputTimes
 			t0 <- experiments[[i]]$initialTime
-			simulations[[i]]$sens <- array(0.0,dim=c(n,length(parMCMC),length(t)))
+			simulations[[i]]$sens <- array(0.0,dim=c(n,length(parMCMC),length(tm)))
+			simulations[[i]]$funcsens <- array(0.0,dim=c(m,length(parMCMC),length(tm)))
 			for (j in seq(length(t))){
-				if (abs(t[j]-t0) > 1e-16 * abs(t0)){
-					u <- experiments[[i]]$input
-					if (!is.null(u)){
-						p[u_pos] <- u
-					}
-					A <- model$jac(t[j], simulations[[i]]$state[,j,1], p)
-					B <- head(model$jacp(t[j], simulations[[i]]$state[,j,1], p), c(n,d))
+				if (abs(tm[j]-t0) > 1e-16 * abs(t0)){
+					y <- simulations[[i]]$state[,j,1]
+					A <- model$jac(tm[j], y, p)
+					B <- head(model$jacp(tm[j], y, p), c(n,d))
 					AB <- solve(A,B)
-					C <- ((pracma::expm((t[j]-t0)*A) %*% AB) - AB) %*% parMapJac(parMCMC)
-					simulations[[i]]$sens[,,j] <- C
+					# state variables:
+					C <- ((pracma::expm((t[j]-t0)*A) %*% AB) - AB)
+					simulations[[i]]$sens[,,j] <- C %*% parMapJac(parMCMC)
+					# functions
+					CF <- model$funcJac(tm[j],y,p) %*% C + head(model$funcJacp(tm[j],y,p),c(m,d))
+					simulations[[i]]$funcsens[,,j] <- CF %*% parMapJac(parMCMC)
 				}
 			}
 		}

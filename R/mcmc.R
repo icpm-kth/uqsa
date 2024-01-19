@@ -73,7 +73,7 @@ mcmc <- function(simulate,experiments,update,model){
 #' @param dprior prior probability density function
 #' @param eps a step size parameter for Markov chain moves (propotional to step size)
 #' @return a function that returns possibly updated states of the Markov chain
-mcmcUpdate <- function(logLikelihood, gradLogLikelihood, fisherInformation, dprior, model, experiments, parMap=defaultParMap, parMapJac=defaultParMapJac,eps=1e-5){
+mcmcUpdate <- function(logLikelihood, gradLogLikelihood, fisherInformation, dprior, model, experiments, parMap=identity, parMapJac=1,eps=1e-5){
 	U <- function(parGiven){
 		r <- runif(1)
 		LGiven <- attr(parGiven,"logLikelihood")
@@ -158,7 +158,7 @@ fisherInformationFromGSA <- function(Sample,yf=NULL,E){
 #' @param parMap mapping between MCMC variables and ODE parameters
 #' @param parMapJac the jacobian of the above map
 #' @return fisher information calculating funciton
-fisherInformation <- function(model, experiments, parMap=defaultParMap, parMapJac=defaultParMapJac){
+fisherInformation <- function(model, experiments, parMap=identity, parMapJac=1){
 	nF <- length(model$func(0.0,model$init(),model$par()))
 	l10 <- log(10)
 	F <- function(parMCMC, simulations){
@@ -222,18 +222,18 @@ logLikelihood <- function(experiments){
 	return(llf)
 }
 
-#' Default parameter mapping used by the MCMC module
+#' LOG10 parameter mapping used by the MCMC module
 #'
 #' This map is used by the simulator to transform sampling variables
 #' into ODE-model porameters.
 #'
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
-defaultParMap <- function(parMCMC){
+log10ParMap <- function(parMCMC){
 	return(10^(parMCMC))
 }
 
-#' Default parameter mapping, jacobian
+#' LOG10 parameter mapping, jacobian
 #'
 #' This map is used by the simulator to transform sampling variables
 #' into ODE-model porameters. As we often calculate sensitivites, we
@@ -242,7 +242,7 @@ defaultParMap <- function(parMCMC){
 #'
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
-defaultParMapJac <- function(parMCMC){
+log10ParMapJac <- function(parMCMC){
 	return(diag(10^(parMCMC) * log(10)))
 }
 
@@ -255,19 +255,19 @@ defaultParMapJac <- function(parMCMC){
 #'
 #' @param experiment will be compared tp the simulation results
 #' @export
-gradLogLikelihood <- function(model,experiments,parMap=defaultParMap,parMapJac=defaultParMapJac){
+gradLogLikelihood <- function(model,experiments,parMap=identity,parMapJac=1){
 	N <- length(experiments)
 	gradLL <- function(parMCMC,simulations){
 		lMCMC <- length(parMCMC) # the dimension of the MCMC variable (parMCMC)
 		gL <- rep(0,length(parMCMC))
-		Sh <- funcSensitivity(parMCMC,experiments,simulations,model,parMap,parMapJac)
 		for (i in seq(N)){
 			T <- length(simulations[[i]]$time)
 			y <- t(experiments[[i]]$outputValues)
 			h <- simulations[[i]]$func[,,1]
 			stdv <- t(experiments[[i]]$errorValues)
+			Sh <- simulations[[i]]$funcsens
 			for (j in seq(T)){
-				gL <- gL + ((y[,j] - h[,j])/stdv[,j]^2) %*% Sh[[i]][,,j]
+				gL <- gL + ((y[,j] - h[,j])/stdv[,j]^2) %*% Sh[,,j]
 			}
 		}
 		return(gL)

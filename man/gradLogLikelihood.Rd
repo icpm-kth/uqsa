@@ -4,12 +4,7 @@
 \alias{gradLogLikelihood}
 \title{Default log-likelihood function, gradient}
 \usage{
-gradLogLikelihood(
-  model,
-  experiments,
-  parMap = defaultParMap,
-  parMapJac = defaultParMapJac
-)
+gradLogLikelihood(model, experiments, parMap = identity, parMapJac = 1)
 }
 \arguments{
 \item{experiment}{will be compared tp the simulation results}

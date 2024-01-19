@@ -11,8 +11,8 @@ mcmcUpdate(
   dprior,
   model,
   experiments,
-  parMap = defaultParMap,
-  parMapJac = defaultParMapJac,
+  parMap = identity,
+  parMapJac = 1,
   eps = 1e-05
 )
 }

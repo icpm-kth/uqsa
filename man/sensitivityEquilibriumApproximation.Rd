@@ -14,16 +14,23 @@ sensitivityEquilibriumApproximation(
 \arguments{
 \item{experiments}{a list of simulation experiments}
 
-\item{model}{a list of functions for the model the experiments are applicable to}
+\item{model}{a list of functions for the model the experiments are
+applicable to}
 
-\item{parMap}{a map to transform parMCMC into p, parameters the model accepts}
+\item{parMap}{a map to transform parMCMC into p, parameters the
+model accepts}
 
-\item{simulations}{an equivalent list of simulation results, for one parameter vector}
+\item{simulations}{an equivalent list of simulation results, for
+one parameter vector}
 
-\item{parMCMC}{the parameters that are used in Markov chain Monte Carlo as the MC variable}
+\item{parMCMC}{the parameters that are used in Markov chain Monte
+Carlo as the MC variable}
 }
 \value{
-S, the state sensitivity matrix length(x) × length(p) × length(t)
+a function S(parMCMC,simulations) ->
+simulations_with_sensitivity, which attaches the state
+sensitivity matrix array length(x) × length(p) × length(t) to
+the simulations (solutions to the ODE).
 }
 \description{
 In this context, the sensitivity S(t;x,p) is dx(t;p)/dp, where
@@ -37,12 +44,43 @@ approximation is exact for state-variable values close to an
 equilibrium point q(p) (fixed-point): f(t,q(p);p)=0.
 }
 \details{
+The state sensitivity matrix:\preformatted{           d state(time[k],state, param)[i]
+S[i,j,k] = --------------------------------  ,
+           d param[j]
+}
+
+where param are the raw model parameters.
+This matrix is calculated as an intermediate and then transformed into:\preformatted{            d func(time[k], state, c(parMap(parMCMC),input))[i]
+Sh[i,j,k] = --------------------------------------------------
+            d parMCMC[j]
+}
+
+where parMCMC is the Markov chain variable and usually shorter than
+param as we typically don't sample all of the model's
+parameters. Some model parameters may be known, some may be input
+parameters not intrinsic to the model but related to the
+experimental setup (that is why parMCMC and param are different).
+
+This transformation requires the output function jacobian (funcJac)
+and the parameter jacobian (funcJacp) in the model variable.
+
+As we transform the parameters themselves, the chain rule requests
+parMapJac\link{l,k} = d param\link{l} / d parMCMC\link{k}
+
 Typically, the sensitivity needs to be known at different
-time-points t_k, therefore, this function returns S as a
-3-dimensional array S\link{i,j,k}, where the index k corrsponds to time
+time-points t_k. The 3-dimensional array S\link{i,j,k}, where the index k corrsponds to time
 t_k; the closer x(t_k) is to equilibrium, the better the
 approximation; near the initial state, the sensitivity is also
 correct (only the intermediate time-span is approximate).
 
 This function requires pracma::expm to work.
+
+The f
+}
+\examples{
+\dontrun{
+y <- simulate(parMCMC)
+S <- sensitivityEquilibriumApproximation(experiments, model, parMap, parMapJac)
+y <- S(parMap,y)
+}
 }
