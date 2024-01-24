@@ -1,0 +1,18 @@
+!!SBtab	Document='AKAP79tc' SBtabVersion='1.0'	TableName='Reaction' TableTitle='Reactions in AKAP79 Model'  TableType='Reaction'		
+!ID	!Name	!KineticLaw	!ReactionFormula	!IsReversible
+reaction_51	reaction_51	kf_Rii_C__RiiP_C*Rii_C	Rii_C <=> RiiP_C	0
+reaction_14	reaction_14	kf_RiiPxC__RiiP_C*RiiP*C - kb_RiiPxC__RiiP_C*RiiP_C	RiiP + C <=> RiiP_C	1
+reaction_12	reaction_12	kf_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C*cAMP - kb_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C_cAMP	RiiP_C + cAMP <=> RiiP_C_cAMP	1
+reaction_43	reaction_43	kf_RiiPXcAMP__RiiP_cAMP*cAMP*RiiP - kb_RiiPXcAMP__RiiP_cAMP*RiiP_cAMP	cAMP + RiiP <=> RiiP_cAMP	1
+reaction_23	reaction_23	kf_RiiP_cAMPxC__RiiP_C_cAMP*RiiP_cAMP*C - kb_RiiP_cAMPxC__RiiP_C_cAMP*RiiP_C_cAMP	RiiP_cAMP + C <=> RiiP_C_cAMP	1
+reaction_78	reaction_78	kf_cAMPxRii__Rii_cAMP*cAMP*Rii - kb_cAMPxRii__Rii_cAMP*Rii_cAMP	cAMP + Rii <=> Rii_cAMP	1
+reaction_56	reaction_56	kf_Rii_CxcAMP__Rii_C_cAMP*Rii_C*cAMP - kb_Rii_CxcAMP__Rii_C_cAMP*Rii_C_cAMP	Rii_C + cAMP <=> Rii_C_cAMP	1
+reaction_76	reaction_76	kf_Rii_cAMPxC__Rii_C_cAMP*Rii_cAMP*C - kb_Rii_cAMPxC__Rii_C_cAMP*Rii_C_cAMP	Rii_cAMP + C <=> Rii_C_cAMP	1
+reaction_62	reaction_62	kf_Rii_C_cAMP__RiiP_C_cAMP*Rii_C_cAMP	Rii_C_cAMP <=> RiiP_C_cAMP	0
+reaction_58	reaction_58	kf_RiixC__Rii_C*Rii*C - kb_RiixC__Rii_C*Rii_C	Rii + C <=> Rii_C	1
+reaction_44	reaction_44'	kf_RiiPxCaN__RiiP_CaN*RiiP*CaN - kb_RiiPxCaN__RiiP_CaN*RiiP_CaN	RiiP + CaN <=> RiiP_CaN	1
+reaction_33	reaction_33'	kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN*CaN*RiiP_cAMP - kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN*RiiP_cAMP_CaN	CaN + RiiP_cAMP <=> RiiP_cAMP_CaN	1
+reaction_48	reaction_4'8	kf_RiiP_CaN__RiixCaN*RiiP_CaN	RiiP_CaN <=> Rii + CaN	0
+reaction_37	reaction_3'7	kf_RiiP_cAMP_CaN__CaNXRii_cAMP*RiiP_cAMP_CaN	RiiP_cAMP_CaN <=> CaN + Rii_cAMP	0
+reaction_1	reaction_1	kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C	C + AKAR4 <=> AKAR4_C	1
+reaction_2	reaction_2	kcat_AKARp*AKAR4_C	AKAR4_C <=> AKAR4p + C	0
