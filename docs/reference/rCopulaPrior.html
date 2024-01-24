@@ -39,6 +39,8 @@
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="../articles/data.html">Importing data</a>
     <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
     <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
@@ -51,8 +53,10 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
+    <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4</a>
+    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Make a Shared Library</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -98,25 +102,6 @@
 <p>a matrix of random values</p>
     </div>
 
-    <div class="section level2">
-    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">rcp</span><span class="op">&lt;-</span><span class="fu">rCopulaPrior</span><span class="op">(</span><span class="fu"><a href="makeIndepCopula.html">makeIndepCopula</a></span><span class="op">(</span>ll<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,ul<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">rcp</span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]     [,2]     [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.01629761 1.801383 2.877017</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.52577326 1.972425 2.265952</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.34841997 1.270071 2.650221</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.87191439 1.918566 2.965500</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.28187890 1.640095 2.337046</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.94592205 1.009281 2.482915</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.93559600 1.685956 2.072764</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.35247819 1.322961 2.713175</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.70279259 1.785625 2.932886</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.42456914 1.265795 2.803648</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.32576995 1.642336 2.316926</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.10211722 1.863657 2.395305</span>
-</code></pre></div>
-    </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 

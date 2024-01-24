@@ -41,6 +41,8 @@ The return value has the same structure as the value of fitCopula()."><!-- mathj
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="../articles/data.html">Importing data</a>
     <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
     <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
@@ -53,8 +55,10 @@ The return value has the same structure as the value of fitCopula()."><!-- mathj
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
+    <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4</a>
+    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Make a Shared Library</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -79,8 +83,8 @@ The return value has the same structure as the value of fitCopula()."><!-- mathj
     </div>
 
     <div class="ref-description section level2">
-    <p>Covers the (simpler) special case where the prior(x) is iid uniform.
-The return value has the same structure as the value of fitCopula().</p>
+    <p>Covers the (simpler) special case where the <code>prior(x)</code> is iid uniform.
+The return value has the same structure as the value of <code><a href="fitCopula.html">fitCopula()</a></code>.</p>
     </div>
 
     <div class="section level2">
@@ -91,7 +95,7 @@ The return value has the same structure as the value of fitCopula().</p>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>ll</dt>
-<dd><p>ll[i] is the lower limit of random variable x[i]</p></dd>
+<dd><p><code>ll[i]</code> is the lower limit of random variable <code>x[i]</code></p></dd>
 
 
 <dt>ul</dt>

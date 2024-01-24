@@ -46,10 +46,14 @@ navbar:
         menu:
         - text: Overview
           href: articles/examples_overview.html
-        - text: AKAP79
+        - text: Simulate AKAP79
+          href: articles/simAKAP79.html
+        - text: sample AKAP79
           href: articles/AKAP79.html
-        - text: AKAR4
+        - text: sample AKAR4
           href: articles/AKAR4.html
+        - text: Make a Shared Library
+          href: articles/shortMakeSharedLibrary.html
     reference:
         text: Function reference
         href: reference/index.html
@@ -66,9 +70,6 @@ reference:
   - fitCopula
   - getMCMCPar
   - importReactionsSSA
-  - import_experiments
-  - import_from_SBtab
-  - makeAcceptanceProbability
   - makeGillespieModel
   - makeIndepCopula
   - makeObjective
@@ -79,10 +80,8 @@ reference:
   - rCopulaPrior
   - rNormalPrior
   - rUniformPrior
-  - runModel
   - sensitivity
   - sensitivity.graph
-  - simulator.R
   - simulator.c
   - uqsa_example
 - title: "Internal Functions"

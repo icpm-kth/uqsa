@@ -9,7 +9,10 @@ checkFitWithPreviousExperiments(draws, objectiveFunction, delta)
 \arguments{
 \item{draws}{matrix of sampled values (to be filtered).}
 
-\item{objectiveFunction}{function that, given a (vectorial) parameter as input, simulates the model, and outputs the distance between experimental data and data simulated from the model with the parameter provided in input}
+\item{objectiveFunction}{function that, given a (vectorial)
+parameter as input, simulates the model, and outputs the
+distance between experimental data and data simulated from the
+model with the parameter provided in input}
 
 \item{delta}{the acceptance threshold.}
 }

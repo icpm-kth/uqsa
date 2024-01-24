@@ -43,6 +43,8 @@ tables, but the same documents)."><!-- mathjax --><script src="https://cdnjs.clo
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="../articles/data.html">Importing data</a>
     <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
     <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
@@ -55,8 +57,10 @@ tables, but the same documents)."><!-- mathjax --><script src="https://cdnjs.clo
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
+    <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4</a>
+    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Make a Shared Library</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -88,7 +92,12 @@ tables, but the same documents).</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">uqsa_example</span><span class="op">(</span>modelName <span class="op">=</span> <span class="cn">NULL</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span>, pat <span class="op">=</span> <span class="st">"[.]tsv$"</span>, f <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">uqsa_example</span><span class="op">(</span></span>
+<span>  modelName <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  full.names <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  pattern <span class="op">=</span> <span class="st">"[.]tsv$"</span>,</span>
+<span>  f <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -102,14 +111,13 @@ if empty, this function lists all available examples.</p></dd>
 <dd><p>return full paths to files - defaults to TRUE</p></dd>
 
 
-<dt>pat</dt>
-<dd><p>pattern to find specific files; if NULL, this function
+<dt>pattern</dt>
+<dd><p>pattern to find specific files; if <code>NULL</code>, this function
 returns the directory of the example</p></dd>
 
 
 <dt>f</dt>
-<dd><p>alternatively, pat can be set to files ending in f [this
-value]</p></dd>
+<dd><p>file ending, search for file endings in <code>f</code>, alternative to <code>pattern</code></p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -117,9 +125,9 @@ value]</p></dd>
     
 
 <p>The location of the examples in the current environment if
-    called with no arguments, the paths to the model files if a
-    modelName was provided or the full path to the example if the
-    file pattern _pat_ is unset</p>
+called with no arguments, the paths to the model files if a
+modelName was provided or the full path to the example if the
+file pattern <em>pattern</em> is unset</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -133,19 +141,15 @@ directory).</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">uqsa_example</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AKAP79"    "AKAR4"     "CaMKII"    "README.md"</span>
-<span class="r-in"><span><span class="fu">uqsa_example</span><span class="op">(</span><span class="st">"AKAR4"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_100nM.tsv"          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_25nM.tsv"           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_400nM.tsv"          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_Compound.tsv"       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_Experiments.tsv"    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_Output.tsv"         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_Parameter.tsv"      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_Reaction.tsv"       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_SuggestedInput.tsv" </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4/AKAR4_SuggestedOutput.tsv"</span>
-<span class="r-in"><span><span class="fu">uqsa_example</span><span class="op">(</span><span class="st">"AKAR4"</span>,pat<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/tmp/Rtmpo2MXzi/temp_libpath2f247c7e258/uqsa/extdata/AKAR4"</span>
+<span class="r-in"><span><span class="fu">uqsa_example</span><span class="op">(</span><span class="st">"AKAR4"</span>,full.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AKAR4_100nM.tsv"       "AKAR4_25nM.tsv"        "AKAR4_400nM.tsv"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [4] "AKAR4_Compound.tsv"    "AKAR4_Experiments.tsv" "AKAR4_Output.tsv"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [7] "AKAR4_Parameter.tsv"   "AKAR4_Reaction.tsv"   </span>
+<span class="r-in"><span><span class="fu">uqsa_example</span><span class="op">(</span><span class="st">"AKAP79"</span>,f<span class="op">=</span><span class="st">'R'</span>,full.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "AKAP79.R"            "AKAP79_out.R"        "AKAP79_plots.R"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [4] "configAKAP79.R"      "runABCMCMC_AKAP79.R"</span>
+<span class="r-in"><span><span class="fu">uqsa_example</span><span class="op">(</span><span class="st">"AKAP79"</span>,pat<span class="op">=</span><span class="st">"^run.*R$"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/tmp/RtmpDx93Y2/temp_libpath11da92c0d1c74/uqsa/extdata/AKAP79/runABCMCMC_AKAP79.R"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

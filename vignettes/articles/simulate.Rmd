@@ -8,38 +8,60 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
+knitr::opts_chunk$set(cache = TRUE,
+  cache = TRUE,
   collapse = TRUE,
   comment = "#>"
 )
 ```
-A fundamental task performed in our tool set is simulating the model (whether it is imported from an SBtab document or not). Typically, the solution to an *initial value problem* depends on the choices of initial states, parameter values and inputs (also parameters). But only the parameters will vary often, during ABC or MCMC in general as that is a parameter estimation task. For this reason we provide two closure generating functions:
+
+A fundamental task performed in our tool set is simulating the model
+(whether it is imported from an SBtab document or not). Typically, the
+solution to an *initial value problem* depends on the choices of
+initial states, parameter values and inputs (also parameters). But
+only the parameters will vary often, during ABC or MCMC in general as
+that is a parameter estimation task. For this reason we provide two
+closure generating functions:
 
 - `simulate <- simulator.c(experiments, modelName, parMap = identity)`
 - `simulate <- simulator.R(experiments, model, parMap = identity)`
 
-Both return a function with the interface: `simulate(k)`, where `k` is a parameter matrix of intrinsic parameters (each column is one parameter vector, without inputs). The experiments to simulate (with their inputs), the model to use and how to transform the parameter vectors before passing them to the model are all implicit in `simulate`. The function `parMap` can be used to sample `k` in logarithmic space. So, k can be some logarithmic vector and `parMap = exp` will transform them to linear space. But it can also re-order or reshape them in some way (or change type to something the model expects).
+Both return a function with the interface: `simulate(k)`, where `k` is
+a parameter matrix of intrinsic parameters (each column is one
+parameter vector, without inputs). The experiments to simulate (with
+their inputs), the model to use and how to transform the parameter
+vectors before passing them to the model are all implicit in
+`simulate`. The function `parMap` can be used to sample `k` in
+logarithmic space. So, k can be some logarithmic vector and `parMap =
+exp` will transform them to linear space. But it can also re-order or
+reshape them in some way (or change type to something the model
+expects).
 
-```R
+```{r, label="shared library", eval=FALSE}
 modelName <- checkModel("muModel","myModel_gvf.c") # will compile if necessary
 simulate <- simulator.c(experiments, modelName, parMap = exp)
 par<-matrix(c(1,2,3),3,5)
 yf<-simulate(par)
 ```
-will return a list `yf` of the same length as `experiments`, with solutions at the `outputTimes` indicated in the `experiments`, for state variables and output functions:
 
-```
+will return a list `yf` of the same length as `experiments`, with
+solutions at the `outputTimes` indicated in the `experiments`, for
+state variables and output functions:
+
+```{r, eval=FALSE}
 yf[[l]]$func[i,j,k]
 ```
 
-This is the value of the output function `i` for experiment `l`, at `outputTimes[j]`, for parameter set `par[,k]`.
+This is the value of the output function `i` for experiment `l`, at
+`outputTimes[j]`, for parameter set `par[,k]`.
 
 ## R-functions
 
 ### runModel
 
 Simulate an Experiment using an ODE Model, without using the closures from the previous sections.
-```
+
+```{r, eval=FALSE}
 runModel(experiments, modelName,  parABC, parMap=identity)
 ```
 
@@ -48,22 +70,28 @@ This function uses the GSL solvers, or the R solver `deSolve` [default] to simul
 If the model name has a comment that indicates a model file ending in `.so`, then this function will use the shared library and the GSL solvers.
 
 **Input arguments**
-* `experiments` (list) - experiments to simulate. Each experiment variable is an element of the variable `experiments` that is imported via function `import_experiments`
+
+* `experiments` (list) - experiments to simulate. Each experiment
+  variable is an element of the variable `experiments` that is
+  imported via function `import_experiments`
 * `modelName`(character) - used to find model files and functions within the file (a prefix), and optionally a comment indicating a file
 * `parABC` (numeric) - a matrix of column vectors; each column contains a vector of both normal parameters (e.g. kinetic parameters like kf and kr) and input_parameters (concatenated in that order, i.e. first parameters, then inputs). If the number of columns is N, N simulations will be performed.
 * `parMap` (function) - re-mapping function to apply to parameters (e.g. to switch from a linear to a logarithmic scale)
 
 **Output** (list)
 
-List `out` whose elements correspond to a simulation for each experiment provided in the input argument `experiments`. Each element is in turn a list, with elements:
-     - `state` (numeric) - value of the approximated solution of the ODE system at each time point as the experimental measurements
-     - `func` (numeric) - value of the output at each time point as the experimental measurements
+List `out` whose elements correspond to a simulation for each
+experiment provided in the input argument `experiments`. Each element
+is in turn a list, with elements:
+- `state` (numeric) - value of the approximated solution of the ODE system at each time point as the experimental measurements
+- `func` (numeric) - value of the output at each time point as the
+  experimental measurements
 
 ### checkModel
 
 Assign a simulation file for a given model, and compile the model if necessary, check for existence:
 
-```
+```{r, eval=FALSE}
 model.sbtab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
 modelName <- checkModel(comment(model.sbtab),modelFile=NULL)
 ```
@@ -71,13 +99,17 @@ An SBtab document contains a model name, `SBtabVFGEN::sbtab_from_tsv` includes t
 
 checkModel returns this model name as supplied in the first slot, with some additional comments about the file. The user can of course pick a different model name at this point. Or circumvent this function.
 
-As an alternative to this function, it is sufficient to write 
-```
+As an alternative to this function, it is sufficient to write
+
+```{r, label="manual mode", eval=FALSE}
 modelName <- "test_ode_model"             # or some other model name
 comment(modelName) <- "test_ode_model.so" # e.g.: manually compiled
 ```
 
-This function will not attempt to find a model file, other than in the current directory. But, checkModel will compile a GSL compatible C source file into a shared object *if* `modelFile` ends with `.c` and stop if that doesn't work. 
+This function will not attempt to find a model file, other than in the
+current directory. But, checkModel will compile a GSL compatible C
+source file into a shared object *if* `modelFile` ends with `.c` and
+stop if that doesn't work.
 
 In any case, this function stops execution if the model file doesn't exist.
 
@@ -89,15 +121,18 @@ In any case, this function stops execution if the model file doesn't exist.
 The returned value is "modelName" with an additional comment about which file to use for simulations.
 
 
-### `makeObjective` 
+### `makeObjective`
 
 Creates Objective functions from ingredients (as closures)
 
-```
+```{r, eval=FALSE}
 obj <- makeObjective(experiments,modelName,distance,parMap=identity)
 ```
 
-This function creates a function `obj` (closure), that is used in the ABCMCMC parameter estimation. The created function accepts only one argument in input: a vectorial parameter or a matrix of parameters, with each column corresponding to a parameter vector. 
+This function creates a function `obj` (closure), that is used in the
+ABCMCMC parameter estimation. The created function accepts only one
+argument in input: a vectorial parameter or a matrix of parameters,
+with each column corresponding to a parameter vector.
 
 The function `obj(par)` will:
 1. apply the transformation `parMap` to each column of `par`:
@@ -109,7 +144,8 @@ The function `obj(par)` will:
 
 **Input arguements**
 * `experiments` (list) - simulation experiments
-* `modelName` (character) - model name as a string, and model storage file as comment to this variable
+* `modelName` (character) - model name as a string, and model storage
+  file as comment to this variable
 * `distance` (function) - function that calculates ABC scores, i.e. distance between experimental and simulated data
 * `parMap` (function) - a function that transforms ABC variables into acceptable model parameters (e.g. allowing to switch from linear to logarithmic scale)
 

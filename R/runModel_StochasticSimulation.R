@@ -1,10 +1,13 @@
 #' Splits a formula into a left and right side
 #'
 #' This function splits a reaction formulka apart into its parts,
-#' removing whitespace on each side: "A + 2*B <=> AB2" will be split
+#' removing whitespace on each side: `"A + 2 B <=> AB2"` will be split
 #' into a list with two entries
+#'
+#' ```
 #' list$reactants == c("A","2*B")
 #' list$products == c("AB2")
+#' ```
 #'
 #' @param string - reactionFormula
 #' @return a named list with a forward component and a backward
@@ -21,19 +24,15 @@ parse.formula <- function(reactionFormula){
 #' A reaction formula has reactants and products, separated by <=>,
 #' with reactants on the left and products on the right (by convention).
 #' Each of those is a plus separated list of reacting compounds and
-#' modifiers, with optional coefficients, e.g.: A + 2*B <=> AB2
+#' modifiers, with optional coefficients, e.g.: `A + 2 B <=> AB2`
 #'
 #' Once the formula is split into left and right side, this function
 #' determines the coefficients. For the above example, this function
-#' returns c(1,2) for the left side and 1 for the right side.
+#' returns `c(1,2)` for the left side and 1 for the right side.
 #'
 #' @return coefficients, as a vector
 #' @param chrv a character vector as returned by parse.formula
-#' @examples lapply(parse.formula("A + 2*B <=> AB2"),match.coefficients)
-#' # $reactants
-#' # [1] 1 2
-#' # $products
-#' # [1] 1
+#' @examples lapply(uqsa:::parse.formula("A + 2*B <=> AB2"),uqsa:::match.coefficients)
 match.coefficients <- function(chrv){
 	cf <- numeric(length(chrv))
 	l <- grepl("^[0-9]+",chrv) # leading numbers exist
@@ -44,23 +43,20 @@ match.coefficients <- function(chrv){
 
 #' Find the variable names in a formula
 #'
-#' A reaction formula has reactants and products, separated by <=>,
+#' A reaction formula has reactants and products, separated by `<=>`,
 #' with reactants on the left and products on the right (by convention).
 #' Each of those is a plus separated list of reacting compounds and
-#' modifiers, with optional coefficients, e.g.: A + 2*B <=> AB2
+#' modifiers, with optional coefficients, e.g.: `A + 2 B <=> AB2`
 #'
 #' Once the formula is split into left and right side, this function
 #' determines the names. For the above example, this function
-#' returns c("A","B") for the left side and "AB2" for the right side.
+#' returns `c("A","B")` for the left side and `"AB2"` for the right side.
 #'
 #' @return coefficients, as a vector
 #' @param chrv a character vector as returned by parse.formula
-#' @examples lapply(parse.formula("A + 2*B <=> AB2"),match.names)
-#' lapply(parse.formula("A + 2*B <=> AB2"),match.names)
-#' # $reactants
-#' # [1] "A" "B"
-#' # $products
-#' # [1] "AB2"
+#' @examples
+#' lapply(uqsa:::parse.formula("A + 2*B <=> AB2"),uqsa:::match.names)
+#' lapply(uqsa:::parse.formula("A + 2*B <=> AB2"),uqsa:::match.names)
 match.names <- function(chrv){
 	vn <- character(length(chrv))
 	l <- grepl("^[0-9]+",chrv) # leading numbers exist
@@ -77,19 +73,21 @@ match.names <- function(chrv){
 #' But for mass action kinetics, and positive reaction rate
 #' coefficients, the expressions mostly look like this:
 #'
+#' ```
 #' kf*prod(reactants.concentration) - kb*prod(product.concentrations)
+#' ```
 #'
-#' this functions splits at '-', and if none is present, then the
+#' this functions splits at `-`, and if none is present, then the
 #' reaction is assumed to be irreversible.
 #'
-#' In a more general setting (where the '-' split is wrong),
+#' In a more general setting (where the `-` split is wrong),
 #' the splitting has to be done by hand or more complex rules.
 #' @param reactionKinetic a string with the kinetic law for a reaction
 #' @return a character vector of components named 'forward' and 'backward'
 #' @examples
-#'  parse.kinetic("kf*A*B-kb*C")
-#'  parse.kinetic("kf*A*B")
-#'  parse.kinetic("kf*A/(Km+A)")
+#'  uqsa:::parse.kinetic("kf*A*B-kb*C")
+#'  uqsa:::parse.kinetic("kf*A*B")
+#'  uqsa:::parse.kinetic("kf*A/(Km+A)")
 parse.kinetic <- function(reactionKinetic){
 	if (grepl("^[^-]*-[^-]*$",reactionKinetic)){
 		rates<-ftsplit(reactionKinetic,"-")
@@ -100,11 +98,11 @@ parse.kinetic <- function(reactionKinetic){
 	return(rates)
 }
 
-#' convert ODE parameter to Gillespie parameter
+#' Convert ODE parameter to Gillespie parameter
 #'
 #' ODE parameters usually have a different unit of measurement than
 #' the parameters we need for stochastic simulators.  ODEs have
-#' fluxes, which are in multiples of M/s (M is mol/liter), same unit
+#' fluxes, which are in multiples of `M/s` (M is mol/liter), same unit
 #' as the first derivative of the state variables.
 #'
 #' The reaction rate coefficients of mass action kinetics, kf and kb
@@ -114,14 +112,14 @@ parse.kinetic <- function(reactionKinetic){
 #'
 #' @param k the ODE reaction rate coefficient (mandatory)
 #' @param n multiplicity of each reactant, if any (order > 0); omit for zero-order
-#' @param LV L*V -- product of _Avogadro's number_ and _volume_ [defaults to 6.02214076e+8]
+#' @param LV `L*V` -- product of _Avogadro's number_ and _volume_ [defaults to 6.02214076e+8]
 #' @return rescaled parameter for stochastic simulation with a comment of how to re-scale it
 #' @examples # reaction: "2 A + B -> C"
 #' k <- 1.0
 #' attr(k,'unit') <- "µM/s"
 #' n <- c(2,1)
 #' reactants <- c('A','B')
-#' convert.parameter(k,n)
+#' uqsa:::convert.parameter(k,n)
 convert.parameter <- function(k, n=0, LV=6.02214076e+8){
 	order <- sum(n)
 	if (!is.null(attr(k,'unit'))){
@@ -146,8 +144,8 @@ convert.parameter <- function(k, n=0, LV=6.02214076e+8){
 #' units of a general formula (Michaelis Menten, Hill kinetics, etc.)
 #' is difficult and dubious in stochastic simulations.
 #'
-#' For these reasons, this functions assumes: "kf*A*B*[...]" with the
-#' first word "kf" representing the reaction rate coefficient.
+#' For these reasons, this functions assumes: `kf*A*B*[...]` with the
+#' first word `kf` representing the reaction rate coefficient.
 #'
 #' Given an SBtab document, this function finds the value (if any) and
 #' unit of this coefficient. The coefficient itself can be defined as
@@ -155,7 +153,7 @@ convert.parameter <- function(k, n=0, LV=6.02214076e+8){
 #' document. The most important attribute here is the unit.
 #'
 #' @param kineticLaw a string with a mathematical formula
-#' @param tab an SBtab document, as returned by SBtabVFGEN::sbtab_from_tsv()
+#' @param tab an SBtab document, as returned by `SBtabVFGEN::sbtab_from_tsv()`
 #' @return a parameter with value, and unit as attribute
 parameter.from.kinetic.law <- function(kineticLaw,tab){
 	if (kineticLaw == "0") return(0)
@@ -192,7 +190,7 @@ parameter.from.kinetic.law <- function(kineticLaw,tab){
 #'
 #' The propensity coefficient translates between
 #'
-#' @param conv.coeff propensity conversion coefficient: conv.coeff*kinetic.law = propensity function
+#' @param conv.coeff propensity conversion coefficient: `conv.coeff*kinetic.law = propensity function`
 #' @param kinetic.law the kinetic law of this reaction (as used with ODEs)
 #' @param rExpressions named math expressions that appear in the kinetic.law of this reaction
 #' @return a string representation of the propensity function
@@ -208,7 +206,7 @@ propensity <- function(conv.coeff,kinetic.law,rExpressions){
 #' Create a list of reactions for GillespieSSA2
 #'
 #' This function takes a series of SBtab tables, as returned by
-#' SBtabVFGEN::sbtab_from_tsv() and creates GillespieSSA2 reactions
+#' `SBtabVFGEN::sbtab_from_tsv()` and creates GillespieSSA2 reactions
 #' from them. Reactions arfe made pairwise, as forward and backward
 #' reaction pairs. If a backward reaction doesn't exist, the list item
 #' is NULL. A valid set of reactions can be obtained with `!is.null(reactions)`
@@ -221,11 +219,11 @@ propensity <- function(conv.coeff,kinetic.law,rExpressions){
 #'     approximate sizes of bacteria or synapses)
 #' @return a list of reactions
 #' @examples
-#'  model.tsv<-dir(pattern="[.]tsv$")
-#'  model.sbtab<-SBtabVFGEN::sbtab_from_tsv(model.tsv)
-#'  reactions<-makeGillespieModel(model.sbtab)
-#'  l<-is.null(reactions)
-#'  model.ssa2<-reactions[!l]
+#'  # model.tsv <- dir(pattern="[.]tsv$")
+#'  # model.sbtab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
+#'  # reactions <- makeGillespieModel(model.sbtab)
+#'  # l <- is.null(reactions)
+#'  # model.ssa2 <- reactions[!l]
 makeGillespieModel <- function(SBtab,LV=NULL,strip.null=TRUE){
 	stopifnot("Reaction" %in% names(SBtab))
 	stopifnot("Compound" %in% names(SBtab))

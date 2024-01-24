@@ -53,8 +53,10 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
+    <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4</a>
+    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Make a Shared Library</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -134,21 +136,6 @@
         <dd>Functions to construct and run the stochastic simulation using GillespieSSA2 package</dd>
       </dl><dl><dt>
           
-          <code><a href="import_experiments.html">import_experiments()</a></code> 
-        </dt>
-        <dd>Reads the Data and Model Contained in an SBtab Document (tsv)</dd>
-      </dl><dl><dt>
-          
-          <code><a href="import_from_SBtab.html">import_from_SBtab()</a></code> 
-        </dt>
-        <dd>Import Systems Biology Models given in Tabular Form</dd>
-      </dl><dl><dt>
-          
-          <code><a href="makeAcceptanceProbability.html">makeAcceptanceProbability()</a></code> 
-        </dt>
-        <dd>Ths function Creates an acceptanceProbability function</dd>
-      </dl><dl><dt>
-          
           <code><a href="makeGillespieModel.html">makeGillespieModel()</a></code> 
         </dt>
         <dd>Create a list of reactions for GillespieSSA2</dd>
@@ -199,11 +186,6 @@
         <dd>rUniformPrior returns a random vector generator</dd>
       </dl><dl><dt>
           
-          <code><a href="runModel.html">runModel()</a></code> 
-        </dt>
-        <dd>Simulate an Experiment using the named ODE Model</dd>
-      </dl><dl><dt>
-          
           <code><a href="sensitivity.html">sensitivity()</a></code> 
         </dt>
         <dd>Global Sensitivity Analysis</dd>
@@ -214,14 +196,9 @@
         <dd>plot the sensitivity matrix</dd>
       </dl><dl><dt>
           
-          <code><a href="simulator.R.html">simulator.R()</a></code> 
-        </dt>
-        <dd>This creates a closure that simulates the model</dd>
-      </dl><dl><dt>
-          
           <code><a href="simulator.c.html">simulator.c()</a></code> 
         </dt>
-        <dd>This creates a closure that simulates the model</dd>
+        <dd>This creates a closure that simulates Experiments using the ODE Model</dd>
       </dl><dl><dt>
           
           <code><a href="uqsa_example.html">uqsa_example()</a></code> 
@@ -242,7 +219,7 @@
           
           <code><a href="convert.parameter.html">convert.parameter()</a></code> 
         </dt>
-        <dd>convert ODE parameter to Gillespie parameter</dd>
+        <dd>Convert ODE parameter to Gillespie parameter</dd>
       </dl><dl><dt>
           
           <code><a href="match.coefficients.html">match.coefficients()</a></code> 

@@ -7,7 +7,7 @@
 makeIndepCopula(ll, ul)
 }
 \arguments{
-\item{ll}{ll[i] is the lower limit of random variable x[i]}
+\item{ll}{\code{ll[i]} is the lower limit of random variable \code{x[i]}}
 
 \item{ul}{upper limit, analogous to ll.}
 }
@@ -15,6 +15,6 @@ makeIndepCopula(ll, ul)
 list with: copula, U, Z, and Y entries.
 }
 \description{
-Covers the (simpler) special case where the prior(x) is iid uniform.
-The return value has the same structure as the value of fitCopula().
+Covers the (simpler) special case where the \code{prior(x)} is iid uniform.
+The return value has the same structure as the value of \code{fitCopula()}.
 }

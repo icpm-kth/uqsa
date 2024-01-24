@@ -9,7 +9,7 @@ parameter.from.kinetic.law(kineticLaw, tab)
 \arguments{
 \item{kineticLaw}{a string with a mathematical formula}
 
-\item{tab}{an SBtab document, as returned by SBtabVFGEN::sbtab_from_tsv()}
+\item{tab}{an SBtab document, as returned by \code{SBtabVFGEN::sbtab_from_tsv()}}
 }
 \value{
 a parameter with value, and unit as attribute
@@ -22,8 +22,8 @@ units of a general formula (Michaelis Menten, Hill kinetics, etc.)
 is difficult and dubious in stochastic simulations.
 }
 \details{
-For these reasons, this functions assumes: "kf*A*B*[...]" with the
-first word "kf" representing the reaction rate coefficient.
+For these reasons, this functions assumes: \verb{kf*A*B*[...]} with the
+first word \code{kf} representing the reaction rate coefficient.
 
 Given an SBtab document, this function finds the value (if any) and
 unit of this coefficient. The coefficient itself can be defined as

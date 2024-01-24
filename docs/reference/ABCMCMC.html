@@ -43,6 +43,8 @@ posterior probability density of the given problem."><!-- mathjax --><script src
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="../articles/data.html">Importing data</a>
     <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
     <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
@@ -55,8 +57,10 @@ posterior probability density of the given problem."><!-- mathjax --><script src
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
+    <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4</a>
+    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Make a Shared Library</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -88,20 +92,19 @@ posterior probability density of the given problem.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ABCMCMC</span><span class="op">(</span></span>
-<span>  objectiveFunction <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">startPar</span>,</span>
-<span>  <span class="va">nSims</span>,</span>
-<span>  <span class="va">Sigma0</span>,</span>
-<span>  <span class="va">delta</span>,</span>
-<span>  <span class="va">dprior</span>,</span>
-<span>  acceptanceProbability <span class="op">=</span> <span class="cn">NULL</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ABCMCMC</span><span class="op">(</span><span class="va">objectiveFunction</span>, <span class="va">startPar</span>, <span class="va">nSims</span>, <span class="va">Sigma0</span>, <span class="va">delta</span>, <span class="va">dprior</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>startPar</dt>
+    <dl><dt>objectiveFunction</dt>
+<dd><p>function that, given a (vectorial)
+parameter as input, simulates the model, and outputs the
+distance between experimental data and data simulated from the
+model with the parameter provided in input</p></dd>
+
+
+<dt>startPar</dt>
 <dd><p>starting value for the parameter vector</p></dd>
 
 
@@ -122,35 +125,13 @@ transition kernel</p></dd>
 <dd><p>a function that returns prior probability density
 values</p></dd>
 
-
-<dt>experiments</dt>
-<dd><p>a list of experiments</p></dd>
-
-
-<dt>modelName</dt>
-<dd><p>model functions will be assumed to have this
-prefix (comment(modelName) can contain a file-name)</p></dd>
-
-
-<dt>parMap</dt>
-<dd><p>re-mapping function between the ABC MCMC variables and model
-parameters</p></dd>
-
-
-<dt>getScore</dt>
-<dd><p>a function(model_output,experiment) that returns
-scores</p></dd>
-
-
-<dt>nCores</dt>
-<dd><p>setting for multicore package</p></dd>
-
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>a list containing a sample matrix and a vector of scores (values of delta for each sample)</p>
+<p>a list containing a sample matrix and a vector of scores
+(values of delta for each sample)</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

@@ -2,7 +2,7 @@
 % Please edit documentation in R/runModel_StochasticSimulation.R
 \name{convert.parameter}
 \alias{convert.parameter}
-\title{convert ODE parameter to Gillespie parameter}
+\title{Convert ODE parameter to Gillespie parameter}
 \usage{
 convert.parameter(k, n = 0, LV = 602214076)
 }
@@ -11,7 +11,7 @@ convert.parameter(k, n = 0, LV = 602214076)
 
 \item{n}{multiplicity of each reactant, if any (order > 0); omit for zero-order}
 
-\item{LV}{L*V -- product of _Avogadro's number_ and _volume_ [defaults to 6.02214076e+8]}
+\item{LV}{\code{L*V} -- product of \emph{Avogadro's number} and \emph{volume} \link{defaults to 6.02214076e+8}}
 }
 \value{
 rescaled parameter for stochastic simulation with a comment of how to re-scale it
@@ -19,7 +19,7 @@ rescaled parameter for stochastic simulation with a comment of how to re-scale i
 \description{
 ODE parameters usually have a different unit of measurement than
 the parameters we need for stochastic simulators.  ODEs have
-fluxes, which are in multiples of M/s (M is mol/liter), same unit
+fluxes, which are in multiples of \code{M/s} (M is mol/liter), same unit
 as the first derivative of the state variables.
 }
 \details{
@@ -34,5 +34,5 @@ k <- 1.0
 attr(k,'unit') <- "µM/s"
 n <- c(2,1)
 reactants <- c('A','B')
-convert.parameter(k,n)
+uqsa:::convert.parameter(k,n)
 }

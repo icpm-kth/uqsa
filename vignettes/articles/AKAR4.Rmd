@@ -3,7 +3,7 @@ title: "AKAR4"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
+knitr::opts_chunk$set(cache = TRUE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -89,37 +89,23 @@ parMap <- function (parABC=0) {
 ```
 
 The ODE model receives a parameter vector `p` for each experiment. It
-consists of the biological model parameters (which are the same fro
+consists of the biological model parameters (which are the same for
 all experiments), and input parameters (which together with initial
-conditions distinguish the experimental setups). These two different
-kinds of parameters are concatenated into one big numeric vector
-inside of the solver. The model function `AKAR4_default()` returns the
-default values for `p`.
-
-In SBtab, we make a clear distinction between the two: biological
-paramteters go into the `SBtab$Parameter` table, while input
-parameters can be found in `SBtab$Input`. The input values are
-adjusted in the rows of the `SBtab$Experiments` table. The ODE model
-makes no such distinction, the ODE parameters are a dirct sum of the
-two: `odePar <- c(SBtab$Parameter,SBtab$Input)`. But, only the
-biological parameters are unknown, so we sample that subset.
-
-We use the SBtab information to determine the length of the biological
-parameters `numPar` and shorten the value of default parameter values
-in `SBtab` to start sampling:
-
-```{r, "starting value"}
-numPar <- nrow(SBtab$Parameter)
-parNames <- row.names(SBtab$Parameter)
-parVal <- model$par()[1:numPar]
-```
+conditions distinguish the experimental setups). This model deosn't
+have input parameters, so the biological and ODE parameters are the
+same. Otherwise, two different kinds of parameters are concatenated into
+one big numeric vector inside of the solver. The model function
+`AKAR4_default()` returns the default values for `p`.
 
 Next, we load the list of experiments from the same list of `data.frames` (SBtab content):
 ```{r, "load-experiments"}
 experiments <- sbtab.data(SBtab)
+parVal <- AKAR4_default()
+print(parVal)
 ```
 
-Define lower and upper limits for log-uniform prior distribution for the parameters:
+Define lower and upper limits for log-uniform prior distribution for
+the parameters:
 
 ```{r limits}
 ll <- log10(parVal) - 3
@@ -130,7 +116,7 @@ Define Number of Samples for the pre-calibration `npc` and each
 ABC-MCMC chain `ns`. During ABC, we save every 100-th point, so `work(nChains*ns*100) ≈ work(npc)`:
 
 ```{r sample-size}
-ns <- 800   # ABC-MCMC sample size
+ns <- 800    # ABC-MCMC sample size
 npc <- 50000 # pre-calibration size
 ```
 

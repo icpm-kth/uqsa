@@ -8,9 +8,12 @@
 #' @param Copula a list, as returned by fitCopula() or makeIndepCopula
 #' @return a function that maps parameters (a vector) to probability density values (scalar)
 #' @examples
-#' prior_pdf<-dCopulaPrior(makeIndepCopula(ll=c(-1,-1,-1),ul=c(1,1,1)))
-#' prior_pdf(runif(3))
-#' # 0.125
+#' x<-rnorm(300,mean=1,sd=2)
+#' X<-matrix(x,100,3)
+#' C<-fitCopula(X)
+#' d<-dCopulaPrior(C)
+#' print(d(c(1,2,3)))
+#' print(prod(sapply(c(1,2,3),FUN=dnorm,mean=1,sd=2)))
 dCopulaPrior <- function(Copula){
 	U <- Copula$U
 	Y <- Copula$Y
@@ -44,9 +47,6 @@ dCopulaPrior <- function(Copula){
 #' @export
 #' @param Copula the return value of fitCopula()
 #' @return a matrix of random values
-#' @examples
-#' rcp<-rCopulaPrior(makeIndepCopula(ll=c(0,1,2),ul=c(1,2,3)))
-#' rcp(12)
 rCopulaPrior <- function(Copula){
   copula <- Copula$copula
   Z <- Copula$Z

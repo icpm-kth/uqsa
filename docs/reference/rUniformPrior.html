@@ -47,6 +47,8 @@ function."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="../articles/data.html">Importing data</a>
     <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
     <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
@@ -59,8 +61,10 @@ function."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
+    <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4</a>
+    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Make a Shared Library</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -113,7 +117,7 @@ ll)</p></dd>
     
 
 <p>a uniform random vector generating function: runiform(n),
-    where n is the requested number of vectors (rows)</p>
+where n is the requested number of vectors (rows)</p>
     </div>
 
     <div class="section level2">
@@ -121,18 +125,18 @@ ll)</p></dd>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">rup</span><span class="op">&lt;-</span><span class="fu">rUniformPrior</span><span class="op">(</span>ll<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,ul<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rup</span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]     [,2]     [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.64463328 1.823656 2.597116</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.81844701 1.550507 2.952888</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.64502009 1.037555 2.053684</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.83277307 1.429557 2.314386</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.77640402 1.956630 2.771158</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.94463549 1.336602 2.359605</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.43169311 1.090258 2.091858</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.92716681 1.636935 2.200737</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.37841780 1.064870 2.192048</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.07804297 1.306617 2.489453</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.74236177 1.860970 2.613310</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.61732551 1.991370 2.678518</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.57783680 1.077161 2.563714</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.01073836 1.383729 2.971595</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.25232037 1.649847 2.932947</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.13358668 1.293940 2.548415</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.04878548 1.081327 2.664992</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.19122636 1.049237 2.699919</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.36572511 1.604934 2.023715</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.19512909 1.635678 2.706324</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.98366377 1.627327 2.149201</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.12553582 1.729130 2.011833</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.77975200 1.225725 2.528025</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.66882215 1.126497 2.134426</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

@@ -2,7 +2,7 @@
 # Copyright (C) 2022 Federica Milinanni (fedmil@kth.se)
 
 #' This creates a closure that simulates Experiments using the ODE Model
-#' 
+#'
 #' Simulation experiments consist at least of initial values for the
 #' state variables, a parameter vector, and a list of times at which
 #' the solution needs to be known.
@@ -39,13 +39,13 @@
 #' @export
 #' @return a closure that returns the model's output for a given parameter vector
 #' @examples
-#'    model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
-#'    experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
-#'    parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
+#' #   model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
+#' #   experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
+#' #   parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 #'
-#'    modelName <- checkModel("<insert_model_name>_gvf.c")
-#'    simulate <- simulator.c(experiments, modelName,  parABC)
-#'    yf <- sim(parABC)
+#' #   modelName <- checkModel("<insert_model_name>_gvf.c")
+#' #   simulate <- simulator.c(experiments, modelName,  parABC)
+#' #   yf <- sim(parABC)
 simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE){
   require(rgsl)
   ## simulator:
@@ -79,16 +79,22 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE){
 #' about the file
 #'
 #' As an alternative to this function, it is sufficient to write
+#'
+#' ```
 #' modelName <- "test_ode_model"             # or some other model name
-#' comment(modelName) <- "test_ode_model.so" # or .R
+#' comment(modelName) <- "test_ode_model.so"
+#' ```
 #'
 #' This function will not attempt to find a model file, other than in
-#' the current directory. But, checkModel will compile a GSL
-#' compatible C source file into a shared object if modelFile ends
-#' with `.c` and stop if that doesn't work.
+#' the current directory. But, `checkModel` will compile a GSL
+#' compatible C source file into a shared object if `modelFile` ends
+#' with `.c` and stop if that doesn't work. The compiler is called
+#' using a system call, which may be incorrect for your system -- if
+#' this funciton fails, you'll have to make the shared library of the
+#' model using the correct compiler and options for your system.
 #'
 #' In any case, this function stops execution if the model file
-#' doesn't exist.
+#' doesn't exist, because simulations are not possible.
 #'
 #' @export
 #' @param modelName a string
@@ -127,8 +133,8 @@ checkModel <- function(modelName,modelFile=NULL){
 
 #' creates Objective functions from ingredients
 #'
-#' the returned objective function has only one argument (the ABC
-#' parameters)
+#' the returned objective function has only one argument: the ABC
+#' variables that shall be mapped to ODE-model parameters.
 #'
 #' @export
 #' @param experiments a list of simulation experiments

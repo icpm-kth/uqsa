@@ -41,6 +41,8 @@ not possible to tell apart which part of a kinetic law is which."><!-- mathjax -
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="../articles/data.html">Importing data</a>
     <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
     <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
@@ -53,8 +55,10 @@ not possible to tell apart which part of a kinetic law is which."><!-- mathjax -
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
+    <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4</a>
+    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Make a Shared Library</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -103,22 +107,25 @@ not possible to tell apart which part of a kinetic law is which.</p>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>But for mass action kinetics, and positive reaction rate
-coefficients, the expressions mostly look like this:</p>
-<p>kf*prod(reactants.concentration) - kb*prod(product.concentrations)</p>
-<p>this functions splits at '-', and if none is present, then the
+coefficients, the expressions mostly look like this:</p><div class="sourceCode"><pre><code><span><span class="va">kf</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/prod.html" class="external-link">prod</a></span><span class="op">(</span><span class="va">reactants.concentration</span><span class="op">)</span> <span class="op">-</span> <span class="va">kb</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/prod.html" class="external-link">prod</a></span><span class="op">(</span><span class="va">product.concentrations</span><span class="op">)</span></span></code></pre></div>
+
+<p>this functions splits at <code>-</code>, and if none is present, then the
 reaction is assumed to be irreversible.</p>
-<p>In a more general setting (where the '-' split is wrong),
+<p>In a more general setting (where the <code>-</code> split is wrong),
 the splitting has to be done by hand or more complex rules.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span> <span class="fu">parse.kinetic</span><span class="op">(</span><span class="st">"kf*A*B-kb*C"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in parse.kinetic("kf*A*B-kb*C"):</span> could not find function "parse.kinetic"</span>
-<span class="r-in"><span> <span class="fu">parse.kinetic</span><span class="op">(</span><span class="st">"kf*A*B"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in parse.kinetic("kf*A*B"):</span> could not find function "parse.kinetic"</span>
-<span class="r-in"><span> <span class="fu">parse.kinetic</span><span class="op">(</span><span class="st">"kf*A/(Km+A)"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in parse.kinetic("kf*A/(Km+A)"):</span> could not find function "parse.kinetic"</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span> <span class="fu">uqsa</span><span class="fu">:::</span><span class="fu">parse.kinetic</span><span class="op">(</span><span class="st">"kf*A*B-kb*C"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  forward backward </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> "kf*A*B"   "kb*C" </span>
+<span class="r-in"><span> <span class="fu">uqsa</span><span class="fu">:::</span><span class="fu">parse.kinetic</span><span class="op">(</span><span class="st">"kf*A*B"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  forward backward </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> "kf*A*B"      "0" </span>
+<span class="r-in"><span> <span class="fu">uqsa</span><span class="fu">:::</span><span class="fu">parse.kinetic</span><span class="op">(</span><span class="st">"kf*A/(Km+A)"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       forward      backward </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> "kf*A/(Km+A)"           "0" </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

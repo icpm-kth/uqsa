@@ -27,6 +27,6 @@ makeObjective(
 an objective function
 }
 \description{
-the returned objective function has only one argument (the ABC
-parameters)
+the returned objective function has only one argument: the ABC
+variables that shall be mapped to ODE-model parameters.
 }

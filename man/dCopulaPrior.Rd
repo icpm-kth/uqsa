@@ -17,7 +17,10 @@ This function accepts the return list of fitCopula() or
 makeIndepCopula() and creates a density function from it.
 }
 \examples{
-prior_pdf<-dCopulaPrior(makeIndepCopula(ll=c(-1,-1,-1),ul=c(1,1,1)))
-prior_pdf(runif(3))
-# 0.125
+x<-rnorm(300,mean=1,sd=2)
+X<-matrix(x,100,3)
+C<-fitCopula(X)
+d<-dCopulaPrior(C)
+print(d(c(1,2,3)))
+print(prod(sapply(c(1,2,3),FUN=dnorm,mean=1,sd=2)))
 }

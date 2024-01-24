@@ -23,7 +23,10 @@
 #' then transitions to MCMC sampling.
 #'
 #' @export
-#' @param objectiveFunction function that, given a (vectorial) parameter as input, simulates the model, and outputs the distance between experimental data and data simulated from the model with the parameter provided in input
+#' @param objectiveFunction function that, given a (vectorial)
+#'     parameter as input, simulates the model, and outputs the
+#'     distance between experimental data and data simulated from the
+#'     model with the parameter provided in input
 #' @param startPar starting value for the parameter vector
 #' @param nSims requested sample size
 #' @param Sigma0 multivariate normal covariance of Markov chain
@@ -31,7 +34,8 @@
 #' @param delta ABC acceptance threshold
 #' @param dprior a function that returns prior probability density
 #'     values
-#' @return a list containing a sample matrix and a vector of scores (values of delta for each sample)
+#' @return a list containing a sample matrix and a vector of scores
+#'     (values of delta for each sample)
 ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior){
   cat("Started chain.\n")
   Sigma1 <- 0.25*diag(diag(Sigma0))
@@ -104,7 +108,10 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior){
 #' parameters are updated to new values.
 #'
 #' @export
-#' @param objectiveFunction function that, given a (vectorial) parameter as input, simulates the model, and outputs the distance between experimental data and data simulated from the model with the parameter provided in input
+#' @param objectiveFunction function that, given a (vectorial)
+#'     parameter as input, simulates the model, and outputs the
+#'     distance between experimental data and data simulated from the
+#'     model with the parameter provided in input
 #' @param curPar current parameter values (as ABC samples them)
 #' @param canPar candidate parameter values (for MCMC)
 #' @param curDelta current distance between data and simulation, if
@@ -146,7 +153,10 @@ parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, del
 #'
 #' @export
 #' @param draws matrix of sampled values (to be filtered).
-#' @param objectiveFunction function that, given a (vectorial) parameter as input, simulates the model, and outputs the distance between experimental data and data simulated from the model with the parameter provided in input
+#' @param objectiveFunction function that, given a (vectorial)
+#'     parameter as input, simulates the model, and outputs the
+#'     distance between experimental data and data simulated from the
+#'     model with the parameter provided in input
 #' @param delta the acceptance threshold.
 #' @return a filtered subset of acceptable parameter draws
 checkFitWithPreviousExperiments <- function(draws, objectiveFunction, delta){

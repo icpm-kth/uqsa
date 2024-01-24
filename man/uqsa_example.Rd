@@ -4,7 +4,12 @@
 \alias{uqsa_example}
 \title{Load an example model for this package}
 \usage{
-uqsa_example(modelName = NULL, full.names = TRUE, pat = "[.]tsv$", f = NULL)
+uqsa_example(
+  modelName = NULL,
+  full.names = TRUE,
+  pattern = "[.]tsv$",
+  f = NULL
+)
 }
 \arguments{
 \item{modelName}{name of model, e.g.: "AKAR4", "AKAP79", "CaMKII";
@@ -12,17 +17,16 @@ if empty, this function lists all available examples.}
 
 \item{full.names}{return full paths to files - defaults to TRUE}
 
-\item{pat}{pattern to find specific files; if NULL, this function
+\item{pattern}{pattern to find specific files; if \code{NULL}, this function
 returns the directory of the example}
 
-\item{f}{alternatively, pat can be set to files ending in f [this
-value]}
+\item{f}{file ending, search for file endings in \code{f}, alternative to \code{pattern}}
 }
 \value{
 The location of the examples in the current environment if
-    called with no arguments, the paths to the model files if a
-    modelName was provided or the full path to the example if the
-    file pattern _pat_ is unset
+called with no arguments, the paths to the model files if a
+modelName was provided or the full path to the example if the
+file pattern \emph{pattern} is unset
 }
 \description{
 This function finds the path to an example model, given by name.
@@ -37,6 +41,7 @@ directory).
 }
 \examples{
 uqsa_example()
-uqsa_example("AKAR4")
-uqsa_example("AKAR4",pat=NULL)
+uqsa_example("AKAR4",full.names=FALSE)
+uqsa_example("AKAP79",f='R',full.names=FALSE)
+uqsa_example("AKAP79",pat="^run.*R$")
 }
