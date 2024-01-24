@@ -14,6 +14,7 @@ options(mc.cores=4)
 SBtabDir <- getwd()
 #model = import_from_SBtab(SBtabDir)
 model.tsv <- uqsa_example("AKAR4",full.names=TRUE) 
+source(uqsa_example("AKAR4",pat = "^AKAR4[.]R",full.names=TRUE)) # model is loaded
 model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
 modelName <- checkModel(comment(model.tab),"./AKAR4_gvf.c")
 
@@ -22,8 +23,8 @@ parNames <- model.tab[["Parameter"]][["!Name"]]
 names(parVal) <- parNames
 
 # load experiments
-experiments <- import_experiments(modelName, SBtabDir)
-#experiments <- SBtabVFGEN::sbtab.data(model.tab)
+#experiments <- import_experiments(modelName, SBtabDir)
+experiments <- SBtabVFGEN::sbtab.data(model.tab)
 
 # scale to determine prior values
 defRange <- 1000
@@ -83,7 +84,7 @@ i<-1
 #for (i in seq(length(chunks))){
   expInd <- chunks[[i]]
   cat("#####Starting run for Experiments ", expInd, "######\n")
-  objectiveFunction <- makeObjectiveSSA(experiments[expInd],parNames,distanceMeasure,parMap, Phi, compiled_reactions, nStochSim = 3)
+  objectiveFunction <- makeObjectiveSSA(experiments[expInd], model, parNames,distanceMeasure,parMap, Phi, compiled_reactions, nStochSim = 3)
   ## If First Experimental Setting, Create an Independente Colupla
   if(i==1){
     cat(sprintf("- Starting with uniform prior \n"))
@@ -151,21 +152,21 @@ i<-1
   cat("\nRegularizations:", ABCMCMCoutput$nRegularizations)
   cat("\nAcceptance rate:", ABCMCMCoutput$acceptanceRate)
   
-  
-  # if (i>1){
-  #   draws$draws <- checkFitWithPreviousExperiments(draws$draws, objectiveFunction, delta)
-  # }
-  # # Save Resulting Samples to MATLAB and R files.
-  # cat("-Saving sample \n")
-  # outFile <- paste(seq(1,i), collapse="_")
-  # timeStr <- Sys.time()
-  # timeStr <- gsub(":","_", timeStr)
-  # timeStr <- gsub(" ","_", timeStr)
-  # outFileR <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
-  # if (require("R.matlab")){
-  #   outFileM <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
-  # }
-  #save(draws, parNames, file=outFileR)
+
+  if (i>1){
+    draws$draws <- checkFitWithPreviousExperiments(draws$draws, objectiveFunction, delta)
+  }
+  # Save Resulting Samples to MATLAB and R files.
+  cat("-Saving sample \n")
+  outFile <- paste(seq(1,i), collapse="_")
+  timeStr <- Sys.time()
+  timeStr <- gsub(":","_", timeStr)
+  timeStr <- gsub(" ","_", timeStr)
+  outFileR <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
+  if (require("R.matlab")){
+    outFileM <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
+  }
+  save(draws, parNames, file=outFileR)
 #}
 end_time = Sys.time()
 time_ = end_time - start_time
@@ -173,53 +174,53 @@ cat("Total time:")
 print(time_)
 
 #### PLOT RESTULTS FOR AKAR4
-par(mfrow=c(2,3))
-for(i in 1:3){
-  hist(ABCMCMCoutput$draws[,i], main=parNames[i], xlab = "Value in log scale")
-}
-combinePar <- list(c(1,2), c(1,3), c(2,3))
-for(i in combinePar){
-  plot(ABCMCMCoutput$draws[,i[1]], ABCMCMCoutput$draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
-}
+# par(mfrow=c(2,3))
+# for(i in 1:3){
+#   hist(ABCMCMCoutput$draws[,i], main=parNames[i], xlab = "Value in log scale")
+# }
+# combinePar <- list(c(1,2), c(1,3), c(2,3))
+# for(i in combinePar){
+#   plot(ABCMCMCoutput$draws[,i[1]], ABCMCMCoutput$draws[,i[2]], xlab = parNames[i[1]], ylab = parNames[i[2]])
+# }
 
 
 #### PLOT SIMULATIONS FROM DRAWS
-simulateSSA <- function(e, param, nStochSim){
-  avgOutput <- rep(0, length(e[["outputTimes"]]))
-  for(i in 1:nStochSim){
-    out_ssa <- GillespieSSA2::ssa(
-      initial_state = ceil(e[["initialState"]]*Phi),
-      reactions = compiled_reactions,
-      params = c(parMap(param), Phi=Phi),
-      final_time = max(e[["outputTimes"]]),
-      method = ssa_exact(),
-      verbose = FALSE,
-      log_propensity = TRUE,
-      log_firings = TRUE,
-      census_interval = 0.001,
-      sim_name = modelName)
-    
-    # out$state is a matrix of dimension (time points)x(num compounds)
-    output <- apply(out_ssa$state/Phi, 1, e[["outputFunction"]])
-    interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
-    interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
-    avgOutput <- avgOutput + interpOutput$y
-  }
-  avgOutput <- avgOutput/nStochSim
-  return(avgOutput)
-}
+# simulateSSA <- function(e, param, nStochSim){
+#   avgOutput <- rep(0, length(e[["outputTimes"]]))
+#   for(i in 1:nStochSim){
+#     out_ssa <- GillespieSSA2::ssa(
+#       initial_state = ceil(e[["initialState"]]*Phi),
+#       reactions = compiled_reactions,
+#       params = c(parMap(param), Phi=Phi),
+#       final_time = max(e[["outputTimes"]]),
+#       method = ssa_exact(),
+#       verbose = FALSE,
+#       log_propensity = TRUE,
+#       log_firings = TRUE,
+#       census_interval = 0.001,
+#       sim_name = modelName)
+#     
+#     # out$state is a matrix of dimension (time points)x(num compounds)
+#     output <- apply(out_ssa$state/Phi, 1, e[["outputFunction"]])
+#     interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
+#     interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
+#     avgOutput <- avgOutput + interpOutput$y
+#   }
+#   avgOutput <- avgOutput/nStochSim
+#   return(avgOutput)
+# }
 
 
-exp.ind <- 2
-par(mfrow=c(1,1))
-plot(experiments[[exp.ind]][["outputTimes"]],experiments[[exp.ind]][["outputValues"]],ylim=c(90,250))
-for(i in 1:100){
-  #param <- ABCMCMCoutput$draws[i,]
-  param <- pC$prePar[,i]
-  names(param) <- parNames
-  sim <- simulateSSA(experiments[[exp.ind]], param, nStochSim = 3)
-  points(experiments[[exp.ind]][["outputTimes"]],sim, col="blue")
-}
+# exp.ind <- 2
+# par(mfrow=c(1,1))
+# plot(experiments[[exp.ind]][["outputTimes"]],experiments[[exp.ind]][["outputValues"]],ylim=c(90,250))
+# for(i in 1:100){
+#   #param <- ABCMCMCoutput$draws[i,]
+#   param <- pC$prePar[,i]
+#   names(param) <- parNames
+#   sim <- simulateSSA(experiments[[exp.ind]], param, nStochSim = 3)
+#   points(experiments[[exp.ind]][["outputTimes"]],sim, col="blue")
+# }
 
 
 

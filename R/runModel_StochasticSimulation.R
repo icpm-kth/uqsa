@@ -373,7 +373,7 @@ importReactionsSSA <- function(model){
 #'     depends on all of the arguments to this function but explicitly
 #'     only on the ABC parameters parABC.
 #' @export
-makeObjectiveSSA <- function(experiments, parNames, distance, parMap=identity, Phi, reactions, nStochSim = 1){
+makeObjectiveSSA <- function(experiments, model, parNames, distance, parMap=identity, Phi, reactions, nStochSim = 1){
   objectiveFunction <- function(parABC){
     simulateAndComputeDistance <- function(e, param){
       avgOutput <- rep(0, length(e[["outputTimes"]]))
@@ -391,7 +391,7 @@ makeObjectiveSSA <- function(experiments, parNames, distance, parMap=identity, P
           sim_name = modelName)
 
         # out$state is a matrix of dimension (time points)x(num compounds)
-        output <- apply(out_ssa$state/Phi, 1, e[["outputFunction"]])
+        output <- apply(out_ssa$state/Phi, 1, model$func)
         interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
         interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
         avgOutput <- avgOutput + interpOutput$y
