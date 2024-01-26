@@ -43,6 +43,7 @@ parMap <- function(parABC){
 defRange <- c(rep(1000,17),1.9,1000,1.25,1.25,1.25,1.5,1.5,2)
 ll <- parVal/defRange
 ul <- parVal*defRange
+
 ll = log10(ll) # log10-scale
 ul = log10(ul) # log10-scale
 
