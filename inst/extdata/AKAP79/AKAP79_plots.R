@@ -55,3 +55,46 @@ plotAKAP79Simulations <- function(draws, num.sub.samples = 100, show.plot = TRUE
   if(show.plot)  show(do.call(gridExtra::grid.arrange,p))
   return(p)
 }
+
+
+
+plotAKAP79tcSimulations <- function(draws, num.sub.samples = 100, show.plot = TRUE, scores=NA, maxscore = 0.05){
+  if(!any(is.na(scores)))  draws <- draws[scores<maxscore,]
+  if(dim(draws)[1] < num.sub.samples) num.sub.samples <- dim(draws)[1]
+  
+  model.tsv <- dir("inst/extdata/AKAP79tc", pattern = "[.]tsv$", full.names = T) #uqsa_example("AKAP79tc")
+  model.tab <- sbtab_from_tsv(model.tsv)
+  
+  
+  source(dir("inst/extdata/AKAP79tc",pattern="^AKAP79tc[.]R$", full.names = T))
+  modelName <- checkModel(comment(model.tab),dir("inst/extdata/AKAP79tc",pattern="_gvf.c", full.names = T))
+  experiments <- sbtab.data(model.tab)
+  parMap <- function(parABC){
+    return(10^parABC)
+  }
+  
+  p<-list()
+  for(i in 1:18){
+    simulate <- simulator.c(experiments[i], modelName, parMap, noise = TRUE)
+    #output_yy <- simulate(t(draws[order(ABCMCMCoutput$scores)[1:100],]))
+    output_yy <- simulate(t(draws[sample(1:dim(draws)[1],num.sub.samples),]))
+    
+    experiment <- experiments[[i]]
+    df.experiments <- data.frame(t=experiment[["outputTimes"]], y=experiment[["outputValues"]][[1]])
+    
+    y <- c(output_yy[[1]]$func[1,,])
+    df.simulations <- data.frame(t=rep(experiment[["outputTimes"]],num.sub.samples), y=y, sim=rep(1:num.sub.samples,each=length(experiment[["outputTimes"]])))
+    
+    
+    # df <- mclapply(1:dim(output_yy[[1]][["func"]])[3], function(i) as.data.frame(x = list(output_yy[[1]][["func"]][1,,i],experiment[['outputTimes']]), col.names = c("y","t")))
+    # 
+    # df <- reshape2::melt(df,id=c("t","y"))
+    # 
+    p[[i]] <- 
+      ggplot(df.simulations,aes(x=t, y=y, group=sim))+
+      geom_line(color="blue", alpha = 0.1)+
+      geom_point(data=df.experiments, aes(x=t, y=y), inherit.aes=FALSE)
+  }
+  if(show.plot)  show(do.call(gridExtra::grid.arrange,p))
+  return(p)
+}
