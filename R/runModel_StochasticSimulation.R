@@ -389,13 +389,13 @@ makeObjectiveSSA <- function(experiments, model, parNames, distance, parMap=iden
           sim_name = modelName)
 
         # out$state is a matrix of dimension (time points)x(num compounds)
-        output <- apply(out_ssa$state/Phi, 1, model$func)
+        output <- apply(out_ssa$state/Phi, 1, function(state) model$func(t=0,state=state,parameters=param))
         interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
         interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
         avgOutput <- avgOutput + interpOutput$y
       }
       avgOutput <- avgOutput/nStochSim
-      return(distance(avgOutput,e[["outputValues"]],e[["errorValues"]]))
+      return(distance(avgOutput,t(e[["outputValues"]]),t(e[["errorValues"]])))
     }
 
     if (is.matrix(parABC)) {
