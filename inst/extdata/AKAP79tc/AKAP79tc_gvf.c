@@ -174,7 +174,6 @@ int AKAP79tc_jac(double t, const double y_[], double *jac_, double *dfdt_, void 
 	double reaction_1=kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C;
 	double reaction_2=kcat_AKARp*AKAR4_C;
 /* column 1 (df/dy_0) */
-<<<<<<< HEAD
 	jac_[0] = (-(C*kb_Rii_CxcAMP__Rii_C_cAMP*kb_RiixC__Rii_C*kf_Rii_cAMPxC__Rii_C_cAMP*kf_cAMPxRii__Rii_cAMP)/(kb_Rii_cAMPxC__Rii_C_cAMP*kb_cAMPxRii__Rii_cAMP*kf_Rii_CxcAMP__Rii_C_cAMP))-cAMP*kf_cAMPxRii__Rii_cAMP; /* [0, 0] */
 	jac_[16] = -cAMP*kf_cAMPxRii__Rii_cAMP; /* [1, 0] */
 	jac_[32] = 0; /* [2, 0] */
@@ -446,23 +445,6 @@ int AKAP79tc_jac(double t, const double y_[], double *jac_, double *dfdt_, void 
 	jac_[223] = 0; /* [13, 15] */
 	jac_[239] = 0; /* [14, 15] */
 	jac_[255] = 0; /* [15, 15] */
-=======
-/* column 2 (df/dy_1) */
-/* column 3 (df/dy_2) */
-/* column 4 (df/dy_3) */
-/* column 5 (df/dy_4) */
-/* column 6 (df/dy_5) */
-/* column 7 (df/dy_6) */
-/* column 8 (df/dy_7) */
-/* column 9 (df/dy_8) */
-/* column 10 (df/dy_9) */
-/* column 11 (df/dy_10) */
-/* column 12 (df/dy_11) */
-/* column 13 (df/dy_12) */
-/* column 14 (df/dy_13) */
-/* column 15 (df/dy_14) */
-/* column 16 (df/dy_15) */
->>>>>>> d25a8b388c0762c5d23c18e4194eb1c284c0c75a
 	return GSL_SUCCESS;
 }
 /* ode parameter Jacobian df(t,y;p)/dp */
@@ -538,7 +520,6 @@ int AKAP79tc_jacp(double t, const double y_[], double *jacp_, double *dfdt_, voi
 	double reaction_1=kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C;
 	double reaction_2=kcat_AKARp*AKAR4_C;
 /* column 1 (df/dp_0) */
-<<<<<<< HEAD
 	jacp_[0] = 0; /* [0, 0] */
 	jacp_[26] = 0; /* [1, 0] */
 	jacp_[52] = 0; /* [2, 0] */
@@ -980,33 +961,6 @@ int AKAP79tc_jacp(double t, const double y_[], double *jacp_, double *dfdt_, voi
 	jacp_[363] = 0; /* [13, 25] */
 	jacp_[389] = 0; /* [14, 25] */
 	jacp_[415] = 0; /* [15, 25] */
-=======
-/* column 2 (df/dp_1) */
-/* column 3 (df/dp_2) */
-/* column 4 (df/dp_3) */
-/* column 5 (df/dp_4) */
-/* column 6 (df/dp_5) */
-/* column 7 (df/dp_6) */
-/* column 8 (df/dp_7) */
-/* column 9 (df/dp_8) */
-/* column 10 (df/dp_9) */
-/* column 11 (df/dp_10) */
-/* column 12 (df/dp_11) */
-/* column 13 (df/dp_12) */
-/* column 14 (df/dp_13) */
-/* column 15 (df/dp_14) */
-/* column 16 (df/dp_15) */
-/* column 17 (df/dp_16) */
-/* column 18 (df/dp_17) */
-/* column 19 (df/dp_18) */
-/* column 20 (df/dp_19) */
-/* column 21 (df/dp_20) */
-/* column 22 (df/dp_21) */
-/* column 23 (df/dp_22) */
-/* column 24 (df/dp_23) */
-/* column 25 (df/dp_24) */
-/* column 26 (df/dp_25) */
->>>>>>> d25a8b388c0762c5d23c18e4194eb1c284c0c75a
 	return GSL_SUCCESS;
 }
 /* ode Functions F(t,y;p) */
@@ -1157,7 +1111,6 @@ int AKAP79tc_funcJac(double t, const double y_[], double *funcJac_, void *par)
 	double reaction_1=kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C;
 	double reaction_2=kcat_AKARp*AKAR4_C;
 /* column 1 (dF/dy_0) */
-<<<<<<< HEAD
 	funcJac_[0] = 0; /* [0, 0] */
 /* column 2 (dF/dy_1) */
 	funcJac_[1] = 0; /* [0, 1] */
@@ -1189,23 +1142,6 @@ int AKAP79tc_funcJac(double t, const double y_[], double *funcJac_, void *par)
 	funcJac_[14] = 0; /* [0, 14] */
 /* column 16 (dF/dy_15) */
 	funcJac_[15] = 358.35; /* [0, 15] */
-=======
-/* column 2 (dF/dy_1) */
-/* column 3 (dF/dy_2) */
-/* column 4 (dF/dy_3) */
-/* column 5 (dF/dy_4) */
-/* column 6 (dF/dy_5) */
-/* column 7 (dF/dy_6) */
-/* column 8 (dF/dy_7) */
-/* column 9 (dF/dy_8) */
-/* column 10 (dF/dy_9) */
-/* column 11 (dF/dy_10) */
-/* column 12 (dF/dy_11) */
-/* column 13 (dF/dy_12) */
-/* column 14 (dF/dy_13) */
-/* column 15 (dF/dy_14) */
-/* column 16 (dF/dy_15) */
->>>>>>> d25a8b388c0762c5d23c18e4194eb1c284c0c75a
 	return GSL_SUCCESS;
 }
 /* Function parameter Jacobian dF(t,y;p)/dp */
@@ -1281,7 +1217,6 @@ int AKAP79tc_funcJacp(double t, const double y_[], double *funcJacp_, void *par)
 	double reaction_1=kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C;
 	double reaction_2=kcat_AKARp*AKAR4_C;
 /* column 1 (dF/dp_0) */
-<<<<<<< HEAD
 	funcJacp_[0] = 0; /* [0, 0] */
 /* column 2 (dF/dp_1) */
 	funcJacp_[1] = 0; /* [0, 1] */
@@ -1313,23 +1248,6 @@ int AKAP79tc_funcJacp(double t, const double y_[], double *funcJacp_, void *par)
 	funcJacp_[14] = 0; /* [0, 14] */
 /* column 16 (dF/dp_15) */
 	funcJacp_[15] = 0; /* [0, 15] */
-=======
-/* column 2 (dF/dp_1) */
-/* column 3 (dF/dp_2) */
-/* column 4 (dF/dp_3) */
-/* column 5 (dF/dp_4) */
-/* column 6 (dF/dp_5) */
-/* column 7 (dF/dp_6) */
-/* column 8 (dF/dp_7) */
-/* column 9 (dF/dp_8) */
-/* column 10 (dF/dp_9) */
-/* column 11 (dF/dp_10) */
-/* column 12 (dF/dp_11) */
-/* column 13 (dF/dp_12) */
-/* column 14 (dF/dp_13) */
-/* column 15 (dF/dp_14) */
-/* column 16 (dF/dp_15) */
->>>>>>> d25a8b388c0762c5d23c18e4194eb1c284c0c75a
 	return GSL_SUCCESS;
 }
 /* ode default parameters */
@@ -1369,11 +1287,7 @@ int AKAP79tc_default(double t, void *par)
 int AKAP79tc_init(double t, double *y_, void *par)
 {
 	double *p_=par;
-<<<<<<< HEAD
 	if (!y_) return 16;
-=======
-	if (!y_) return       16;
->>>>>>> d25a8b388c0762c5d23c18e4194eb1c284c0c75a
 	double kf_Rii_C__RiiP_C=p_[0];
 	double kf_RiiP_CxcAMP__RiiP_C_cAMP=p_[1];
 	double kf_RiiP_cAMPxC__RiiP_C_cAMP=p_[2];
