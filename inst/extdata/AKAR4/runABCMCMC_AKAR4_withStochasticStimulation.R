@@ -156,16 +156,12 @@ i<-1
   if (i>1){
     draws$draws <- checkFitWithPreviousExperiments(draws$draws, objectiveFunction, delta)
   }
-  # Save Resulting Samples to MATLAB and R files.
   cat("-Saving sample \n")
   outFile <- paste(seq(1,i), collapse="_")
   timeStr <- Sys.time()
   timeStr <- gsub(":","_", timeStr)
   timeStr <- gsub(" ","_", timeStr)
-  outFileR <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
-  if (require("R.matlab")){
-    outFileM <- paste0("../PosteriorSamples/Draws",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".mat",collapse="_")
-  }
+  outFileR <- paste0("./PosteriorSamples/DrawsStochastic",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
   save(draws, parNames, file=outFileR)
 #}
 end_time = Sys.time()
