@@ -195,7 +195,7 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 #'     Carlo as the MC variable
 #' @param parMap a map to transform parMCMC into p, parameters the
 #'     model accepts
-#' @return a function S(parMCMC,simulations) ->
+#' @return a function S(parMCMC) ->
 #'     simulations_with_sensitivity, which attaches the state
 #'     sensitivity matrix array length(x) × length(p) × length(t) to
 #'     the simulations (solutions to the ODE).
@@ -213,8 +213,10 @@ sensitivityEquilibriumApproximation <- function(experiments, model, parMap=ident
 	defaultPar <- c(model$par(),u)
 	np <- length(defaultPar)
 	d <- np - nu
+	N <- length(experiments)
 	SEA <- function(parMCMC,simulations){
-		for (i in seq(length(experiments))){
+		stopifnot(length(simulations) == N)
+		for (i in seq(N)){
 			p <- c(parMap(parMCMC),experiments[[i]]$input)
 			tm <- experiments[[i]]$outputTimes
 			t0 <- experiments[[i]]$initialTime

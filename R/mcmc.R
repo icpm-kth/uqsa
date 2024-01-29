@@ -13,9 +13,10 @@
 #' @export
 mcmcInit <- function(parMCMC,simulate,logLikelihood,gradLogLikelihood=NULL,fisherInformation=NULL){
 	simulations <- simulate(parMCMC)
-	attr(parMCMC,"logLikelihood") <- logLikelihood(simulations)
+	attr(parMCMC,"simulations") <- simulations
+	attr(parMCMC,"logLikelihood") <- logLikelihood(parMCMC)
 	if(!is.null(fisherInformation)) attr(parMCMC,"fisherInformation") <- fisherInformation(parMCMC)
-	if(!is.null(gradLogLikelihood)) attr(parMCMC,"gradLogLikelihood") <- gradLogLikelihood(parMCMC,simulations)
+	if(!is.null(gradLogLikelihood)) attr(parMCMC,"gradLogLikelihood") <- gradLogLikelihood(parMCMC)
 	return(parMCMC)
 }
 
@@ -32,25 +33,20 @@ mcmcInit <- function(parMCMC,simulate,logLikelihood,gradLogLikelihood=NULL,fishe
 #' the given parameters, all other dependencies have to be either
 #' implicit (as a closure) or attributes of parGiven.
 #'
-#' @param simulate a function that simulates the model, given MCMC
-#'     values
-#' @param experiments list of experiments
 #' @param update and update function
-#' @param dprior probability density of the prior distribution
-#' @param model a list of model functions (R functions) for the
-#'     underlying ODE model
 #' @return M(initiPar,N), a function of initial starting values and
 #'     number of Markov chain steps
 #' @export
-mcmc <- function(simulate,experiments,update,model){
-	M <- function(parMCMC,N=1000){
-		simulations <- simulate(parMCMC)
+mcmc <- function(update){
+	M <- function(parMCMC,N=1000,eps=1e-4){
 		sample <- matrix(NA,N,length(parMCMC))
+		a <- 0
 		for (i in seq(N)){
-			simulations <- simulate(parMCMC)
-			parMCMC <- update(parMCMC,simulations)
+			parMCMC <- update(parMCMC,eps)
 			sample[i,] <- parMCMC
+			a <- a + as.numeric(attr(parMCMC,"accepted"))
 		}
+		attr(sample,"acceptanceRate") <- a/N
 		return(sample)
 	}
 }
@@ -73,34 +69,40 @@ mcmc <- function(simulate,experiments,update,model){
 #' @param dprior prior probability density function
 #' @param eps a step size parameter for Markov chain moves (propotional to step size)
 #' @return a function that returns possibly updated states of the Markov chain
-mcmcUpdate <- function(logLikelihood, gradLogLikelihood, fisherInformation, dprior, model, experiments, parMap=identity, parMapJac=1,eps=1e-5){
-	U <- function(parGiven){
+mcmcUpdate <- function(simulate, experiments, model, logLikelihood, gradLogLikelihood, fisherInformation, fisherInformationPrior, dprior, parMap=identity, parMapJac=1){
+	U <- function(parGiven, eps=1e-4){
 		r <- runif(1)
 		LGiven <- attr(parGiven,"logLikelihood")
 		fiGiven <- attr(parGiven,"fisherInformation")
 		gradLGiven <- attr(parGiven,"gradLogLikelihood")
+		fi <- fiGiven+fisherInformationPrior
 		n <- length(parGiven)
-		## the very important step: suggest a successor to parGiven
-		parProposal <- mvtnorm::rmvnorm(1,
-			mu=parGiven+0.5*eps*eps*solve(fiGiven,gradLGiven),
-			sigma=eps*eps*fiGiven)
+		## the very important step: suggest a successor to parGiven and simulate the model
+		parProposal <- as.numeric(mvtnorm::rmvnorm(1,
+			mean=parGiven+0.5*eps*solve(fiGiven+fisherInformationPrior,gradLGiven),
+			sigma=eps*eps*(fiGiven+fisherInformationPrior)))
+		#cat("parProposal: ",parProposal)
+		attr(parProposal,"simulations") <- simulate(parProposal)
 		## re-calculate things that depend on parProposal
 		LProposal <- logLikelihood(parProposal)
 		fiProposal <- fisherInformation(parProposal)
 		gradLProposal <- gradLogLikelihood(parProposal)
 		## in this specific case, the proposal is asymmetric, so we need the forward and backward transition densitity values
-		fwdDensity <- mvtnorm::dmvnorm(parProposal,
-			mu=parGiven+0.5*eps*eps*solve(fiGiven,gradLGiven),
-			sigma=eps*eps*fiGiven)
-		bwdDensity <- mvtnorm::dmvnorm(parGiven,
-			mu=parProposal+0.5*eps*eps*solve(fiProposal,gradLProposal),
-			sigma=eps*eps*fiProposal)
+		fwdDensity <- mvtnorm::dmvnorm(as.numeric(parProposal),
+			mean=as.numeric(parGiven+0.5*eps*solve(fiGiven+fisherInformationPrior,gradLGiven)),
+			sigma=eps*eps*solve(fiGiven+fisherInformationPrior))
+
+		bwdDensity <- mvtnorm::dmvnorm(as.numeric(parGiven),
+			mean=as.numeric(parProposal+0.5*eps*solve(fiProposal+fisherInformationPrior,gradLProposal)),
+			sigma=eps*eps*solve(fiProposal+fisherInformationPrior))
 		if (r < exp(LProposal - LGiven) * (dprior(parProposal)/dprior(parGiven)) * (bwdDensity/fwdDensity)){
 			attr(parProposal,"logLikelihood") <- LProposal
 			attr(parProposal,"fisherInformation") <- fiProposal
 			attr(parProposal,"gradLogLikelihood") <- gradLProposal
+			attr(parProposal,"accepted") <- TRUE
 			return(parProposal)
 		} else {
+			attr(parGiven,"accepted") <- FALSE
 			return(parGiven)
 		}
 	}
@@ -161,32 +163,23 @@ fisherInformationFromGSA <- function(Sample,yf=NULL,E){
 fisherInformation <- function(model, experiments, parMap=identity, parMapJac=1){
 	nF <- length(model$func(0.0,model$init(),model$par()))
 	l10 <- log(10)
-	F <- function(parMCMC, simulations){
+	F <- function(parMCMC){
+		simulations <- attr(parMCMC,"simulations")
 		np <- length(parMCMC)
 		fi  <- matrix(0.0,np,np)
 		for (i in seq(length(experiments))){
 			errF <- t(experiments[[i]]$errorValues)
 			errF[is.na(errF)] <- Inf
-			oT <- experiments[[i]]$outputTimes
-			for (j in seq(length(oT))){
-				u <- experiments[[i]]$input
-				modelPar <- c(parMap(parMCMC),u)
+			nt <- length(experiments[[i]]$outputTimes)
+			for (j in seq(nt)){
 				sigma_j <- matrix(errF[,j],nF,np)
-				x_ij <- simulations[[i]]$state[,j,1]
 				# output function sensitivity:
-				Sx <- simulations[[i]]$sens[,,j]
-				funcJac <- model$funcJac(oT[j],x_ij,modelPar)
-				funcJacp <- model$funcJacp(oT[j],x_ij,modelPar)[,seq(np)]
-				S <- (funcJac %*% Sx + funcJacp)/sigma_j
-				if (sensitivityMap=="log10") {
-					P <- matrix(modelPar[seq(np)],nF,np,byrow=TRUE)
-					S <- S*P*l10;
-				} else if (sensitivityMap=="log"){
-					P <- matrix(modelPar[seq(np)],nF,np,byrow=TRUE)
-					S <- S*P;
-				}
-				fi  <-  fi + t(S) %*% S
+				Sh <- matrix(simulations[[i]]$funcsens[,seq(np),j],nF,np)/sigma_j
+				fi  <-  fi + t(Sh) %*% Sh
 			}
+		}
+		if (any(is.na(as.numeric(fi)))) {
+			stop()
 		}
 		return(fi)
 	}
@@ -204,7 +197,8 @@ fisherInformation <- function(model, experiments, parMap=identity, parMapJac=1){
 #' @export
 logLikelihood <- function(experiments){
 	N <- length(experiments)
-	llf <- function(simulations){
+	llf <- function(parMCMC){
+		simulations <- attr(parMCMC,"simulations")
 		dimFunc <- dim(simulations[[1]]$func)
 		n <- dimFunc[3]
 		m <- dimFunc[1]*dimFunc[2]
@@ -257,17 +251,23 @@ log10ParMapJac <- function(parMCMC){
 #' @export
 gradLogLikelihood <- function(model,experiments,parMap=identity,parMapJac=1){
 	N <- length(experiments)
-	gradLL <- function(parMCMC,simulations){
+	gradLL <- function(parMCMC){
+		simulations <- attr(parMCMC,"simulations")
 		lMCMC <- length(parMCMC) # the dimension of the MCMC variable (parMCMC)
 		gL <- rep(0,length(parMCMC))
 		for (i in seq(N)){
-			T <- length(simulations[[i]]$time)
+			d <- dim(simulations[[i]]$func)
+			T <- length(experiments[[i]]$outputTimes)
 			y <- t(experiments[[i]]$outputValues)
 			h <- simulations[[i]]$func[,,1]
+			dim(h) <- head(d,2)
 			stdv <- t(experiments[[i]]$errorValues)
 			Sh <- simulations[[i]]$funcsens
+			dS <- dim(Sh)
 			for (j in seq(T)){
-				gL <- gL + ((y[,j] - h[,j])/stdv[,j]^2) %*% Sh[,,j]
+				Shj <- Sh[,,j]
+				dim(Shj) <- head(dS,2)
+				gL <- gL + as.numeric(t(((y[,j,drop=FALSE] - h[,j,drop=FALSE])/stdv[,j,drop=FALSE]^2)) %*% Shj)
 			}
 		}
 		return(gL)

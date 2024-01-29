@@ -1,3 +1,6 @@
+# cached files
+*_cache
+# binary data
 *.h5
 *Suggested*.tsv
 *.mat
@@ -5,13 +8,16 @@
 *.log
 *.txt
 *.so
+# R related
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+# mcmc related
 PosteriorSamples
 .ipynb_checkpoints
 inst/doc
+# model archives
 *.zip
 *.tar.gz
 *.mod
