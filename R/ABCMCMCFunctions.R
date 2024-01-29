@@ -23,39 +23,29 @@
 #' then transitions to MCMC sampling.
 #'
 #' @export
-#' @param experiments a list of experiments
-#' @param modelName model functions will be assumed to have this
-#'     prefix (comment(modelName) can contain a file-name)
+#' @param objectiveFunction function that, given a (vectorial)
+#'     parameter as input, simulates the model, and outputs the
+#'     distance between experimental data and data simulated from the
+#'     model with the parameter provided in input
 #' @param startPar starting value for the parameter vector
-#' @param parMap re-mapping function between the ABC MCMC variables and model
-#'     parameters
 #' @param nSims requested sample size
 #' @param Sigma0 multivariate normal covariance of Markov chain
 #'     transition kernel
 #' @param delta ABC acceptance threshold
 #' @param dprior a function that returns prior probability density
 #'     values
-#' @param getScore a function(model_output,experiment) that returns
-#'     scores
-#' @param nCores setting for multicore package
-#' @return a list containing a sample matrix and a vector of scores (values of delta for each sample)
-ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dprior, acceptanceProbability=NULL){
-  if(is.null(objectiveFunction) && is.null(acceptanceProbability)){
-    error("Provide objectiveFunction or acceptanceProbability.")
-  }
-
+#' @return a list containing a sample matrix and a vector of scores
+#'     (values of delta for each sample)
+ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior){
   cat("Started chain.\n")
   Sigma1 <- 0.25*diag(diag(Sigma0))
   curDelta <- Inf
   np <- length(startPar)
   curPar  <- startPar
-  curDelta <- NA
-  if(is.null(acceptanceProbability)){
-    curDelta <- max(objectiveFunction(curPar))
-    if(is.na(curDelta)){
-      cat("*** [ABCMCMC] curDelta is NA. Replacing it with Inf ***\n")
-      curDelta <- Inf
-    }
+  curDelta <- max(objectiveFunction(curPar))
+  if(is.na(curDelta)){
+    cat("*** [ABCMCMC] curDelta is NA. Replacing it with Inf ***\n")
+    curDelta <- Inf
   }
   curPrior <- dprior(curPar)
   draws <- matrix(NA, nSims,np)
@@ -92,12 +82,7 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
       canPar <- MASS::mvrnorm(n=1, curPar, Sigma1)
     }
 
-    if(is.null(acceptanceProbability)){
-      out <- parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
-      curDelta <- out$curDelta
-    }else{
-      out <- parUpdate_ProbabilisticAcceptance(acceptanceProbability, curPar, canPar, curPrior, dprior)
-    }
+    out <- parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
     curPar <- out$curPar
     curDelta <- out$curDelta
     curPrior <- out$curPrior
@@ -123,11 +108,10 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
 #' parameters are updated to new values.
 #'
 #' @export
-#' @param experiments list of simulation experiments
-#' @param modelName (characters), this will be used to find the model
-#'     file and the functions in that file
-#' @param parMap optional remapping function set for passing parameters to the
-#'     model: parModel<-parMap(parABC)
+#' @param objectiveFunction function that, given a (vectorial)
+#'     parameter as input, simulates the model, and outputs the
+#'     distance between experimental data and data simulated from the
+#'     model with the parameter provided in input
 #' @param curPar current parameter values (as ABC samples them)
 #' @param canPar candidate parameter values (for MCMC)
 #' @param curDelta current distance between data and simulation, if
@@ -137,8 +121,6 @@ ABCMCMC <- function(objectiveFunction=NULL, startPar, nSims, Sigma0, delta, dpri
 #' @param curPrior current Prior values given curPar
 #' @param delta distance threshold for ABC
 #' @param dprior prior probability density function
-#' @param getScore a scoring function
-#' @param nCores number of cores to use in mclapply().
 #' @return updated values for curPar, curDelta, and curPrior
 parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior){
 
@@ -148,7 +130,7 @@ parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, del
   if(acceptance){
     canDelta <- max(objectiveFunction(canPar))
     if(is.na(canDelta)){
-      cat("\n*** [parUpdate] canDelta is NA. Replacing it with Inf ***")
+      cat("\n[parUpdate] canDelta is NA. Replacing it with Inf")
       canDelta <- Inf
     }
     if (canDelta <= max(delta, curDelta)){
@@ -162,15 +144,6 @@ parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, del
   return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior, acceptance=acceptance))
 }
 
-parUpdate_ProbabilisticAcceptance <- function(acceptanceProbability, curPar, canPar, curPrior, dprior){
-  canPrior <- dprior(canPar)
-  acceptance <- (runif(1) <= acceptanceProbability(canPar)*min(1,canPrior/curPrior))
-  if (acceptance){
-    curPrior <- canPrior
-    curPar <- canPar
-  }
-  return(list(curPar=curPar, curPrior=curPrior, acceptance=acceptance))
-}
 
 #' ABC acceptance of currently sampled values given old data (Prior)
 #'
@@ -180,7 +153,10 @@ parUpdate_ProbabilisticAcceptance <- function(acceptanceProbability, curPar, can
 #'
 #' @export
 #' @param draws matrix of sampled values (to be filtered).
-#' @param objectiveFunction function that, given a (vectorial) parameter as input, simulated the model and outputs the distance between experimental data and data simulated from the model with the parameter provided in input
+#' @param objectiveFunction function that, given a (vectorial)
+#'     parameter as input, simulates the model, and outputs the
+#'     distance between experimental data and data simulated from the
+#'     model with the parameter provided in input
 #' @param delta the acceptance threshold.
 #' @return a filtered subset of acceptable parameter draws
 checkFitWithPreviousExperiments <- function(draws, objectiveFunction, delta){

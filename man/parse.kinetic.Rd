@@ -18,18 +18,17 @@ not possible to tell apart which part of a kinetic law is which.
 }
 \details{
 But for mass action kinetics, and positive reaction rate
-coefficients, the expressions mostly look like this:
+coefficients, the expressions mostly look like this:\preformatted{kf*prod(reactants.concentration) - kb*prod(product.concentrations)
+}
 
-kf\emph{prod(reactants.concentration) - kb}prod(product.concentrations)
-
-this functions splits at '-', and if none is present, then the
+this functions splits at \code{-}, and if none is present, then the
 reaction is assumed to be irreversible.
 
-In a more general setting (where the '-' split is wrong),
+In a more general setting (where the \code{-} split is wrong),
 the splitting has to be done by hand or more complex rules.
 }
 \examples{
- parse.kinetic("kf*A*B-kb*C")
- parse.kinetic("kf*A*B")
- parse.kinetic("kf*A/(Km+A)")
+ uqsa:::parse.kinetic("kf*A*B-kb*C")
+ uqsa:::parse.kinetic("kf*A*B")
+ uqsa:::parse.kinetic("kf*A/(Km+A)")
 }

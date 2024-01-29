@@ -7,7 +7,7 @@
 makeObjective(
   experiments,
   modelName = NULL,
-  distance = defaultDistance,
+  distance,
   parMap = identity,
   simulate = NULL
 )
@@ -17,14 +17,16 @@ makeObjective(
 
 \item{modelName}{and model storage file as comment}
 
+\item{distance}{a function that calculates ABC scores}
+
 \item{parMap}{a function that transforms ABC variables into acceptable model parameters}
 
-\item{getScore}{a function that calculates ABC scores}
+\item{simulate}{closure that simulates the model}
 }
 \value{
 an objective function
 }
 \description{
-the returned objective function has only one argument (the ABC
-parameters)
+the returned objective function has only one argument: the ABC
+variables that shall be mapped to ODE-model parameters.
 }

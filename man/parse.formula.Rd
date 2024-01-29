@@ -17,8 +17,11 @@ component, each entry contains a character vector
 }
 \description{
 This function splits a reaction formulka apart into its parts,
-removing whitespace on each side: "A + 2\emph{B <=> AB2" will be split
+removing whitespace on each side: \code{"A + 2 B <=> AB2"} will be split
 into a list with two entries
-list$reactants == c("A","2}B")
+}
+\details{
+\preformatted{list$reactants == c("A","2*B")
 list$products == c("AB2")
+}
 }

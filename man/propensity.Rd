@@ -7,7 +7,7 @@
 propensity(conv.coeff, kinetic.law, rExpressions)
 }
 \arguments{
-\item{conv.coeff}{propensity conversion coefficient: conv.coeff*kinetic.law = propensity function}
+\item{conv.coeff}{propensity conversion coefficient: \verb{conv.coeff*kinetic.law = propensity function}}
 
 \item{kinetic.law}{the kinetic law of this reaction (as used with ODEs)}
 

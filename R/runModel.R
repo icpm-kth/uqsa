@@ -24,13 +24,13 @@
 #' @export
 #' @return a closure that returns the model's output for a given parameter vector
 #' @examples
-#'    model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
-#'    experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
-#'    parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
+#'  #  model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
+#'  #  experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
+#'  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 #'
-#'    modelName <- checkModel("<insert_model_name>_gvf.c")
-#'    simulate <- simulator.c(experiments, modelName,  parABC)
-#'    yf <- sim(parABC)
+#'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
+#'  #  simulate <- simulator.c(experiments, modelName,  parABC)
+#'  #  yf <- sim(parABC)
 simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, sensApprox=NULL){
 	require(rgsl)
 	sim <- function(parABC){
@@ -69,110 +69,28 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 	return(sim)
 }
 
-
-#' This creates a closure that simulates the model
-#'
-#' This is a shorter alternative to the runModel function (R, deSolve backend).
-#'
-#' It returns a closure around:
-#'     - experiments,
-#'     - the model, and
-#'     - parameter mapping
-#'
-#' The returned function depends only on parABC (the sampling parameters).
-#'
-#' @param experiments a list of experiments to simulate: inital values, inputs, time vectors, initial times
-#' @param modelName a string (with optional comment indicating an .so file) which points out the model to simulate
-#' @param parABC the parameters for the model, subject to change by parMap.
-#' @param parMap the model will be called with parMap(parABC); so any parameter transformation can happen there.
-#' @export
-#' @return a closure that returns the model's output for a given parameter vector
-#' @examples
-#'    model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
-#'    experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
-#'    parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
-#'
-#'    source("<model name>.R") # this defines the `model` variable
-#'    simulate <- simulator.R(experiments, model,  parABC)
-#'    yf <- sim(parABC)
-simulator.R  <- function(experiments, model, parMap=identity){
-	numExperiments <- length(experiments)
-	# an experiment can have an optional input
-	if ('input' %in% names(experiments[[1]])){
-		nu <- length(experiments[[1]][['input']])
-	} else {
-		nu <- 0
-	}
-	sim <- function(parABC){
-		if (is.matrix(parABC)){
-			npc <- ncol(parABC)
-		} else {
-			npc <- 1
-		}
-
-		modelPar <- parMap(parABC)
-		if (is.matrix(modelPar)) {
-			np <- nrow(modelPar)
-			N <- ncol(modelPar)
-		} else {
-			np <- length(modelPar)
-			N <- 1
-		}
-		N <- N*numExperiments
-		modelPar <- matrix(modelPar,np,npc*numExperiments)
-
-		## create a matrix that has all experimental inputs, repeated (densely) npc times per experiment
-		if (nu>0){
-			V <- vapply(experiments,function(E) matrix(E[['input']],nu,npc),FUN.VALUE=matrix(0,nu,npc))
-			dim(V) <- c(nu,npc*numExperiments)
-			modelPar <- rbind(modelPar,V)
-		}
-		stopifnot(ncol(modelPar)==N)
-		## create a matrix of initial states, repeated npc times per experiment, as with the inputs and parameters
-		ny <- length(experiments[[1]][['initialState']])
-		y0 <- vapply(experiments, function(E) matrix(E[['initialState']],ny,npc), FUN.VALUE=matrix(0,ny,npc))
-		dim(y0) <- c(ny,npc*numExperiments)
-
-		outputTimes_list <- list()
-		outputFunctions_list <- list()
-		for(i in 1:numExperiments){
-			outputTimes_list <- c(outputTimes_list, replicate(npc, list(experiments[[i]][["outputTimes"]])))
-			outputFunctions_list <- c(outputFunctions_list, replicate(npc, list(experiments[[i]][["outputFunction"]])))
-		}
-		func <- eval(as.name(paste0(modelName,"_vf")))
-		yy <- mclapply(1:N, function(i) matrix(t(deSolve::lsode(y0[,i], c(0,outputTimes_list[[i]]), func=model$vf, parms=modelPar[,i])[-1, -1]), ncol=length(outputTimes_list[[i]])))
-
-		out_yy <- mclapply(1:N, function(i) apply(yy[[i]],2,outputFunctions_list[[i]]))
-
-		fun <- function(yy_, out_yy_){
-			out_state <- do.call(cbind, yy_)
-			dim(out_state) <- c(dim(yy_[[1]]), length(yy_))
-			out_func <- do.call(cbind, out_yy_)
-			dim(out_func) <- c(length(out_func)/(dim(out_state)[2]*npc), dim(out_state)[2], npc)
-			return(list(state = out_state, func = out_func))
-		}
-		output_yy <- mclapply(1:numExperiments, function(i) fun(yy[1:npc + npc*(i-1)], out_yy[1:npc + npc*(i-1)]))
-		return(output_yy)
-	}
-	return(sim)
-}
-
 #' checkModel tries to establish the simulation file for a given model
 #'
 #' This function returns the model name, with some additional comments
 #' about the file
 #'
 #' As an alternative to this function, it is sufficient to write
+#'
+#' ```
 #' modelName <- "test_ode_model"             # or some other model name
-#' comment(modelName) <- "test_ode_model.so" # or .R
+#' comment(modelName) <- "test_ode_model.so"
+#' ```
 #'
 #' This function will not attempt to find a model file, other than in
-#' the current directory. But, checkModel will compile a GSL
-#' compatible C source file into a shared object if modelFile ends
-#' with `.c` and stop if that doesn't work.
+#' the current directory. But, `checkModel` will compile a GSL
+#' compatible C source file into a shared object if `modelFile` ends
+#' with `.c` and stop if that doesn't work. The compiler is called
+#' using a system call, which may be incorrect for your system -- if
+#' this funciton fails, you'll have to make the shared library of the
+#' model using the correct compiler and options for your system.
 #'
 #' In any case, this function stops execution if the model file
-#' doesn't exist.
+#' doesn't exist, because simulations are not possible.
 #'
 #' @export
 #' @param modelName a string
@@ -191,7 +109,7 @@ checkModel <- function(modelName,modelFile=NULL){
 		stopifnot(file.exists(modelFile))
 		message('building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).')
 		LIBS <- "`pkg-config --libs gsl`"
-		CFLAGS <- "-shared -fPIC -O2 -march=native `pkg-config --cflags gsl`"
+		CFLAGS <- "-shared -fPIC `pkg-config --cflags gsl`"
 		so <- sprintf("./%s.so",modelName)
 		command_args <- sprintf("%s -o '%s' '%s' %s",CFLAGS,so,modelFile,LIBS)
 		message(paste("cc",command_args))
@@ -281,16 +199,17 @@ defaultAcceptance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 
 #' creates Objective functions from ingredients
 #'
-#' the returned objective function has only one argument (the ABC
-#' parameters)
+#' the returned objective function has only one argument: the ABC
+#' variables that shall be mapped to ODE-model parameters.
 #'
 #' @export
 #' @param experiments a list of simulation experiments
 #' @param modelName and model storage file as comment
-#' @param getScore a function that calculates ABC scores
+#' @param distance a function that calculates ABC scores
 #' @param parMap a function that transforms ABC variables into acceptable model parameters
+#' @param simulate closure that simulates the model
 #' @return an objective function
-makeObjective <- function(experiments,modelName=NULL,distance=defaultDistance,parMap=identity,simulate=NULL)
+makeObjective <- function(experiments,modelName=NULL,distance,parMap=identity,simulate=NULL)
 {
 	if (is.null(simulate) && !is.null(modelName)){
 		simulate <- function(par){
@@ -312,35 +231,4 @@ makeObjective <- function(experiments,modelName=NULL,distance=defaultDistance,pa
 		return(S)
 	}
 	return(Objective)
-}
-
-#' Ths function Creates an acceptanceProbability function
-#'
-#' The returned closure needs only the sampling variables (parABC) as
-#' inputand calculates a probability of accepting Markov chainmoves.
-#'
-#' @export
-#' @param experiments a list of experiments
-#' @param modelName an annotated string, with the model name and model file as comment
-#' @param getAcceptanceProbability an R function that mape the results of a simulation and experimental data to an acceptance probability
-#' @param parMap an optional mapping between sampling parameters (parABC) and model parameters (e.g. rescaling,re-ordering).
-#' @return a function that calculates probabilities given only parABC as input; it implicitly uses all the argiments to this function.
-makeAcceptanceProbability <- function(experiments, modelName, getAcceptanceProbability=defaultAcceptance, parMap=identity, simulate=NULL){
-	if (is.null(simulate) && !is.null(modelName)){
-		simulate <- function(par){
-			return(runModel(experiments, modelName,  par, parMap))
-		}
-	}
-	N <- length(experiments)
-	acceptanceProbability <- function(parABC){
-		out <- simulate(parABC)
-		n <- ifelse(is.matrix(parABC),ncol(parABC),1)
-		stopifnot(n==dim(out[[1]]$func)[3])
-		S <- matrix(Inf,nrow=N,ncol=n)
-		for(i in seq(length(experiments))){
-			S[i,] <- unlist(mclapply(seq(n), function(j) getAcceptanceProbability(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues)))
-		}
-		return(S)
-	}
-	return(acceptanceProbability)
 }

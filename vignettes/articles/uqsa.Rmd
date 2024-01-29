@@ -3,102 +3,27 @@ title: "uqsa"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
+knitr::opts_chunk$set(cache = TRUE,
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
-# Introduction to UQSA
+UQSA is an R-package for modelling and calibration of biochemical reaction networks.
 
-Uncertainty Quantification and global Sensitivity Analysis are both
-common tasks in *systems biology*. This package aims to characterize
-theposterior probability distribution $p(\theta|D)$. This distribution
-quantifies the amount of knowledge we have about the internal
-parameters of a model. In the field of systems biology, the internal
-parameters are typically quantities like reaction rate coefficients
-$k_{\{f,b\}}$, dissociation constants (equilibrium constants) $K_{D}$,
-Hill exponents, and other parameters that relate to gene expression,
-enzyme-substrate interaction, or other biochemical processes.
+1. In order to use this package you need to install the [R
+language](https://www.r-project.org/) (or
+[R-studio](https://posit.co/download/rstudio-desktop/)).
+2. Once R is available, you can install the UQSA package foolowing the
+   [installation instructions](install.html).
+3. After installation, to test that everything is working and to get
+   to know UQSA run the introductory example:
+   [AKAR4](AKAR4.html)
+4. It could be useful to read about the model and data format that we
+   use in our examples, [SBtab](https://sbtab.net), and our short [intro to
+   SBtab](SBtab.html).
+5. Look into more [examples](examples_overview.html).
 
-We have developed two companion packages:
-- [rgsl](icpm-kth/rgsl)
-    + solves ODEs with an interface organised around *simulation experiments*
-    + uses solvers from the GNU Scientific Library
-- [SBtabVFGEN](icpm-kth/SBtabVFGEN)
-    + organises the storage and loading of models
-
-# GNU Scientific Library (optional)
-
-For the simulation backend using the [GNU Scientific Library](https://www.gnu.org/software/gsl/) (gsl, odeiv2), the library needs to be installed in your OS, it is not an R package (it's a library dependency).
-
-To compile sources with gsl requires c compiler options related to
-linking and the librarie's location. They can look like this: `-lgsl
--lgslcblas -lm`, but also more complex. We use
-[pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) to
-determine the right options. If `pkg-config` is missing from the
-system, installation will fail (it is available for MAC, GNU Linux,
-Unix, BSD, and Windows).
-
-|  Operating System | command                  |
-|------------------:|:-------------------------|
-| Debian and Ubuntu | `apt install libgsl-dev` |
-|      Alpine Linux | `apk add gsl`            |
-|              Guix | `guix install gsl`       |
-|        Arch Linux | `pacman -S gsl`          |
-|            Gentoo | `emerge sci-libs/gsl`    |
-|             MACOS | `brew install gsl`       |
-
-Once gsl andpkg-config are available on the system, the
-`icpm-kth/rgsl` package should compile.
-
-# Installation of Companion packages
-
-Both packages in this section are optional
-
-## RGSL
-
-This package solves ODE initial value problems, given as lists of simulation experiments, with sudden
-interventions (like *activation*, or a sudden signal).
-
-```R
-remotes::install_github("icpm-kth/rgsl")       # requires gsl in your OS
-```
-
-This can be replaced with the standard solvers in the deSolve package. In our examples, the solvers in deSolve are always slower.
-
-## SBtab Model Handling
-
-This package loads a model written in the SBtab format, which is designed for models in systems biology, but much easier to read than SBML:
-
-```R
-remotes::install_github("icpm-kth/SBtabVFGEN") # if you plan to use SBtab
-```
-
-This can be replaced, if you have a different method of model creation
-or want to write the model source files by hand (which is hard for
-large models).
-
-# Installation of UQSA
-
-```R
-remotes::install_github("icpm-kth/uqsa")       # this package
-library(uqsa)                                  # to load it
-```
-
-Read the articles on this website, especially the *Example* articles
-to learn more: AKAR4, AKAP79, and CaMKII.
-
-## Examples in the Package
-
-The package itself also includes example models, with a *run* script
-for each of them. We advise users to copy the run scripts either from
-the repository or the installed package and adapt them. The location
-of a *run* file can be found like this:
-
-```R
-uqsa::uqsa_example("AKAP79",pat="^run.*R$")
-```
-
-or by browsing the folders on GitHub (`inst/extdata/`). Copy one of them and adapt it to your needs.
+For very large examples you need to be able to run the sampling
+problem (ABC, MCMC) on a cluster (High Performance Computing).
 

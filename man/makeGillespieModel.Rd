@@ -19,15 +19,15 @@ a list of reactions
 }
 \description{
 This function takes a series of SBtab tables, as returned by
-SBtabVFGEN::sbtab_from_tsv() and creates GillespieSSA2 reactions
+\code{SBtabVFGEN::sbtab_from_tsv()} and creates GillespieSSA2 reactions
 from them. Reactions arfe made pairwise, as forward and backward
 reaction pairs. If a backward reaction doesn't exist, the list item
 is NULL. A valid set of reactions can be obtained with \code{!is.null(reactions)}
 }
 \examples{
- model.tsv<-dir(pattern="[.]tsv$")
- model.sbtab<-SBtabVFGEN::sbtab_from_tsv(model.tsv)
- reactions<-makeGillespieModel(model.sbtab)
- l<-is.null(reactions)
- model.ssa2<-reactions[!l]
+ # model.tsv <- dir(pattern="[.]tsv$")
+ # model.sbtab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
+ # reactions <- makeGillespieModel(model.sbtab)
+ # l <- is.null(reactions)
+ # model.ssa2 <- reactions[!l]
 }

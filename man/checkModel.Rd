@@ -21,15 +21,18 @@ This function returns the model name, with some additional comments
 about the file
 }
 \details{
-As an alternative to this function, it is sufficient to write
-modelName <- "test_ode_model"             # or some other model name
-comment(modelName) <- "test_ode_model.so" # or .R
+As an alternative to this function, it is sufficient to write\preformatted{modelName <- "test_ode_model"             # or some other model name
+comment(modelName) <- "test_ode_model.so"
+}
 
 This function will not attempt to find a model file, other than in
-the current directory. But, checkModel will compile a GSL
-compatible C source file into a shared object if modelFile ends
-with \code{.c} and stop if that doesn't work.
+the current directory. But, \code{checkModel} will compile a GSL
+compatible C source file into a shared object if \code{modelFile} ends
+with \code{.c} and stop if that doesn't work. The compiler is called
+using a system call, which may be incorrect for your system -- if
+this funciton fails, you'll have to make the shared library of the
+model using the correct compiler and options for your system.
 
 In any case, this function stops execution if the model file
-doesn't exist.
+doesn't exist, because simulations are not possible.
 }

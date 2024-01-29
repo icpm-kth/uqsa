@@ -7,6 +7,11 @@
 parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
 }
 \arguments{
+\item{objectiveFunction}{function that, given a (vectorial)
+parameter as input, simulates the model, and outputs the
+distance between experimental data and data simulated from the
+model with the parameter provided in input}
+
 \item{curPar}{current parameter values (as ABC samples them)}
 
 \item{canPar}{candidate parameter values (for MCMC)}
@@ -21,18 +26,6 @@ current state for the chain.}
 \item{delta}{distance threshold for ABC}
 
 \item{dprior}{prior probability density function}
-
-\item{experiments}{list of simulation experiments}
-
-\item{modelName}{(characters), this will be used to find the model
-file and the functions in that file}
-
-\item{parMap}{optional remapping function set for passing parameters to the
-model: parModel<-parMap(parABC)}
-
-\item{getScore}{a scoring function}
-
-\item{nCores}{number of cores to use in mclapply().}
 }
 \value{
 updated values for curPar, curDelta, and curPrior

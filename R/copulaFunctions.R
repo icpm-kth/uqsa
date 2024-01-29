@@ -64,12 +64,12 @@ fitCopula <- function(X,nCores=detectCores()){
 
 #' Copula Formulation for Uniform Prior Distributions
 #'
-#' Covers the (simpler) special case where the prior(x) is iid uniform.
-#' The return value has the same structure as the value of fitCopula().
+#' Covers the (simpler) special case where the `prior(x)` is iid uniform.
+#' The return value has the same structure as the value of `fitCopula()`.
 #'
 #' @importFrom VineCopula RVineStructureSelect
 #' @export
-#' @param ll ll[i] is the lower limit of random variable x[i]
+#' @param ll `ll[i]` is the lower limit of random variable `x[i]`
 #' @param ul upper limit, analogous to ll.
 #' @return list with: copula, U, Z, and Y entries.
 makeIndepCopula <- function(ll, ul){

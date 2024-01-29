@@ -4,17 +4,14 @@
 \alias{ABCMCMC}
 \title{Performs and Approximate Bayesian Computation Sampling of Model Parameters}
 \usage{
-ABCMCMC(
-  objectiveFunction = NULL,
-  startPar,
-  nSims,
-  Sigma0,
-  delta,
-  dprior,
-  acceptanceProbability = NULL
-)
+ABCMCMC(objectiveFunction, startPar, nSims, Sigma0, delta, dprior)
 }
 \arguments{
+\item{objectiveFunction}{function that, given a (vectorial)
+parameter as input, simulates the model, and outputs the
+distance between experimental data and data simulated from the
+model with the parameter provided in input}
+
 \item{startPar}{starting value for the parameter vector}
 
 \item{nSims}{requested sample size}
@@ -26,22 +23,10 @@ transition kernel}
 
 \item{dprior}{a function that returns prior probability density
 values}
-
-\item{experiments}{a list of experiments}
-
-\item{modelName}{model functions will be assumed to have this
-prefix (comment(modelName) can contain a file-name)}
-
-\item{parMap}{re-mapping function between the ABC MCMC variables and model
-parameters}
-
-\item{getScore}{a function(model_output,experiment) that returns
-scores}
-
-\item{nCores}{setting for multicore package}
 }
 \value{
-a list containing a sample matrix and a vector of scores (values of delta for each sample)
+a list containing a sample matrix and a vector of scores
+(values of delta for each sample)
 }
 \description{
 Given a set of simulation experiments (list), a model, parameter

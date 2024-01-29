@@ -41,11 +41,11 @@ The returned function depends only on parABC (the sampling
 parameters). The simulation will be done suing the rgsl backend.
 }
 \examples{
-   model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
-   experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
-   parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
+ #  model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
+ #  experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
+ #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 
-   modelName <- checkModel("<insert_model_name>_gvf.c")
-   simulate <- simulator.c(experiments, modelName,  parABC)
-   yf <- sim(parABC)
+ #  modelName <- checkModel("<insert_model_name>_gvf.c")
+ #  simulate <- simulator.c(experiments, modelName,  parABC)
+ #  yf <- sim(parABC)
 }

@@ -27,7 +27,7 @@ one parameter vector}
 Carlo as the MC variable}
 }
 \value{
-a function S(parMCMC,simulations) ->
+a function S(parMCMC) ->
 simulations_with_sensitivity, which attaches the state
 sensitivity matrix array length(x) × length(p) × length(t) to
 the simulations (solutions to the ODE).

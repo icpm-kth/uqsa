@@ -22,12 +22,24 @@
   <a class="nav-link" href="../articles/uqsa.html">Get started</a>
 </li>
 <li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-installation">Installation</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-installation">
+    <a class="dropdown-item" href="../articles/install.html">Full Installation Instructions</a>
+    <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
+  </div>
+</li>
+<li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
+    <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
+    <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
+    <a class="dropdown-item" href="../articles/sa.html">Sensiticity Analysis</a>
     <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="../articles/data.html">Importing data</a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
@@ -41,8 +53,10 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
+    <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4</a>
+    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Make a Shared Library</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -122,21 +136,6 @@
         <dd>Functions to construct and run the stochastic simulation using GillespieSSA2 package</dd>
       </dl><dl><dt>
           
-          <code><a href="import_experiments.html">import_experiments()</a></code> 
-        </dt>
-        <dd>Reads the Data and Model Contained in an SBtab Document (tsv)</dd>
-      </dl><dl><dt>
-          
-          <code><a href="import_from_SBtab.html">import_from_SBtab()</a></code> 
-        </dt>
-        <dd>Import Systems Biology Models given in Tabular Form</dd>
-      </dl><dl><dt>
-          
-          <code><a href="makeAcceptanceProbability.html">makeAcceptanceProbability()</a></code> 
-        </dt>
-        <dd>Ths function Creates an acceptanceProbability function</dd>
-      </dl><dl><dt>
-          
           <code><a href="makeGillespieModel.html">makeGillespieModel()</a></code> 
         </dt>
         <dd>Create a list of reactions for GillespieSSA2</dd>
@@ -187,11 +186,6 @@
         <dd>rUniformPrior returns a random vector generator</dd>
       </dl><dl><dt>
           
-          <code><a href="runModel.html">runModel()</a></code> 
-        </dt>
-        <dd>Simulate an Experiment using the named ODE Model</dd>
-      </dl><dl><dt>
-          
           <code><a href="sensitivity.html">sensitivity()</a></code> 
         </dt>
         <dd>Global Sensitivity Analysis</dd>
@@ -202,14 +196,9 @@
         <dd>plot the sensitivity matrix</dd>
       </dl><dl><dt>
           
-          <code><a href="simulator.R.html">simulator.R()</a></code> 
-        </dt>
-        <dd>This creates a closure that simulates the model</dd>
-      </dl><dl><dt>
-          
           <code><a href="simulator.c.html">simulator.c()</a></code> 
         </dt>
-        <dd>This creates a closure that simulates the model</dd>
+        <dd>This creates a closure that simulates Experiments using the ODE Model</dd>
       </dl><dl><dt>
           
           <code><a href="uqsa_example.html">uqsa_example()</a></code> 
@@ -230,7 +219,7 @@
           
           <code><a href="convert.parameter.html">convert.parameter()</a></code> 
         </dt>
-        <dd>convert ODE parameter to Gillespie parameter</dd>
+        <dd>Convert ODE parameter to Gillespie parameter</dd>
       </dl><dl><dt>
           
           <code><a href="match.coefficients.html">match.coefficients()</a></code> 
@@ -276,6 +265,21 @@
           <code><a href="uqsa-package.html">uqsa</a></code> <code><a href="uqsa-package.html">uqsa-package</a></code> 
         </dt>
         <dd>uqsa: Uncertainty Quanitification and Global Sensitivity Analysis via ABC sampling</dd>
+      </dl><dl><dt>
+          
+          <code><a href="getDose.html">getDose()</a></code> 
+        </dt>
+        <dd>Get the values of the input for a series of dose response experiments</dd>
+      </dl><dl><dt>
+          
+          <code><a href="plotDoseResponse.html">plotDoseResponse()</a></code> 
+        </dt>
+        <dd>Plot dose response simulations with experimental data</dd>
+      </dl><dl><dt>
+          
+          <code><a href="plotTimeSeries.html">plotTimeSeries()</a></code> 
+        </dt>
+        <dd>Plot time series simulations with experimental data</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>

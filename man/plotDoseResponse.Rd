@@ -13,8 +13,8 @@ plotDoseResponse(simulations, experiments, dose, show.plot = TRUE)
 
 \item{dose}{vector of dose values to plot on the x axis}
 
-\item{show.plot}{boolean variable. Set show.plot=TRUE to display plots
-when running the funcion, FALSE otherwise}
+\item{show.plot}{boolean variable. Set \code{show.plot=TRUE} to display plots
+when running the funcion, \code{FALSE} otherwise}
 }
 \value{
 plot with simulations and experimental data

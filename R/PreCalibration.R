@@ -19,19 +19,13 @@
 #' to adjust this delta value.
 #'
 #' @export
-#' @param experiments a list of simulation experiments. Same as for
-#'     ABCMCMC.
-#' @param modelName this name will be used to find the file and
-#'     functions within the file according to naming conventions (the
-#'     model name and file can differ, the file-name can be attached
-#'     to the name as a comment).
-#' @param parMap a remapping function that takes ABC sampling
-#'     variables and returns valid model parameters
-#' @param npc sample size of pre-calibration.
+#' @param objectiveFunction function that, given a (vectorial)
+#'     parameter as input, simulates the model, and outputs the
+#'     distance between experimental data and data simulated from the
+#'     model with the parameter provided in input
+#' @param npc sample size of pre-calibration
 #' @param rprior a function that generates random ABC variables,
-#'     distributed according to the prior.
-#' @param getScore a function that maps the model's output values to
-#'     ABC score values (in comparison to data).
+#'     distributed according to the prior
 #' @param rep number of repetitions of the preCalibration process
 #' @return list with entries preDelta and prePar, final values of
 #'     calibration run
@@ -73,10 +67,10 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
 #' @export
 #' @param prePar a sample of parameters from pre-Calibration
 #' @param preDelta distance values (scores) for those parameters
-#' @param p fraction (top scoring) of sampled points to base Sigma on [default 0.05]
-#' @param sfactor scales Sigma up or down [default 0.1]
-#' @param delta ABC threshold [default 1e-2]
-#' @param num number of different starting parameter vectors [default 1].
+#' @param p fraction (top scoring) of sampled points to base Sigma on
+#' @param sfactor scales Sigma up or down
+#' @param delta ABC threshold
+#' @param num number of different starting parameter vectors.
 #' @return Sigma and startPar (matrix with `num` rows) as a list
 getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1){
 	if (all(is.na(preDelta)) || is.null(preDelta))
@@ -90,7 +84,7 @@ getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1)
 	preDelta <- preDelta[!is.na(preDelta)]
 	nk <- ceiling(ncol(prePar)*p)
 	pick1 <- which(preDelta <= delta)   # pick all pars that meet threshold
-	pick2 <- order(preDelta, decreasing = FALSE)[1:nk] # pick top p percent
+	pick2 <- head(order(preDelta, decreasing = FALSE),nk) # pick top p percent
 	if(length(pick1)>length(pick2)){
 		pick <- pick1
 	}else{

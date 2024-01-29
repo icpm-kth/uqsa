@@ -30,12 +30,24 @@ is difficult and dubious in stochastic simulations."><!-- mathjax --><script src
   <a class="nav-link" href="../articles/uqsa.html">Get started</a>
 </li>
 <li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-installation">Installation</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-installation">
+    <a class="dropdown-item" href="../articles/install.html">Full Installation Instructions</a>
+    <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
+  </div>
+</li>
+<li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
+    <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
+    <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
+    <a class="dropdown-item" href="../articles/sa.html">Sensiticity Analysis</a>
     <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
     <a class="dropdown-item" href="../articles/data.html">Importing data</a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
@@ -49,8 +61,10 @@ is difficult and dubious in stochastic simulations."><!-- mathjax --><script src
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">AKAR4</a>
+    <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4</a>
+    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Make a Shared Library</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -94,7 +108,7 @@ is difficult and dubious in stochastic simulations.</p>
 
 
 <dt>tab</dt>
-<dd><p>an SBtab document, as returned by SBtabVFGEN::sbtab_from_tsv()</p></dd>
+<dd><p>an SBtab document, as returned by <code><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">SBtabVFGEN::sbtab_from_tsv()</a></code></p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -105,8 +119,8 @@ is difficult and dubious in stochastic simulations.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>For these reasons, this functions assumes: "kf*A*B*[...]" with the
-first word "kf" representing the reaction rate coefficient.</p>
+    <p>For these reasons, this functions assumes: <code>kf*A*B*[...]</code> with the
+first word <code>kf</code> representing the reaction rate coefficient.</p>
 <p>Given an SBtab document, this function finds the value (if any) and
 unit of this coefficient. The coefficient itself can be defined as
 a fixed constant, a parameter, or an algebraic expression in the

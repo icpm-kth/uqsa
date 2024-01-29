@@ -3,12 +3,24 @@ template:
   bootstrap: 5
 navbar:
   structure:
-    left:  [intro, articles, tutorials, reference, news]
+    left:  [intro, installation, articles, tutorials, reference, news]
     right: [search, github]
   components:
+    installation:
+      text: Installation
+      menu:
+      - text: Full Installation Instructions
+        href: articles/install.html
+      - text: Short Instructions
+        href: articles/installation.html
     articles:
       text: Documentation
       menu:
+      - text: Introduction
+      - text: Uncertainty Quantification
+        href: articles/uq.html
+      - text: Sensiticity Analysis
+        href: articles/sa.html
       - text: Model and data management
       - text: SBtab
         href: articles/SBtab.html
@@ -16,6 +28,9 @@ navbar:
         href: articles/models.html
       - text: Importing data
         href: articles/data.html
+      - text: -------
+      - text: Build your own Model
+        href: articles/user_model.html
       - text: -------
       - text: Paremeter estimation and uncertainty quantification
       - text: Simulating a model
@@ -31,10 +46,14 @@ navbar:
         menu:
         - text: Overview
           href: articles/examples_overview.html
-        - text: AKAP79
+        - text: Simulate AKAP79
+          href: articles/simAKAP79.html
+        - text: sample AKAP79
           href: articles/AKAP79.html
-        - text: AKAR4
+        - text: sample AKAR4
           href: articles/AKAR4.html
+        - text: Make a Shared Library
+          href: articles/shortMakeSharedLibrary.html
     reference:
         text: Function reference
         href: reference/index.html
@@ -51,9 +70,6 @@ reference:
   - fitCopula
   - getMCMCPar
   - importReactionsSSA
-  - import_experiments
-  - import_from_SBtab
-  - makeAcceptanceProbability
   - makeGillespieModel
   - makeIndepCopula
   - makeObjective
@@ -64,10 +80,8 @@ reference:
   - rCopulaPrior
   - rNormalPrior
   - rUniformPrior
-  - runModel
   - sensitivity
   - sensitivity.graph
-  - simulator.R
   - simulator.c
   - uqsa_example
 - title: "Internal Functions"
@@ -83,3 +97,6 @@ reference:
   - propensity
   - sum.of.bin.variance
   - uqsa-package
+  - getDose
+  - plotDoseResponse
+  - plotTimeSeries

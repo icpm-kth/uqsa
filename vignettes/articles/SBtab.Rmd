@@ -3,7 +3,7 @@ title: "SBtab"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
+knitr::opts_chunk$set(cache = TRUE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -104,9 +104,16 @@ solvers, and load the data from them.
 
 Each file has a header, e.g.:
 
-```txt
+```{txt}
 !!SBtab SBtabVersion='1.0' TableName='Reaction' TableType='Reaction' TableTitle='A list of Reactions' Document='myModel'
 ```
+
+This header doesn't have columns, it's a line of text, immediately
+followed by the actual table. In the sections below, we specify the
+header like above and then give an example table that can follow this
+header. You can also include other columns in any order; only some
+column names have special meanings, unknown columns will not be parsed
+(they are harmless).
 
 We don't parse the version attribute or any other attribute other than
 `TableName` and `Document`. We use the `Document` attribute to assign
@@ -118,15 +125,17 @@ The second line contains the table column headers. The first column
 can be called either `!ID` or `!Name` (it is harmless to have both,
 but only the first one counts). If the first column is not called
 that, the scripts will carry on regardless, assuming that it is some
-kind of name (so `!Id`, `!id`, or `ID?` may also work). All other
-columns are found by name, exactly. All other columns can appear in
-any order. Any amount of columns can be added with names not starting
-with exclamation points, they are ignored.
+kind of name (so `!Id`, `!id`, or `ID?` will also work for us -- not
+for other software). All other columns are found by name, exactly. All
+other columns can appear in any order. Any amount of columns can be
+added with names not starting with exclamation points, they are
+ignored.
 
 In the following sub-sections we will list the minimum set of columns
 for each table, the sub-section heading refers to the required
 `TableName` attribute for this kind of table. The set of columns are
-given as example tables. Each time we omit the `!!SBtab` heading from the table to not mess up formatting.
+given as example tables. Each time we omit the `!!SBtab` heading from
+the table to not mess up formatting.
 
 There are two generic table-types that can be used if no specific one
 is applicable: `TableType='Quantity'` and
@@ -254,6 +263,25 @@ Events will interrupt the solver in the rgsl package, change the valuse of input
 
 Possible operations in >*OP*:*ID*: `SET`,`ADD`,`SUB`,`MUL`,`DIV`,
 while ID can refer to any parameter or state variable (compound).
+
+## Experiments
+
+```sh
+!!SBtab TableName='Experiments' Document='myModel'
+```
+
+|!ID|!Type|!Time|!T0|!Event|!Citation|
+|--:|:---:|:---:|:-:|:----:|:--------|
+|Bradshaw2003Fig2E|Dose Response|600.0|-100.0|Activation0|https://doi.org/10.[...]|
+|...|...|...|...|...|...|
+
+where `Type` is: `Time Series`, or `Dose Response`. The initial time
+for the ODE $t0$ corresponds to the beginning of the experiment setup:
+`!T0` (the time value). The plain `!Time` is the default time of
+measurements; for dose response experiments, this is the only place to
+specify the measurement time. `!Event` names the table that contains
+instructions for scheduled events (see above). The `!Citation` column
+is entirely optional.
 
 # Alternatives
 

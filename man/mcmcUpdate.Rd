@@ -5,15 +5,16 @@
 \title{This function proposes an MCMC candidate variable, and either accepts or rejects the candidate}
 \usage{
 mcmcUpdate(
+  simulate,
+  experiments,
+  model,
   logLikelihood,
   gradLogLikelihood,
   fisherInformation,
+  fisherInformationPrior,
   dprior,
-  model,
-  experiments,
   parMap = identity,
-  parMapJac = 1,
-  eps = 1e-05
+  parMapJac = 1
 )
 }
 \arguments{

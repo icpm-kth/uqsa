@@ -1,0 +1,190 @@
+---
+title: "Installation"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+In this package, we frequently solve an ordinary differential equation
+model in the context of biological experiments. This can be done using
+`deSolve`, but we prefer to use `gsl_odeiv2`, for whcih we have
+written a binding into R (called `rgsl`). The user facing interface is
+designed around the idea of *experiments* and is more convenient (and
+faster). To use this simulation backend, your system requires the gnu
+scientific library, which R cannot install by itself, usually the
+admin of your machine can do this. If that is you and you don't have
+GSL yet, then follow the guide in the next section.
+
+We know that it is in principle possible to use this package on
+windows, but have no experience with this, and cannot provide
+instructions or help with problems.
+
+# GNU Scientific Library (optional)
+
+For the simulation backend using the [GNU Scientific
+Library](https://www.gnu.org/software/gsl/) (gsl, odeiv2), the library
+needs to be installed in your OS, it is not an R package (it's a
+library dependency).
+
+To compile sources with gsl requires c compiler options related to
+linking and the librarie's location. They can look like this: `-lgsl
+-lgslcblas -lm`, but also more complex (this depends on your
+system). We use
+[pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) to
+determine the right options (or `pkgconf`, which does the same thing
+(but faster)). If `pkg-config` is missing from the system,
+installation will fail (it is available for MAC, GNU Linux, Unix, BSD,
+and Windows).
+
+|  Operating System | install gsl                   | install pkg-config                     |
+|------------------:|:------------------------------|:---------------------------------------|
+| Debian and Ubuntu | `sudo apt install libgsl-dev` | `sudo apt install pkg-config`          |
+|      Alpine Linux | `sudo apk add gsl`            | `sudo apk add pkgconf`                 |
+|          GNU Guix | `guix install gsl`            | `guix install pkg-config`              |
+|        Arch Linux | `sudo pacman -S gsl`          | `sudo pacman -S pkgconf`               |
+|            Gentoo | `sudo emerge sci-libs/gsl`    | `sudo emerge virtual/pkgconfig`        |
+|             MACOS | `brew install gsl`            | `brew install pkg-config` or `pkgconf` |
+
+
+Once `gsl` and `pkg-config` are available on the system, the
+`icpm-kth/rgsl` package should compile nicely.
+
+If you are in a *normal user* shell (not a root shell, `su -`), and not
+using `guix` or `NixOS`, then the commands require `sudo` or `doas` in
+front of them to have the required system administration rights. GNU
+Guix and NIXOS have package managers that don't require administration
+rights.
+
+# R itself
+
+Availability of specific versions depend on the version of your OS,
+how up-to-date your package database. Here is a quick list of the
+approximate command:
+
+| Operating System | install R                 |
+|-----------------:|:--------------------------|
+|     Alpine linux | `sudo apk add R`          |
+|    Debian/Ubuntu | `sudo apt install r-base` |
+|         GNU Guix | `guix install r`          |
+|             Arch | `sudo pacman -S r`        |
+|           Gentoo | `emerge --ask dev-lang/R` |
+
+On MAC, please follow the instructions on the
+[R-studio](https://posit.co/download/rstudio-desktop/) web-site.
+
+We do not have experience with R on windows, specifically when it
+comes to GSL and C compilers to compile the C code included in an R
+package, it may just work, but if not, then maybe these could help:
+
+- [WSL](https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux)
+- [Cygwin](https://en.wikipedia.org/wiki/Cygwin))
+
+
+
+# R packages
+
+Your system's package manager may have system-wide R packages, e.g.:
+ubuntu has `r-cran-desolve`, such that `sudo apt install
+r-cran-desolve` would install the *deSolve* package for all users of
+your machine. In HPC environments this is preferable as user accounts
+can have harsh quotas on *file sizes* and *file numbers*.
+
+But, R packages can also be installed from within R (for individual
+users), but only to a location that is writable to you, typically in your
+`$HOME` diectory. Please ensure that `.libPaths()` returns at least
+one location that you have write access to.
+
+```{r, .libPaths, eval=FALSE}
+.libPaths()
+```
+
+If not, you can create a new directory, and make it known to R:
+
+```{sh, eval=FALSE}
+mkdir -p ~/R/library && echo "R_LIBS=~/R/library" >> ~/.Renviron
+```
+
+Now, you can install R packages from *The Comprehensive R Archive Network* [cran](https://cran.r-project.org/) and [github](https://github.com/):
+
+```{r, label='install packages from CRAN', eval=FALSE}
+install.packages("remotes")
+```
+
+Our packages are not on CRAN, and can be installe dlike this:
+
+```{r, remotes, eval=FALSE}
+remotes::install_github("icpm-kth/uqsa")
+```
+
+# Installation of Companion packages
+
+We have developed two companion packages:
+
+- [rgsl](icpm-kth/rgsl)
+    - solves ODEs with an interface organised around *simulation experiments*
+    - uses solvers from the GNU Scientific Library
+    - is used in most of our examples
+- [SBtabVFGEN](icpm-kth/SBtabVFGEN)
+    - organises the storage and loading of models
+    - loads SBtab content from tsv, ods, and excel files
+    - creates vfgen, MOD, sbml, and format free ODE files
+    - also loads biological data contained in the SBtab files into
+      R variables (lists of *simulation experiment* setups)
+
+Both are optional, but recommended (our examples use them).
+
+## RGSL
+
+This package solves ODE initial value problems, given as lists of
+simulation experiments, with sudden interventions (like *activation*,
+or a sudden signal).
+
+```{r, eval=FALSE}
+remotes::install_github("icpm-kth/rgsl")       # requires gsl in your OS, see above
+```
+
+This can be replaced with the standard solvers in the deSolve
+package. In our examples, the solvers in deSolve are always slower.
+
+## SBtab Model Handling
+
+This package loads a model written in the SBtab format, which is
+designed for models in systems biology, but much easier to read than
+SBML:
+
+```{r, eval=FALSE}
+remotes::install_github("icpm-kth/SBtabVFGEN") # if you plan to use SBtab
+```
+
+This can be replaced, if you have a different method of model creation
+or want to write the model source files by hand (which is hard for
+large models).
+
+# Installation of UQSA
+
+```{r, eval=FALSE}
+remotes::install_github("icpm-kth/uqsa")       # this package
+library(uqsa)                                  # to load it
+```
+
+Read the articles on this website, especially the *Example* articles
+to learn more: AKAR4, AKAP79, and CaMKII.
+
+## Examples in the Package
+
+The package itself also includes example models, with a *run* script
+for each of them. We advise users to copy the run scripts either from
+the repository or the installed package and adapt them. The location
+of a *run* file can be found like this:
+
+```{r, eval=FALSE}
+uqsa::uqsa_example("AKAP79",pat="^run.*R$")
+```
+
+or by browsing the folders on GitHub (`inst/extdata/`). Copy one of
+them and adapt it to your needs.
+

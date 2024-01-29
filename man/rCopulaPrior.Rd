@@ -15,7 +15,3 @@ a matrix of random values
 \description{
 The returned function generates n random vectors, as rows of a matrix.
 }
-\examples{
-rcp<-rCopulaPrior(makeIndepCopula(ll=c(0,1,2),ul=c(1,2,3)))
-rcp(12)
-}

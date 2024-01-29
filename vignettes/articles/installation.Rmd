@@ -1,9 +1,9 @@
 ---
-title: "Installation"
+title: "Short Installation Instructions"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
+knitr::opts_chunk$set(cache = TRUE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -12,32 +12,46 @@ knitr::opts_chunk$set(
 
 # Installation
 
-```R
+```{r remotes, eval=FALSE}
 # requires the 'remotes' package
 remotes::install_github("icpm-kth/uqsa")
 ```
 
 Alternatively, download a release `tar.gz` or `zip` file and run
 
-```sh
+```{sh CMD, eval=FALSE}
 R CMD INSTALL uqsa*.{tar.gz,zip}
 ```
 
 ## Prerequisites
 
 The R package `uqsa` contains examples that in addition to the normal package dependencies also use
+
 * reshape2, ggplot2;
-* the R package `icpm-kth/SBtabVFGEN`, used to generate vector field files from SBtab files (it can be installed by running `remotes::install_github("icpm-kth/SBtabVFGEN")`); 
-    - `SBtabVFGEN` benefits from having `libSBML` installed with R bindings; this is not a hard dependency, but required for export to SBML, L2V4.
+* the R package `icpm-kth/SBtabVFGEN`, used to generate vector field
+  files from SBtab files (it can be installed by running
+  `remotes::install_github("icpm-kth/SBtabVFGEN")`);
+    - `SBtabVFGEN` benefits from having `libSBML` installed with R
+      bindings; this is not a hard dependency, but required for export
+      to SBML, L2V4.
     - `hdf5r` is also of (very minor) optional benefit.
-* the R package `icpm-kth/rgsl`, used to solve ODEs in C using functions from the GNU scientific library (gsl) (you can install it by running `remotes::install_github("icpm-kth/rgsl")`).
-    - you also need to install the [GNU Scientific Library](https://www.gnu.org/software/gsl/) itself (the rgsl package was tested on MACOS and some GNU Linux platforms [debian, ubuntu])
-* The auto-generation of code, be it GSL odeiv2 compatible code or R code for each model is done using the shell script in `icpm-kth/RPN-derivative`; that package has several backends for analystic (symbolc) math (the thing that computer algebra systems do)
+* the R package `icpm-kth/rgsl`, used to solve ODEs in C using
+  functions from the GNU scientific library (gsl) (you can install it
+  by running `remotes::install_github("icpm-kth/rgsl")`).
+    - you also need to install the [GNU Scientific
+      Library](https://www.gnu.org/software/gsl/) itself (the rgsl
+      package was tested on MACOS and some GNU Linux platforms
+      [debian, ubuntu])
+* The auto-generation of code, be it GSL odeiv2 compatible code or R
+  code for each model is done using the shell script in
+  `icpm-kth/RPN-derivative`; that package has several backends for
+  analystic (symbolc) math (the thing that computer algebra systems
+  do)
     - [maxima](https://maxima.sourceforge.io/)
     - [yacas](http://www.yacas.org/index.html)
-    - the [RPN-derivative](icpm-kth/RPN-derivative) package itself has a code to perform derivatives (needs `make && sudo make install`)
-
-An R kernel for jupyter notebooks [IRkernel](https://github.com/IRkernel/IRkernel) is required to run the Jupyter notebook with examples.
+    - the [RPN-derivative](icpm-kth/RPN-derivative) package itself has
+      code to perform derivatives (needs `make && sudo make
+      install`)
 
 ### Note on Model code
 

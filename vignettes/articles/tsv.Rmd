@@ -1,0 +1,99 @@
+---
+title: "Tab Separated Values"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Storing models in the TSV format
+
+Advantages:
+
+- tsv files are text files. You can use version control to track
+  changes (git)
+- tsv files are easy to read in any programming language, xml is not
+    + both `ods` and `xlsx` are compressed xml
+    + all real spreadsheet formats, and sbml, require a library with
+      language bindings to import the content into a language like R
+      (or similar)
+    + if the import libraries become unmaintained, and theR package is
+      removed from CRAN, the format becomes unavailable.
+- spreadsheets have many features that don't translate well into other
+  data objects (like data frames, or arrays)
+    + hidden columns
+    + hidden rows
+    + cells with comments
+    + colors
+    + multiline cell content
+
+You may be asking yourself: json, yaml, toml? All valid questions!
+But, tsv is the simlest of the lot.
+
+Disadvantages:
+
+- TSV files are best when they contain one table at a time, thus an
+  SBtab document should be a collection of tsv files (for us, this is
+  a *must*)
+- TSV files are ususally not displayed in a pretty way when opening
+  them in a text editor (the columns do not align)
+- text files can have different line endings
+   + `\n` on some systems
+   + `\r\n` on others (or was it `\n\r`?)
+- some fields could be unnecessarily quoted by exporters, e.g.:
+    + `kf * A * B` could be exported as `"kf * A * B"` (even though
+      there are spaces, not tabs)
+
+## Line Endings
+
+To remove the `\r`, if it was inserted by a spreadsheet program:
+
+```{sh, eval=FALSE}
+tr -d '\r'
+```
+
+or the reverse:
+
+```{sh, eval=FALSE}
+tr '\n' '\r\n'
+```
+
+to restore line endings that operating systems ending *dows will prefer.
+
+## Conversion
+
+Excel and LibreOffice will not just export a spreadsheet into a
+collection of `.tsv` files. But the `ssconvert` program from the
+gnumeric package can do this.
+
+Our [SBtabVFGEN package](https://www.github.com/icpm-kth/SBtabVFGEN)
+contains a convenience script to do this (still using ssconvert), with
+the most important line being:
+
+```{sh tsv, eval=FALSE}
+LC_ALL="C" ssconvert -S \
+ --export-type=Gnumeric_stf:stf_assistant \
+ --export-options="quoting-mode=never separator='	' locale=C" \
+   DemoModel.{ods,xlsx,gnumeric} "%s.tsv"
+```
+
+There is also a companion script that combines several `.tsv` files
+into one spreadsheet:
+
+```{sh, eval=FALSE}
+$ ls -1 ~/SBtabVFGEN/*.sh
+~/SBtabVFGEN/ods_to_tsv.sh
+~/SBtabVFGEN/tsv_to_ods.sh
+```
+
+Where the tsv to ods conversion amounts to:
+
+```{sh, eval=FALSE}
+ssconvert --merge-to="OUT-FILE.ods" *.tsv
+```
+
+and the `.ods` file ending can be replaced by a different format.
+

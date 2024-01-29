@@ -3,7 +3,7 @@ title: "ABC sampling"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
+knitr::opts_chunk$set(cache = TRUE,
   collapse = TRUE,
   comment = "#>"
 )

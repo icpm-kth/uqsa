@@ -3,7 +3,7 @@ title: "AKAR4"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
+knitr::opts_chunk$set(cache = TRUE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -16,52 +16,107 @@ library(SBtabVFGEN)
 library(rgsl)
 ```
 
-We load the model from a collection of TSV files, convert the contents
-to a list of `data.frames` and also load the R functions of the
-model. The R file we source includes a variable called `model`, it is
-a list of functions, onme of which is called `model$par()` and returns
-the default parameters of the model in linear space:
+We load the model from a collection of TSV files (`inst/extdata/AKAR4`
+on github), the function below locates the tsv files after package
+installation:
 
-```{r setup}
-model.tsv <- uqsa_example("AKAR4",full.names=TRUE)
-model.tab <- sbtab_from_tsv(model.tsv) # SBtabVFGEN
-source(uqsa_example("AKAR4",pat="^AKAR4[.]R$"))
+```{r, setup}
+modelFiles <- uqsa_example("AKAR4",full.names=TRUE)
+```
+Then we import the contents as a list of `data.frames`
 
-modelName <- checkModel(comment(model.tab),uqsa_example("AKAR4",pat="_gvf[.]c$")) # SBtabVFGEN
+```{r, import}
+SBtab <- sbtab_from_tsv(modelFiles) # SBtabVFGEN
+```
+We load the R functions of the
+model (e.g. the jacobian of the model):
 
-numPar <- nrow(model.tab$Parameter)
-parNames <- row.names(model.tab$Parameter)
-parVal <- model$par()[1:numPar]
+- `AKAR4_vf`, the vector field,
+- `AKAR4_jac`, the jacobian,
+- `AKAR4_default`, the default parameters
+
+The R file we source additionally includes a variable called `model`, which serves the purpose of having generic names for all model constituents, to make it easier to write generic scripts:
+
+- `model$vf()` corresponds to `AKAR4_vf()`
+    + but does nt use AKAR4 in the name
+- `model$jac()` corresponds to `AKAR4_jac()`
+- `model$name` is a string, `"AKAR4"` in this case
+
+You can investigate the sourced file to find out more.
+
+Generally, `model` is a list of functions, one of which is called
+`model$par()` and returns the default parameters of the model in
+linear space:
+
+```{r, label="source the model files"}
+source(uqsa_example("AKAR4",pat="^AKAR4[.]R$")) # loads "model"
+model$name   # AKAR4
+model$par()  # default values for parameters
+model$init() # default initial values for ODE state variables
+```
+
+The model exists in R and C form:
+- `AKAR4.R`
+- `AKAR4_gvf.c`
+
+The file ending in `_gvf.c` contains functions used for simulations
+with `rgsl::r_gsl_odeiv2_outer()` (`_gvf.c` needs to be compiled). The
+functions in `.R` can be used more freely in R, and are functionally
+identical (they describe the same model, but solutions are slower in
+R).
+
+The next function call checks that the model `[...]_gvf.c` file exist,
+and builds a shared library `.so` from these sources. It attaches a
+comment to its return value that indicates how the shared library for
+this model is named:
+
+```{r, label="make shared library"}
+modelName <- checkModel("AKAR4",uqsa_example("AKAR4",pat="_gvf[.]c$")) # SBtabVFGEN
+comment(modelName) # should be AKAR4.so
+```
+
+The comment will be used to find the `.so` file (if you move that
+file, adjust the comment on the `modelName`).
+
+We want to sample in logarithmic space, so we set up a mapping
+function `parMap`. The sampler will call this function on the sampling
+variable `parABC` before it simulates the model.
+
+```{r, label="describe parameter space"}
 parMap <- function (parABC=0) {
 	return(10^parABC)
 }
-
 ```
 
-We want to sample in logarithmic space, so we set up a mapping
-function that the sampler will call before it simulates the model.
+The ODE model receives a parameter vector `p` for each experiment. It
+consists of the biological model parameters (which are the same for
+all experiments), and input parameters (which together with initial
+conditions distinguish the experimental setups). This model deosn't
+have input parameters, so the biological and ODE parameters are the
+same. Otherwise, two different kinds of parameters are concatenated into
+one big numeric vector inside of the solver. The model function
+`AKAR4_default()` returns the default values for `p`.
 
-Next, we load the list of experiments from the same list of data.frames (SBtab content):
-```{r load-experiments}
-experiments <- sbtab.data(model.tab)
+Next, we load the list of experiments from the same list of `data.frames` (SBtab content):
+```{r, "load-experiments"}
+experiments <- sbtab.data(SBtab)
+parVal <- AKAR4_default()
+print(parVal)
 ```
 
-Define lower and upper Limits for log-uniform prior distribution for the parameters:
+Define lower and upper limits for log-uniform prior distribution for
+the parameters:
 
 ```{r limits}
-defRange <- 1000
-ll <- c(parVal/defRange)
-ul <- c(parVal*defRange)
-ll <- log10(ll) # log10-scale
-ul <- log10(ul) # log10-scale
+ll <- log10(parVal) - 3
+ul <- log10(parVal) + 3
 ```
 
-Define Number of Samples for the Precalibration (npc) and each
-ABC-MCMC chain (ns). During ABC, we save every 100th point, so this
-number should be lower than the pre-calibration size.
+Define Number of Samples for the pre-calibration `npc` and each
+ABC-MCMC chain `ns`. During ABC, we save every 100-th point, so `work(nChains*ns*100) ≈ work(npc)`:
 
 ```{r sample-size}
-ns <- 800   # ABC-MCMC sample size
+ns <- 800    # ABC-MCMC sample size
 npc <- 50000 # pre-calibration size
 ```
 
@@ -90,30 +145,30 @@ rprior <- rUniformPrior(ll, ul)
 
 start_time = Sys.time()
 for (i in seq(length(chunks))){
-	expInd <- chunks[[i]]
-	simulate <- simulator.c(experiments[expInd],modelName,parMap,noise=TRUE)
-	Obj <- makeObjective(experiments[expInd],modelName,distanceMeasure,parMap,simulate)
-	time_pC <- Sys.time()
+    expInd <- chunks[[i]]
+    simulate <- simulator.c(experiments[expInd],modelName,parMap,noise=TRUE)
+    Obj <- makeObjective(experiments[expInd],modelName,distanceMeasure,parMap,simulate)
+    time_pC <- Sys.time()
 
-	pC <- preCalibration(Obj, npc, rprior, rep=3)
-	M <- getMCMCPar(pC$prePar, pC$preDelta, delta, num=1)
-	time_pC <- Sys.time() - time_pC
-	cat(sprintf("\t - time spent on precalibration: %g s\n",time_pC))
+    pC <- preCalibration(Obj, npc, rprior, rep=3)
+    M <- getMCMCPar(pC$prePar, pC$preDelta, delta, num=1)
+    time_pC <- Sys.time() - time_pC
+    cat(sprintf("\t - time spent on precalibration: %g s\n",time_pC))
 
-	time_ABC <- Sys.time()
-	mcmc <- ABCMCMC(Obj, as.numeric(M$startPar), ns, M$Sigma, delta, priorPDF)
-	time_ABC <- Sys.time() - time_ABC
-	cat(sprintf("\t - time spent on ABC-MCMC: %g s\n",time_ABC))
+    time_ABC <- Sys.time()
+    mcmc <- ABCMCMC(Obj, as.numeric(M$startPar), ns, M$Sigma, delta, priorPDF)
+    time_ABC <- Sys.time() - time_ABC
+    cat(sprintf("\t - time spent on ABC-MCMC: %g s\n",time_ABC))
 
-	if (i>1){
-		simulate <- simulator.c(experiments[chunks[[1]]],modelName,parMap)
-		Obj <- makeObjective(experiments[chunks[[1]]],modelName,distanceMeasure,parMap,simulate)
-		mcmc$draws <- checkFitWithPreviousExperiments(mcmc$draws, Obj, delta)
-	}
+    if (i>1){
+        simulate <- simulator.c(experiments[chunks[[1]]],modelName,parMap)
+        Obj <- makeObjective(experiments[chunks[[1]]],modelName,distanceMeasure,parMap,simulate)
+        mcmc$draws <- checkFitWithPreviousExperiments(mcmc$draws, Obj, delta)
+    }
 
-	C <- fitCopula(mcmc$draws)
-	priorPDF <- dCopulaPrior(C)
-	rprior <- rCopulaPrior(C)
+    C <- fitCopula(mcmc$draws)
+    priorPDF <- dCopulaPrior(C)
+    rprior <- rCopulaPrior(C)
 }
 end_time = Sys.time()
 time_ = end_time - start_time
@@ -130,8 +185,18 @@ hexbin::hexplom(mcmc$draws)
 
 A sensitivity plot using the results of the above loop:
 
-```{r plot}
+```{r simulate}
 y<-simulate(t(mcmc$draws))
+dim(y[[1]]$func)
+```
+
+where `y[[1]]` refers to the simulation corresponding to the first
+experiment: `experiment[[1]]`, and `$func` refers to the output
+function values (rather than state variables). The outout functions
+are defined in the table `SBtab$Output`.
+
+
+```{r plot}
 f<-aperm(y[[1]]$func[1,,]) # aperm makes the sample-index (3rd) the first index of f, default permutation
 S<-sensitivity(mcmc$draws,f)
 S[1,]<-0 # the first index of S is time, and initially sensitivity is 0

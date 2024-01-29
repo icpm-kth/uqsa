@@ -4,20 +4,10 @@
 \alias{mcmc}
 \title{Markov Chain Monte Carlo}
 \usage{
-mcmc(simulate, experiments, update, model)
+mcmc(update)
 }
 \arguments{
-\item{simulate}{a function that simulates the model, given MCMC
-values}
-
-\item{experiments}{list of experiments}
-
 \item{update}{and update function}
-
-\item{model}{a list of model functions (R functions) for the
-underlying ODE model}
-
-\item{dprior}{probability density of the prior distribution}
 }
 \value{
 M(initiPar,N), a function of initial starting values and
