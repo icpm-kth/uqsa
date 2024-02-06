@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" version="4">
+  <model id="AKAR4cl">
+    <listOfUnitDefinitions>
+      <unitDefinition id="substance">
+        <listOfUnits>
+          <unit kind="mole" exponent="1" scale="-6" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="time">
+        <listOfUnits>
+          <unit kind="second" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="volume">
+        <listOfUnits>
+          <unit kind="litre" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="area">
+        <listOfUnits>
+          <unit kind="metre" exponent="2" scale="-6" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="length">
+        <listOfUnits>
+          <unit kind="metre" exponent="1" scale="-6" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="micromole_per_liter">
+        <listOfUnits>
+          <unit kind="mole" exponent="1" scale="-6" multiplier="1"/>
+          <unit kind="litre" exponent="-1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="one_over_micromolarity_second">
+        <listOfUnits>
+          <unit kind="dimensionless" exponent="1" scale="0" multiplier="1"/>
+          <unit kind="mole" exponent="-1" scale="-6" multiplier="1"/>
+          <unit kind="litre" exponent="1" scale="0" multiplier="1"/>
+          <unit kind="second" exponent="-1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="one_over_second">
+        <listOfUnits>
+          <unit kind="dimensionless" exponent="1" scale="0" multiplier="1"/>
+          <unit kind="second" exponent="-1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="liter">
+        <listOfUnits>
+          <unit kind="litre" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment id="Compartment" name="Compartment" size="1" units="liter"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="AKAR4" name="AKAR4" compartment="Compartment" initialConcentration="0.2" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="AKAR4_C" name="AKAR4_C" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="AKAR4p" name="AKAR4p" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="C" name="C" compartment="Compartment" initialConcentration="0" substanceUnits="substance" hasOnlySubstanceUnits="false"/>
+      <species id="AKAR4pOUT" name="AKAR4pOUT" compartment="Compartment" initialConcentration="0" substanceUnits="substance" boundaryCondition="true"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter id="kf_C_AKAR4" name="kf_C_AKAR4" value="0.018" units="one_over_micromolarity_second"/>
+      <parameter id="kb_C_AKAR4" name="kb_C_AKAR4" value="0.106" units="one_over_second"/>
+      <parameter id="kcat_AKARp" name="kcat_AKARp" value="10.2" units="one_over_second"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="AKAR4pOUT">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <cn type="integer"> 108 </cn>
+            <apply>
+              <times/>
+              <cn type="integer"> 380 </cn>
+              <ci> AKAR4p </ci>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="reaction_1" name="reaction_1" reversible="true">
+        <listOfReactants>
+          <speciesReference species="C"/>
+          <speciesReference species="AKAR4"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="AKAR4_C"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> kf_C_AKAR4 </ci>
+                  <ci> C </ci>
+                  <ci> AKAR4 </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> kb_C_AKAR4 </ci>
+                  <ci> AKAR4_C </ci>
+                </apply>
+              </apply>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction_2" name="reaction_2" reversible="false">
+        <listOfReactants>
+          <speciesReference species="AKAR4_C"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="AKAR4p"/>
+          <speciesReference species="C"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> kcat_AKARp </ci>
+              <ci> AKAR4_C </ci>
+              <ci> Compartment </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

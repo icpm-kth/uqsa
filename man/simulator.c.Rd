@@ -2,9 +2,15 @@
 % Please edit documentation in R/runModel.R
 \name{simulator.c}
 \alias{simulator.c}
-\title{This creates a closure that simulates Experiments using the ODE Model}
+\title{This creates a closure that simulates the model}
 \usage{
-simulator.c(experiments, modelName, parMap = identity, noise = FALSE)
+simulator.c(
+  experiments,
+  modelName,
+  parMap = identity,
+  noise = FALSE,
+  sensApprox = NULL
+)
 }
 \arguments{
 \item{experiments}{a list of experiments to simulate: inital values, inputs, time vectors, initial times}
@@ -23,24 +29,9 @@ deterministic solution of the ODE system.}
 a closure that returns the model's output for a given parameter vector
 }
 \description{
-Simulation experiments consist at least of initial values for the
-state variables, a parameter vector, and a list of times at which
-the solution needs to be known.
+This is a shorter alternative to the runModel function (C backend).
 }
 \details{
-This function will use the GSL solvers.  In
-addition, a model usually has observables: values that depend on
-the state variables and can be measured in a real experiment. These
-are modeled by output functions.
-
-We distinguish normal parameters and input parameters. Input
-parameters are known and not subject to any estimation
-procedure. Furthermore, they are meant to represent the
-experimental conditions, so they are either under direct control of
-the experimenter or very carefully measured. The inputs are
-probably different for each simulation experiment in at least one
-value.
-
 It returns a closure around:
 - experiments,
 - the model, and
@@ -50,11 +41,11 @@ The returned function depends only on parABC (the sampling
 parameters). The simulation will be done suing the rgsl backend.
 }
 \examples{
-#   model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
-#   experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
-#   parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
+ #  model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
+ #  experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
+ #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 
-#   modelName <- checkModel("<insert_model_name>_gvf.c")
-#   simulate <- simulator.c(experiments, modelName,  parABC)
-#   yf <- sim(parABC)
+ #  modelName <- checkModel("<insert_model_name>_gvf.c")
+ #  simulate <- simulator.c(experiments, modelName,  parABC)
+ #  yf <- sim(parABC)
 }

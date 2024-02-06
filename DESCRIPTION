@@ -13,22 +13,19 @@ License: GPL (>=3)
 Encoding: UTF-8
 LazyData: true
 Imports:
-        parallel,
-        VineCopula,
-        MASS,
-        ks,
-        SBtabVFGEN
+	parallel,
+	VineCopula,
+	MASS,
+	ks,
+	SBtabVFGEN,
+	rgsl
 Suggests:
-        rgsl,
-        deSolve,
-        ggplot2,
-        testthat (>= 3.0.0),
-        knitr,
-        rmarkdown,
-        hexbin
-Remotes:
-        icpm-kth/SBtabVFGEN,
-        icpm-kth/rgsl
+    deSolve,
+    ggplot2,
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown,
+    hexbin
 RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3

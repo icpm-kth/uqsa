@@ -18,8 +18,8 @@ experiments <- sbtab.data(model.tab)
 # we take the model name as inferred from the sbtab document:
 modelName <- checkModel(comment(model.tab), uqsa_example("CaMKII",pat="_gvf[.]c$"))
 ## Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-ns <- 5000 # Size of the sub-sample from each chain
-npc <- 10000 # pre-calibration sample size
+ns <- 500 # Size of the sub-sample from each chain
+npc <- 100000 # pre-calibration sample size
 
 numPar <- nrow(model.tab$Parameter)
 parVal <- model$par()[1:numPar]
@@ -81,13 +81,13 @@ for (i in 1:length(experimentsIndices)){
 	cat("#####Starting run for Experiments ", expInd, "######\n")
 
 	## Run Pre-Calibration Sampling
-	message("- Precalibration")
+	cat("- Precalibration\n")
 	start_time_preCalibration <- Sys.time()
 	options(mc.cores=nCores)
 	pC <- preCalibration(objectiveFunction, npc, rprior, rep=3)
-	cat("\nPreCalibration:")
+	cat("\tPreCalibration time:")
 	print(Sys.time()-start_time_preCalibration)
-
+	cat("\n")
 	## Get Starting Parameters from Pre-Calibration
 	M <- getMCMCPar(pC$prePar, pC$preDelta, delta=delta, num = nChains)
 	for(j in 1 : nChains){
@@ -98,8 +98,8 @@ for (i in 1:length(experimentsIndices)){
 		cat("\tMax distance of starting parameter for chain",j," = ", max(objectiveFunction(M$startPar[,j])),"\n")
 	}
 	## Run ABC-MCMC Sampling
-	cat(sprintf("-Running MCMC chains \n"))
-	start_time_ABC = Sys.time()
+	cat("-Running MCMC chains \n")
+	start_time_ABC <-  Sys.time()
 
 	## here we set up a cluster and start n parallel MCMC chains
 	## so, we reduce the number of cores per chain (the chains are on the same computing node)
@@ -110,7 +110,7 @@ for (i in 1:length(experimentsIndices)){
 		cl,
 		1:nChains,
 		function(j) {
-				ABCMCMC(objectiveFunction, M$startPar[,j,drop=FALSE], ns, M$Sigma, delta, dprior)
+			ABCMCMC(objectiveFunction, M$startPar[,j,drop=FALSE], ns, M$Sigma, delta, dprior)
 		}
 	)
 	stopCluster(cl)
@@ -124,11 +124,12 @@ for (i in 1:length(experimentsIndices)){
 	}
 	end_time = Sys.time()
 	time_ = end_time - start_time_ABC
-	cat("\nABCMCMC for experimental set",i,":")
+	cat("ABCMCMC for experimental set",i,":")
 	print(time_)
+	cat("\n")
 
-	cat("\nRegularizations:", ABCMCMCoutput$nRegularizations)
-	cat("\nAcceptance rate:", ABCMCMCoutput$acceptanceRate)
+	cat("Regularizations:", ABCMCMCoutput$nRegularizations,"\n")
+	cat("Acceptance rate:", ABCMCMCoutput$acceptanceRate,"\n")
 
 	start_time_fitCopula <- Sys.time()
 	message("- New Prior: fitting Copula based on previous MCMC runs")

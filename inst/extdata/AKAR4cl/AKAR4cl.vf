@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<VectorField Name="AKAR4cl" Description="model created by an R script «sbtab_to_vfgen.R» (https://github.com/a-kramer/SBtabVFGEN)">
+ <Parameter Name="kf_C_AKAR4" Description="independent parameter" DefaultValue="0.018"/>
+ <Parameter Name="kb_C_AKAR4" Description="independent parameter" DefaultValue="0.106"/>
+ <Parameter Name="kcat_AKARp" Description="independent parameter" DefaultValue="10.2"/>
+ <Parameter Name="AKAR4_C_ConservedConst" Description="conserved quantity eliminates AKAR4_C as a state variable" DefaultValue="0.000000"/>
+ <Parameter Name="AKAR4_ConservedConst" Description="conserved quantity eliminates AKAR4 as a state variable" DefaultValue="0.200000"/>
+ <Expression Name="AKAR4_C" Description="derived from conservation law 1" Formula="AKAR4_C_ConservedConst - (C)"/>
+ <Expression Name="AKAR4" Description="derived from conservation law 2" Formula="AKAR4_ConservedConst - (AKAR4p-C)"/>
+ <Expression Name="reaction_1" Description="flux" Formula="kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C"/>
+ <Expression Name="reaction_2" Description="flux" Formula="kcat_AKARp*AKAR4_C"/>
+<!-- <StateVariable Name="AKAR4" Description="removed compound" DefaultInitialCondition="0.2" Formula="-reaction_1"/> -->
+<!-- <StateVariable Name="AKAR4_C" Description="removed compound" DefaultInitialCondition="0" Formula="+reaction_1-reaction_2"/> -->
+ <StateVariable Name="AKAR4p" Description="compound" DefaultInitialCondition="0" Formula="+reaction_2"/>
+ <StateVariable Name="C" Description="compound" DefaultInitialCondition="0" Formula="-reaction_1+reaction_2"/>
+ <Function Name="AKAR4pOUT" Description="output" Formula="108 + 380*AKAR4p"/>
+</VectorField>

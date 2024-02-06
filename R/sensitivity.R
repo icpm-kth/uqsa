@@ -59,7 +59,10 @@ sum.of.bin.variance  <- function(hst,binMeans,totalMean){
 #' @param nBins number of bins, if unset defaults to the default of the hist function
 #' @export
 #' @return sensitivity S[i,j] of output[i] with respect to parameter[j]
-sensitivity<-function(parSample,outputSample,nBins="Sturges"){
+globalSensitivity<-function(parSample,outputSample,nBins="Sturges"){
+	isNA <- apply(is.na(outputSample),1,any)
+	parSample <- parSample[!isNA,]
+	outputSample <- outputSample[!isNA,]
 	meanOutput <- colMeans(outputSample)
 	varOutput <- diag(cov(outputSample))
 	SampleSize <- dim(parSample)
@@ -72,10 +75,10 @@ sensitivity<-function(parSample,outputSample,nBins="Sturges"){
 	}
 	# a list, one item per fixed parameter
 	binMeans <- lapply(id,observable.mean.in.bin,outputSample=outputSample)
-	S <- matrix(0,outputSize[2],SampleSize[2])
+	S <- matrix(0.0,outputSize[2],SampleSize[2])
 	for (i in 1:SampleSize[2]){
 		Vi <- sum.of.bin.variance(hst[[i]],binMeans[[i]],totalMean=meanOutput)
-		S[,i] <- Vi/varOutput
+		S[,i] <- Vi/(1e-300+varOutput)
 	}
 	colnames(S) <- colnames(parSample)
 	rownames(S) <- colnames(outputSample)
@@ -89,7 +92,7 @@ sensitivity<-function(parSample,outputSample,nBins="Sturges"){
 #' @export
 #' @param u the values of the x-axis for the plot, if named, the names
 #'     are put at the tick-marks
-#' @param S the sensitivity matrix as returned by `sensitivity()`,
+#' @param S the sensitivity matrix as returned by `globalSensitivity()`,
 #'     S[i,j] is with respect to model output i and parameter j
 #' @param color the list of colors to use for the shaded areas, e.g.:
 #'     rainbow(24)
@@ -129,4 +132,112 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 		lines(u,C[,i],col=line.color[i+1],lwd=2)
 	}
 	legend(x="topright",fill=color[1:d[2]],legend=colnames(S),ncol=2)
+}
+
+#' Equilibrium state approximation of the solution sensitivity for ODE systems
+#'
+#' In this context, the sensitivity S(t;x,p) is dx(t;p)/dp, where
+#' x(t;p) is the parameterized solution to an initial value problem
+#' for ordinary differential equations and t is the independent
+#' varibale: x'=f(t,x;p), where «'» indicates the derivative with
+#' respect to t. In cases where you have a proxy variable for p,
+#' e.g. r=log(p), the chain rule applies. Similarly, we also have an
+#' output sensitivity for the function g(x(t;p)).  The equilibrium
+#' approximation is exact for state-variable values close to an
+#' equilibrium point q(p) (fixed-point): f(t,q(p);p)=0.
+#'
+#' The state sensitivity matrix:
+#'
+#' ```
+#'            d state(time[k],state, param)[i]
+#' S[i,j,k] = --------------------------------  ,
+#'            d param[j]
+#' ```
+#'
+#' where param are the raw model parameters.
+#' This matrix is calculated as an intermediate and then transformed into:
+#'
+#' ```
+#'             d func(time[k], state, c(parMap(parMCMC),input))[i]
+#' Sh[i,j,k] = --------------------------------------------------
+#'             d parMCMC[j]
+#' ```
+#'
+#' where parMCMC is the Markov chain variable and usually shorter than
+#' param as we typically don't sample all of the model's
+#' parameters. Some model parameters may be known, some may be input
+#' parameters not intrinsic to the model but related to the
+#' experimental setup (that is why parMCMC and param are different).
+#'
+#' This transformation requires the output function jacobian (funcJac)
+#' and the parameter jacobian (funcJacp) in the model variable.
+#'
+#' As we transform the parameters themselves, the chain rule requests
+#' parMapJac[l,k] = d param[l] / d parMCMC[k]
+#'
+#' Typically, the sensitivity needs to be known at different
+#' time-points t_k. The 3-dimensional array S[i,j,k], where the index k corrsponds to time
+#' t_k; the closer x(t_k) is to equilibrium, the better the
+#' approximation; near the initial state, the sensitivity is also
+#' correct (only the intermediate time-span is approximate).
+#'
+#' This function requires pracma::expm to work.
+#'
+#' The f
+#'
+#' @export
+#' @param experiments a list of simulation experiments
+#' @param simulations an equivalent list of simulation results, for
+#'     one parameter vector
+#' @param model a list of functions for the model the experiments are
+#'     applicable to
+#' @param parMCMC the parameters that are used in Markov chain Monte
+#'     Carlo as the MC variable
+#' @param parMap a map to transform parMCMC into p, parameters the
+#'     model accepts
+#' @return a function S(parMCMC) ->
+#'     simulations_with_sensitivity, which attaches the state
+#'     sensitivity matrix array length(x) × length(p) × length(t) to
+#'     the simulations (solutions to the ODE).
+#' @examples \dontrun{
+#' y <- simulate(parMCMC)
+#' S <- sensitivityEquilibriumApproximation(experiments, model, parMap, parMapJac)
+#' y <- S(parMap,y)
+#' }
+sensitivityEquilibriumApproximation <- function(experiments, model, parMap=identity, parMapJac=1.0){
+	y0 <- model$init(0.0)
+	n  <- length(y0)
+	m  <- ncol(experiments[[1]]$outputValues)
+	u <- experiments[[1]]$input
+	nu <- length(u)
+	defaultPar <- c(model$par(),u)
+	np <- length(defaultPar)
+	d <- np - nu
+	N <- length(experiments)
+	SEA <- function(parMCMC,simulations){
+		stopifnot(length(simulations) == N)
+		for (i in seq(N)){
+			p <- c(parMap(parMCMC),experiments[[i]]$input)
+			tm <- experiments[[i]]$outputTimes
+			t0 <- experiments[[i]]$initialTime
+			simulations[[i]]$sens <- array(0.0,dim=c(n,length(parMCMC),length(tm)))
+			simulations[[i]]$funcsens <- array(0.0,dim=c(m,length(parMCMC),length(tm)))
+			for (j in seq(length(t))){
+				if (abs(tm[j]-t0) > 1e-16 * abs(t0)){
+					y <- simulations[[i]]$state[,j,1]
+					A <- model$jac(tm[j], y, p)
+					B <- head(model$jacp(tm[j], y, p), c(n,d))
+					AB <- solve(A,B)
+					# state variables:
+					C <- ((pracma::expm((t[j]-t0)*A) %*% AB) - AB)
+					simulations[[i]]$sens[,,j] <- C %*% parMapJac(parMCMC)
+					# functions
+					CF <- model$funcJac(tm[j],y,p) %*% C + head(model$funcJacp(tm[j],y,p),c(m,d))
+					simulations[[i]]$funcsens[,,j] <- CF %*% parMapJac(parMCMC)
+				}
+			}
+		}
+		return(simulations)
+	}
+	return(SEA)
 }

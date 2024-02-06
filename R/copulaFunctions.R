@@ -46,6 +46,7 @@ fitCopula <- function(X,nCores=detectCores()){
   # keep connection between params
   # this is a normal kernel, looks similar
   # to using the ecdf function
+
   for(i in 1:ncx){
     minx <- min(X[,i])
     maxx <- max(X[,i])

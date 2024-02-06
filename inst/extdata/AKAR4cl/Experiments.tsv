@@ -1,0 +1,5 @@
+!!SBtab Document='AKAR4cl' Version='1.0' TableName='Experiments' TableType='QuantityMatrix'
+!ID	!Name	>C	!Comment
+AKAR4_400nM	AKAR4_400nM	0.4	Figure 3—figure supplement 1 in https://doi.org/10.7554/eLife.68164 (dark blue)
+AKAR4_100nM	AKAR4_100nM	0.1	Figure 3—figure supplement 1 in https://doi.org/10.7554/eLife.68164 (gray)
+AKAR4_25nM	AKAR4_25nM	0.025	Figure 3—figure supplement 1 in https://doi.org/10.7554/eLife.68164 (light blue)

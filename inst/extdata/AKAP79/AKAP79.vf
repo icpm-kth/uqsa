@@ -1,71 +1,81 @@
 <?xml version="1.0" ?>
 <VectorField Name="AKAP79" Description="model created by an R script «sbtab_to_vfgen.R» (https://github.com/a-kramer/SBtabVFGEN)">
- <Parameter Name="kf_Rii_C__RiiP_C" Description="independent parameter kf_Rii_C__RiiP_C" DefaultValue="33"/>
- <Parameter Name="kf_RiiP_CxcAMP__RiiP_C_cAMP" Description="independent parameter kf_RiiP_CxcAMP__RiiP_C_cAMP" DefaultValue="0.496"/>
- <Parameter Name="kf_RiiP_cAMPxC__RiiP_C_cAMP" Description="independent parameter kf_RiiP_cAMPxC__RiiP_C_cAMP" DefaultValue="0.00545"/>
- <Parameter Name="kb_RiiP_cAMPxC__RiiP_C_cAMP" Description="independent parameter kb_RiiP_cAMPxC__RiiP_C_cAMP" DefaultValue="0.0156"/>
- <Parameter Name="kb_RiiPXcAMP__RiiP_cAMP" Description="independent parameter kb_RiiPXcAMP__RiiP_cAMP" DefaultValue="0.0016"/>
- <Parameter Name="kf_RiiPXcAMP__RiiP_cAMP" Description="independent parameter kf_RiiPXcAMP__RiiP_cAMP" DefaultValue="0.015"/>
- <Parameter Name="kf_RiiPxC__RiiP_C" Description="independent parameter kf_RiiPxC__RiiP_C" DefaultValue="0.038"/>
- <Parameter Name="kb_RiiPxC__RiiP_C" Description="independent parameter kb_RiiPxC__RiiP_C" DefaultValue="0.0026"/>
- <Parameter Name="kf_cAMPxRii__Rii_cAMP" Description="independent parameter kf_cAMPxRii__Rii_cAMP" DefaultValue="0.015"/>
- <Parameter Name="kb_cAMPxRii__Rii_cAMP" Description="independent parameter kb_cAMPxRii__Rii_cAMP" DefaultValue="0.0016"/>
- <Parameter Name="kf_Rii_CxcAMP__Rii_C_cAMP" Description="independent parameter kf_Rii_CxcAMP__Rii_C_cAMP" DefaultValue="0.496"/>
- <Parameter Name="kb_Rii_CxcAMP__Rii_C_cAMP" Description="independent parameter kb_Rii_CxcAMP__Rii_C_cAMP" DefaultValue="1.413"/>
- <Parameter Name="kf_RiixC__Rii_C" Description="independent parameter kf_RiixC__Rii_C" DefaultValue="2.1"/>
- <Parameter Name="kf_Rii_cAMPxC__Rii_C_cAMP" Description="independent parameter kf_Rii_cAMPxC__Rii_C_cAMP" DefaultValue="0.2984"/>
- <Parameter Name="kb_Rii_cAMPxC__Rii_C_cAMP" Description="independent parameter kb_Rii_cAMPxC__Rii_C_cAMP" DefaultValue="0.018"/>
- <Parameter Name="kf_Rii_C_cAMP__RiiP_C_cAMP" Description="independent parameter kf_Rii_C_cAMP__RiiP_C_cAMP" DefaultValue="33"/>
- <Parameter Name="kb_RiixC__Rii_C" Description="independent parameter kb_RiixC__Rii_C" DefaultValue="0.0003"/>
- <Parameter Name="AKAPoff_1" Description="independent parameter AKAPoff_1" DefaultValue="2.6"/>
- <Parameter Name="AKAPoff_3" Description="independent parameter AKAPoff_3" DefaultValue="20"/>
- <Parameter Name="AKAPon_1" Description="independent parameter AKAPon_1" DefaultValue="0.45"/>
- <Parameter Name="AKAPon_3" Description="independent parameter AKAPon_3" DefaultValue="2"/>
- <Parameter Name="kf_C_AKAR4" Description="independent parameter kf_C_AKAR4" DefaultValue="0.018"/>
- <Parameter Name="kb_C_AKAR4" Description="independent parameter kb_C_AKAR4" DefaultValue="0.106"/>
- <Parameter Name="kcat_AKARp" Description="independent parameter kcat_AKARp" DefaultValue="10.2"/>
- <Parameter Name="kmOFF" Description="independent parameter kmOFF" DefaultValue="100"/>
- <Parameter Name="kmON" Description="independent parameter kmON" DefaultValue="1"/>
- <Parameter Name="KD_T" Description="independent parameter KD_T" DefaultValue="0.7"/>
- <Parameter Name="b_AKAP" Description="input parameter b_AKAP" DefaultValue="0"/>
- <Expression Name="kf_RiiP_cAMP_CaN__CaNXRii_cAMP" Description="defined expression kf_RiiP_cAMP_CaN__CaNXRii_cAMP" Formula="b_AKAP * AKAPon_1 + (1 - b_AKAP) * AKAPoff_1"/>
- <Expression Name="kb_RiiPxCaN__RiiP_CaN" Description="defined expression kb_RiiPxCaN__RiiP_CaN" Formula="b_AKAP*AKAPon_3  +  (1 - b_AKAP)* AKAPoff_3"/>
- <Expression Name="kf_RiiP_CaN__RiixCaN" Description="defined expression kf_RiiP_CaN__RiixCaN" Formula="b_AKAP * AKAPon_1 + (1 - b_AKAP) * AKAPoff_1"/>
- <Expression Name="kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN" Description="defined expression kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN" Formula="b_AKAP*AKAPon_3  +  (1 - b_AKAP)* AKAPoff_3"/>
- <Expression Name="kf_RiiPxCaN__RiiP_CaN" Description="defined expression kf_RiiPxCaN__RiiP_CaN" Formula="b_AKAP * ((kb_RiiPxCaN__RiiP_CaN + kf_RiiP_cAMP_CaN__CaNXRii_cAMP)/kmON ) + (1 - b_AKAP) * (kb_RiiPxCaN__RiiP_CaN + kf_RiiP_cAMP_CaN__CaNXRii_cAMP) / kmOFF"/>
- <Expression Name="kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN" Description="defined expression kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN" Formula="b_AKAP * ((kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN + kf_RiiP_CaN__RiixCaN)/kmON) + (1 - b_AKAP) * (kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN + kf_RiiP_CaN__RiixCaN)/kmOFF"/>
- <Expression Name="kb_RiiP_CxcAMP__RiiP_C_cAMP" Description="defined expression kb_RiiP_CxcAMP__RiiP_C_cAMP" Formula="kf_RiiP_CxcAMP__RiiP_C_cAMP * KD_T"/>
- <Expression Name="reaction_51" Description="flux reaction_51" Formula="kf_Rii_C__RiiP_C*Rii_C"/>
- <Expression Name="reaction_14" Description="flux reaction_14" Formula="kf_RiiPxC__RiiP_C*RiiP*C - kb_RiiPxC__RiiP_C*RiiP_C"/>
- <Expression Name="reaction_12" Description="flux reaction_12" Formula="kf_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C*cAMP - kb_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C_cAMP"/>
- <Expression Name="reaction_43" Description="flux reaction_43" Formula="kf_RiiPXcAMP__RiiP_cAMP*cAMP*RiiP - kb_RiiPXcAMP__RiiP_cAMP*RiiP_cAMP"/>
- <Expression Name="reaction_23" Description="flux reaction_23" Formula="kf_RiiP_cAMPxC__RiiP_C_cAMP*RiiP_cAMP*C - kb_RiiP_cAMPxC__RiiP_C_cAMP*RiiP_C_cAMP"/>
- <Expression Name="reaction_78" Description="flux reaction_78" Formula="kf_cAMPxRii__Rii_cAMP*cAMP*Rii - kb_cAMPxRii__Rii_cAMP*Rii_cAMP"/>
- <Expression Name="reaction_56" Description="flux reaction_56" Formula="kf_Rii_CxcAMP__Rii_C_cAMP*Rii_C*cAMP - kb_Rii_CxcAMP__Rii_C_cAMP*Rii_C_cAMP"/>
- <Expression Name="reaction_76" Description="flux reaction_76" Formula="kf_Rii_cAMPxC__Rii_C_cAMP*Rii_cAMP*C - kb_Rii_cAMPxC__Rii_C_cAMP*Rii_C_cAMP"/>
- <Expression Name="reaction_62" Description="flux reaction_62" Formula="kf_Rii_C_cAMP__RiiP_C_cAMP*Rii_C_cAMP"/>
- <Expression Name="reaction_58" Description="flux reaction_58" Formula="kf_RiixC__Rii_C*Rii*C - kb_RiixC__Rii_C*Rii_C"/>
- <Expression Name="reaction_44_" Description="flux reaction_44" Formula="kf_RiiPxCaN__RiiP_CaN*RiiP*CaN - kb_RiiPxCaN__RiiP_CaN*RiiP_CaN"/>
- <Expression Name="reaction_33_" Description="flux reaction_33" Formula="kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN*CaN*RiiP_cAMP - kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN*RiiP_cAMP_CaN"/>
- <Expression Name="reaction_4_8" Description="flux reaction_48" Formula="kf_RiiP_CaN__RiixCaN*RiiP_CaN"/>
- <Expression Name="reaction_3_7" Description="flux reaction_37" Formula="kf_RiiP_cAMP_CaN__CaNXRii_cAMP*RiiP_cAMP_CaN"/>
- <Expression Name="reaction_1" Description="flux reaction_1" Formula="kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C"/>
- <Expression Name="reaction_2" Description="flux reaction_2" Formula="kcat_AKARp*AKAR4_C"/>
- <StateVariable Name="Rii" Description="compound Rii" DefaultInitialCondition="6.3" Formula="-reaction_78-reaction_58+reaction_4_8"/>
- <StateVariable Name="cAMP" Description="compound cAMP" DefaultInitialCondition="0" Formula="-reaction_12-reaction_43-reaction_78-reaction_56"/>
- <StateVariable Name="RiiP" Description="compound RiiP" DefaultInitialCondition="0" Formula="-reaction_14-reaction_43-reaction_44_"/>
- <StateVariable Name="Rii_C" Description="compound Rii_C" DefaultInitialCondition="0.63" Formula="-reaction_51-reaction_56+reaction_58"/>
- <StateVariable Name="RiiP_cAMP" Description="compound RiiP_cAMP" DefaultInitialCondition="0" Formula="+reaction_43-reaction_23-reaction_33_"/>
- <StateVariable Name="RiiP_C" Description="compound RiiP_C" DefaultInitialCondition="0" Formula="+reaction_51+reaction_14-reaction_12"/>
- <StateVariable Name="RiiP_C_cAMP" Description="compound RiiP_C_cAMP" DefaultInitialCondition="0" Formula="+reaction_12+reaction_23+reaction_62"/>
- <StateVariable Name="C" Description="compound C" DefaultInitialCondition="0" Formula="-reaction_14-reaction_23-reaction_76-reaction_58-reaction_1+reaction_2"/>
- <StateVariable Name="Rii_cAMP" Description="compound Rii_cAMP" DefaultInitialCondition="0" Formula="+reaction_78-reaction_76+reaction_3_7"/>
- <StateVariable Name="Rii_C_cAMP" Description="compound Rii_C_cAMP" DefaultInitialCondition="0" Formula="+reaction_56+reaction_76-reaction_62"/>
- <StateVariable Name="CaN" Description="compound CaN" DefaultInitialCondition="1.5" Formula="-reaction_44_-reaction_33_+reaction_4_8+reaction_3_7"/>
- <StateVariable Name="RiiP_CaN" Description="compound RiiP_CaN" DefaultInitialCondition="0" Formula="+reaction_44_-reaction_4_8"/>
- <StateVariable Name="RiiP_cAMP_CaN" Description="compound RiiP_cAMP_CaN" DefaultInitialCondition="0" Formula="+reaction_33_-reaction_3_7"/>
- <StateVariable Name="AKAR4" Description="compound AKAR4" DefaultInitialCondition="0.2" Formula="-reaction_1"/>
- <StateVariable Name="AKAR4_C" Description="compound AKAR4_C" DefaultInitialCondition="0" Formula="+reaction_1-reaction_2"/>
- <StateVariable Name="AKAR4p" Description="compound AKAR4p" DefaultInitialCondition="0" Formula="+reaction_2"/>
- <Function Name="AKAR4pOUT" Description="output AKAR4pOUT" Formula="(AKAR4p*5)*71.67+100"/>
+ <Parameter Name="kf_Rii_C__RiiP_C" Description="independent parameter" DefaultValue="33"/>
+ <Parameter Name="kf_RiiP_CxcAMP__RiiP_C_cAMP" Description="independent parameter" DefaultValue="0.496"/>
+ <Parameter Name="kf_RiiP_cAMPxC__RiiP_C_cAMP" Description="independent parameter" DefaultValue="0.00545"/>
+ <Parameter Name="kb_RiiP_cAMPxC__RiiP_C_cAMP" Description="independent parameter" DefaultValue="0.0156"/>
+ <Parameter Name="kb_RiiPXcAMP__RiiP_cAMP" Description="independent parameter" DefaultValue="0.0016"/>
+ <Parameter Name="kf_RiiPXcAMP__RiiP_cAMP" Description="independent parameter" DefaultValue="0.015"/>
+ <Parameter Name="kf_RiiPxC__RiiP_C" Description="independent parameter" DefaultValue="0.038"/>
+ <Parameter Name="kb_RiiPxC__RiiP_C" Description="independent parameter" DefaultValue="0.0026"/>
+ <Parameter Name="kf_cAMPxRii__Rii_cAMP" Description="independent parameter" DefaultValue="0.015"/>
+ <Parameter Name="kb_cAMPxRii__Rii_cAMP" Description="independent parameter" DefaultValue="0.0016"/>
+ <Parameter Name="kf_Rii_CxcAMP__Rii_C_cAMP" Description="independent parameter" DefaultValue="0.496"/>
+ <Parameter Name="kb_Rii_CxcAMP__Rii_C_cAMP" Description="independent parameter" DefaultValue="1.413"/>
+ <Parameter Name="kf_RiixC__Rii_C" Description="independent parameter" DefaultValue="2.1"/>
+ <Parameter Name="kf_Rii_cAMPxC__Rii_C_cAMP" Description="independent parameter" DefaultValue="0.2984"/>
+ <Parameter Name="kb_Rii_cAMPxC__Rii_C_cAMP" Description="independent parameter" DefaultValue="0.018"/>
+ <Parameter Name="kf_Rii_C_cAMP__RiiP_C_cAMP" Description="independent parameter" DefaultValue="33"/>
+ <Parameter Name="kb_RiixC__Rii_C" Description="independent parameter" DefaultValue="0.0003"/>
+ <Parameter Name="AKAPoff_1" Description="independent parameter" DefaultValue="2.6"/>
+ <Parameter Name="AKAPoff_3" Description="independent parameter" DefaultValue="20"/>
+ <Parameter Name="AKAPon_1" Description="independent parameter" DefaultValue="0.45"/>
+ <Parameter Name="AKAPon_3" Description="independent parameter" DefaultValue="2"/>
+ <Parameter Name="kf_C_AKAR4" Description="independent parameter" DefaultValue="0.018"/>
+ <Parameter Name="kb_C_AKAR4" Description="independent parameter" DefaultValue="0.106"/>
+ <Parameter Name="kcat_AKARp" Description="independent parameter" DefaultValue="10.2"/>
+ <Parameter Name="kmOFF" Description="independent parameter" DefaultValue="100"/>
+ <Parameter Name="kmON" Description="independent parameter" DefaultValue="1"/>
+ <Parameter Name="KD_T" Description="independent parameter" DefaultValue="0.7"/>
+ <Parameter Name="b_AKAP" Description="input parameter" DefaultValue="0"/>
+ <Parameter Name="AKAR4_ConservedConst" Description="conserved quantity eliminates AKAR4 as a state variable" DefaultValue="0.200000"/>
+ <Parameter Name="CaN_ConservedConst" Description="conserved quantity eliminates CaN as a state variable" DefaultValue="1.500000"/>
+ <Parameter Name="Rii_C_ConservedConst" Description="conserved quantity eliminates Rii_C as a state variable" DefaultValue="0.630000"/>
+ <Parameter Name="cAMP_ConservedConst" Description="conserved quantity eliminates cAMP as a state variable" DefaultValue="0.000000"/>
+ <Parameter Name="Rii_ConservedConst" Description="conserved quantity eliminates Rii as a state variable" DefaultValue="6.300000"/>
+ <Expression Name="AKAR4" Description="derived from conservation law 1" Formula="AKAR4_ConservedConst - (AKAR4_C+AKAR4p)"/>
+ <Expression Name="CaN" Description="derived from conservation law 2" Formula="CaN_ConservedConst - (RiiP_CaN+RiiP_cAMP_CaN)"/>
+ <Expression Name="Rii_C" Description="derived from conservation law 3" Formula="Rii_C_ConservedConst - (RiiP_C+RiiP_C_cAMP+C+Rii_C_cAMP+AKAR4_C)"/>
+ <Expression Name="cAMP" Description="derived from conservation law 4" Formula="cAMP_ConservedConst - (RiiP_cAMP+RiiP_C_cAMP+Rii_cAMP+Rii_C_cAMP+RiiP_cAMP_CaN)"/>
+ <Expression Name="Rii" Description="derived from conservation law 5" Formula="Rii_ConservedConst - (RiiP+RiiP_cAMP+Rii_cAMP+RiiP_CaN+RiiP_cAMP_CaN-C-AKAR4_C)"/>
+ <Expression Name="kf_RiiP_cAMP_CaN__CaNXRii_cAMP" Description="defined expression" Formula="b_AKAP * AKAPon_1 + (1 - b_AKAP) * AKAPoff_1"/>
+ <Expression Name="kb_RiiPxCaN__RiiP_CaN" Description="defined expression" Formula="b_AKAP*AKAPon_3  +  (1 - b_AKAP)* AKAPoff_3"/>
+ <Expression Name="kf_RiiP_CaN__RiixCaN" Description="defined expression" Formula="b_AKAP * AKAPon_1 + (1 - b_AKAP) * AKAPoff_1"/>
+ <Expression Name="kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN" Description="defined expression" Formula="b_AKAP*AKAPon_3  +  (1 - b_AKAP)* AKAPoff_3"/>
+ <Expression Name="kf_RiiPxCaN__RiiP_CaN" Description="defined expression" Formula="b_AKAP * ((kb_RiiPxCaN__RiiP_CaN + kf_RiiP_cAMP_CaN__CaNXRii_cAMP)/kmON ) + (1 - b_AKAP) * (kb_RiiPxCaN__RiiP_CaN + kf_RiiP_cAMP_CaN__CaNXRii_cAMP) / kmOFF"/>
+ <Expression Name="kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN" Description="defined expression" Formula="b_AKAP * ((kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN + kf_RiiP_CaN__RiixCaN)/kmON) + (1 - b_AKAP) * (kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN + kf_RiiP_CaN__RiixCaN)/kmOFF"/>
+ <Expression Name="kb_RiiP_CxcAMP__RiiP_C_cAMP" Description="defined expression" Formula="kf_RiiP_CxcAMP__RiiP_C_cAMP * KD_T"/>
+ <Expression Name="reaction_51" Description="flux" Formula="kf_Rii_C__RiiP_C*Rii_C"/>
+ <Expression Name="reaction_14" Description="flux" Formula="kf_RiiPxC__RiiP_C*RiiP*C - kb_RiiPxC__RiiP_C*RiiP_C"/>
+ <Expression Name="reaction_12" Description="flux" Formula="kf_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C*cAMP - kb_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C_cAMP"/>
+ <Expression Name="reaction_43" Description="flux" Formula="kf_RiiPXcAMP__RiiP_cAMP*cAMP*RiiP - kb_RiiPXcAMP__RiiP_cAMP*RiiP_cAMP"/>
+ <Expression Name="reaction_23" Description="flux" Formula="kf_RiiP_cAMPxC__RiiP_C_cAMP*RiiP_cAMP*C - kb_RiiP_cAMPxC__RiiP_C_cAMP*RiiP_C_cAMP"/>
+ <Expression Name="reaction_78" Description="flux" Formula="kf_cAMPxRii__Rii_cAMP*cAMP*Rii - kb_cAMPxRii__Rii_cAMP*Rii_cAMP"/>
+ <Expression Name="reaction_56" Description="flux" Formula="kf_Rii_CxcAMP__Rii_C_cAMP*Rii_C*cAMP - kb_Rii_CxcAMP__Rii_C_cAMP*Rii_C_cAMP"/>
+ <Expression Name="reaction_76" Description="flux" Formula="kf_Rii_cAMPxC__Rii_C_cAMP*Rii_cAMP*C - kb_Rii_cAMPxC__Rii_C_cAMP*Rii_C_cAMP"/>
+ <Expression Name="reaction_62" Description="flux" Formula="kf_Rii_C_cAMP__RiiP_C_cAMP*Rii_C_cAMP"/>
+ <Expression Name="reaction_58" Description="flux" Formula="kf_RiixC__Rii_C*Rii*C - kb_RiixC__Rii_C*Rii_C"/>
+ <Expression Name="reaction_44" Description="flux" Formula="kf_RiiPxCaN__RiiP_CaN*RiiP*CaN - kb_RiiPxCaN__RiiP_CaN*RiiP_CaN"/>
+ <Expression Name="reaction_33" Description="flux" Formula="kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN*CaN*RiiP_cAMP - kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN*RiiP_cAMP_CaN"/>
+ <Expression Name="reaction_48" Description="flux" Formula="kf_RiiP_CaN__RiixCaN*RiiP_CaN"/>
+ <Expression Name="reaction_37" Description="flux" Formula="kf_RiiP_cAMP_CaN__CaNXRii_cAMP*RiiP_cAMP_CaN"/>
+ <Expression Name="reaction_1" Description="flux" Formula="kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C"/>
+ <Expression Name="reaction_2" Description="flux" Formula="kcat_AKARp*AKAR4_C"/>
+<!-- <StateVariable Name="Rii" Description="removed compound" DefaultInitialCondition="6.3" Formula="-reaction_78-reaction_58+reaction_48"/> -->
+<!-- <StateVariable Name="cAMP" Description="removed compound" DefaultInitialCondition="0" Formula="-reaction_12-reaction_43-reaction_78-reaction_56"/> -->
+ <StateVariable Name="RiiP" Description="compound" DefaultInitialCondition="0" Formula="-reaction_14-reaction_43-reaction_44"/>
+<!-- <StateVariable Name="Rii_C" Description="removed compound" DefaultInitialCondition="0.63" Formula="-reaction_51-reaction_56+reaction_58"/> -->
+ <StateVariable Name="RiiP_cAMP" Description="compound" DefaultInitialCondition="0" Formula="+reaction_43-reaction_23-reaction_33"/>
+ <StateVariable Name="RiiP_C" Description="compound" DefaultInitialCondition="0" Formula="+reaction_51+reaction_14-reaction_12"/>
+ <StateVariable Name="RiiP_C_cAMP" Description="compound" DefaultInitialCondition="0" Formula="+reaction_12+reaction_23+reaction_62"/>
+ <StateVariable Name="C" Description="compound" DefaultInitialCondition="0" Formula="-reaction_14-reaction_23-reaction_76-reaction_58-reaction_1+reaction_2"/>
+ <StateVariable Name="Rii_cAMP" Description="compound" DefaultInitialCondition="0" Formula="+reaction_78-reaction_76+reaction_37"/>
+ <StateVariable Name="Rii_C_cAMP" Description="compound" DefaultInitialCondition="0" Formula="+reaction_56+reaction_76-reaction_62"/>
+<!-- <StateVariable Name="CaN" Description="removed compound" DefaultInitialCondition="1.5" Formula="-reaction_44-reaction_33+reaction_48+reaction_37"/> -->
+ <StateVariable Name="RiiP_CaN" Description="compound" DefaultInitialCondition="0" Formula="+reaction_44-reaction_48"/>
+ <StateVariable Name="RiiP_cAMP_CaN" Description="compound" DefaultInitialCondition="0" Formula="+reaction_33-reaction_37"/>
+<!-- <StateVariable Name="AKAR4" Description="removed compound" DefaultInitialCondition="0.2" Formula="-reaction_1"/> -->
+ <StateVariable Name="AKAR4_C" Description="compound" DefaultInitialCondition="0" Formula="+reaction_1-reaction_2"/>
+ <StateVariable Name="AKAR4p" Description="compound" DefaultInitialCondition="0" Formula="+reaction_2"/>
+ <Function Name="AKAR4pOUT" Description="output" Formula="(AKAR4p*5)*71.67+100"/>
 </VectorField>

@@ -1,26 +1,11 @@
 # Uncertainty Quantification: run model ordinary differential equation
 # Copyright (C) 2022 Federica Milinanni (fedmil@kth.se)
 
-#' This creates a closure that simulates Experiments using the ODE Model
-#'
-#' Simulation experiments consist at least of initial values for the
-#' state variables, a parameter vector, and a list of times at which
-#' the solution needs to be known.
-#'
-#' This function will use the GSL solvers.  In
-#' addition, a model usually has observables: values that depend on
-#' the state variables and can be measured in a real experiment. These
-#' are modeled by output functions.
-#'
-#' We distinguish normal parameters and input parameters. Input
-#' parameters are known and not subject to any estimation
-#' procedure. Furthermore, they are meant to represent the
-#' experimental conditions, so they are either under direct control of
-#' the experimenter or very carefully measured. The inputs are
-#' probably different for each simulation experiment in at least one
-#' value.
-#'
 
+#' This creates a closure that simulates the model
+#'
+#' This is a shorter alternative to the runModel function (C backend).
+#'
 #' It returns a closure around:
 #'     - experiments,
 #'     - the model, and
@@ -39,39 +24,50 @@
 #' @export
 #' @return a closure that returns the model's output for a given parameter vector
 #' @examples
-#' #   model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
-#' #   experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
-#' #   parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
+#'  #  model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
+#'  #  experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
+#'  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 #'
-#' #   modelName <- checkModel("<insert_model_name>_gvf.c")
-#' #   simulate <- simulator.c(experiments, modelName,  parABC)
-#' #   yf <- sim(parABC)
-simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE){
-  require(rgsl)
-  ## simulator:
-  sim <- function(parABC){
-    modelPar <- parMap(parABC)
-    yf <- unlist(mclapply(experiments,function(EX) {rgsl::r_gsl_odeiv2_outer(modelName, list(EX), as.matrix(modelPar))}),recursive=FALSE)
-    names(yf) <- names(experiments)
-    if(noise){
-      for(i in 1:length(experiments)){
-        out <- yf[[i]]$func
-        l <- dim(out)[2]
-        n <- ifelse(is.matrix(parABC),ncol(parABC),1)
-        sd <- as.matrix(experiments[[i]]$errorValues)
-        if(!is.null(sd)){
-          sd[is.na(sd)] <- 0.0
-          y <- mclapply(1:n, function(j) {return(out[,,j] + rnorm(l, 0, sd))})
-          yf[[i]]$func[1,,] <- do.call(cbind,y)
-        }
-      }
-    }
-    return(yf)
-  }
-  return(sim)
+#'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
+#'  #  simulate <- simulator.c(experiments, modelName,  parABC)
+#'  #  yf <- sim(parABC)
+simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, sensApprox=NULL){
+	require(rgsl)
+	sim <- function(parABC){
+		modelPar <- parMap(parABC)
+		yf <- unlist(
+			mclapply(
+				experiments,
+				function(EX) {
+					rgsl::r_gsl_odeiv2_outer(modelName, list(EX), as.matrix(modelPar))
+				}
+			),
+			recursive=FALSE)
+		if (length(experiments)==length(yf)) {
+			names(yf) <- names(experiments)
+		} else {
+			warning(sprintf("experiments(%i) should be the same length as simulations(%i), but isn't.",length(experiments),length(yf)))
+		}
+		if (!is.null(sensApprox)) {
+			yf <- sensApprox(parABC,yf)
+		}
+		if(noise){
+			for(i in 1:length(experiments)){
+				out <- yf[[i]]$func
+				l <- dim(out)[2]
+				n <- ifelse(is.matrix(parABC),ncol(parABC),1)
+				sd <- as.matrix(experiments[[i]]$errorValues)
+				if(!is.null(sd)){
+					sd[is.na(sd)] <- 0.0
+					y <- mclapply(1:n, function(j) {return(out[,,j] + rnorm(l, 0, sd))})
+					yf[[i]]$func[1,,] <- do.call(cbind,y)
+				}
+			}
+		}
+		return(yf)
+	}
+	return(sim)
 }
-
-
 
 #' checkModel tries to establish the simulation file for a given model
 #'
@@ -131,6 +127,76 @@ checkModel <- function(modelName,modelFile=NULL){
 	return(modelName)
 }
 
+#' default distance function for one experiment
+#'
+#' if each experiment corresponds to one simulation and is fully
+#' quanitified by itself, then calculating the overall distance
+#' between data and experiment can be done one by one. This function
+#' describes the default way a simulation is compared to data.
+#'
+#' If the data is more complex, and two or more simulations are needed
+#' to calculate one distance value then the objective-Function needs
+#' to be entirely user-supplied. This is the case with experiments
+#' that have a "control" -- this is needed when the measurement is in
+#' arbitrary units and only makes sense comparatively to a secondary
+#' (control) scenario.
+#'
+#' This function will be used if none is provided by the user.
+#'
+#' The funcSim values need to be supplied as a matrix of size N×T with
+#' N the length of the model's output vectors and T the amount of
+#' measurement times (this is how the rgsl package returns the
+#' simulation results).
+#' @param funcSim a matrix, contains model solution (output values),
+#'     columns of output vectors
+#' @param dataVAL a data.frame of experimental data
+#' @param dataERR a data.frame of measurement errors, if available,
+#'     defaults to the maximum data value.
+defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
+	if (all(is.finite(funcSim))){
+		distance <- mean(abs(funcSim-t(dataVAL))/t(dataERR), na.rm=TRUE)
+	} else {
+		distance <- Inf
+	}
+	return(distance)
+}
+
+#' default ABC acceptance probability function for one experiment
+#'
+#' if each experiment corresponds to one simulation and is fully
+#' quanitified by itself, then calculating the overall distance
+#' between data and experiment can be done one by one. This function
+#' describes the default way a simulation is compared to data.
+#'
+#' If the data is more complex, and two or more simulations are needed
+#' to calculate one distance value then the objective-Function needs
+#' to be entirely user-supplied. This is the case with experiments
+#' that have a "control" -- this is needed when the measurement is in
+#' arbitrary units and only makes sense comparatively to a secondary
+#' (control) scenario.
+#'
+#' This function will be used if none is provided by the user.
+#'
+#' The funcSim values need to be supplied as a matrix of size N×T with
+#' N the length of the model's output vectors and T the amount of
+#' measurement times (this is how the rgsl package returns the
+#' simulation results).
+#' @param funcSim a matrix, contains model solution (output values),
+#'     columns of output vectors
+#' @param dataVAL a data.frame of experimental data
+#' @param dataERR a data.frame of measurement errors, if available,
+#'     defaults to the maximum data value.
+defaultAcceptance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
+	n <- prod(dim(funcSim))
+	if (all(is.finite(funcSim))){
+		ABCP <- exp(-0.5*sum((abs(funcSim-t(dataVAL))/t(dataERR))^2, na.rm=TRUE))#/(sqrt(2*pi)^n*prod(as.numeric(dataERR)))
+	} else {
+		ABCP <- 0.0
+	}
+	return(ABCP)
+}
+
+
 #' creates Objective functions from ingredients
 #'
 #' the returned objective function has only one argument: the ABC
@@ -150,12 +216,13 @@ makeObjective <- function(experiments,modelName=NULL,distance,parMap=identity,si
 			return(runModel(experiments, modelName,  par, parMap))
 		}
 	}
+	N <- length(experiments)
 	Objective <- function(parABC){
 		out <- simulate(parABC)
 		n <- ifelse(is.matrix(parABC),ncol(parABC),1)
-		N <- length(experiments)
 		S <- matrix(Inf,nrow=N,ncol=n)
 		rownames(S) <- names(experiments)
+		if (is.null(out)) return(S)
 		for(i in 1:N){
 			if (!is.null(experiments[[i]]) && !is.null(out[[i]])){
 				S[i,] <- unlist(mclapply(1:n, function(j) distance(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues)))

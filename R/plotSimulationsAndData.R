@@ -59,7 +59,6 @@ getDose <- function(experiments){
   return(dose)
 }
 
-
 #' Plot dose response simulations with experimental data
 #'
 #' This function plots simulations of one dose response experiment and plots them
