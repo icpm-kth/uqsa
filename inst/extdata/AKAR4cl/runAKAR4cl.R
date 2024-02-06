@@ -1,33 +1,34 @@
 ## this project:
-devtools::load_all("~/uqsa")
+library(uqsa)
 ## our other packages:
 require(rgsl)
 require(SBtabVFGEN)
+require(parallel)
 
-model.tsv <- dir("AKAR4cl",pattern="[.]tsv$",full.names=TRUE)
-model.tab <- sbtab_from_tsv(model.tsv) # SBtabVFGEN
-source("./AKAR4cl.R")
+modelFiles <- uqsa_example("AKAR4cl",pattern="[.]tsv$",full.names=TRUE)
+SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
 
-modelName <- checkModel(comment(model.tab),"./AKAR4cl.so")
+# this will load a series of functions: AKAR4cl_vf, AKAR4cl_jac, etc.
+# also loads "model", a list of the same functions with generic names:
+source(uqsa_example("AKAR4cl",pat="^AKAR4cl[.]R$"))
+names(model)
+
+modelName <- checkModel("AKAR4cl",uqsa_example("AKAR4cl",pat="_gvf[.]c$"))
 
 # load experiments
-load("ConservationLaws.RData",verbose=TRUE) #ConLaw
-experiments <- sbtab.data(model.tab,ConLaw)
+load(uqsa_example("AKAR4cl",pat="^ConservationLaws[.]RData$")) # loads "ConLaw" variable
+experiments <- sbtab.data(SBtab,ConLaw)
 
+#default values for the parameters:
 n <- length(experiments[[1]]$input)
-if (n>0) {
-	parVal <- head(AKAR4cl_default(),-n)
-} else {
-	parVal <- AKAR4cl_default()
-}
-
+stopifnot(n>0)
+parVal <- head(AKAR4cl_default(),-n)
 # scale to determine prior values
 defRange <- 100
 
 # Define Lower and Upper Limits for logUniform prior distribution for the parameters
 
 start_time = Sys.time()
-                                                # experiments, model, parMap=identity, parMapJac=1.0
 sensApprox <- sensitivityEquilibriumApproximation(experiments, model, log10ParMap, log10ParMapJac)
 simulate <- simulator.c(experiments,modelName,log10ParMap,noise=FALSE,sensApprox)
 # test run
@@ -37,7 +38,6 @@ y <- rgsl::r_gsl_odeiv2_outer(modelName,experiments,matrix(parVal))
 y <- simulate(log10(parVal))
 
 dprior <- dNormalPrior(mean=log10(parVal),sd=rep(2,length(parVal)))
-rprior <- rNormalPrior(mean=log10(parVal),sd=rep(2,length(parVal)))
 llf <- logLikelihood(experiments)
 gradLL <- gradLogLikelihood(model,experiments,parMap=log10ParMap, parMapJac=log10ParMapJac)
 fiIn <- fisherInformation(model, experiments,parMap=log10ParMap)
@@ -51,8 +51,6 @@ update  <- mcmcUpdate(simulate=simulate,
 	fisherInformationPrior=fiPrior,
 	dprior)
 
-#parMCMC <- mcmcInit(log10(parVal),simulate,llf,gradLL,fiIn)
-#yinint <- attr(parMCMC,"simulations")
 m <- mcmc(update)
 h <- 1e-1
 
@@ -62,7 +60,7 @@ parMCMC <- log10(parVal)
 
 N <- 100
 
-for (j in seq(10)){
+for (j in seq(5)){
  cat("adjusting step size: ",h," \n");
  parMCMC <- mcmcInit(parMCMC,simulate,llf,gradLL,fiIn)
  sample <- m(parMCMC,N,eps=h)
@@ -71,13 +69,19 @@ for (j in seq(10)){
  h <- h * L(a)
  parMCMC <- sample[N,]
 }
+
 cat("final step size: ",h,"\n")
 parMCMC <- mcmcInit(parMCMC,simulate,llf,gradLL,fiIn)
 cat("finished adjusting after",Sys.time() - start_time," seconds\n")
 
-sample <- m(parMCMC,N=10000,eps=h)
+options(mc.cores = parallel::detectCores() %/% 4)
+cl <- parallel::makeForkCluster(4)
+
+pL <- parLapply(cl, rep(list(parMCMC),4), m, N=4000, eps=h)
+sample <- Reduce(rbind,pL)
 colnames(sample) <- names(parVal)
 
 time_ = Sys.time() - start_time
+stopCluster(cl)
 cat("finished sampling after",time_," seconds\n")
 hexbin::hexplom(sample)

@@ -70,6 +70,10 @@ mcmc <- function(update){
 #' @param eps a step size parameter for Markov chain moves (propotional to step size)
 #' @return a function that returns possibly updated states of the Markov chain
 mcmcUpdate <- function(simulate, experiments, model, logLikelihood, gradLogLikelihood, fisherInformation, fisherInformationPrior, dprior, parMap=identity, parMapJac=1){
+	if (is.null(gradLogLikelihood)){
+		cat("unhandled case.\n")
+		U <- NULL
+	} else {
 	U <- function(parGiven, eps=1e-4){
 		r <- runif(1)
 		LGiven <- attr(parGiven,"logLikelihood")
@@ -105,6 +109,7 @@ mcmcUpdate <- function(simulate, experiments, model, logLikelihood, gradLogLikel
 			attr(parGiven,"accepted") <- FALSE
 			return(parGiven)
 		}
+	}
 	}
 	return(U)
 }
