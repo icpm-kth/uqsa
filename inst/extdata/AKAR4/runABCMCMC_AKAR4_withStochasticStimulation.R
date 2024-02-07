@@ -181,47 +181,48 @@ print(time_)
 
 
 #### PLOT SIMULATIONS FROM DRAWS
-# simulateSSA <- function(e, param, nStochSim){
-#   avgOutput <- rep(0, length(e[["outputTimes"]]))
-#   for(i in 1:nStochSim){
-#     out_ssa <- GillespieSSA2::ssa(
-#       initial_state = ceil(e[["initialState"]]*Phi),
-#       reactions = compiled_reactions,
-#       params = c(parMap(param), Phi=Phi),
-#       final_time = max(e[["outputTimes"]]),
-#       method = ssa_exact(),
-#       verbose = FALSE,
-#       log_propensity = TRUE,
-#       log_firings = TRUE,
-#       census_interval = 0.001,
-#       sim_name = modelName)
-#     
-#     # out$state is a matrix of dimension (time points)x(num compounds)
-#     output <- apply(out_ssa$state/Phi, 1, e[["outputFunction"]])
-#     interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
-#     interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
-#     avgOutput <- avgOutput + interpOutput$y
-#   }
-#   avgOutput <- avgOutput/nStochSim
-#   return(avgOutput)
-# }
+simulateSSA <- function(e, param, nStochSim){
+  avgOutput <- rep(0, length(e[["outputTimes"]]))
+  for(i in 1:nStochSim){
+    out_ssa <- GillespieSSA2::ssa(
+      initial_state = ceil(e[["initialState"]]*Phi),
+      reactions = compiled_reactions,
+      params = c(parMap(param), Phi=Phi),
+      final_time = max(e[["outputTimes"]]),
+      method = ssa_exact(),
+      verbose = FALSE,
+      log_propensity = TRUE,
+      log_firings = TRUE,
+      census_interval = 0.001,
+      sim_name = modelName)
+
+    # out$state is a matrix of dimension (time points)x(num compounds)
+    output <- apply(out_ssa$state/Phi, 1, function(state) model$func(t=0,state=state,parameters=param))
+    interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
+    #interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
+    avgOutput <- avgOutput + interpOutput$y
+  }
+  avgOutput <- avgOutput/nStochSim
+  return(avgOutput)
+}
 
 
-# exp.ind <- 2
-# par(mfrow=c(1,1))
-# plot(experiments[[exp.ind]][["outputTimes"]],experiments[[exp.ind]][["outputValues"]],ylim=c(90,250))
-# for(i in 1:100){
-#   #param <- ABCMCMCoutput$draws[i,]
-#   param <- pC$prePar[,i]
-#   names(param) <- parNames
-#   sim <- simulateSSA(experiments[[exp.ind]], param, nStochSim = 3)
-#   points(experiments[[exp.ind]][["outputTimes"]],sim, col="blue")
-# }
+exp.ind <- 2
+par(mfrow=c(1,1))
+plot(experiments[[exp.ind]][["outputTimes"]],experiments[[exp.ind]][["outputValues"]][[1]],ylim=c(90,250))
+for(i in 1:100){
+  param <- ABCMCMCoutput$draws[i,]
+  #param <- pC$prePar[,i]
+  names(param) <- parNames
+  sim <- simulateSSA(experiments[[exp.ind]], param, nStochSim = 3)
+  lines(experiments[[exp.ind]][["outputTimes"]],sim, col="blue")
+}
+points(experiments[[exp.ind]][["outputTimes"]],experiments[[exp.ind]][["outputValues"]][[1]],ylim=c(90,250))
 
 
 
-# library(plotly)
-# df = as.data.frame(draws$draws)
-# colnames(df) <- parNames
-# plot_ly(dat = df, x = ~kf_C_AKAR4, y = ~kb_C_AKAR4, z = ~kcat_AKARp, type="scatter3d", mode="markers", marker=list(size = 1, color = "red"))
-# 
+library(plotly)
+df = as.data.frame(ABCMCMCoutput$draws)
+colnames(df) <- parNames
+plot_ly(dat = df, x = ~kf_C_AKAR4, y = ~kb_C_AKAR4, z = ~kcat_AKARp, type="scatter3d", mode="markers", marker=list(size = 1, color = "red"))
+
