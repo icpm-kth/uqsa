@@ -2,7 +2,6 @@
 !ID	!Name	!DefaultValue	!Std	!PriorDistribution	!Scale	!Unit
 kf_Rii_C__RiiP_C	kf_Rii_C__RiiP_C	33		Normal distribution	linear	1/second
 kf_RiiP_CxcAMP__RiiP_C_cAMP	kf_RiiP_CxcAMP__RiiP_C_cAMP	0.496		Normal distribution	linear	1/(micromolarity*second)
-%kb_RiiP_CxcAMP__RiiP_C_cAMP	kb_RiiP_CxcAMP__RiiP_C_cAMP	1.413		Normal distribution	linear	1/second
 kf_RiiP_cAMPxC__RiiP_C_cAMP	kf_RiiP_cAMPxC__RiiP_C_cAMP	0.00545		Normal distribution	linear	1/(micromolarity*second)
 kb_RiiP_cAMPxC__RiiP_C_cAMP	kb_RiiP_cAMPxC__RiiP_C_cAMP	0.0156		Normal distribution	linear	1/second
 kb_RiiPXcAMP__RiiP_cAMP	kb_RiiPXcAMP__RiiP_cAMP	0.0016		Normal distribution	linear	1/second
@@ -14,7 +13,6 @@ kf_Rii_CxcAMP__Rii_C_cAMP	kf_Rii_CxcAMP__Rii_C_cAMP	0.496		Normal distribution	l
 kb_Rii_CxcAMP__Rii_C_cAMP	kb_Rii_CxcAMP__Rii_C_cAMP	1.413		Normal distribution	linear	1/second
 kf_Rii_cAMPxC__Rii_C_cAMP	kf_Rii_cAMPxC__Rii_C_cAMP	0.2984		Normal distribution	linear	1/(micromolarity*second)
 kb_Rii_cAMPxC__Rii_C_cAMP	kb_Rii_cAMPxC__Rii_C_cAMP	0.018		Normal distribution	linear	1/second
-kf_Rii_C_cAMP__RiiP_C_cAMP	kf_Rii_C_cAMP__RiiP_C_cAMP	33		Normal distribution	linear	1/second
 kb_RiixC__Rii_C	kb_RiixC__Rii_C	0.0003		Normal distribution	linear	1/second
 AKAPoff_1	AKAPoff_1	2.6		Normal distribution	linear	1/second
 AKAPoff_3	AKAPoff_3	20		Normal distribution	linear	1/second
