@@ -16,19 +16,18 @@ AKAP79tc_vf <- function(t, state, parameters)
 	kb_Rii_CxcAMP__Rii_C_cAMP <- parameters[11]
 	kf_Rii_cAMPxC__Rii_C_cAMP <- parameters[12]
 	kb_Rii_cAMPxC__Rii_C_cAMP <- parameters[13]
-	kf_Rii_C_cAMP__RiiP_C_cAMP <- parameters[14]
-	kb_RiixC__Rii_C <- parameters[15]
-	AKAPoff_1 <- parameters[16]
-	AKAPoff_3 <- parameters[17]
-	AKAPon_1 <- parameters[18]
-	AKAPon_3 <- parameters[19]
-	kf_C_AKAR4 <- parameters[20]
-	kb_C_AKAR4 <- parameters[21]
-	kcat_AKARp <- parameters[22]
-	kmOFF <- parameters[23]
-	kmON <- parameters[24]
-	KD_T <- parameters[25]
-	b_AKAP <- parameters[26]
+	kb_RiixC__Rii_C <- parameters[14]
+	AKAPoff_1 <- parameters[15]
+	AKAPoff_3 <- parameters[16]
+	AKAPon_1 <- parameters[17]
+	AKAPon_3 <- parameters[18]
+	kf_C_AKAR4 <- parameters[19]
+	kb_C_AKAR4 <- parameters[20]
+	kcat_AKARp <- parameters[21]
+	kmOFF <- parameters[22]
+	kmON <- parameters[23]
+	KD_T <- parameters[24]
+	b_AKAP <- parameters[25]
 	Rii <- state[1]
 	cAMP <- state[2]
 	RiiP <- state[3]
@@ -54,6 +53,7 @@ AKAP79tc_vf <- function(t, state, parameters)
 	kb_RiiP_CxcAMP__RiiP_C_cAMP <- kf_RiiP_CxcAMP__RiiP_C_cAMP * KD_T
 	kf_RiixC__Rii_C <- (kb_RiixC__Rii_C*kf_cAMPxRii__Rii_cAMP*kf_Rii_cAMPxC__Rii_C_cAMP*kb_Rii_CxcAMP__Rii_C_cAMP)/(kb_cAMPxRii__Rii_cAMP*kb_Rii_cAMPxC__Rii_C_cAMP*kf_Rii_CxcAMP__Rii_C_cAMP)
 	kf_RiiPXcAMP__RiiP_cAMP <- (kb_RiiPXcAMP__RiiP_cAMP*kf_RiiPxC__RiiP_C*kf_RiiP_CxcAMP__RiiP_C_cAMP *kb_RiiP_cAMPxC__RiiP_C_cAMP)/(kb_RiiPxC__RiiP_C*kb_RiiP_CxcAMP__RiiP_C_cAMP*kf_RiiP_cAMPxC__RiiP_C_cAMP)
+	kf_Rii_C_cAMP__RiiP_C_cAMP <- kf_Rii_C__RiiP_C
 	reaction_51 <- kf_Rii_C__RiiP_C*Rii_C
 	reaction_14 <- kf_RiiPxC__RiiP_C*RiiP*C - kb_RiiPxC__RiiP_C*RiiP_C
 	reaction_12 <- kf_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C*cAMP - kb_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C_cAMP
@@ -107,19 +107,18 @@ AKAP79tc_jac<-function(t, state, parameters)
 	kb_Rii_CxcAMP__Rii_C_cAMP <- parameters[11]
 	kf_Rii_cAMPxC__Rii_C_cAMP <- parameters[12]
 	kb_Rii_cAMPxC__Rii_C_cAMP <- parameters[13]
-	kf_Rii_C_cAMP__RiiP_C_cAMP <- parameters[14]
-	kb_RiixC__Rii_C <- parameters[15]
-	AKAPoff_1 <- parameters[16]
-	AKAPoff_3 <- parameters[17]
-	AKAPon_1 <- parameters[18]
-	AKAPon_3 <- parameters[19]
-	kf_C_AKAR4 <- parameters[20]
-	kb_C_AKAR4 <- parameters[21]
-	kcat_AKARp <- parameters[22]
-	kmOFF <- parameters[23]
-	kmON <- parameters[24]
-	KD_T <- parameters[25]
-	b_AKAP <- parameters[26]
+	kb_RiixC__Rii_C <- parameters[14]
+	AKAPoff_1 <- parameters[15]
+	AKAPoff_3 <- parameters[16]
+	AKAPon_1 <- parameters[17]
+	AKAPon_3 <- parameters[18]
+	kf_C_AKAR4 <- parameters[19]
+	kb_C_AKAR4 <- parameters[20]
+	kcat_AKARp <- parameters[21]
+	kmOFF <- parameters[22]
+	kmON <- parameters[23]
+	KD_T <- parameters[24]
+	b_AKAP <- parameters[25]
 	Rii <- state[1]
 	cAMP <- state[2]
 	RiiP <- state[3]
@@ -145,6 +144,7 @@ AKAP79tc_jac<-function(t, state, parameters)
 	kb_RiiP_CxcAMP__RiiP_C_cAMP <- kf_RiiP_CxcAMP__RiiP_C_cAMP * KD_T
 	kf_RiixC__Rii_C <- (kb_RiixC__Rii_C*kf_cAMPxRii__Rii_cAMP*kf_Rii_cAMPxC__Rii_C_cAMP*kb_Rii_CxcAMP__Rii_C_cAMP)/(kb_cAMPxRii__Rii_cAMP*kb_Rii_cAMPxC__Rii_C_cAMP*kf_Rii_CxcAMP__Rii_C_cAMP)
 	kf_RiiPXcAMP__RiiP_cAMP <- (kb_RiiPXcAMP__RiiP_cAMP*kf_RiiPxC__RiiP_C*kf_RiiP_CxcAMP__RiiP_C_cAMP *kb_RiiP_cAMPxC__RiiP_C_cAMP)/(kb_RiiPxC__RiiP_C*kb_RiiP_CxcAMP__RiiP_C_cAMP*kf_RiiP_cAMPxC__RiiP_C_cAMP)
+	kf_Rii_C_cAMP__RiiP_C_cAMP <- kf_Rii_C__RiiP_C
 	reaction_51 <- kf_Rii_C__RiiP_C*Rii_C
 	reaction_14 <- kf_RiiPxC__RiiP_C*RiiP*C - kb_RiiPxC__RiiP_C*RiiP_C
 	reaction_12 <- kf_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C*cAMP - kb_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C_cAMP
@@ -322,10 +322,10 @@ AKAP79tc_jac<-function(t, state, parameters)
 	jac_[4,10] <- kb_Rii_CxcAMP__Rii_C_cAMP
 	jac_[5,10] <- 0
 	jac_[6,10] <- 0
-	jac_[7,10] <- kf_Rii_C_cAMP__RiiP_C_cAMP
+	jac_[7,10] <- kf_Rii_C__RiiP_C
 	jac_[8,10] <- kb_Rii_cAMPxC__Rii_C_cAMP
 	jac_[9,10] <- kb_Rii_cAMPxC__Rii_C_cAMP
-	jac_[10,10] <- (-kf_Rii_C_cAMP__RiiP_C_cAMP)-kb_Rii_cAMPxC__Rii_C_cAMP-kb_Rii_CxcAMP__Rii_C_cAMP
+	jac_[10,10] <- (-kf_Rii_C__RiiP_C)-kb_Rii_cAMPxC__Rii_C_cAMP-kb_Rii_CxcAMP__Rii_C_cAMP
 	jac_[11,10] <- 0
 	jac_[12,10] <- 0
 	jac_[13,10] <- 0
@@ -454,19 +454,18 @@ AKAP79tc_jacp<-function(t, state, parameters)
 	kb_Rii_CxcAMP__Rii_C_cAMP <- parameters[11]
 	kf_Rii_cAMPxC__Rii_C_cAMP <- parameters[12]
 	kb_Rii_cAMPxC__Rii_C_cAMP <- parameters[13]
-	kf_Rii_C_cAMP__RiiP_C_cAMP <- parameters[14]
-	kb_RiixC__Rii_C <- parameters[15]
-	AKAPoff_1 <- parameters[16]
-	AKAPoff_3 <- parameters[17]
-	AKAPon_1 <- parameters[18]
-	AKAPon_3 <- parameters[19]
-	kf_C_AKAR4 <- parameters[20]
-	kb_C_AKAR4 <- parameters[21]
-	kcat_AKARp <- parameters[22]
-	kmOFF <- parameters[23]
-	kmON <- parameters[24]
-	KD_T <- parameters[25]
-	b_AKAP <- parameters[26]
+	kb_RiixC__Rii_C <- parameters[14]
+	AKAPoff_1 <- parameters[15]
+	AKAPoff_3 <- parameters[16]
+	AKAPon_1 <- parameters[17]
+	AKAPon_3 <- parameters[18]
+	kf_C_AKAR4 <- parameters[19]
+	kb_C_AKAR4 <- parameters[20]
+	kcat_AKARp <- parameters[21]
+	kmOFF <- parameters[22]
+	kmON <- parameters[23]
+	KD_T <- parameters[24]
+	b_AKAP <- parameters[25]
 	Rii <- state[1]
 	cAMP <- state[2]
 	RiiP <- state[3]
@@ -492,6 +491,7 @@ AKAP79tc_jacp<-function(t, state, parameters)
 	kb_RiiP_CxcAMP__RiiP_C_cAMP<-kf_RiiP_CxcAMP__RiiP_C_cAMP * KD_T
 	kf_RiixC__Rii_C<-(kb_RiixC__Rii_C*kf_cAMPxRii__Rii_cAMP*kf_Rii_cAMPxC__Rii_C_cAMP*kb_Rii_CxcAMP__Rii_C_cAMP)/(kb_cAMPxRii__Rii_cAMP*kb_Rii_cAMPxC__Rii_C_cAMP*kf_Rii_CxcAMP__Rii_C_cAMP)
 	kf_RiiPXcAMP__RiiP_cAMP<-(kb_RiiPXcAMP__RiiP_cAMP*kf_RiiPxC__RiiP_C*kf_RiiP_CxcAMP__RiiP_C_cAMP *kb_RiiP_cAMPxC__RiiP_C_cAMP)/(kb_RiiPxC__RiiP_C*kb_RiiP_CxcAMP__RiiP_C_cAMP*kf_RiiP_cAMPxC__RiiP_C_cAMP)
+	kf_Rii_C_cAMP__RiiP_C_cAMP<-kf_Rii_C__RiiP_C
 	reaction_51<-kf_Rii_C__RiiP_C*Rii_C
 	reaction_14<-kf_RiiPxC__RiiP_C*RiiP*C - kb_RiiPxC__RiiP_C*RiiP_C
 	reaction_12<-kf_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C*cAMP - kb_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C_cAMP
@@ -508,7 +508,7 @@ AKAP79tc_jacp<-function(t, state, parameters)
 	reaction_37<-kf_RiiP_cAMP_CaN__CaNXRii_cAMP*RiiP_cAMP_CaN
 	reaction_1<-kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C
 	reaction_2<-kcat_AKARp*AKAR4_C
-	jacp_<-matrix(NA,16,26)
+	jacp_<-matrix(NA,16,25)
 # column 1 (df/dp_1)
 	jacp_[1,1] <- 0
 	jacp_[2,1] <- 0
@@ -516,10 +516,10 @@ AKAP79tc_jacp<-function(t, state, parameters)
 	jacp_[4,1] <- -Rii_C
 	jacp_[5,1] <- 0
 	jacp_[6,1] <- Rii_C
-	jacp_[7,1] <- 0
+	jacp_[7,1] <- Rii_C_cAMP
 	jacp_[8,1] <- 0
 	jacp_[9,1] <- 0
-	jacp_[10,1] <- 0
+	jacp_[10,1] <- -Rii_C_cAMP
 	jacp_[11,1] <- 0
 	jacp_[12,1] <- 0
 	jacp_[13,1] <- 0
@@ -731,16 +731,16 @@ AKAP79tc_jacp<-function(t, state, parameters)
 	jacp_[15,13] <- 0
 	jacp_[16,13] <- 0
 # column 14 (df/dp_14)
-	jacp_[1,14] <- 0
+	jacp_[1,14] <- Rii_C-(C*Rii*kb_Rii_CxcAMP__Rii_C_cAMP*kf_Rii_cAMPxC__Rii_C_cAMP*kf_cAMPxRii__Rii_cAMP)/(kb_Rii_cAMPxC__Rii_C_cAMP*kb_cAMPxRii__Rii_cAMP*kf_Rii_CxcAMP__Rii_C_cAMP)
 	jacp_[2,14] <- 0
 	jacp_[3,14] <- 0
-	jacp_[4,14] <- 0
+	jacp_[4,14] <- (C*Rii*kb_Rii_CxcAMP__Rii_C_cAMP*kf_Rii_cAMPxC__Rii_C_cAMP*kf_cAMPxRii__Rii_cAMP)/(kb_Rii_cAMPxC__Rii_C_cAMP*kb_cAMPxRii__Rii_cAMP*kf_Rii_CxcAMP__Rii_C_cAMP)-Rii_C
 	jacp_[5,14] <- 0
 	jacp_[6,14] <- 0
-	jacp_[7,14] <- Rii_C_cAMP
-	jacp_[8,14] <- 0
+	jacp_[7,14] <- 0
+	jacp_[8,14] <- Rii_C-(C*Rii*kb_Rii_CxcAMP__Rii_C_cAMP*kf_Rii_cAMPxC__Rii_C_cAMP*kf_cAMPxRii__Rii_cAMP)/(kb_Rii_cAMPxC__Rii_C_cAMP*kb_cAMPxRii__Rii_cAMP*kf_Rii_CxcAMP__Rii_C_cAMP)
 	jacp_[9,14] <- 0
-	jacp_[10,14] <- -Rii_C_cAMP
+	jacp_[10,14] <- 0
 	jacp_[11,14] <- 0
 	jacp_[12,14] <- 0
 	jacp_[13,14] <- 0
@@ -748,32 +748,32 @@ AKAP79tc_jacp<-function(t, state, parameters)
 	jacp_[15,14] <- 0
 	jacp_[16,14] <- 0
 # column 15 (df/dp_15)
-	jacp_[1,15] <- Rii_C-(C*Rii*kb_Rii_CxcAMP__Rii_C_cAMP*kf_Rii_cAMPxC__Rii_C_cAMP*kf_cAMPxRii__Rii_cAMP)/(kb_Rii_cAMPxC__Rii_C_cAMP*kb_cAMPxRii__Rii_cAMP*kf_Rii_CxcAMP__Rii_C_cAMP)
+	jacp_[1,15] <- RiiP_CaN*(1-b_AKAP)
 	jacp_[2,15] <- 0
-	jacp_[3,15] <- 0
-	jacp_[4,15] <- (C*Rii*kb_Rii_CxcAMP__Rii_C_cAMP*kf_Rii_cAMPxC__Rii_C_cAMP*kf_cAMPxRii__Rii_cAMP)/(kb_Rii_cAMPxC__Rii_C_cAMP*kb_cAMPxRii__Rii_cAMP*kf_Rii_CxcAMP__Rii_C_cAMP)-Rii_C
-	jacp_[5,15] <- 0
+	jacp_[3,15] <- -CaN*RiiP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)
+	jacp_[4,15] <- 0
+	jacp_[5,15] <- -CaN*RiiP_cAMP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)
 	jacp_[6,15] <- 0
 	jacp_[7,15] <- 0
-	jacp_[8,15] <- Rii_C-(C*Rii*kb_Rii_CxcAMP__Rii_C_cAMP*kf_Rii_cAMPxC__Rii_C_cAMP*kf_cAMPxRii__Rii_cAMP)/(kb_Rii_cAMPxC__Rii_C_cAMP*kb_cAMPxRii__Rii_cAMP*kf_Rii_CxcAMP__Rii_C_cAMP)
-	jacp_[9,15] <- 0
+	jacp_[8,15] <- 0
+	jacp_[9,15] <- RiiP_cAMP_CaN*(1-b_AKAP)
 	jacp_[10,15] <- 0
-	jacp_[11,15] <- 0
-	jacp_[12,15] <- 0
-	jacp_[13,15] <- 0
+	jacp_[11,15] <- (-CaN*RiiP_cAMP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF))-CaN*RiiP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)+RiiP_cAMP_CaN*(1-b_AKAP)+RiiP_CaN*(1-b_AKAP)
+	jacp_[12,15] <- CaN*RiiP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)-RiiP_CaN*(1-b_AKAP)
+	jacp_[13,15] <- CaN*RiiP_cAMP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)-RiiP_cAMP_CaN*(1-b_AKAP)
 	jacp_[14,15] <- 0
 	jacp_[15,15] <- 0
 	jacp_[16,15] <- 0
 # column 16 (df/dp_16)
-	jacp_[1,16] <- RiiP_CaN*(1-b_AKAP)
+	jacp_[1,16] <- 0
 	jacp_[2,16] <- 0
-	jacp_[3,16] <- -CaN*RiiP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)
+	jacp_[3,16] <- RiiP_CaN*(1-b_AKAP)-CaN*RiiP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)
 	jacp_[4,16] <- 0
-	jacp_[5,16] <- -CaN*RiiP_cAMP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)
+	jacp_[5,16] <- RiiP_cAMP_CaN*(1-b_AKAP)-CaN*RiiP_cAMP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)
 	jacp_[6,16] <- 0
 	jacp_[7,16] <- 0
 	jacp_[8,16] <- 0
-	jacp_[9,16] <- RiiP_cAMP_CaN*(1-b_AKAP)
+	jacp_[9,16] <- 0
 	jacp_[10,16] <- 0
 	jacp_[11,16] <- (-CaN*RiiP_cAMP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF))-CaN*RiiP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)+RiiP_cAMP_CaN*(1-b_AKAP)+RiiP_CaN*(1-b_AKAP)
 	jacp_[12,16] <- CaN*RiiP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)-RiiP_CaN*(1-b_AKAP)
@@ -782,32 +782,32 @@ AKAP79tc_jacp<-function(t, state, parameters)
 	jacp_[15,16] <- 0
 	jacp_[16,16] <- 0
 # column 17 (df/dp_17)
-	jacp_[1,17] <- 0
+	jacp_[1,17] <- RiiP_CaN*b_AKAP
 	jacp_[2,17] <- 0
-	jacp_[3,17] <- RiiP_CaN*(1-b_AKAP)-CaN*RiiP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)
+	jacp_[3,17] <- -CaN*RiiP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)
 	jacp_[4,17] <- 0
-	jacp_[5,17] <- RiiP_cAMP_CaN*(1-b_AKAP)-CaN*RiiP_cAMP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)
+	jacp_[5,17] <- -CaN*RiiP_cAMP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)
 	jacp_[6,17] <- 0
 	jacp_[7,17] <- 0
 	jacp_[8,17] <- 0
-	jacp_[9,17] <- 0
+	jacp_[9,17] <- RiiP_cAMP_CaN*b_AKAP
 	jacp_[10,17] <- 0
-	jacp_[11,17] <- (-CaN*RiiP_cAMP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF))-CaN*RiiP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)+RiiP_cAMP_CaN*(1-b_AKAP)+RiiP_CaN*(1-b_AKAP)
-	jacp_[12,17] <- CaN*RiiP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)-RiiP_CaN*(1-b_AKAP)
-	jacp_[13,17] <- CaN*RiiP_cAMP*(((1-b_AKAP)*b_AKAP)/kmON+(1-b_AKAP)^2/kmOFF)-RiiP_cAMP_CaN*(1-b_AKAP)
+	jacp_[11,17] <- (-CaN*RiiP_cAMP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF))-CaN*RiiP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)+RiiP_cAMP_CaN*b_AKAP+RiiP_CaN*b_AKAP
+	jacp_[12,17] <- CaN*RiiP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)-RiiP_CaN*b_AKAP
+	jacp_[13,17] <- CaN*RiiP_cAMP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)-RiiP_cAMP_CaN*b_AKAP
 	jacp_[14,17] <- 0
 	jacp_[15,17] <- 0
 	jacp_[16,17] <- 0
 # column 18 (df/dp_18)
-	jacp_[1,18] <- RiiP_CaN*b_AKAP
+	jacp_[1,18] <- 0
 	jacp_[2,18] <- 0
-	jacp_[3,18] <- -CaN*RiiP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)
+	jacp_[3,18] <- RiiP_CaN*b_AKAP-CaN*RiiP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)
 	jacp_[4,18] <- 0
-	jacp_[5,18] <- -CaN*RiiP_cAMP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)
+	jacp_[5,18] <- RiiP_cAMP_CaN*b_AKAP-CaN*RiiP_cAMP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)
 	jacp_[6,18] <- 0
 	jacp_[7,18] <- 0
 	jacp_[8,18] <- 0
-	jacp_[9,18] <- RiiP_cAMP_CaN*b_AKAP
+	jacp_[9,18] <- 0
 	jacp_[10,18] <- 0
 	jacp_[11,18] <- (-CaN*RiiP_cAMP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF))-CaN*RiiP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)+RiiP_cAMP_CaN*b_AKAP+RiiP_CaN*b_AKAP
 	jacp_[12,18] <- CaN*RiiP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)-RiiP_CaN*b_AKAP
@@ -818,19 +818,19 @@ AKAP79tc_jacp<-function(t, state, parameters)
 # column 19 (df/dp_19)
 	jacp_[1,19] <- 0
 	jacp_[2,19] <- 0
-	jacp_[3,19] <- RiiP_CaN*b_AKAP-CaN*RiiP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)
+	jacp_[3,19] <- 0
 	jacp_[4,19] <- 0
-	jacp_[5,19] <- RiiP_cAMP_CaN*b_AKAP-CaN*RiiP_cAMP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)
+	jacp_[5,19] <- 0
 	jacp_[6,19] <- 0
 	jacp_[7,19] <- 0
-	jacp_[8,19] <- 0
+	jacp_[8,19] <- -AKAR4*C
 	jacp_[9,19] <- 0
 	jacp_[10,19] <- 0
-	jacp_[11,19] <- (-CaN*RiiP_cAMP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF))-CaN*RiiP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)+RiiP_cAMP_CaN*b_AKAP+RiiP_CaN*b_AKAP
-	jacp_[12,19] <- CaN*RiiP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)-RiiP_CaN*b_AKAP
-	jacp_[13,19] <- CaN*RiiP_cAMP*(b_AKAP^2/kmON+((1-b_AKAP)*b_AKAP)/kmOFF)-RiiP_cAMP_CaN*b_AKAP
-	jacp_[14,19] <- 0
-	jacp_[15,19] <- 0
+	jacp_[11,19] <- 0
+	jacp_[12,19] <- 0
+	jacp_[13,19] <- 0
+	jacp_[14,19] <- -AKAR4*C
+	jacp_[15,19] <- AKAR4*C
 	jacp_[16,19] <- 0
 # column 20 (df/dp_20)
 	jacp_[1,20] <- 0
@@ -840,14 +840,14 @@ AKAP79tc_jacp<-function(t, state, parameters)
 	jacp_[5,20] <- 0
 	jacp_[6,20] <- 0
 	jacp_[7,20] <- 0
-	jacp_[8,20] <- -AKAR4*C
+	jacp_[8,20] <- AKAR4_C
 	jacp_[9,20] <- 0
 	jacp_[10,20] <- 0
 	jacp_[11,20] <- 0
 	jacp_[12,20] <- 0
 	jacp_[13,20] <- 0
-	jacp_[14,20] <- -AKAR4*C
-	jacp_[15,20] <- AKAR4*C
+	jacp_[14,20] <- AKAR4_C
+	jacp_[15,20] <- -AKAR4_C
 	jacp_[16,20] <- 0
 # column 21 (df/dp_21)
 	jacp_[1,21] <- 0
@@ -863,96 +863,79 @@ AKAP79tc_jacp<-function(t, state, parameters)
 	jacp_[11,21] <- 0
 	jacp_[12,21] <- 0
 	jacp_[13,21] <- 0
-	jacp_[14,21] <- AKAR4_C
+	jacp_[14,21] <- 0
 	jacp_[15,21] <- -AKAR4_C
-	jacp_[16,21] <- 0
+	jacp_[16,21] <- AKAR4_C
 # column 22 (df/dp_22)
 	jacp_[1,22] <- 0
 	jacp_[2,22] <- 0
-	jacp_[3,22] <- 0
+	jacp_[3,22] <- (CaN*RiiP*(1-b_AKAP)*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmOFF^2
 	jacp_[4,22] <- 0
-	jacp_[5,22] <- 0
+	jacp_[5,22] <- (CaN*RiiP_cAMP*(1-b_AKAP)*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmOFF^2
 	jacp_[6,22] <- 0
 	jacp_[7,22] <- 0
-	jacp_[8,22] <- AKAR4_C
+	jacp_[8,22] <- 0
 	jacp_[9,22] <- 0
 	jacp_[10,22] <- 0
-	jacp_[11,22] <- 0
-	jacp_[12,22] <- 0
-	jacp_[13,22] <- 0
+	jacp_[11,22] <- (CaN*RiiP_cAMP*(1-b_AKAP)*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmOFF^2+(CaN*RiiP*(1-b_AKAP)*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmOFF^2
+	jacp_[12,22] <- -(CaN*RiiP*(1-b_AKAP)*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmOFF^2
+	jacp_[13,22] <- -(CaN*RiiP_cAMP*(1-b_AKAP)*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmOFF^2
 	jacp_[14,22] <- 0
-	jacp_[15,22] <- -AKAR4_C
-	jacp_[16,22] <- AKAR4_C
+	jacp_[15,22] <- 0
+	jacp_[16,22] <- 0
 # column 23 (df/dp_23)
 	jacp_[1,23] <- 0
 	jacp_[2,23] <- 0
-	jacp_[3,23] <- (CaN*RiiP*(1-b_AKAP)*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmOFF^2
+	jacp_[3,23] <- (CaN*RiiP*b_AKAP*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmON^2
 	jacp_[4,23] <- 0
-	jacp_[5,23] <- (CaN*RiiP_cAMP*(1-b_AKAP)*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmOFF^2
+	jacp_[5,23] <- (CaN*RiiP_cAMP*b_AKAP*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmON^2
 	jacp_[6,23] <- 0
 	jacp_[7,23] <- 0
 	jacp_[8,23] <- 0
 	jacp_[9,23] <- 0
 	jacp_[10,23] <- 0
-	jacp_[11,23] <- (CaN*RiiP_cAMP*(1-b_AKAP)*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmOFF^2+(CaN*RiiP*(1-b_AKAP)*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmOFF^2
-	jacp_[12,23] <- -(CaN*RiiP*(1-b_AKAP)*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmOFF^2
-	jacp_[13,23] <- -(CaN*RiiP_cAMP*(1-b_AKAP)*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmOFF^2
+	jacp_[11,23] <- (CaN*RiiP_cAMP*b_AKAP*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmON^2+(CaN*RiiP*b_AKAP*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmON^2
+	jacp_[12,23] <- -(CaN*RiiP*b_AKAP*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmON^2
+	jacp_[13,23] <- -(CaN*RiiP_cAMP*b_AKAP*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmON^2
 	jacp_[14,23] <- 0
 	jacp_[15,23] <- 0
 	jacp_[16,23] <- 0
 # column 24 (df/dp_24)
 	jacp_[1,24] <- 0
-	jacp_[2,24] <- 0
-	jacp_[3,24] <- (CaN*RiiP*b_AKAP*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmON^2
+	jacp_[2,24] <- (RiiP*cAMP*kb_RiiPXcAMP__RiiP_cAMP*kb_RiiP_cAMPxC__RiiP_C_cAMP*kf_RiiPxC__RiiP_C)/(KD_T^2*kb_RiiPxC__RiiP_C*kf_RiiP_cAMPxC__RiiP_C_cAMP)+RiiP_C_cAMP*kf_RiiP_CxcAMP__RiiP_C_cAMP
+	jacp_[3,24] <- (RiiP*cAMP*kb_RiiPXcAMP__RiiP_cAMP*kb_RiiP_cAMPxC__RiiP_C_cAMP*kf_RiiPxC__RiiP_C)/(KD_T^2*kb_RiiPxC__RiiP_C*kf_RiiP_cAMPxC__RiiP_C_cAMP)
 	jacp_[4,24] <- 0
-	jacp_[5,24] <- (CaN*RiiP_cAMP*b_AKAP*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmON^2
-	jacp_[6,24] <- 0
-	jacp_[7,24] <- 0
+	jacp_[5,24] <- -(RiiP*cAMP*kb_RiiPXcAMP__RiiP_cAMP*kb_RiiP_cAMPxC__RiiP_C_cAMP*kf_RiiPxC__RiiP_C)/(KD_T^2*kb_RiiPxC__RiiP_C*kf_RiiP_cAMPxC__RiiP_C_cAMP)
+	jacp_[6,24] <- RiiP_C_cAMP*kf_RiiP_CxcAMP__RiiP_C_cAMP
+	jacp_[7,24] <- -RiiP_C_cAMP*kf_RiiP_CxcAMP__RiiP_C_cAMP
 	jacp_[8,24] <- 0
 	jacp_[9,24] <- 0
 	jacp_[10,24] <- 0
-	jacp_[11,24] <- (CaN*RiiP_cAMP*b_AKAP*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmON^2+(CaN*RiiP*b_AKAP*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmON^2
-	jacp_[12,24] <- -(CaN*RiiP*b_AKAP*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmON^2
-	jacp_[13,24] <- -(CaN*RiiP_cAMP*b_AKAP*(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP)))/kmON^2
+	jacp_[11,24] <- 0
+	jacp_[12,24] <- 0
+	jacp_[13,24] <- 0
 	jacp_[14,24] <- 0
 	jacp_[15,24] <- 0
 	jacp_[16,24] <- 0
 # column 25 (df/dp_25)
-	jacp_[1,25] <- 0
-	jacp_[2,25] <- (RiiP*cAMP*kb_RiiPXcAMP__RiiP_cAMP*kb_RiiP_cAMPxC__RiiP_C_cAMP*kf_RiiPxC__RiiP_C)/(KD_T^2*kb_RiiPxC__RiiP_C*kf_RiiP_cAMPxC__RiiP_C_cAMP)+RiiP_C_cAMP*kf_RiiP_CxcAMP__RiiP_C_cAMP
-	jacp_[3,25] <- (RiiP*cAMP*kb_RiiPXcAMP__RiiP_cAMP*kb_RiiP_cAMPxC__RiiP_C_cAMP*kf_RiiPxC__RiiP_C)/(KD_T^2*kb_RiiPxC__RiiP_C*kf_RiiP_cAMPxC__RiiP_C_cAMP)
+	jacp_[1,25] <- (AKAPon_1-AKAPoff_1)*RiiP_CaN
+	jacp_[2,25] <- 0
+	jacp_[3,25] <- (AKAPon_3-AKAPoff_3)*RiiP_CaN-CaN*RiiP*((AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmON+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*b_AKAP)/kmON-(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmOFF+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*(1-b_AKAP))/kmOFF)
 	jacp_[4,25] <- 0
-	jacp_[5,25] <- -(RiiP*cAMP*kb_RiiPXcAMP__RiiP_cAMP*kb_RiiP_cAMPxC__RiiP_C_cAMP*kf_RiiPxC__RiiP_C)/(KD_T^2*kb_RiiPxC__RiiP_C*kf_RiiP_cAMPxC__RiiP_C_cAMP)
-	jacp_[6,25] <- RiiP_C_cAMP*kf_RiiP_CxcAMP__RiiP_C_cAMP
-	jacp_[7,25] <- -RiiP_C_cAMP*kf_RiiP_CxcAMP__RiiP_C_cAMP
+	jacp_[5,25] <- (AKAPon_3-AKAPoff_3)*RiiP_cAMP_CaN-CaN*RiiP_cAMP*((AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmON+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*b_AKAP)/kmON-(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmOFF+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*(1-b_AKAP))/kmOFF)
+	jacp_[6,25] <- 0
+	jacp_[7,25] <- 0
 	jacp_[8,25] <- 0
-	jacp_[9,25] <- 0
+	jacp_[9,25] <- (AKAPon_1-AKAPoff_1)*RiiP_cAMP_CaN
 	jacp_[10,25] <- 0
-	jacp_[11,25] <- 0
-	jacp_[12,25] <- 0
-	jacp_[13,25] <- 0
+	jacp_[11,25] <- (-CaN*RiiP_cAMP*((AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmON+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*b_AKAP)/kmON-(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmOFF+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*(1-b_AKAP))/kmOFF))-CaN*RiiP*((AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmON+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*b_AKAP)/kmON-(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmOFF+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*(1-b_AKAP))/kmOFF)+(AKAPon_3-AKAPoff_3)*RiiP_cAMP_CaN+(AKAPon_1-AKAPoff_1)*RiiP_cAMP_CaN+(AKAPon_3-AKAPoff_3)*RiiP_CaN+(AKAPon_1-AKAPoff_1)*RiiP_CaN
+	jacp_[12,25] <- CaN*RiiP*((AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmON+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*b_AKAP)/kmON-(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmOFF+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*(1-b_AKAP))/kmOFF)-(AKAPon_3-AKAPoff_3)*RiiP_CaN-(AKAPon_1-AKAPoff_1)*RiiP_CaN
+	jacp_[13,25] <- CaN*RiiP_cAMP*((AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmON+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*b_AKAP)/kmON-(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmOFF+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*(1-b_AKAP))/kmOFF)-(AKAPon_3-AKAPoff_3)*RiiP_cAMP_CaN-(AKAPon_1-AKAPoff_1)*RiiP_cAMP_CaN
 	jacp_[14,25] <- 0
 	jacp_[15,25] <- 0
 	jacp_[16,25] <- 0
-# column 26 (df/dp_26)
-	jacp_[1,26] <- (AKAPon_1-AKAPoff_1)*RiiP_CaN
-	jacp_[2,26] <- 0
-	jacp_[3,26] <- (AKAPon_3-AKAPoff_3)*RiiP_CaN-CaN*RiiP*((AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmON+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*b_AKAP)/kmON-(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmOFF+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*(1-b_AKAP))/kmOFF)
-	jacp_[4,26] <- 0
-	jacp_[5,26] <- (AKAPon_3-AKAPoff_3)*RiiP_cAMP_CaN-CaN*RiiP_cAMP*((AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmON+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*b_AKAP)/kmON-(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmOFF+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*(1-b_AKAP))/kmOFF)
-	jacp_[6,26] <- 0
-	jacp_[7,26] <- 0
-	jacp_[8,26] <- 0
-	jacp_[9,26] <- (AKAPon_1-AKAPoff_1)*RiiP_cAMP_CaN
-	jacp_[10,26] <- 0
-	jacp_[11,26] <- (-CaN*RiiP_cAMP*((AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmON+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*b_AKAP)/kmON-(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmOFF+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*(1-b_AKAP))/kmOFF))-CaN*RiiP*((AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmON+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*b_AKAP)/kmON-(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmOFF+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*(1-b_AKAP))/kmOFF)+(AKAPon_3-AKAPoff_3)*RiiP_cAMP_CaN+(AKAPon_1-AKAPoff_1)*RiiP_cAMP_CaN+(AKAPon_3-AKAPoff_3)*RiiP_CaN+(AKAPon_1-AKAPoff_1)*RiiP_CaN
-	jacp_[12,26] <- CaN*RiiP*((AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmON+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*b_AKAP)/kmON-(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmOFF+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*(1-b_AKAP))/kmOFF)-(AKAPon_3-AKAPoff_3)*RiiP_CaN-(AKAPon_1-AKAPoff_1)*RiiP_CaN
-	jacp_[13,26] <- CaN*RiiP_cAMP*((AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmON+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*b_AKAP)/kmON-(AKAPon_3*b_AKAP+AKAPon_1*b_AKAP+AKAPoff_3*(1-b_AKAP)+AKAPoff_1*(1-b_AKAP))/kmOFF+((AKAPon_3+AKAPon_1-AKAPoff_3-AKAPoff_1)*(1-b_AKAP))/kmOFF)-(AKAPon_3-AKAPoff_3)*RiiP_cAMP_CaN-(AKAPon_1-AKAPoff_1)*RiiP_cAMP_CaN
-	jacp_[14,26] <- 0
-	jacp_[15,26] <- 0
-	jacp_[16,26] <- 0
 	rownames(jacp_) <- c("Rii", "cAMP", "RiiP", "Rii_C", "RiiP_cAMP", "RiiP_C", "RiiP_C_cAMP", "C", "Rii_cAMP", "Rii_C_cAMP", "CaN", "RiiP_CaN", "RiiP_cAMP_CaN", "AKAR4", "AKAR4_C", "AKAR4p")
-	colnames(jacp_) <- c("kf_Rii_C__RiiP_C", "kf_RiiP_CxcAMP__RiiP_C_cAMP", "kf_RiiP_cAMPxC__RiiP_C_cAMP", "kb_RiiP_cAMPxC__RiiP_C_cAMP", "kb_RiiPXcAMP__RiiP_cAMP", "kf_RiiPxC__RiiP_C", "kb_RiiPxC__RiiP_C", "kf_cAMPxRii__Rii_cAMP", "kb_cAMPxRii__Rii_cAMP", "kf_Rii_CxcAMP__Rii_C_cAMP", "kb_Rii_CxcAMP__Rii_C_cAMP", "kf_Rii_cAMPxC__Rii_C_cAMP", "kb_Rii_cAMPxC__Rii_C_cAMP", "kf_Rii_C_cAMP__RiiP_C_cAMP", "kb_RiixC__Rii_C", "AKAPoff_1", "AKAPoff_3", "AKAPon_1", "AKAPon_3", "kf_C_AKAR4", "kb_C_AKAR4", "kcat_AKARp", "kmOFF", "kmON", "KD_T", "b_AKAP")
+	colnames(jacp_) <- c("kf_Rii_C__RiiP_C", "kf_RiiP_CxcAMP__RiiP_C_cAMP", "kf_RiiP_cAMPxC__RiiP_C_cAMP", "kb_RiiP_cAMPxC__RiiP_C_cAMP", "kb_RiiPXcAMP__RiiP_cAMP", "kf_RiiPxC__RiiP_C", "kb_RiiPxC__RiiP_C", "kf_cAMPxRii__Rii_cAMP", "kb_cAMPxRii__Rii_cAMP", "kf_Rii_CxcAMP__Rii_C_cAMP", "kb_Rii_CxcAMP__Rii_C_cAMP", "kf_Rii_cAMPxC__Rii_C_cAMP", "kb_Rii_cAMPxC__Rii_C_cAMP", "kb_RiixC__Rii_C", "AKAPoff_1", "AKAPoff_3", "AKAPon_1", "AKAPon_3", "kf_C_AKAR4", "kb_C_AKAR4", "kcat_AKARp", "kmOFF", "kmON", "KD_T", "b_AKAP")
 	return(jacp_)
 }
 # ode Functions F(t,y;p)
@@ -971,19 +954,18 @@ AKAP79tc_func<-function(t, state, parameters)
 	kb_Rii_CxcAMP__Rii_C_cAMP <- parameters[11]
 	kf_Rii_cAMPxC__Rii_C_cAMP <- parameters[12]
 	kb_Rii_cAMPxC__Rii_C_cAMP <- parameters[13]
-	kf_Rii_C_cAMP__RiiP_C_cAMP <- parameters[14]
-	kb_RiixC__Rii_C <- parameters[15]
-	AKAPoff_1 <- parameters[16]
-	AKAPoff_3 <- parameters[17]
-	AKAPon_1 <- parameters[18]
-	AKAPon_3 <- parameters[19]
-	kf_C_AKAR4 <- parameters[20]
-	kb_C_AKAR4 <- parameters[21]
-	kcat_AKARp <- parameters[22]
-	kmOFF <- parameters[23]
-	kmON <- parameters[24]
-	KD_T <- parameters[25]
-	b_AKAP <- parameters[26]
+	kb_RiixC__Rii_C <- parameters[14]
+	AKAPoff_1 <- parameters[15]
+	AKAPoff_3 <- parameters[16]
+	AKAPon_1 <- parameters[17]
+	AKAPon_3 <- parameters[18]
+	kf_C_AKAR4 <- parameters[19]
+	kb_C_AKAR4 <- parameters[20]
+	kcat_AKARp <- parameters[21]
+	kmOFF <- parameters[22]
+	kmON <- parameters[23]
+	KD_T <- parameters[24]
+	b_AKAP <- parameters[25]
 	Rii <- state[1]
 	cAMP <- state[2]
 	RiiP <- state[3]
@@ -1009,6 +991,7 @@ AKAP79tc_func<-function(t, state, parameters)
 	kb_RiiP_CxcAMP__RiiP_C_cAMP <- kf_RiiP_CxcAMP__RiiP_C_cAMP * KD_T
 	kf_RiixC__Rii_C <- (kb_RiixC__Rii_C*kf_cAMPxRii__Rii_cAMP*kf_Rii_cAMPxC__Rii_C_cAMP*kb_Rii_CxcAMP__Rii_C_cAMP)/(kb_cAMPxRii__Rii_cAMP*kb_Rii_cAMPxC__Rii_C_cAMP*kf_Rii_CxcAMP__Rii_C_cAMP)
 	kf_RiiPXcAMP__RiiP_cAMP <- (kb_RiiPXcAMP__RiiP_cAMP*kf_RiiPxC__RiiP_C*kf_RiiP_CxcAMP__RiiP_C_cAMP *kb_RiiP_cAMPxC__RiiP_C_cAMP)/(kb_RiiPxC__RiiP_C*kb_RiiP_CxcAMP__RiiP_C_cAMP*kf_RiiP_cAMPxC__RiiP_C_cAMP)
+	kf_Rii_C_cAMP__RiiP_C_cAMP <- kf_Rii_C__RiiP_C
 	reaction_51 <- kf_Rii_C__RiiP_C*Rii_C
 	reaction_14 <- kf_RiiPxC__RiiP_C*RiiP*C - kb_RiiPxC__RiiP_C*RiiP_C
 	reaction_12 <- kf_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C*cAMP - kb_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C_cAMP
@@ -1046,19 +1029,18 @@ AKAP79tc_funcJac<-function(t, state, parameters)
 	kb_Rii_CxcAMP__Rii_C_cAMP <- parameters[11]
 	kf_Rii_cAMPxC__Rii_C_cAMP <- parameters[12]
 	kb_Rii_cAMPxC__Rii_C_cAMP <- parameters[13]
-	kf_Rii_C_cAMP__RiiP_C_cAMP <- parameters[14]
-	kb_RiixC__Rii_C <- parameters[15]
-	AKAPoff_1 <- parameters[16]
-	AKAPoff_3 <- parameters[17]
-	AKAPon_1 <- parameters[18]
-	AKAPon_3 <- parameters[19]
-	kf_C_AKAR4 <- parameters[20]
-	kb_C_AKAR4 <- parameters[21]
-	kcat_AKARp <- parameters[22]
-	kmOFF <- parameters[23]
-	kmON <- parameters[24]
-	KD_T <- parameters[25]
-	b_AKAP <- parameters[26]
+	kb_RiixC__Rii_C <- parameters[14]
+	AKAPoff_1 <- parameters[15]
+	AKAPoff_3 <- parameters[16]
+	AKAPon_1 <- parameters[17]
+	AKAPon_3 <- parameters[18]
+	kf_C_AKAR4 <- parameters[19]
+	kb_C_AKAR4 <- parameters[20]
+	kcat_AKARp <- parameters[21]
+	kmOFF <- parameters[22]
+	kmON <- parameters[23]
+	KD_T <- parameters[24]
+	b_AKAP <- parameters[25]
 	Rii <- state[1]
 	cAMP <- state[2]
 	RiiP <- state[3]
@@ -1084,6 +1066,7 @@ AKAP79tc_funcJac<-function(t, state, parameters)
 	kb_RiiP_CxcAMP__RiiP_C_cAMP<-kf_RiiP_CxcAMP__RiiP_C_cAMP * KD_T
 	kf_RiixC__Rii_C<-(kb_RiixC__Rii_C*kf_cAMPxRii__Rii_cAMP*kf_Rii_cAMPxC__Rii_C_cAMP*kb_Rii_CxcAMP__Rii_C_cAMP)/(kb_cAMPxRii__Rii_cAMP*kb_Rii_cAMPxC__Rii_C_cAMP*kf_Rii_CxcAMP__Rii_C_cAMP)
 	kf_RiiPXcAMP__RiiP_cAMP<-(kb_RiiPXcAMP__RiiP_cAMP*kf_RiiPxC__RiiP_C*kf_RiiP_CxcAMP__RiiP_C_cAMP *kb_RiiP_cAMPxC__RiiP_C_cAMP)/(kb_RiiPxC__RiiP_C*kb_RiiP_CxcAMP__RiiP_C_cAMP*kf_RiiP_cAMPxC__RiiP_C_cAMP)
+	kf_Rii_C_cAMP__RiiP_C_cAMP<-kf_Rii_C__RiiP_C
 	reaction_51<-kf_Rii_C__RiiP_C*Rii_C
 	reaction_14<-kf_RiiPxC__RiiP_C*RiiP*C - kb_RiiPxC__RiiP_C*RiiP_C
 	reaction_12<-kf_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C*cAMP - kb_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C_cAMP
@@ -1134,7 +1117,7 @@ AKAP79tc_funcJac<-function(t, state, parameters)
 # column 16 (dF/dp_16)
 	jac_[1,16] <- 358.35
 	rownames(jac_) <- c("AKAR4pOUT")
-	colnames(jac_) <- c("Rii", "cAMP", "RiiP", "Rii_C", "RiiP_cAMP", "RiiP_C", "RiiP_C_cAMP", "C", "Rii_cAMP", "Rii_C_cAMP", "CaN", "RiiP_CaN", "RiiP_cAMP_CaN", "AKAR4", "AKAR4_C", "AKAR4p")
+	colnames(jac_) <- c("Rii", "cAMP", "RiiP", "Rii_C", "RiiP_cAMP", "RiiP_C", "RiiP_C_cAMP", "C", "Rii_cAMP", "Rii_C_cAMP", "CaN", "RiiP_CaN", "RiiP_cAMP_CaN", "AKAR4", "AKAR4_C", "AKAR4p", )
 	return(jac_)
 }
 # output function parameter Jacobian dF(t,y;p)/dp
@@ -1153,19 +1136,18 @@ AKAP79tc_funcJacp<-function(t, state, parameters)
 	kb_Rii_CxcAMP__Rii_C_cAMP <- parameters[11]
 	kf_Rii_cAMPxC__Rii_C_cAMP <- parameters[12]
 	kb_Rii_cAMPxC__Rii_C_cAMP <- parameters[13]
-	kf_Rii_C_cAMP__RiiP_C_cAMP <- parameters[14]
-	kb_RiixC__Rii_C <- parameters[15]
-	AKAPoff_1 <- parameters[16]
-	AKAPoff_3 <- parameters[17]
-	AKAPon_1 <- parameters[18]
-	AKAPon_3 <- parameters[19]
-	kf_C_AKAR4 <- parameters[20]
-	kb_C_AKAR4 <- parameters[21]
-	kcat_AKARp <- parameters[22]
-	kmOFF <- parameters[23]
-	kmON <- parameters[24]
-	KD_T <- parameters[25]
-	b_AKAP <- parameters[26]
+	kb_RiixC__Rii_C <- parameters[14]
+	AKAPoff_1 <- parameters[15]
+	AKAPoff_3 <- parameters[16]
+	AKAPon_1 <- parameters[17]
+	AKAPon_3 <- parameters[18]
+	kf_C_AKAR4 <- parameters[19]
+	kb_C_AKAR4 <- parameters[20]
+	kcat_AKARp <- parameters[21]
+	kmOFF <- parameters[22]
+	kmON <- parameters[23]
+	KD_T <- parameters[24]
+	b_AKAP <- parameters[25]
 	Rii <- state[1]
 	cAMP <- state[2]
 	RiiP <- state[3]
@@ -1191,6 +1173,7 @@ AKAP79tc_funcJacp<-function(t, state, parameters)
 	kb_RiiP_CxcAMP__RiiP_C_cAMP<-kf_RiiP_CxcAMP__RiiP_C_cAMP * KD_T
 	kf_RiixC__Rii_C<-(kb_RiixC__Rii_C*kf_cAMPxRii__Rii_cAMP*kf_Rii_cAMPxC__Rii_C_cAMP*kb_Rii_CxcAMP__Rii_C_cAMP)/(kb_cAMPxRii__Rii_cAMP*kb_Rii_cAMPxC__Rii_C_cAMP*kf_Rii_CxcAMP__Rii_C_cAMP)
 	kf_RiiPXcAMP__RiiP_cAMP<-(kb_RiiPXcAMP__RiiP_cAMP*kf_RiiPxC__RiiP_C*kf_RiiP_CxcAMP__RiiP_C_cAMP *kb_RiiP_cAMPxC__RiiP_C_cAMP)/(kb_RiiPxC__RiiP_C*kb_RiiP_CxcAMP__RiiP_C_cAMP*kf_RiiP_cAMPxC__RiiP_C_cAMP)
+	kf_Rii_C_cAMP__RiiP_C_cAMP<-kf_Rii_C__RiiP_C
 	reaction_51<-kf_Rii_C__RiiP_C*Rii_C
 	reaction_14<-kf_RiiPxC__RiiP_C*RiiP*C - kb_RiiPxC__RiiP_C*RiiP_C
 	reaction_12<-kf_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C*cAMP - kb_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C_cAMP
@@ -1207,7 +1190,7 @@ AKAP79tc_funcJacp<-function(t, state, parameters)
 	reaction_37<-kf_RiiP_cAMP_CaN__CaNXRii_cAMP*RiiP_cAMP_CaN
 	reaction_1<-kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C
 	reaction_2<-kcat_AKARp*AKAR4_C
-	jacp_<-matrix(NA,1,26)
+	jacp_<-matrix(NA,1,25)
 # column 1 (dF/dp_1)
 	jacp_[1,1] <- 0
 # column 2 (dF/dp_2)
@@ -1258,16 +1241,14 @@ AKAP79tc_funcJacp<-function(t, state, parameters)
 	jacp_[1,24] <- 0
 # column 25 (dF/dp_25)
 	jacp_[1,25] <- 0
-# column 26 (dF/dp_26)
-	jacp_[1,26] <- 0
 	rownames(jacp_) <- c("AKAR4pOUT")
-	colnames(jacp_) <- c("kf_Rii_C__RiiP_C", "kf_RiiP_CxcAMP__RiiP_C_cAMP", "kf_RiiP_cAMPxC__RiiP_C_cAMP", "kb_RiiP_cAMPxC__RiiP_C_cAMP", "kb_RiiPXcAMP__RiiP_cAMP", "kf_RiiPxC__RiiP_C", "kb_RiiPxC__RiiP_C", "kf_cAMPxRii__Rii_cAMP", "kb_cAMPxRii__Rii_cAMP", "kf_Rii_CxcAMP__Rii_C_cAMP", "kb_Rii_CxcAMP__Rii_C_cAMP", "kf_Rii_cAMPxC__Rii_C_cAMP", "kb_Rii_cAMPxC__Rii_C_cAMP", "kf_Rii_C_cAMP__RiiP_C_cAMP", "kb_RiixC__Rii_C", "AKAPoff_1", "AKAPoff_3", "AKAPon_1", "AKAPon_3", "kf_C_AKAR4", "kb_C_AKAR4", "kcat_AKARp", "kmOFF", "kmON", "KD_T", "b_AKAP")
+	colnames(jacp_) <- c("kf_Rii_C__RiiP_C", "kf_RiiP_CxcAMP__RiiP_C_cAMP", "kf_RiiP_cAMPxC__RiiP_C_cAMP", "kb_RiiP_cAMPxC__RiiP_C_cAMP", "kb_RiiPXcAMP__RiiP_cAMP", "kf_RiiPxC__RiiP_C", "kb_RiiPxC__RiiP_C", "kf_cAMPxRii__Rii_cAMP", "kb_cAMPxRii__Rii_cAMP", "kf_Rii_CxcAMP__Rii_C_cAMP", "kb_Rii_CxcAMP__Rii_C_cAMP", "kf_Rii_cAMPxC__Rii_C_cAMP", "kb_Rii_cAMPxC__Rii_C_cAMP", "kb_RiixC__Rii_C", "AKAPoff_1", "AKAPoff_3", "AKAPon_1", "AKAPon_3", "kf_C_AKAR4", "kb_C_AKAR4", "kcat_AKARp", "kmOFF", "kmON", "KD_T", "b_AKAP")
 	return(jacp_)
 }
 # ode default parameters; can depend on constants, and time  of initialization
 AKAP79tc_default<-function(t=0.0)
 {
-	parameters <- vector(mode='numeric',len=26)
+	parameters <- vector(mode='numeric',len=25)
 	parameters[1] <- 33
 	parameters[2] <- 0.496
 	parameters[3] <- 0.00545
@@ -1281,20 +1262,19 @@ AKAP79tc_default<-function(t=0.0)
 	parameters[11] <- 1.413
 	parameters[12] <- 0.2984
 	parameters[13] <- 0.018
-	parameters[14] <- 33
-	parameters[15] <- 0.0003
-	parameters[16] <- 2.6
-	parameters[17] <- 20
-	parameters[18] <- 0.45
-	parameters[19] <- 2
-	parameters[20] <- 0.018
-	parameters[21] <- 0.106
-	parameters[22] <- 10.2
-	parameters[23] <- 100
-	parameters[24] <- 1
-	parameters[25] <- 0.7
-	parameters[26] <- 0
-	names(parameters) <- c("kf_Rii_C__RiiP_C", "kf_RiiP_CxcAMP__RiiP_C_cAMP", "kf_RiiP_cAMPxC__RiiP_C_cAMP", "kb_RiiP_cAMPxC__RiiP_C_cAMP", "kb_RiiPXcAMP__RiiP_cAMP", "kf_RiiPxC__RiiP_C", "kb_RiiPxC__RiiP_C", "kf_cAMPxRii__Rii_cAMP", "kb_cAMPxRii__Rii_cAMP", "kf_Rii_CxcAMP__Rii_C_cAMP", "kb_Rii_CxcAMP__Rii_C_cAMP", "kf_Rii_cAMPxC__Rii_C_cAMP", "kb_Rii_cAMPxC__Rii_C_cAMP", "kf_Rii_C_cAMP__RiiP_C_cAMP", "kb_RiixC__Rii_C", "AKAPoff_1", "AKAPoff_3", "AKAPon_1", "AKAPon_3", "kf_C_AKAR4", "kb_C_AKAR4", "kcat_AKARp", "kmOFF", "kmON", "KD_T", "b_AKAP")
+	parameters[14] <- 0.0003
+	parameters[15] <- 2.6
+	parameters[16] <- 20
+	parameters[17] <- 0.45
+	parameters[18] <- 2
+	parameters[19] <- 0.018
+	parameters[20] <- 0.106
+	parameters[21] <- 10.2
+	parameters[22] <- 100
+	parameters[23] <- 1
+	parameters[24] <- 0.7
+	parameters[25] <- 0
+	names(parameters) <- c("kf_Rii_C__RiiP_C", "kf_RiiP_CxcAMP__RiiP_C_cAMP", "kf_RiiP_cAMPxC__RiiP_C_cAMP", "kb_RiiP_cAMPxC__RiiP_C_cAMP", "kb_RiiPXcAMP__RiiP_cAMP", "kf_RiiPxC__RiiP_C", "kb_RiiPxC__RiiP_C", "kf_cAMPxRii__Rii_cAMP", "kb_cAMPxRii__Rii_cAMP", "kf_Rii_CxcAMP__Rii_C_cAMP", "kb_Rii_CxcAMP__Rii_C_cAMP", "kf_Rii_cAMPxC__Rii_C_cAMP", "kb_Rii_cAMPxC__Rii_C_cAMP", "kb_RiixC__Rii_C", "AKAPoff_1", "AKAPoff_3", "AKAPon_1", "AKAPon_3", "kf_C_AKAR4", "kb_C_AKAR4", "kcat_AKARp", "kmOFF", "kmON", "KD_T", "b_AKAP")
 	return(parameters);
 }
 # ode initial values
@@ -1313,19 +1293,18 @@ AKAP79tc_init<-function(t=0.0, parameters=NA)
 	kb_Rii_CxcAMP__Rii_C_cAMP <- parameters[11]
 	kf_Rii_cAMPxC__Rii_C_cAMP <- parameters[12]
 	kb_Rii_cAMPxC__Rii_C_cAMP <- parameters[13]
-	kf_Rii_C_cAMP__RiiP_C_cAMP <- parameters[14]
-	kb_RiixC__Rii_C <- parameters[15]
-	AKAPoff_1 <- parameters[16]
-	AKAPoff_3 <- parameters[17]
-	AKAPon_1 <- parameters[18]
-	AKAPon_3 <- parameters[19]
-	kf_C_AKAR4 <- parameters[20]
-	kb_C_AKAR4 <- parameters[21]
-	kcat_AKARp <- parameters[22]
-	kmOFF <- parameters[23]
-	kmON <- parameters[24]
-	KD_T <- parameters[25]
-	b_AKAP <- parameters[26]
+	kb_RiixC__Rii_C <- parameters[14]
+	AKAPoff_1 <- parameters[15]
+	AKAPoff_3 <- parameters[16]
+	AKAPon_1 <- parameters[17]
+	AKAPon_3 <- parameters[18]
+	kf_C_AKAR4 <- parameters[19]
+	kb_C_AKAR4 <- parameters[20]
+	kcat_AKARp <- parameters[21]
+	kmOFF <- parameters[22]
+	kmON <- parameters[23]
+	KD_T <- parameters[24]
+	b_AKAP <- parameters[25]
 	# the initial value may depend on the parameters. 
 	state<-vector(mode='numeric',len=16)
 	state[1] <- 6.3

@@ -13,7 +13,6 @@
  <Parameter Name="kb_Rii_CxcAMP__Rii_C_cAMP" Description="independent parameter" DefaultValue="1.413"/>
  <Parameter Name="kf_Rii_cAMPxC__Rii_C_cAMP" Description="independent parameter" DefaultValue="0.2984"/>
  <Parameter Name="kb_Rii_cAMPxC__Rii_C_cAMP" Description="independent parameter" DefaultValue="0.018"/>
- <Parameter Name="kf_Rii_C_cAMP__RiiP_C_cAMP" Description="independent parameter" DefaultValue="33"/>
  <Parameter Name="kb_RiixC__Rii_C" Description="independent parameter" DefaultValue="0.0003"/>
  <Parameter Name="AKAPoff_1" Description="independent parameter" DefaultValue="2.6"/>
  <Parameter Name="AKAPoff_3" Description="independent parameter" DefaultValue="20"/>
@@ -35,6 +34,7 @@
  <Expression Name="kb_RiiP_CxcAMP__RiiP_C_cAMP" Description="defined expression" Formula="kf_RiiP_CxcAMP__RiiP_C_cAMP * KD_T"/>
  <Expression Name="kf_RiixC__Rii_C" Description="defined expression" Formula="(kb_RiixC__Rii_C*kf_cAMPxRii__Rii_cAMP*kf_Rii_cAMPxC__Rii_C_cAMP*kb_Rii_CxcAMP__Rii_C_cAMP)/(kb_cAMPxRii__Rii_cAMP*kb_Rii_cAMPxC__Rii_C_cAMP*kf_Rii_CxcAMP__Rii_C_cAMP)"/>
  <Expression Name="kf_RiiPXcAMP__RiiP_cAMP" Description="defined expression" Formula="(kb_RiiPXcAMP__RiiP_cAMP*kf_RiiPxC__RiiP_C*kf_RiiP_CxcAMP__RiiP_C_cAMP *kb_RiiP_cAMPxC__RiiP_C_cAMP)/(kb_RiiPxC__RiiP_C*kb_RiiP_CxcAMP__RiiP_C_cAMP*kf_RiiP_cAMPxC__RiiP_C_cAMP)"/>
+ <Expression Name="kf_Rii_C_cAMP__RiiP_C_cAMP" Description="defined expression" Formula="kf_Rii_C__RiiP_C"/>
  <Expression Name="reaction_51" Description="flux" Formula="kf_Rii_C__RiiP_C*Rii_C"/>
  <Expression Name="reaction_14" Description="flux" Formula="kf_RiiPxC__RiiP_C*RiiP*C - kb_RiiPxC__RiiP_C*RiiP_C"/>
  <Expression Name="reaction_12" Description="flux" Formula="kf_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C*cAMP - kb_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C_cAMP"/>
