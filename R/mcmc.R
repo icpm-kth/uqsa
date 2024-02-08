@@ -1,8 +1,27 @@
+#' This function can be used to specify default values
+#'
+#' When attributes are missing, the `base::attr()` function returns
+#' NULL. In those cases this function can be used to find an
+#' alternative value in one expression:
+#' `attr(x,"dim") %otherwise% length(x)`
+#' @param a value to check for NULL
+#' @param b value to substitute
+#' @return a, or b if a is NULL
+#' @export
+`%otherwise%` <- function(a,b){
+	if (is.null(a) || any(is.na(a))) {
+		return(b)
+	} else {
+		return(a)
+	}
+}
+
 #' Initialize the Markov chain
 #'
 #' This function must append all required attributes to the MCMC
 #' varible, for the Markov chain to update correctly.
 #'
+#' @param beta inverse temperature for the Markov chain (parallel tempering)
 #' @param parMCMC a plain starting value for the Markov chain
 #' @param logLikelihood a function that maps simulations to
 #'     logLikelihood values
@@ -11,12 +30,42 @@
 #' @param fisherInformation a function that calculates the Fisher Information matrix
 #' @return the same starting parameter vector, but with attributes.
 #' @export
-mcmcInit <- function(parMCMC,simulate,logLikelihood,gradLogLikelihood=NULL,fisherInformation=NULL){
+mcmcInit <- function(beta=1.0,parMCMC,simulate,dprior,logLikelihood,gradLogLikelihood=NULL,fisherInformation=NULL){
 	simulations <- simulate(parMCMC)
+	attr(parMCMC,"beta") <- beta
 	attr(parMCMC,"simulations") <- simulations
-	attr(parMCMC,"logLikelihood") <- logLikelihood(parMCMC)
-	if(!is.null(fisherInformation)) attr(parMCMC,"fisherInformation") <- fisherInformation(parMCMC)
-	if(!is.null(gradLogLikelihood)) attr(parMCMC,"gradLogLikelihood") <- gradLogLikelihood(parMCMC)
+	attr(parMCMC,"prior")  <- dprior(parMCMC)
+	attr(parMCMC,"logLikelihood") <- beta*logLikelihood(parMCMC)
+	if(!is.null(fisherInformation)) attr(parMCMC,"fisherInformation") <- beta*beta*fisherInformation(parMCMC)
+	if(!is.null(gradLogLikelihood)) attr(parMCMC,"gradLogLikelihood") <- beta*gradLogLikelihood(parMCMC)
+	return(parMCMC)
+}
+
+#' Swap the end-points of two Markov chains
+#'
+#' This is a conditional swap, according to the rules of parallel
+#' tempering.
+#'
+#' @export
+#' @param parMCMC a list of Markov chain end points
+#' @return a list with some members swapped
+swap_points <- function(parMCMC){
+	for (j in seq(1,nChains,by=2)){
+		L1 <- attr(parMCMC[[j  ]],"logLikelihood")
+		L2 <- attr(parMCMC[[j+1]],"logLikelihood")
+		B1 <- attr(parMCMC[[j  ]],"beta")
+		B2 <- attr(parMCMC[[j+1]],"beta")
+		a <- (B2-B1)*(L1-L2)
+		r <- runif(1)
+		if (r<a){
+			X <- parMCMC[[j]]
+			parMCMC[[j]] <- parMCMC[[j+1]]
+			parMCMC[[j+1]] <- X
+			# update all attributes
+			attr(parMCMC[[j]],"beta") <- B1
+			attr(parMCMC[[j+1]],"beta") <- B2
+		}
+	}
 	return(parMCMC)
 }
 
@@ -40,15 +89,62 @@ mcmcInit <- function(parMCMC,simulate,logLikelihood,gradLogLikelihood=NULL,fishe
 mcmc <- function(update){
 	M <- function(parMCMC,N=1000,eps=1e-4){
 		sample <- matrix(NA,N,length(parMCMC))
+		ll <- numeric(N)
 		a <- 0
 		for (i in seq(N)){
 			parMCMC <- update(parMCMC,eps)
+			ll[[i]] <- attr(parMCMC,"logLikelihood")
 			sample[i,] <- parMCMC
 			a <- a + as.numeric(attr(parMCMC,"accepted"))
 		}
 		attr(sample,"acceptanceRate") <- a/N
+		attr(sample,"logLikelihood") <- ll
+		attr(sample,"lastPoint") <- parMCMC
 		return(sample)
 	}
+}
+
+#' SMMALA move
+#'
+#' The Simiplified Manifold Metropolis Adjusted Langevin Algorithm uses a
+#' move instriction that uses a Gaussian kernel that is shifted away
+#' from the current point
+#'
+#' @export
+#' @param beta inverse temperature (parallel tempering)
+#' @param parGiven given point
+#' @return SMMALA proposal point
+smmala_move <- function(beta=1.0,parGiven,fisherInformationPrior,eps=1e-2){
+	fiGiven <- attr(parGiven,"fisherInformation")
+	gradLGiven <- attr(parGiven,"gradLogLikelihood")
+	G <- (beta^2*fiGiven)+fisherInformationPrior
+	g <- solve(G,beta*gradLGiven)
+	parProposal <- mvtnorm::rmvnorm(1,
+		mean=parGiven+0.5*eps*g,
+		sigma=eps*eps*G
+	)
+ return(as.numeric(parProposal))
+}
+
+#' SMMALA transition kernel density
+#'
+#' The Simiplified Manifold Metropolis Adjusted Langevin Algorithm uses a
+#' move instriction that uses a Gaussian kernel that is shifted away
+#' from the current point.
+#'
+#' @export
+#' @param beta inverse temperature (parallel tempering)
+#' @param parGiven given point
+#' @return SMMALA proposal point
+smmala_move_density <- function(beta=1.0,parProposal,parGiven,fisherInformationPrior,eps=1e-2){
+	fiGiven <- attr(parGiven,"fisherInformation")
+	gradLGiven <- attr(parGiven,"gradLogLikelihood")
+	G <- (beta^2*fiGiven)+fisherInformationPrior
+	g <- solve(G,beta*gradLGiven)
+	return(mvtnorm::dmvnorm(as.numeric(parProposal),
+		mean=parGiven+0.5*eps*g,
+		sigma=eps*eps*G)
+	)
 }
 
 #' This function proposes an MCMC candidate variable, and either accepts or rejects the candidate
@@ -69,40 +165,37 @@ mcmc <- function(update){
 #' @param dprior prior probability density function
 #' @param eps a step size parameter for Markov chain moves (propotional to step size)
 #' @return a function that returns possibly updated states of the Markov chain
-mcmcUpdate <- function(simulate, experiments, model, logLikelihood, gradLogLikelihood, fisherInformation, fisherInformationPrior, dprior, parMap=identity, parMapJac=1){
+mcmcUpdate <- function(simulate, experiments, model, logLikelihood, gradLogLikelihood, fisherInformation, fisherInformationPrior, dprior){
 	if (is.null(gradLogLikelihood)){
 		cat("unhandled case.\n")
 		U <- NULL
 	} else {
-	U <- function(parGiven, eps=1e-4){
+	U <- function(parGiven, eps=1e-4, beta=1.0){
 		r <- runif(1)
-		LGiven <- attr(parGiven,"logLikelihood")
-		fiGiven <- attr(parGiven,"fisherInformation")
-		gradLGiven <- attr(parGiven,"gradLogLikelihood")
-		fi <- fiGiven+fisherInformationPrior
+		fp <- fisherInformationPrior
+		beta <- attr(parGiven,"beta") %otherwise% 1.0
+		llGiven <- attr(parGiven,"logLikelihood")
+		priorGiven <- attr(parGiven,"prior")
 		n <- length(parGiven)
 		## the very important step: suggest a successor to parGiven and simulate the model
-		parProposal <- as.numeric(mvtnorm::rmvnorm(1,
-			mean=parGiven+0.5*eps*solve(fiGiven+fisherInformationPrior,gradLGiven),
-			sigma=eps*eps*(fiGiven+fisherInformationPrior)))
-		#cat("parProposal: ",parProposal)
+		parProposal <- smmala_move(beta,parGiven,fp,eps)
 		attr(parProposal,"simulations") <- simulate(parProposal)
-		## re-calculate things that depend on parProposal
-		LProposal <- logLikelihood(parProposal)
-		fiProposal <- fisherInformation(parProposal)
-		gradLProposal <- gradLogLikelihood(parProposal)
-		## in this specific case, the proposal is asymmetric, so we need the forward and backward transition densitity values
-		fwdDensity <- mvtnorm::dmvnorm(as.numeric(parProposal),
-			mean=as.numeric(parGiven+0.5*eps*solve(fiGiven+fisherInformationPrior,gradLGiven)),
-			sigma=eps*eps*solve(fiGiven+fisherInformationPrior))
+		llProposal <- logLikelihood(parProposal)
+		priorProposal <- dprior(parProposal)
+		attr(parProposal,"beta") <- beta
+		attr(parProposal,"logLikelihood") <- llProposal
+		attr(parProposal,"prior") <- priorProposal
+		attr(parProposal,"fisherInformation") <- fisherInformation(parProposal)
+		attr(parProposal,"gradLogLikelihood") <- gradLogLikelihood(parProposal)
 
-		bwdDensity <- mvtnorm::dmvnorm(as.numeric(parGiven),
-			mean=as.numeric(parProposal+0.5*eps*solve(fiProposal+fisherInformationPrior,gradLProposal)),
-			sigma=eps*eps*solve(fiProposal+fisherInformationPrior))
-		if (r < exp(LProposal - LGiven) * (dprior(parProposal)/dprior(parGiven)) * (bwdDensity/fwdDensity)){
-			attr(parProposal,"logLikelihood") <- LProposal
-			attr(parProposal,"fisherInformation") <- fiProposal
-			attr(parProposal,"gradLogLikelihood") <- gradLProposal
+		fwdDensity <- smmala_move_density(beta,parProposal,parGiven,fp,eps)
+		bwdDensity <- smmala_move_density(beta,parGiven,parProposal,fp,eps)
+
+		L <- exp(beta*(llProposal - llGiven))
+		P <- priorProposal/priorGiven
+		K <- bwdDensity/fwdDensity
+
+		if (r < L * P * K){
 			attr(parProposal,"accepted") <- TRUE
 			return(parProposal)
 		} else {

@@ -50,9 +50,11 @@ navbar:
           href: articles/simAKAP79.html
         - text: sample AKAP79
           href: articles/AKAP79.html
-        - text: sample AKAR4
+        - text: sample AKAR4 with ABC
           href: articles/AKAR4.html
-        - text: Make a Shared Library
+        - text: sample AKAR4 with MCMC
+          href: articles/AKAR4cl.html
+        - text: Build a Model
           href: articles/shortMakeSharedLibrary.html
     reference:
         text: Function reference
@@ -67,21 +69,33 @@ reference:
   - dCopulaPrior
   - dNormalPrior
   - dUniformPrior
+  - defaultAcceptance
+  - defaultDistance
+  - fisherInformationFromGSA
+  - fisherInformation
   - fitCopula
   - getMCMCPar
+  - globalSensitivity
+  - gradLogLikelihood
   - importReactionsSSA
+  - logLikelihood
+  - log10ParMap
+  - log10ParMapJac
   - makeGillespieModel
   - makeIndepCopula
   - makeObjective
   - makeObjectiveSSA
+  - mcmc
+  - mcmcInit
+  - mcmcUpdate
   - parUpdate
   - plotSimualtionsFromSBtab
   - preCalibration
   - rCopulaPrior
   - rNormalPrior
   - rUniformPrior
-  - sensitivity
   - sensitivity.graph
+  - sensitivityEquilibriumApproximation
   - simulator.c
   - uqsa_example
 - title: "Internal Functions"

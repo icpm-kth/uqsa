@@ -16,10 +16,73 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/AKAR4.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/AKAR4cl.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/GSA.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/SBtab.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/ABC_sampling.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/AKAR4.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/AKAR4cl.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/GSA.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/SBtab.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/cite.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/data.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/examples_overview.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/install.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/installation.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/literature_references.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/models.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/sa.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/shortMakeSharedLibrary.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/simAKAP79.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/simulate.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/tsv.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/uq.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/uqsa.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/user_model.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles-AKAP79.html</loc>
@@ -103,6 +166,18 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/dUniformPrior.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/defaultAcceptance.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/defaultDistance.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/fisherInformation.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/fisherInformationFromGSA.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/fitCopula.html</loc>
   </url>
   <url>
@@ -110,6 +185,12 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/getMCMCPar.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/globalSensitivity.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/gradLogLikelihood.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/importReactionsSSA.html</loc>
@@ -122,6 +203,15 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/log10ParMap.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/log10ParMapJac.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/logLikelihood.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/makeAcceptanceProbability.html</loc>
@@ -143,6 +233,15 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/match.names.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/mcmc.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/mcmcInit.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/mcmcUpdate.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/observable.mean.in.bin.html</loc>
@@ -191,6 +290,9 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/sensitivity.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/sensitivityEquilibriumApproximation.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/simulator.R.html</loc>

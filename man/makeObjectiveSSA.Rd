@@ -6,6 +6,7 @@
 \usage{
 makeObjectiveSSA(
   experiments,
+  model,
   parNames,
   distance,
   parMap = identity,

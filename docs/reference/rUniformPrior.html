@@ -63,8 +63,9 @@ function."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
     <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4</a>
-    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Make a Shared Library</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4 with ABC</a>
+    <a class="dropdown-item" href="../articles/AKAR4cl.html">sample AKAR4 with MCMC</a>
+    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Build a Model</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -124,19 +125,19 @@ where n is the requested number of vectors (rows)</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">rup</span><span class="op">&lt;-</span><span class="fu">rUniformPrior</span><span class="op">(</span>ll<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,ul<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rup</span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]     [,2]     [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.57783680 1.077161 2.563714</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.01073836 1.383729 2.971595</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.25232037 1.649847 2.932947</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.13358668 1.293940 2.548415</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.04878548 1.081327 2.664992</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.19122636 1.049237 2.699919</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.36572511 1.604934 2.023715</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.19512909 1.635678 2.706324</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.98366377 1.627327 2.149201</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.12553582 1.729130 2.011833</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.77975200 1.225725 2.528025</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.66882215 1.126497 2.134426</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              [,1]     [,2]     [,3]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.326826778 1.493862 2.339430</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.954820141 1.762844 2.128610</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.540992443 1.190966 2.947544</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.755910852 1.960522 2.203711</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.093809647 1.311736 2.293123</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.876117824 1.425433 2.609318</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.276064882 1.986155 2.874139</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.394076536 1.853309 2.648831</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.312345445 1.323988 2.336191</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.882434425 1.272740 2.034288</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.186912371 1.983287 2.001781</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.007116752 1.373983 2.064891</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

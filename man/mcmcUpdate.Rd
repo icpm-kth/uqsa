@@ -12,9 +12,7 @@ mcmcUpdate(
   gradLogLikelihood,
   fisherInformation,
   fisherInformationPrior,
-  dprior,
-  parMap = identity,
-  parMapJac = 1
+  dprior
 )
 }
 \arguments{
