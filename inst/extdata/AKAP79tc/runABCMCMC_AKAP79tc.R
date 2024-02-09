@@ -40,7 +40,7 @@ parMap <- function(parABC){
 
 
 # Define Lower and Upper Limits for logUniform prior distribution for the parameters
-defRange <- c(rep(1000,17),1.9,1000,1.25,1.25,1.25,1.5,1.5,2)
+defRange <- c(rep(1000,16),1.9,1000,1.25,1.25,1.25,1.5,1.5,2)
 ll <- parVal/defRange
 ul <- parVal*defRange
 
