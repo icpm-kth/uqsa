@@ -187,10 +187,19 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/getMCMCPar.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/ggplotTimeSeries.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/ggplotTimeSeriesStates.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/globalSensitivity.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/gradLogLikelihood.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/grapes-otherwise-grapes.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/importReactionsSSA.html</loc>
@@ -301,7 +310,16 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/simulator.c.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/smmala_move.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/smmala_move_density.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/sum.of.bin.variance.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/swap_points.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/uqsa-package.html</loc>

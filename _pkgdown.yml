@@ -98,6 +98,12 @@ reference:
   - sensitivityEquilibriumApproximation
   - simulator.c
   - uqsa_example
+  - "%otherwise%"
+  - smmala_move
+  - smmala_move_density
+  - swap_points
+  - ggplotTimeSeries
+  - ggplotTimeSeriesStates
 - title: "Internal Functions"
   desc: "not exported functions"
   contents:

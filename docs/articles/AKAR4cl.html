@@ -208,7 +208,7 @@
 <span>    gradLogLikelihood<span class="op">=</span><span class="va">gradLL</span>,</span>
 <span>    fisherInformation<span class="op">=</span><span class="va">fiIn</span>,</span>
 <span>    fisherInformationPrior<span class="op">=</span><span class="va">fiPrior</span>,</span>
-<span>    <span class="va">dprior</span><span class="op">)</span></span></code></pre></div>
+<span>    dprior<span class="op">=</span><span class="va">dprior</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level3">
@@ -218,89 +218,84 @@
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mcmc.html">mcmc</a></span><span class="op">(</span><span class="va">update</span><span class="op">)</span>   <span class="co"># a Markov chain</span></span>
 <span><span class="va">h</span> <span class="op">&lt;-</span> <span class="fl">1e-1</span>           <span class="co"># step size guess</span></span>
-<span><span class="va">parMCMC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>,<span class="fl">4</span><span class="op">)</span>,<span class="va">rprior</span><span class="op">)</span>,<span class="va">as.numeric</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span> <span class="co"># 4 random starting positions, if nothing else is available</span></span>
-<span><span class="co">#&gt; [[1]]</span></span>
-<span><span class="co">#&gt; [1] -1.0327871 -2.8925115  0.6276461</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; [[2]]</span></span>
-<span><span class="co">#&gt; [1] -2.460543  1.760947 -1.693599</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; [[3]]</span></span>
-<span><span class="co">#&gt; [1] -2.150890 -1.114859  2.115672</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; [[4]]</span></span>
-<span><span class="co">#&gt; [1]  0.8888430 -0.3112773  2.0729100</span></span>
 <span></span>
-<span><span class="va">nChains</span> <span class="op">&lt;-</span> <span class="fl">4</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>mc.cores <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%/%</a></span> <span class="va">nChains</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">nChains</span> <span class="op">&lt;-</span> <span class="fl">4</span></span></code></pre></div>
 <p>We define an adjustment factor <code>L(a)</code> for <code>h</code>, based on the acceptance rate <code>a</code> of a test chain of size <code>N</code> (a good value for a test chain is around 100). The factor <code>L(a)</code> increases <code>h</code> if <code>a</code> is above the target acceptance of 25%.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">accTarget</span> <span class="op">&lt;-</span> <span class="fl">0.25</span></span>
-<span><span class="va">L</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">a</span><span class="op">)</span> <span class="op">{</span> <span class="op">(</span><span class="fl">1.0</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1.0</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="va">a</span><span class="op">-</span><span class="va">accTarget</span><span class="op">)</span><span class="op">/</span><span class="fl">0.1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.5</span><span class="op">}</span></span>
-<span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">1000</span></span>
+<span><span class="va">L</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">a</span><span class="op">)</span> <span class="op">{</span> <span class="op">(</span><span class="fl">1.0</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1.0</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="va">a</span><span class="op">-</span><span class="va">accTarget</span><span class="op">)</span><span class="op">/</span><span class="fl">0.1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.5</span> <span class="op">}</span></span>
+<span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
 <span></span>
 <span><span class="va">start_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">parVal</span><span class="op">)</span></span>
 <span>                              <span class="co"># do the adjustment of h a few times</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>mc.cores <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"adjusting step size: "</span>,<span class="va">h</span>,<span class="st">" \n"</span><span class="op">)</span>;</span>
-<span> <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mcmcInit.html">mcmcInit</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">simulate</span>,<span class="va">llf</span>,<span class="va">gradLL</span>,<span class="va">fiIn</span><span class="op">)</span></span>
-<span> <span class="va">parMCMC</span><span class="op">[[</span><span class="va">j</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="va">nChains</span> <span class="op">+</span> <span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">x</span></span>
+<span> <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mcmcInit.html">mcmcInit</a></span><span class="op">(</span><span class="fl">1.0</span>,<span class="va">x</span>,<span class="va">simulate</span>,<span class="va">dprior</span>,<span class="va">llf</span>,<span class="va">gradLL</span>,<span class="va">fiIn</span><span class="op">)</span></span>
 <span> <span class="va">Sample</span> <span class="op">&lt;-</span> <span class="fu">m</span><span class="op">(</span><span class="va">x</span>,<span class="va">N</span>,eps<span class="op">=</span><span class="va">h</span><span class="op">)</span></span>
 <span> <span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">Sample</span>,<span class="st">"acceptanceRate"</span><span class="op">)</span></span>
 <span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"acceptance: "</span>,<span class="va">a</span><span class="op">*</span><span class="fl">100</span>,<span class="st">" %\n"</span><span class="op">)</span></span>
 <span> <span class="va">h</span> <span class="op">&lt;-</span> <span class="va">h</span> <span class="op">*</span> <span class="fu">L</span><span class="op">(</span><span class="va">a</span><span class="op">)</span></span>
 <span> <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">Sample</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
 <span><span class="op">}</span></span>
 <span><span class="co">#&gt; adjusting step size:  0.1  </span></span>
-<span><span class="co">#&gt; acceptance:  25.7  %</span></span>
-<span><span class="co">#&gt; adjusting step size:  0.1017493  </span></span>
-<span><span class="co">#&gt; acceptance:  23.8  %</span></span>
-<span><span class="co">#&gt; adjusting step size:  0.09870046  </span></span>
-<span><span class="co">#&gt; acceptance:  26  %</span></span>
-<span><span class="co">#&gt; adjusting step size:  0.1011659  </span></span>
-<span><span class="co">#&gt; acceptance:  22  %</span></span>
-<span><span class="co">#&gt; adjusting step size:  0.09363488  </span></span>
-<span><span class="co">#&gt; acceptance:  19.2  %</span></span>
-<span><span class="co">#&gt; adjusting step size:  0.08042605  </span></span>
-<span><span class="co">#&gt; acceptance:  24.6  %</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"final step size: "</span>,<span class="va">h</span>,<span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; final step size:  0.07962189</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"finished adjusting after"</span>,<span class="fu"><a href="https://rdrr.io/r/base/difftime.html" class="external-link">difftime</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span>,<span class="va">start_time</span>,units<span class="op">=</span><span class="st">"sec"</span><span class="op">)</span>,<span class="st">" seconds\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; finished adjusting after 300.0478  seconds</span></span></code></pre></div>
-<p>During that loop, we also replace the random starting positions in <code>parMCMC</code> with values that we find on the way, during the <em>step size</em> adjustment. If the loop doesn’t repeat enough times, we would keep some of the random starting positions. Those positions would be uninitialized. In that case we would run:</p>
+<span><span class="co">#&gt; acceptance:  27  %</span></span>
+<span><span class="co">#&gt; adjusting step size:  0.1049834  </span></span>
+<span><span class="co">#&gt; acceptance:  29  %</span></span>
+<span><span class="co">#&gt; adjusting step size:  0.115344  </span></span>
+<span><span class="co">#&gt; acceptance:  18  %</span></span>
+<span><span class="co">#&gt; adjusting step size:  0.09594452  </span></span>
+<span><span class="co">#&gt; acceptance:  28  %</span></span>
+<span><span class="co">#&gt; adjusting step size:  0.1030869  </span></span>
+<span><span class="co">#&gt; acceptance:  19  %</span></span>
+<span><span class="co">#&gt; adjusting step size:  0.08807162  </span></span>
+<span><span class="co">#&gt; acceptance:  29  %</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">Sample</span>,<span class="st">"logLikelihood"</span><span class="op">)</span>,xlab<span class="op">=</span><span class="st">"iteration"</span>,ylab<span class="op">=</span><span class="st">"log-likelihood"</span>,main<span class="op">=</span><span class="st">"small Sample to find a good step size"</span>,type<span class="op">=</span><span class="st">'l'</span><span class="op">)</span></span></code></pre></div>
+<p><img src="AKAR4cl_files/figure-html/adjust-1.png" width="700"></p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># (optional) nChains = 4 random starting positions, initialized:</span></span>
-<span><span class="va">parMCMC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>,<span class="va">nChains</span><span class="op">)</span>,<span class="va">rprior</span><span class="op">)</span>,<span class="va">as.numeric</span><span class="op">)</span></span>
-<span><span class="va">parMCMC</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/mclapply.html" class="external-link">mclapply</a></span><span class="op">(</span><span class="va">parMCMC</span>,<span class="va">mcmcInit</span>,simulate<span class="op">=</span><span class="va">simulate</span>,logLikelihood<span class="op">=</span><span class="va">llf</span>,gradLogLikelihood<span class="op">=</span><span class="va">gradLL</span>,fisherInformation<span class="op">=</span><span class="va">fiIn</span><span class="op">)</span></span>
-<span><span class="co"># but we don't do this here.</span></span></code></pre></div>
-<p>Next, we perform the sampling in parallel:</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"final step size: "</span>,<span class="va">h</span>,<span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; final step size:  0.0967632</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"finished adjusting after"</span>,<span class="fu"><a href="https://rdrr.io/r/base/difftime.html" class="external-link">difftime</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span>,<span class="va">start_time</span>,units<span class="op">=</span><span class="st">"sec"</span><span class="op">)</span>,<span class="st">" seconds\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; finished adjusting after 30.12104  seconds</span></span></code></pre></div>
+<p>Initialize parallel execution, with 4 processes, but 16 Markov chains.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">4</span>                                           <span class="co"># parallel chains</span></span>
+<code class="sourceCode R"><span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">16</span>                                          <span class="co"># cluster size</span></span>
+<span><span class="va">nChains</span> <span class="op">&lt;-</span> <span class="fl">16</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>mc.cores <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%/%</a></span> <span class="va">n</span><span class="op">)</span></span>
 <span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeForkCluster</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">is.list</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span><span class="op">==</span><span class="va">n</span><span class="op">)</span></span>
 <span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/RngStream.html" class="external-link">clusterSetRNGStream</a></span><span class="op">(</span><span class="va">cl</span>, <span class="fl">1337</span><span class="op">)</span>          <span class="co"># seeding random numbers sequences</span></span>
 <span></span>
+<span><span class="va">betas</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0</span>,length.out<span class="op">=</span><span class="va">nChains</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span></span>
+<span><span class="va">parMCMC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">betas</span>,<span class="va">mcmcInit</span>,parMCMC<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">parVal</span><span class="op">)</span>,simulate<span class="op">=</span><span class="va">simulate</span>,dprior<span class="op">=</span><span class="va">dprior</span>,logLikelihood<span class="op">=</span><span class="va">llf</span>,gradLogLikelihood<span class="op">=</span><span class="va">gradLL</span>,fisherInformation<span class="op">=</span><span class="va">fiIn</span><span class="op">)</span></span></code></pre></div>
+<p>Next, we perform the sampling in parallel, but also swap positions every once in a while:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
 <span><span class="va">start_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span>                         <span class="co"># measure sampling time</span></span>
+<span><span class="va">Sample</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>                            <span class="co"># 16 chains, 4 workers</span></span>
+<span> <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span><span class="va">cl</span>, <span class="va">parMCMC</span>, <span class="va">m</span>, N<span class="op">=</span><span class="fl">100</span>, eps<span class="op">=</span><span class="va">h</span><span class="op">)</span></span>
+<span> <span class="va">parMCMC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">s</span>,<span class="va">attr</span>,which<span class="op">=</span><span class="st">"lastPoint"</span><span class="op">)</span></span>
+<span> <span class="va">parMCMC</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/swap_points.html">swap_points</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span></span>
+<span> <span class="kw">if</span> <span class="op">(</span><span class="va">i</span><span class="op">&gt;</span><span class="fl">2</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">Sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">Sample</span>,<span class="va">s</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span> <span class="op">}</span></span>
+<span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">pL</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span><span class="va">cl</span>, <span class="va">parMCMC</span>, <span class="va">m</span>, N<span class="op">=</span><span class="fl">10000</span>, eps<span class="op">=</span><span class="va">h</span><span class="op">)</span></span>
-<span><span class="va">Sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span><span class="va">rbind</span>,<span class="va">pL</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">Sample</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">parVal</span><span class="op">)</span></span>
+<span></span>
 <span></span>
 <span><span class="va">time_</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/difftime.html" class="external-link">difftime</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span>,<span class="va">start_time</span>,units<span class="op">=</span><span class="st">"sec"</span><span class="op">)</span></span>
 <span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"finished sampling after"</span>,<span class="va">time_</span>,<span class="st">" seconds\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; finished sampling after 641.0024  seconds</span></span></code></pre></div>
+<span><span class="co">#&gt; finished sampling after 650.7688  seconds</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="results">Results<a class="anchor" aria-label="anchor" href="#results"></a>
 </h2>
 <p>The final sample looks like this:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">Sample</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          kf_C_AKAR4 kb_C_AKAR4 kcat_AKARp</span></span>

@@ -163,7 +163,7 @@ options(mc.cores = parallel::detectCores() %/% n)
 cl <- parallel::makeForkCluster(n)
 parallel::clusterSetRNGStream(cl, 1337)          # seeding random numbers sequences
 
-betas <- seq(1,0,length.out=nChains)^4
+betas <- seq(1,0,length.out=nChains)^2
 parMCMC <- lapply(betas,mcmcInit,parMCMC=log10(parVal),simulate=simulate,dprior=dprior,logLikelihood=llf,gradLogLikelihood=gradLL,fisherInformation=fiIn)
 ```
 
@@ -172,18 +172,16 @@ Next, we perform the sampling in parallel, but also swap positions every once in
 ```{r, sample}
 
 start_time <- Sys.time()                         # measure sampling time
-pL <- list()
-cat(sprintf("0%%|%50s|50%% %45s|100%%",".","."),"\n  |")
-for (i in seq(1000)){                            # 16 chains, 4 workers
- s <- parallel::parLapply(cl, parMCMC, m, N=10, eps=h)
+Sample <- NULL
+for (i in seq(100)){                            # 16 chains, 4 workers
+ s <- parallel::parLapply(cl, parMCMC, m, N=100, eps=h)
  parMCMC <- lapply(s,attr,which="lastPoint")
  parMCMC <- swap_points(parMCMC)
- pL <- c(pL,s[1])
- if (i %% 10 == 0) cat("#")
+ if (i>2) {
+  Sample <- rbind(Sample,s[[1]])
+ }
 }
-cat("| (done)\n")
 
-Sample <- Reduce(rbind,pL)
 colnames(Sample) <- names(parVal)
 
 

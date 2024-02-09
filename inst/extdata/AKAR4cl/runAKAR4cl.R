@@ -71,7 +71,7 @@ for (j in seq(5)){
 }
 
 cat("final step size: ",h,"\n")
-parMCMC <- mcmcInit(parMCMC,simulate,llf,gradLL,fiIn)
+parMCMC <- mcmcInit(beta=1.0,parMCMC,simulate,llf,gradLL,fiIn)
 cat("finished adjusting after",Sys.time() - start_time," seconds\n")
 
 options(mc.cores = parallel::detectCores() %/% 4)
