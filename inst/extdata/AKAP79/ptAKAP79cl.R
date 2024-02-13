@@ -1,11 +1,11 @@
 ## ----setup--------------------------------------------------------------------
-library(uqsa)
+#library(uqsa)
 library(parallel)
 library(rgsl)
 library(hexbin)
 library(SBtabVFGEN)
 
-
+devtools::load_all("~/uqsa")
 ## ----label="SBtab content"----------------------------------------------------
 modelFiles <- uqsa_example("AKAP79",pattern="[.]tsv$",full.names=TRUE)
 SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
@@ -27,19 +27,21 @@ experiments <- sbtab.data(SBtab,ConLaw)
 ## ----default------------------------------------------------------------------
 n <- length(experiments[[1]]$input)
 stopifnot(n>0)
-parVal <- head(AKAR4cl_default(),-n)
+load("goodMCMCvalue.RData",verbose=TRUE) # parStart
+parVal <- parStart
+#parVal <- log10(head(AKAP79_default(),-n))
 print(parVal)
 
 
 ## ----range--------------------------------------------------------------------
 defRange <- 2 # log-10 space
-dprior <- dNormalPrior(mean=log10(parVal),sd=rep(defRange,length(parVal)))
-rprior <- rNormalPrior(mean=log10(parVal),sd=rep(defRange,length(parVal)))
+dprior <- dNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
+rprior <- rNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 
 ## ----simulate-----------------------------------------------------------------
 sensApprox <- sensitivityEquilibriumApproximation(experiments, model, log10ParMap, log10ParMapJac)
 simulate <- simulator.c(experiments,modelName,log10ParMap,noise=FALSE,sensApprox)
-y <- simulate(log10(parVal))
+y <- simulate(parVal)
 
 plot(experiments[[1]]$outputTimes,as.numeric(y[[1]]$state[1,,1]),xlab='time',ylab='AKAR4p', main='state',type='l')
 
@@ -49,7 +51,6 @@ llf <- logLikelihood(experiments)
 gradLL <- gradLogLikelihood(model,experiments, parMap=log10ParMap, parMapJac=log10ParMapJac)
 fiIn <- fisherInformation(model, experiments, parMap=log10ParMap)
 fiPrior <- solve(diag(defRange, length(parVal)))
-print(fiPrior) # constant matrix
 
 
 ## ----update-------------------------------------------------------------------
@@ -67,19 +68,16 @@ update  <- mcmcUpdate(simulate=simulate,
 m <- mcmc(update)   # a Markov chain
 h <- 1e-3           # step size guess
 
-nChains <- 4
-
-
 ## ----adjust-------------------------------------------------------------------
 accTarget <- 0.25
 L <- function(a) { (1.0 / (1.0+exp(-(a-accTarget)/0.1))) + 0.5 }
 N <- 100
 
 start_time <- Sys.time()
-x <- log10(parVal)
+x <- parVal
                               # do the adjustment of h a few times
 options(mc.cores = parallel::detectCores())
-for (j in seq(6)){
+for (j in seq(8)){
  cat("adjusting step size: ",h," \n");
  x <- mcmcInit(1.0,x,simulate,dprior,llf,gradLL,fiIn)
  Sample <- m(x,N,eps=h)
@@ -94,21 +92,21 @@ cat("finished adjusting after",difftime(Sys.time(),start_time,units="sec")," sec
 
 
 ## ----initCluster--------------------------------------------------------------
-n <- 16                                          # cluster size
-nChains <- 16
+n <- 8                                          # cluster size
+nChains <- 32
 options(mc.cores = parallel::detectCores() %/% n)
 cl <- parallel::makeForkCluster(n)
 parallel::clusterSetRNGStream(cl, 1337)          # seeding random numbers sequences
 
 betas <- seq(1,0,length.out=nChains)^4
-parMCMC <- lapply(betas,mcmcInit,parMCMC=log10(parVal),simulate=simulate,dprior=dprior,logLikelihood=llf,gradLogLikelihood=gradLL,fisherInformation=fiIn)
+parMCMC <- lapply(betas,mcmcInit,parMCMC=parVal,simulate=simulate,dprior=dprior,logLikelihood=llf,gradLogLikelihood=gradLL,fisherInformation=fiIn)
 
 
 ## ----sample-------------------------------------------------------------------
 
 start_time <- Sys.time()                         # measure sampling time
 Sample <- NULL
-for (i in seq(100)){                            # 16 chains, 4 workers
+for (i in seq(100)){
  s <- parallel::parLapply(cl, parMCMC, m, N=100, eps=h)
  parMCMC <- lapply(s,attr,which="lastPoint")
  parMCMC <- swap_points(parMCMC)

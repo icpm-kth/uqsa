@@ -58,6 +58,7 @@ swap_points <- function(parMCMC){
 		a <- (B2-B1)*(L1-L2)
 		r <- runif(1)
 		if (r<a){
+			cat(sprintf("swapping %i with %i\n",j,j+1))
 			X <- parMCMC[[j]]
 			parMCMC[[j]] <- parMCMC[[j+1]]
 			parMCMC[[j+1]] <- X
@@ -166,6 +167,9 @@ smmala_move_density <- function(beta=1.0,parProposal,parGiven,fisherInformationP
 #' @param eps a step size parameter for Markov chain moves (propotional to step size)
 #' @return a function that returns possibly updated states of the Markov chain
 mcmcUpdate <- function(simulate, experiments, model, logLikelihood, gradLogLikelihood, fisherInformation, fisherInformationPrior, dprior){
+	np <- length(model$par())
+	nu <- length(experiments[[1]]$input)
+	z <- numeric(np-nu)
 	if (is.null(gradLogLikelihood)){
 		cat("unhandled case.\n")
 		U <- NULL
@@ -174,19 +178,19 @@ mcmcUpdate <- function(simulate, experiments, model, logLikelihood, gradLogLikel
 		r <- runif(1)
 		fp <- fisherInformationPrior
 		beta <- attr(parGiven,"beta") %otherwise% 1.0
-		llGiven <- attr(parGiven,"logLikelihood")
-		priorGiven <- attr(parGiven,"prior")
+		llGiven <- attr(parGiven,"logLikelihood") %otherwise% 0.0
+		priorGiven <- attr(parGiven,"prior") %otherwise% 0.0
 		n <- length(parGiven)
 		## the very important step: suggest a successor to parGiven and simulate the model
 		parProposal <- smmala_move(beta,parGiven,fp,eps)
 		attr(parProposal,"simulations") <- simulate(parProposal)
-		llProposal <- logLikelihood(parProposal)
+		llProposal <- logLikelihood(parProposal) %otherwise% 0.0
 		priorProposal <- dprior(parProposal)
 		attr(parProposal,"beta") <- beta
 		attr(parProposal,"logLikelihood") <- llProposal
 		attr(parProposal,"prior") <- priorProposal
 		attr(parProposal,"fisherInformation") <- fisherInformation(parProposal)
-		attr(parProposal,"gradLogLikelihood") <- gradLogLikelihood(parProposal)
+		attr(parProposal,"gradLogLikelihood") <- gradLogLikelihood(parProposal) %otherwise% z
 
 		fwdDensity <- smmala_move_density(beta,parProposal,parGiven,fp,eps)
 		bwdDensity <- smmala_move_density(beta,parGiven,parProposal,fp,eps)
@@ -306,7 +310,7 @@ logLikelihood <- function(experiments){
 			stdv <- t(experiments[[i]]$errorValues)
 			for (k in seq(n)){
 				h <- simulations[[i]]$func[,,k]
-				L[k] <- L[k] - 0.5*sum(((y - h)/stdv)^2,na.rm=TRUE) + sum(log(stdv))
+				L[k] <- L[k] - 0.5*sum(((y - h)/stdv)^2,na.rm=TRUE) + sum(log(stdv),na.rm=TRUE)
 			}
 		}
 		return(L)
@@ -357,15 +361,17 @@ gradLogLikelihood <- function(model,experiments,parMap=identity,parMapJac=1){
 			d <- dim(simulations[[i]]$func)
 			T <- length(experiments[[i]]$outputTimes)
 			y <- t(experiments[[i]]$outputValues)
+			y[is.na(y)] <- 0.0
 			h <- simulations[[i]]$func[,,1]
 			dim(h) <- head(d,2)
-			stdv <- t(experiments[[i]]$errorValues)
+			stdv2 <- t(experiments[[i]]$errorValues)^2 # sigma^2
+			stdv2[is.na(stdv2)] <- Inf
 			Sh <- simulations[[i]]$funcsens
 			dS <- dim(Sh)
 			for (j in seq(T)){
 				Shj <- Sh[,,j]
 				dim(Shj) <- head(dS,2)
-				gL <- gL + as.numeric(t(((y[,j,drop=FALSE] - h[,j,drop=FALSE])/stdv[,j,drop=FALSE]^2)) %*% Shj)
+				gL <- gL + as.numeric(t((y[,j] - h[,j])/stdv2[,j]) %*% Shj)
 			}
 		}
 		return(gL)

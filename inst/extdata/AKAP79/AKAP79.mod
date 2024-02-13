@@ -1,7 +1,7 @@
 TITLE AKAP79
 COMMENT
 	automatically generated from an SBtab file
-	date: Mon Feb 12 14:14:52 2024
+	date: Tue Feb 13 11:55:11 2024
 ENDCOMMENT
 NEURON {
 	SUFFIX AKAP79 : OR perhaps POINT_PROCESS ?
