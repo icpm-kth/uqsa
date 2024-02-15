@@ -1,9 +1,12 @@
+#!/bin/env Rscript
+
 ## ----setup--------------------------------------------------------------------
 #library(uqsa)
 library(parallel)
 library(rgsl)
 library(hexbin)
 library(SBtabVFGEN)
+library(doMPI)
 
 devtools::load_all("~/uqsa")
 ## ----label="SBtab content"----------------------------------------------------
@@ -27,9 +30,9 @@ experiments <- sbtab.data(SBtab,ConLaw)
 ## ----default------------------------------------------------------------------
 n <- length(experiments[[1]]$input)
 stopifnot(n>0)
-load("goodMCMCvalue.RData",verbose=TRUE) # parStart
-parVal <- parStart
-#parVal <- log10(head(AKAP79_default(),-n))
+#load("goodMCMCvalue.RData",verbose=TRUE) # parStart
+#parVal <- parStart
+parVal <- log10(head(AKAP79_default(),-n))
 print(parVal)
 
 
@@ -92,11 +95,14 @@ cat("finished adjusting after",difftime(Sys.time(),start_time,units="sec")," sec
 
 
 ## ----initCluster--------------------------------------------------------------
-n <- 8                                          # cluster size
-nChains <- 32
-options(mc.cores = parallel::detectCores() %/% n)
-cl <- parallel::makeForkCluster(n)
-parallel::clusterSetRNGStream(cl, 1337)          # seeding random numbers sequences
+n <- 7                                          # cluster size, apart from the main process
+nChains <- 8
+options(mc.cores = 1)
+
+#cl <- parallel::makeForkCluster(n)
+cl <- startMPIcluster(n)
+registerDoMPI(cl)
+#parallel::clusterSetRNGStream(cl, 1337)          # seeding random numbers sequences
 
 betas <- seq(1,0,length.out=nChains)^4
 parMCMC <- lapply(betas,mcmcInit,parMCMC=parVal,simulate=simulate,dprior=dprior,logLikelihood=llf,gradLogLikelihood=gradLL,fisherInformation=fiIn)
@@ -105,26 +111,26 @@ parMCMC <- lapply(betas,mcmcInit,parMCMC=parVal,simulate=simulate,dprior=dprior,
 ## ----sample-------------------------------------------------------------------
 
 start_time <- Sys.time()                         # measure sampling time
-Sample <- NULL
 for (i in seq(100)){
- s <- parallel::parLapply(cl, parMCMC, m, N=100, eps=h)
- parMCMC <- lapply(s,attr,which="lastPoint")
- parMCMC <- swap_points(parMCMC)
- if (i>2) {
-  Sample <- rbind(Sample,s[[1]])
- }
+	Sample <- foreach (p=parMCMC, .combine="rbind") %dopar% {
+		s <- m(p,N=100,h)
+	}
+	parMCMC <- lapply(s,attr,which="lastPoint")
+	parMCMC <- swap_points(parMCMC)
 }
 
 colnames(Sample) <- names(parVal)
-
+save(Sample,"testSample.RData")
 
 time_ <- difftime(Sys.time(),start_time,units="sec")
-parallel::stopCluster(cl)
+#parallel::stopCluster(cl)
+closeCluster(cl)
+mpi.finalize()
 print(time_)
 
 
 ## ----hexplom, fig.width = 12, fig.height = 12---------------------------------
 
 print(tail(Sample,10))
-hexbin::hexplom(Sample)
+#hexbin::hexplom(Sample)
 
