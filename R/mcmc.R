@@ -55,7 +55,7 @@ mcmcInit <- function(beta=1.0,parMCMC,simulate,dprior,logLikelihood,gradLogLikel
 #' @param ll2 the log-lilihood of chain 2
 #' @return TRUE is the chains should swap their temperatures
 #' @export
-change_temperature(b1,ll1,b2,ll2){
+change_temperature <- function(b1,ll1,b2,ll2){
 		a <- (b2-b1)*(ll1-ll2)
 		r <- runif(1)
 		return(r<a)
@@ -132,13 +132,17 @@ mcmc <- function(update){
 
 #' The MPI version of the mcmc function
 #'
-#' @param update
+#' this version of the MCMC function returns a Markov chain closure
+#' that assumes that it is bein run in an MPI context: R was launched
+#' using `runmpi` and the Rmpi package is installed.
+#'
+#' @param update an update function
 #' @return an mcmc closure m(parMCMC,N,eps) that implicitly uses the supplied update function
 #' @export
 mcmc_mpi <- function(update){
 	M <- function(parMCMC,N=1000,eps=1e-4){
-		r <- mpi.comm.rank() # 0..n-1
-		cs  <- mpi.comm.size()
+		r <- Rmpi::mpi.comm.rank() # 0..n-1
+		cs  <- Rmpi::mpi.comm.size()
 
 		sample <- matrix(NA,N,length(parMCMC))
 		ll <- numeric(N)
@@ -154,22 +158,22 @@ mcmc_mpi <- function(update){
 			ll[i] <- LL
 			b[i]  <- B
 			if (r %% 2 == i %% 2) {
-					mpi.send.Robj(LL, dest=(r+1)%%cs,tag=1)
-					mpi.send.Robj(B, dest=(r+1)%%cs,tag=2)
+					Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs,tag=1,comm=0)
+					Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs,tag=2,comm=0)
 			} else {
 					# e(x)ternal objects, from the other chain
-					xLL <- mpi.recv.Robj(source=(r-1) %% cs,tag=1)
-					xB <- mpi.recv.Robj(source=(r-1) %% cs,tag=2)
+					xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs,tag=1,comm=0)
+					xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs,tag=2,comm=0)
 			}
 			if (r %% 2 == i %% 2){
-				b<-mpi.recv.Robj(source=(r+1)%%cs,tag=3)
+				b<-Rmpi::mpi.recv.Robj(source=(r+1)%%cs,tag=3,comm=0)
 				attr(parMCMC,"beta") <- b
 			} else if(change_temperature(B,LL,xB,xLL)){
-				mpi.send.Robj(b,dest=(r-1) %% cs,tag=3)
+				Rmpi::mpi.send.Robj(b,dest=(r-1) %% cs,tag=3,comm=0)
 				cat(sprintf("swapping rank %i with rank %i\n",r,(r-1)%%cs))
 				attr(parMCMC,"beta") <- xb
 			} else {
-				mpi.send.Robj(xb,dest=(r-1) %% cs,tag=3)
+				Rmpi::mpi.send.Robj(xb,dest=(r-1) %% cs,tag=3,comm=0)
 				attr(parMCMC,"beta") <- b
 			}
 		}

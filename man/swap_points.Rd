@@ -14,5 +14,7 @@ a list with some members swapped
 }
 \description{
 This is a conditional swap, according to the rules of parallel
-tempering.
+tempering. This function is only useful if the Markov chains have
+returned to the global scope and one process will make the decision
+and perform the swap.
 }

@@ -1,7 +1,7 @@
 #!/bin/env Rscript
 
 ## ----setup--------------------------------------------------------------------
-#library(uqsa)
+library(uqsa)
 library(parallel)
 library(rgsl)
 library(hexbin)
@@ -106,7 +106,7 @@ parMCMC <- foreach(b=betaSchedule) %dopar% {
 		h <- h * L(a)
 		x <- attr(Sample,"lastPoint")
 	}
-	x
+	return(x)
 }
 
 ## ----sample-------------------------------------------------------------------
