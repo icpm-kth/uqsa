@@ -71,6 +71,20 @@ update  <- mcmcUpdate(simulate=simulate,
 m <- mcmc(update)   # a Markov chain
 h <- 1e-3           # step size guess
 
+
+
+## ----initCluster--------------------------------------------------------------
+n <- 7                                          # cluster size, apart from the main process
+nChains <- n+1
+options(mc.cores = 1)
+
+#cl <- parallel::makeForkCluster(n)
+cl <- startMPIcluster(n)
+registerDoMPI(cl)
+#parallel::clusterSetRNGStream(cl, 1337)          # seeding random numbers sequences
+
+betaSchedule <- seq(1,0,length.out=nChains)^4
+
 ## ----adjust-------------------------------------------------------------------
 accTarget <- 0.25
 L <- function(a) { (1.0 / (1.0+exp(-(a-accTarget)/0.1))) + 0.5 }
@@ -79,44 +93,32 @@ N <- 100
 start_time <- Sys.time()
 x <- parVal
                               # do the adjustment of h a few times
-options(mc.cores = parallel::detectCores())
-for (j in seq(8)){
- cat("adjusting step size: ",h," \n");
- x <- mcmcInit(1.0,x,simulate,dprior,llf,gradLL,fiIn)
- Sample <- m(x,N,eps=h)
- a <- attr(Sample,"acceptanceRate")
- cat("acceptance: ",a*100," %\n")
- h <- h * L(a)
- x <- attr(Sample,"lastPoint")
-}
-plot(attr(Sample,"logLikelihood"),xlab="iteration",ylab="log-likelihood",main="small Sample to find a good step size",type='l')
+options(mc.cores = parallel::detectCores() %/% nChains)
+
 cat("final step size: ",h,"\n")
 cat("finished adjusting after",difftime(Sys.time(),start_time,units="sec")," seconds\n")
 
-
-## ----initCluster--------------------------------------------------------------
-n <- 7                                          # cluster size, apart from the main process
-nChains <- 8
-options(mc.cores = 1)
-
-#cl <- parallel::makeForkCluster(n)
-cl <- startMPIcluster(n)
-registerDoMPI(cl)
-#parallel::clusterSetRNGStream(cl, 1337)          # seeding random numbers sequences
-
-betas <- seq(1,0,length.out=nChains)^4
-parMCMC <- lapply(betas,mcmcInit,parMCMC=parVal,simulate=simulate,dprior=dprior,logLikelihood=llf,gradLogLikelihood=gradLL,fisherInformation=fiIn)
-
+parMCMC <- foreach(b=betaSchedule) %dopar% {
+	for (j in seq(8)){
+		x <- mcmcInit(beta=b,x,simulate,dprior,llf,gradLL,fiIn)
+	  Sample <- m(x,N,eps=h)
+		a <- attr(Sample,"acceptanceRate")
+		h <- h * L(a)
+		x <- attr(Sample,"lastPoint")
+	}
+	x
+}
 
 ## ----sample-------------------------------------------------------------------
+stopifnot(is.list(parMCMC) && length(parMCMC)==nChains)
 
 start_time <- Sys.time()                         # measure sampling time
-for (i in seq(100)){
-	Sample <- foreach (p=parMCMC, .combine="rbind") %dopar% {
-		s <- m(p,N=100,h)
-	}
-	parMCMC <- lapply(s,attr,which="lastPoint")
-	parMCMC <- swap_points(parMCMC)
+m <- mcmc_mpi(update)
+Sample <- foreach (p=parMCMC, .combine="rbind") %dopar% {
+	s <- m(p,N=100,h)
+	b <- attr(s,"beta")
+	b1 <- (abs(b-1.0) < 1e-6)
+	return(s[b1,])
 }
 
 colnames(Sample) <- names(parVal)

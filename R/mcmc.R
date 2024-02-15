@@ -41,16 +41,38 @@ mcmcInit <- function(beta=1.0,parMCMC,simulate,dprior,logLikelihood,gradLogLikel
 	return(parMCMC)
 }
 
+#' Should 2 Markov chains exchange their temperatures
+#'
+#' This function makes a Boolean choice about chnages in temperature,
+#' based on the log(liklihood) values of two Markov chains in a
+#' parallel tempering setting.
+#'
+#' This function is useful if `mpi.send()` and `mpi.recv()` are used.
+#'
+#' @param b1 the inverse temperature of chain 1
+#' @param ll1 the log-liklihood of chain 1
+#' @param b2 the inverse temperature of chain 2
+#' @param ll2 the log-lilihood of chain 2
+#' @return TRUE is the chains should swap their temperatures
+#' @export
+change_temperature(b1,ll1,b2,ll2){
+		a <- (b2-b1)*(ll1-ll2)
+		r <- runif(1)
+		return(r<a)
+}
+
 #' Swap the end-points of two Markov chains
 #'
 #' This is a conditional swap, according to the rules of parallel
-#' tempering.
+#' tempering. This function is only useful if the Markov chains have
+#' returned to the global scope and one process will make the decision
+#' and perform the swap.
 #'
 #' @export
 #' @param parMCMC a list of Markov chain end points
 #' @return a list with some members swapped
 swap_points <- function(parMCMC){
-	for (j in seq(1,nChains,by=2)){
+	for (j in seq(1,nChains-1)){
 		L1 <- attr(parMCMC[[j  ]],"logLikelihood")
 		L2 <- attr(parMCMC[[j+1]],"logLikelihood")
 		B1 <- attr(parMCMC[[j  ]],"beta")
@@ -91,16 +113,70 @@ mcmc <- function(update){
 	M <- function(parMCMC,N=1000,eps=1e-4){
 		sample <- matrix(NA,N,length(parMCMC))
 		ll <- numeric(N)
+		b <- numeric(N)
 		a <- 0
 		for (i in seq(N)){
 			parMCMC <- update(parMCMC,eps)
 			ll[[i]] <- attr(parMCMC,"logLikelihood")
 			sample[i,] <- parMCMC
+			b[i] <- attr(parMCMC,"beta")
 			a <- a + as.numeric(attr(parMCMC,"accepted"))
 		}
 		attr(sample,"acceptanceRate") <- a/N
 		attr(sample,"logLikelihood") <- ll
 		attr(sample,"lastPoint") <- parMCMC
+		attr(sample,"beta") <- b
+		return(sample)
+	}
+}
+
+#' The MPI version of the mcmc function
+#'
+#' @param update
+#' @return an mcmc closure m(parMCMC,N,eps) that implicitly uses the supplied update function
+#' @export
+mcmc_mpi <- function(update){
+	M <- function(parMCMC,N=1000,eps=1e-4){
+		r <- mpi.comm.rank() # 0..n-1
+		cs  <- mpi.comm.size()
+
+		sample <- matrix(NA,N,length(parMCMC))
+		ll <- numeric(N)
+		b <- numeric(N)
+		a <- 0
+		for (i in seq(N)){
+			parMCMC <- update(parMCMC,eps)
+			sample[i,] <- parMCMC
+			LL <- attr(parMCMC,"logLikelihood")
+			B <- attr(parMCMC,"beta")
+			a <- a + as.numeric(attr(parMCMC,"accepted"))
+
+			ll[i] <- LL
+			b[i]  <- B
+			if (r %% 2 == i %% 2) {
+					mpi.send.Robj(LL, dest=(r+1)%%cs,tag=1)
+					mpi.send.Robj(B, dest=(r+1)%%cs,tag=2)
+			} else {
+					# e(x)ternal objects, from the other chain
+					xLL <- mpi.recv.Robj(source=(r-1) %% cs,tag=1)
+					xB <- mpi.recv.Robj(source=(r-1) %% cs,tag=2)
+			}
+			if (r %% 2 == i %% 2){
+				b<-mpi.recv.Robj(source=(r+1)%%cs,tag=3)
+				attr(parMCMC,"beta") <- b
+			} else if(change_temperature(B,LL,xB,xLL)){
+				mpi.send.Robj(b,dest=(r-1) %% cs,tag=3)
+				cat(sprintf("swapping rank %i with rank %i\n",r,(r-1)%%cs))
+				attr(parMCMC,"beta") <- xb
+			} else {
+				mpi.send.Robj(xb,dest=(r-1) %% cs,tag=3)
+				attr(parMCMC,"beta") <- b
+			}
+		}
+		attr(sample,"acceptanceRate") <- a/N
+		attr(sample,"logLikelihood") <- ll
+		attr(sample,"lastPoint") <- parMCMC
+		attr(sample,"beta") <- b
 		return(sample)
 	}
 }
