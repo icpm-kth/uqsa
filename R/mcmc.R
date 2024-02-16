@@ -141,9 +141,8 @@ mcmc <- function(update){
 #' @export
 mcmc_mpi <- function(update){
 	M <- function(parMCMC,N=1000,eps=1e-4){
-		r <- Rmpi::mpi.comm.rank() # 0..n-1
-		cs  <- Rmpi::mpi.comm.size()
-
+		r <- Rmpi::mpi.comm.rank(comm=0) # 0..n-1
+		cs  <- Rmpi::mpi.comm.size(comm=0)
 		sample <- matrix(NA,N,length(parMCMC))
 		ll <- numeric(N)
 		b <- numeric(N)

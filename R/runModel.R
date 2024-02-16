@@ -69,6 +69,57 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 	return(sim)
 }
 
+
+#' This creates a closure that simulates the model, similar to simulator.c
+#'
+#' This is a shorter alternative to simulator.c (C backend).
+#'
+#' It returns a closure around:
+#'     - experiments,
+#'     - the model, and
+#'     - parameter mapping
+#'
+#' The returned function depends only on parABC (the sampling
+#' parameters). The simulation will be done suing the rgsl backend.
+#'
+#' This version of the function does not use the parallel package at
+#' all and cannot add noise to the simulations.
+#'
+#' @param experiments a list of experiments to simulate: inital values, inputs, time vectors, initial times
+#' @param modelName a string (with optional comment indicating an .so file) which points out the model to simulate
+#' @param parABC the parameters for the model, subject to change by parMap.
+#' @param parMap the model will be called with parMap(parABC); so any parameter transformation can happen there.
+#' @param noise boolean variable. If noise=TRUE, Gaussian noise is added to the output of the simulations. The standard
+#'              deviation of the Gaussian noise is equal to the measurement error. If noise=FALSE the output is the
+#'              deterministic solution of the ODE system.
+#' @export
+#' @return a closure that returns the model's output for a given parameter vector
+#' @examples
+#'  #  model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
+#'  #  experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
+#'  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
+#'
+#'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
+#'  #  simulate <- simulator.c(experiments, modelName,  parABC)
+#'  #  yf <- sim(parABC)
+simc <- function(experiments, modelName, parMap=identity, sensApprox=NULL){
+	sim <- function(parABC){
+		modelPar <- parMap(parABC)
+		yf <- rgsl::r_gsl_odeiv2_outer(modelName, experiments, as.matrix(modelPar))
+		if (length(experiments)==length(yf)) {
+			names(yf) <- names(experiments)
+		} else {
+			warning(sprintf("experiments(%i) should be the same length as simulations(%i), but isn't.",length(experiments),length(yf)))
+		}
+		if (!is.null(sensApprox)) {
+			yf <- sensApprox(parABC,yf)
+		}
+		return(yf)
+	}
+	return(sim)
+}
+
+
 #' checkModel tries to establish the simulation file for a given model
 #'
 #' This function returns the model name, with some additional comments

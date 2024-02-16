@@ -43,7 +43,7 @@ rprior <- rNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 
 ## ----simulate-----------------------------------------------------------------
 sensApprox <- sensitivityEquilibriumApproximation(experiments, model, log10ParMap, log10ParMapJac)
-simulate <- simulator.c(experiments,modelName,log10ParMap,noise=FALSE,sensApprox)
+simulate <- simc(experiments,modelName,log10ParMap,sensApprox)
 y <- simulate(parVal)
 
 plot(experiments[[1]]$outputTimes,as.numeric(y[[1]]$state[1,,1]),xlab='time',ylab='AKAR4p', main='state',type='l')
@@ -68,13 +68,13 @@ update  <- mcmcUpdate(simulate=simulate,
 
 
 ## ----init---------------------------------------------------------------------
-m <- mcmc(update)   # a Markov chain
-h <- 1e-3           # step size guess
+m <- mcmc(update)   # a Markov chain function
+h <- 1e-3           # initial step size guess
 
 
 
 ## ----initCluster--------------------------------------------------------------
-n <- 7                                          # cluster size, apart from the main process
+n <- 15                                          # cluster size, apart from the main process
 nChains <- n+1
 options(mc.cores = 1)
 
@@ -93,28 +93,37 @@ N <- 100
 start_time <- Sys.time()
 x <- parVal
                               # do the adjustment of h a few times
-options(mc.cores = parallel::detectCores() %/% nChains)
+options(mc.cores = 1)
 
-cat("final step size: ",h,"\n")
-cat("finished adjusting after",difftime(Sys.time(),start_time,units="sec")," seconds\n")
 
 parMCMC <- foreach(b=betaSchedule) %dopar% {
-	for (j in seq(8)){
+	set.seed(1337*Rmpi::mpi.comm.rank(comm=0))
+	for (j in seq(3)){
 		x <- mcmcInit(beta=b,x,simulate,dprior,llf,gradLL,fiIn)
-	  Sample <- m(x,N,eps=h)
+		Sample <- m(x,N,eps=h)
 		a <- attr(Sample,"acceptanceRate")
 		h <- h * L(a)
 		x <- attr(Sample,"lastPoint")
 	}
+	attr(x,"stepSize") <- h
 	return(x)
 }
-
+cat("final step size: ",h,"\n")
+cat("finished adjusting after",difftime(Sys.time(),start_time,units="sec")," seconds\n")
+cat("final parameter vectors, for each chain: \n")
+print(Reduce(rbind,parMCMC))
+save(parMCMC,file="mcmcStart.RData")
 ## ----sample-------------------------------------------------------------------
 stopifnot(is.list(parMCMC) && length(parMCMC)==nChains)
 
 start_time <- Sys.time()                         # measure sampling time
-m <- mcmc_mpi(update)
+
+m <- mcmc_mpi(update)                            # m is now an mpi aware function
+
 Sample <- foreach (p=parMCMC, .combine="rbind") %dopar% {
+	h <- attr(p,"stepSize")
+	print(names(attributes(p)))
+	cat(sprintf("starting a Markov chain with step size h = %g.\n",h))
 	s <- m(p,N=100,h)
 	b <- attr(s,"beta")
 	b1 <- (abs(b-1.0) < 1e-6)
@@ -122,7 +131,7 @@ Sample <- foreach (p=parMCMC, .combine="rbind") %dopar% {
 }
 
 colnames(Sample) <- names(parVal)
-save(Sample,"testSample.RData")
+save(Sample,"doMPI-testSample.RData")
 
 time_ <- difftime(Sys.time(),start_time,units="sec")
 #parallel::stopCluster(cl)
