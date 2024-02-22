@@ -64,6 +64,9 @@ ggplotTimeSeriesStates <- function(simulations, experiments, nrow=NULL, ncol=NUL
 	N <- dim(simulations[[1]]$func)[3]
 	p <- list()
 	M <- (num.of.funcs+num.of.vars)
+	T1 <- theme(plot.title=element_text(size=rel(4)),
+	            axis.text=element_text(size=rel(2.2)),
+	            axis.title=element_text(size=rel(2.5)))
 	for(i in seq(length(experiments))){
 		oNames <- names(experiments[[i]][["outputValues"]])
 		xNames <- names(experiments[[i]][["initialState"]])
@@ -75,7 +78,7 @@ ggplotTimeSeriesStates <- function(simulations, experiments, nrow=NULL, ncol=NUL
 				ggplot2::ggplot(df.simulations,aes(x=t, y=y, group=sim))+
 				ggplot2::geom_line(color="blue", alpha = 10/N, size=1.5)+
 				ggplot2::geom_point(data=df.experiments, aes(x=t, y=y), inherit.aes=FALSE)+
-				ggplot2::ggtitle(paste0("Experiment: ", names(experiments[i])))+
+				ggplot2::ggtitle(names(experiments[i]))+T1+
 				ggplot2::labs(y=oNames[j])
 		}
 		for(j in seq(num.of.vars)){
@@ -84,7 +87,7 @@ ggplotTimeSeriesStates <- function(simulations, experiments, nrow=NULL, ncol=NUL
 			p[[(i-1)*M+j+num.of.funcs]] <-
 				ggplot2::ggplot(df.simulations,aes(x=t, y=y, group=sim))+
 				ggplot2::geom_line(color="magenta", alpha = 10/N, size=1.5)+
-				ggplot2::ggtitle(paste0("Experiment: ", names(experiments[i])))+
+				ggplot2::ggtitle(names(experiments[i]))+T1+
 				ggplot2::labs(y=xNames[j])
 		}
 	}
