@@ -141,8 +141,8 @@ mcmc <- function(update){
 #' @export
 mcmc_mpi <- function(update){
 	M <- function(parMCMC,N=1000,eps=1e-4){
-		r <- Rmpi::mpi.comm.rank(comm=0) # 0..n-1
-		cs  <- Rmpi::mpi.comm.size(comm=0)
+		r <- Rmpi::mpi.comm.rank() # 0..n-1
+		cs  <- Rmpi::mpi.comm.size()
 		sample <- matrix(NA,N,length(parMCMC))
 		ll <- numeric(N)
 		b <- numeric(N)
@@ -157,22 +157,22 @@ mcmc_mpi <- function(update){
 			ll[i] <- LL
 			b[i]  <- B
 			if (r %% 2 == i %% 2) {
-					Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs,tag=1,comm=0)
-					Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs,tag=2,comm=0)
+					Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs,tag=1)
+					Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs,tag=2)
 			} else {
 					# e(x)ternal objects, from the other chain
-					xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs,tag=1,comm=0)
-					xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs,tag=2,comm=0)
+					xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs,tag=1)
+					xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs,tag=2)
 			}
 			if (r %% 2 == i %% 2){
-				b<-Rmpi::mpi.recv.Robj(source=(r+1)%%cs,tag=3,comm=0)
+				b<-Rmpi::mpi.recv.Robj(source=(r+1)%%cs,tag=3)
 				attr(parMCMC,"beta") <- b
 			} else if(change_temperature(B,LL,xB,xLL)){
-				Rmpi::mpi.send.Robj(b,dest=(r-1) %% cs,tag=3,comm=0)
+				Rmpi::mpi.send.Robj(b,dest=(r-1) %% cs,tag=3)
 				cat(sprintf("swapping rank %i with rank %i\n",r,(r-1)%%cs))
 				attr(parMCMC,"beta") <- xb
 			} else {
-				Rmpi::mpi.send.Robj(xb,dest=(r-1) %% cs,tag=3,comm=0)
+				Rmpi::mpi.send.Robj(xb,dest=(r-1) %% cs,tag=3)
 				attr(parMCMC,"beta") <- b
 			}
 		}
