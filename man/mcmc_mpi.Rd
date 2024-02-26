@@ -4,10 +4,12 @@
 \alias{mcmc_mpi}
 \title{The MPI version of the mcmc function}
 \usage{
-mcmc_mpi(update)
+mcmc_mpi(update, comm)
 }
 \arguments{
 \item{update}{an update function}
+
+\item{comm}{an mpi comm which this function will use for send/receive operations}
 }
 \value{
 an mcmc closure m(parMCMC,N,eps) that implicitly uses the supplied update function

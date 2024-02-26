@@ -111,7 +111,7 @@ swap_points <- function(parMCMC){
 #' @export
 mcmc <- function(update){
 	M <- function(parMCMC,N=1000,eps=1e-4){
-		sample <- matrix(NA,N,length(parMCMC))
+		sample <- matrix(nrow=N,ncol=length(parMCMC))
 		ll <- numeric(N)
 		b <- numeric(N)
 		a <- 0
@@ -137,13 +137,14 @@ mcmc <- function(update){
 #' using `runmpi` and the Rmpi package is installed.
 #'
 #' @param update an update function
+#' @param comm an mpi comm which this function will use for send/receive operations
 #' @return an mcmc closure m(parMCMC,N,eps) that implicitly uses the supplied update function
 #' @export
-mcmc_mpi <- function(update){
+mcmc_mpi <- function(update,comm){
 	M <- function(parMCMC,N=1000,eps=1e-4){
-		r <- Rmpi::mpi.comm.rank() # 0..n-1
-		cs  <- Rmpi::mpi.comm.size()
-		sample <- matrix(NA,N,length(parMCMC))
+		r <- Rmpi::mpi.comm.rank(comm=comm) # 0..n-1
+		cs  <- Rmpi::mpi.comm.size(comm=comm)
+		sample <- matrix(nrow=N,ncol=length(parMCMC))
 		ll <- numeric(N)
 		b <- numeric(N)
 		a <- 0
@@ -153,27 +154,25 @@ mcmc_mpi <- function(update){
 			LL <- attr(parMCMC,"logLikelihood")
 			B <- attr(parMCMC,"beta")
 			a <- a + as.numeric(attr(parMCMC,"accepted"))
-
 			ll[i] <- LL
 			b[i]  <- B
 			if (r %% 2 == i %% 2) {
-					Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs,tag=1)
-					Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs,tag=2)
+					Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs, tag=1, comm=comm)
+					Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs, tag=2, comm=comm)
 			} else {
 					# e(x)ternal objects, from the other chain
-					xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs,tag=1)
-					xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs,tag=2)
+					xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=1, comm=comm)
+					xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=2, comm=comm)
 			}
 			if (r %% 2 == i %% 2){
-				b<-Rmpi::mpi.recv.Robj(source=(r+1)%%cs,tag=3)
-				attr(parMCMC,"beta") <- b
+				attr(parMCMC,"beta") <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=3, comm=comm)
 			} else if(change_temperature(B,LL,xB,xLL)){
-				Rmpi::mpi.send.Robj(b,dest=(r-1) %% cs,tag=3)
-				cat(sprintf("swapping rank %i with rank %i\n",r,(r-1)%%cs))
-				attr(parMCMC,"beta") <- xb
+				Rmpi::mpi.send.Robj(B,dest=(r-1) %% cs, tag=3, comm=comm)
+				##cat(sprintf("swapping rank %i with rank %i\n",r,(r-1)%%cs))
+				attr(parMCMC,"beta") <- xB
 			} else {
-				Rmpi::mpi.send.Robj(xb,dest=(r-1) %% cs,tag=3)
-				attr(parMCMC,"beta") <- b
+				Rmpi::mpi.send.Robj(xB,dest=(r-1) %% cs, tag=3, comm=comm)
+				attr(parMCMC,"beta") <- B
 			}
 		}
 		attr(sample,"acceptanceRate") <- a/N
