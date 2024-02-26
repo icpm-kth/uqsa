@@ -183,6 +183,24 @@ mcmc_mpi <- function(update,comm){
 	}
 }
 
+#' This function merges mpi-samples into one
+#'
+#' When using MPI, we save the sample immediately into a file, each
+#' rank saves to its own file. This function collects all of these
+#' smaller samples into one. The samples should be saved with
+#' `saveRDS()`.
+#'
+#' @export
+#' @param files the files where the individual samples are stored
+#' @return one matrix where all samples are concatenated.
+loadSample_mpi <- function(files){
+	s <- lapply(f,readRDS)
+	betaTrace <- Reduce(function(a,b) c(a,attr(b,"beta")),init=NULL)
+	Sample <- Reduce(rbind,s)
+	attr(Sample,"beta") <- betaTrace
+	return(Sample)
+}
+
 #' SMMALA move
 #'
 #' The Simiplified Manifold Metropolis Adjusted Langevin Algorithm uses a
