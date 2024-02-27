@@ -194,10 +194,14 @@ mcmc_mpi <- function(update,comm){
 #' @param files the files where the individual samples are stored
 #' @return one matrix where all samples are concatenated.
 loadSample_mpi <- function(files){
-	s <- lapply(f,readRDS)
-	betaTrace <- Reduce(function(a,b) c(a,attr(b,"beta")),init=NULL)
+	s <- lapply(files,readRDS)
+	betaTrace <- Reduce(function(a,b) c(a,attr(b,"beta")),s,init=NULL)
+	acc <- Reduce(function(a,b) c(a,attr(b,"acceptanceRate")),s,init=NULL)
+	cat("loading sample files with acceptances:\n")
+	print(acc)
 	Sample <- Reduce(rbind,s)
 	attr(Sample,"beta") <- betaTrace
+	attr(Sample,"acceptanceRate") <- acc
 	return(Sample)
 }
 

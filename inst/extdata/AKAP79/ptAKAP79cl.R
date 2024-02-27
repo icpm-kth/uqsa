@@ -66,7 +66,8 @@ update <- mcmcUpdate(simulate=simulate,
 		          fisherInformationPrior=fiPrior,
 		          dprior=dprior)
 ## ----init---------------------------------------------------------------------
-m <- mcmc(update)   # a Markov chain function
+#m <- mcmc(update)   # a serial Markov chain function
+m <- mcmc_mpi(update,comm=0)    # MPI aware function, and passes messages on "comm"
 h <- 1e-3           # initial step size guess
 ## ----adjust-------------------------------------------------------------------
 accTarget <- 0.25
@@ -74,7 +75,7 @@ L <- function(a) { (1.0 / (1.0+exp(-(a-accTarget)/0.1))) + 0.5 }
 
 start_time <- Sys.time()
 x <- parVal
-nj <- 2
+nj <- 7
 initFile <- sprintf("rmpi-init-rank-%i-of-%i.RData",r,cs)
 if (file.exists(initFile)){
 	load(initFile)
@@ -92,7 +93,7 @@ if (file.exists(initFile)){
 	cat("finished adjusting after",difftime(Sys.time(),start_time,units="sec")," seconds\n")
 }
 ## ----sample-------------------------------------------------------------------
-m <- mcmc_mpi(update,comm=0)    # m is now an mpi aware function, and passes messages on "comm"
+
 s <- m(x,N,h) # the main amount of work is done here
 colnames(s) <- names(parVal)
 
