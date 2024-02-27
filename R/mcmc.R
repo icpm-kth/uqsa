@@ -56,7 +56,7 @@ mcmcInit <- function(beta=1.0,parMCMC,simulate,dprior,logLikelihood,gradLogLikel
 #' @return TRUE is the chains should swap their temperatures
 #' @export
 change_temperature <- function(b1,ll1,b2,ll2){
-		a <- (b2-b1)*(ll1-ll2)
+		a <- exp((b2-b1)*(ll1-ll2))
 		r <- runif(1)
 		return(r<a)
 }
@@ -77,7 +77,7 @@ swap_points <- function(parMCMC){
 		L2 <- attr(parMCMC[[j+1]],"logLikelihood")
 		B1 <- attr(parMCMC[[j  ]],"beta")
 		B2 <- attr(parMCMC[[j+1]],"beta")
-		a <- (B2-B1)*(L1-L2)
+		a <- exp((B2-B1)*(L1-L2))
 		r <- runif(1)
 		if (r<a){
 			cat(sprintf("swapping %i with %i\n",j,j+1))
@@ -148,6 +148,7 @@ mcmc_mpi <- function(update,comm){
 		ll <- numeric(N)
 		b <- numeric(N)
 		a <- 0
+		swaps <- 0
 		for (i in seq(N)){
 			parMCMC <- update(parMCMC,eps)
 			sample[i,] <- parMCMC
@@ -168,6 +169,7 @@ mcmc_mpi <- function(update,comm){
 				attr(parMCMC,"beta") <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=3, comm=comm)
 			} else if(change_temperature(B,LL,xB,xLL)){
 				Rmpi::mpi.send.Robj(B,dest=(r-1) %% cs, tag=3, comm=comm)
+				swaps <- swaps + 1
 				##cat(sprintf("swapping rank %i with rank %i\n",r,(r-1)%%cs))
 				attr(parMCMC,"beta") <- xB
 			} else {
@@ -179,6 +181,7 @@ mcmc_mpi <- function(update,comm){
 		attr(sample,"logLikelihood") <- ll
 		attr(sample,"lastPoint") <- parMCMC
 		attr(sample,"beta") <- b
+		attr(sample,"swapRate") <- swaps/N
 		return(sample)
 	}
 }
@@ -215,14 +218,14 @@ loadSample_mpi <- function(files){
 #' @param beta inverse temperature (parallel tempering)
 #' @param parGiven given point
 #' @return SMMALA proposal point
-smmala_move <- function(beta=1.0,parGiven,fisherInformationPrior,eps=1e-2){
+smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
 	fiGiven <- attr(parGiven,"fisherInformation")
 	gradLGiven <- attr(parGiven,"gradLogLikelihood")
-	G <- (beta^2*fiGiven)+fisherInformationPrior
+	G <- (beta*fiGiven)+fisherInformationPrior
 	g <- solve(G,beta*gradLGiven)
 	parProposal <- mvtnorm::rmvnorm(1,
-		mean=parGiven+0.5*eps*g,
-		sigma=eps*eps*G
+		mean=parGiven+0.5*eps*eps*g,
+		sigma=eps*eps*solve(G)
 	)
  return(as.numeric(parProposal))
 }
@@ -237,14 +240,14 @@ smmala_move <- function(beta=1.0,parGiven,fisherInformationPrior,eps=1e-2){
 #' @param beta inverse temperature (parallel tempering)
 #' @param parGiven given point
 #' @return SMMALA proposal point
-smmala_move_density <- function(beta=1.0,parProposal,parGiven,fisherInformationPrior,eps=1e-2){
+smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior,eps=1e-2){
 	fiGiven <- attr(parGiven,"fisherInformation")
 	gradLGiven <- attr(parGiven,"gradLogLikelihood")
-	G <- (beta^2*fiGiven)+fisherInformationPrior
+	G <- (beta*fiGiven)+fisherInformationPrior
 	g <- solve(G,beta*gradLGiven)
 	return(mvtnorm::dmvnorm(as.numeric(parProposal),
-		mean=parGiven+0.5*eps*g,
-		sigma=eps*eps*G)
+		mean=parGiven+0.5*eps*eps*g,
+		sigma=eps*eps*solve(G))
 	)
 }
 
@@ -274,23 +277,23 @@ mcmcUpdate <- function(simulate, experiments, model, logLikelihood, gradLogLikel
 		cat("unhandled case.\n")
 		U <- NULL
 	} else {
-	U <- function(parGiven, eps=1e-4, beta=1.0){
+	U <- function(parGiven, eps=1e-4){
 		r <- runif(1)
 		fp <- fisherInformationPrior
 		beta <- attr(parGiven,"beta") %otherwise% 1.0
-		llGiven <- attr(parGiven,"logLikelihood") %otherwise% 0.0
-		priorGiven <- attr(parGiven,"prior") %otherwise% 0.0
+		llGiven <- attr(parGiven,"logLikelihood")
+		priorGiven <- attr(parGiven,"prior")
 		n <- length(parGiven)
 		## the very important step: suggest a successor to parGiven and simulate the model
 		parProposal <- smmala_move(beta,parGiven,fp,eps)
 		attr(parProposal,"simulations") <- simulate(parProposal)
-		llProposal <- logLikelihood(parProposal) %otherwise% 0.0
+		llProposal <- logLikelihood(parProposal)
 		priorProposal <- dprior(parProposal)
 		attr(parProposal,"beta") <- beta
 		attr(parProposal,"logLikelihood") <- llProposal
 		attr(parProposal,"prior") <- priorProposal
 		attr(parProposal,"fisherInformation") <- fisherInformation(parProposal)
-		attr(parProposal,"gradLogLikelihood") <- gradLogLikelihood(parProposal) %otherwise% z
+		attr(parProposal,"gradLogLikelihood") <- gradLogLikelihood(parProposal)
 
 		fwdDensity <- smmala_move_density(beta,parProposal,parGiven,fp,eps)
 		bwdDensity <- smmala_move_density(beta,parGiven,parProposal,fp,eps)

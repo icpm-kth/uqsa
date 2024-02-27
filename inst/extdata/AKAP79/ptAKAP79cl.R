@@ -11,7 +11,7 @@ library(Rmpi)
 start_time <- Sys.time()                         # measure sampling time
 r <- mpi.comm.rank(comm=0)
 cs <- mpi.comm.size(comm=0)
-beta <- (1.0 - (r/cs))^4
+beta <- (1.0 - (r/cs))^2
 nChains <- cs
 
 a <- commandArgs(trailing=TRUE)
@@ -46,7 +46,9 @@ rprior <- rNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 
 ## ----simulate-----------------------------------------------------------------
 sensApprox <- sensitivityEquilibriumApproximation(experiments, model, log10ParMap, log10ParMapJac)
+options(mc.cores = 2)
 simulate <- simc(experiments,modelName,log10ParMap,sensApprox)
+#simulate <- simulator.c(experiments,modelName,log10ParMap,noise=FALSE,sensApprox=sensApprox)
 y <- simulate(parVal)
 
 ## ----likelihood---------------------------------------------------------------
@@ -57,7 +59,7 @@ fiPrior <- solve(diag(defRange, length(parVal)))
 
 
 ## ----update-------------------------------------------------------------------
-update <- mcmcUpdate(simulate=simulate,
+smmala <- mcmcUpdate(simulate=simulate,
 		          experiments=experiments,
 		          model=model,
 		          logLikelihood=llf,
@@ -66,9 +68,9 @@ update <- mcmcUpdate(simulate=simulate,
 		          fisherInformationPrior=fiPrior,
 		          dprior=dprior)
 ## ----init---------------------------------------------------------------------
-#m <- mcmc(update)   # a serial Markov chain function
-m <- mcmc_mpi(update,comm=0)    # MPI aware function, and passes messages on "comm"
-h <- 1e-3           # initial step size guess
+#m <- mcmc(smmala)                     # a serial Markov chain Monte Carlo function
+ptsmmala <- mcmc_mpi(smmala,comm=0)    # MPI aware function, passes messages on "comm"
+h <- 1e-3                              # initial step size guess
 ## ----adjust-------------------------------------------------------------------
 accTarget <- 0.25
 L <- function(a) { (1.0 / (1.0+exp(-(a-accTarget)/0.1))) + 0.5 }
@@ -82,11 +84,12 @@ if (file.exists(initFile)){
 } else {
 	for (j in seq(nj)){
 		x <- mcmcInit(beta,x,simulate,dprior,llf,gradLL,fiIn)
-		Sample <- m(x,100,eps=h)
+		Sample <- ptsmmala(x,100,eps=h)
 		a <- attr(Sample,"acceptanceRate")
 		h <- h * L(a)
 		x <- attr(Sample,"lastPoint")
-		cat(sprintf("iteration %02i/%02i for rank %02i/%02i,\th = %g\n",j,nj,r,cs,h))
+		cat(sprintf("iteration %02i/%02i for rank %02i/%02i,\th = %g, acceptance = %i %%\n",j,nj,r,cs,h,round(100*a)))
+		flush.console()
 	}
 	save(x,h,beta,file=initFile)
 	cat("final step size: ",h,"\n")
@@ -94,10 +97,11 @@ if (file.exists(initFile)){
 }
 ## ----sample-------------------------------------------------------------------
 
-s <- m(x,N,h) # the main amount of work is done here
+s <- ptsmmala(x,N,h) # the main amount of work is done here
 colnames(s) <- names(parVal)
-
 saveRDS(s,file=sprintf("Rmpi-testSample-rank%i-of%i.RData",r,cs))
+save(file="Workspace-for-rank%i-of%i.RData")
+cat(sprintf("rank %02i/%02i finished with acceptance rate = %02i %%.\n",r,cs,round(100*attr(s,"acceptanceRate"))))
 time_ <- difftime(Sys.time(),start_time,units="sec")
 mpi.finalize()
 print(time_)
