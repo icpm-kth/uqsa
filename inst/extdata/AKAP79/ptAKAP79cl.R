@@ -4,7 +4,6 @@
 library(uqsa)
 library(parallel)
 library(rgsl)
-library(hexbin)
 library(SBtabVFGEN)
 library(Rmpi)
 
@@ -20,7 +19,8 @@ if (!is.null(a)) {
 	N <- as.numeric(a[1])
 }
 
-## ## ----label="SBtab content"----------------------------------------------------
+cat(sprintf("rank %i of %i workers will sample %i points.\n",r,cs,N))
+## ----label="SBtab content"----------------------------------------------------
 modelFiles <- uqsa_example("AKAP79",pattern="[.]tsv$",full.names=TRUE)
 SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
 
@@ -43,20 +43,20 @@ parVal <- log10(head(AKAP79_default(),-n))
 defRange <- 2 # log-10 space
 dprior <- dNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 rprior <- rNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
-
+gprior <- gradLog_NormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
+print(gprior(parVal))
 ## ----simulate-----------------------------------------------------------------
 sensApprox <- sensitivityEquilibriumApproximation(experiments, model, log10ParMap, log10ParMapJac)
-options(mc.cores = 2)
 simulate <- simc(experiments,modelName,log10ParMap,sensApprox)
 #simulate <- simulator.c(experiments,modelName,log10ParMap,noise=FALSE,sensApprox=sensApprox)
 y <- simulate(parVal)
+#print(length(y))
 
 ## ----likelihood---------------------------------------------------------------
 llf <- logLikelihood(experiments)
 gradLL <- gradLogLikelihood(model,experiments, parMap=log10ParMap, parMapJac=log10ParMapJac)
 fiIn <- fisherInformation(model, experiments, parMap=log10ParMap)
 fiPrior <- solve(diag(defRange, length(parVal)))
-
 
 ## ----update-------------------------------------------------------------------
 smmala <- mcmcUpdate(simulate=simulate,
@@ -66,10 +66,12 @@ smmala <- mcmcUpdate(simulate=simulate,
 		          gradLogLikelihood=gradLL,
 		          fisherInformation=fiIn,
 		          fisherInformationPrior=fiPrior,
-		          dprior=dprior)
+		          dprior=dprior,
+		          gprior=gprior)
 ## ----init---------------------------------------------------------------------
 #m <- mcmc(smmala)                     # a serial Markov chain Monte Carlo function
 ptsmmala <- mcmc_mpi(smmala,comm=0)    # MPI aware function, passes messages on "comm"
+#smmala <- mcmc(smmala)
 h <- 1e-3                              # initial step size guess
 ## ----adjust-------------------------------------------------------------------
 accTarget <- 0.25
@@ -82,8 +84,8 @@ initFile <- sprintf("rmpi-init-rank-%i-of-%i.RData",r,cs)
 if (file.exists(initFile)){
 	load(initFile)
 } else {
+	x <- mcmcInit(beta,x,simulate,dprior,gprior,llf,gradLL,fiIn)
 	for (j in seq(nj)){
-		x <- mcmcInit(beta,x,simulate,dprior,llf,gradLL,fiIn)
 		Sample <- ptsmmala(x,100,eps=h)
 		a <- attr(Sample,"acceptanceRate")
 		h <- h * L(a)
@@ -100,8 +102,9 @@ if (file.exists(initFile)){
 s <- ptsmmala(x,N,h) # the main amount of work is done here
 colnames(s) <- names(parVal)
 saveRDS(s,file=sprintf("Rmpi-testSample-rank%i-of%i.RData",r,cs))
-save(file="Workspace-for-rank%i-of%i.RData")
+#save(,file="Workspace-for-rank%i-of%i.RData")
 cat(sprintf("rank %02i/%02i finished with acceptance rate = %02i %%.\n",r,cs,round(100*attr(s,"acceptanceRate"))))
-time_ <- difftime(Sys.time(),start_time,units="sec")
-mpi.finalize()
+time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)
+mpi.finalize()
+

@@ -30,14 +30,15 @@
 #' @param fisherInformation a function that calculates the Fisher Information matrix
 #' @return the same starting parameter vector, but with attributes.
 #' @export
-mcmcInit <- function(beta=1.0,parMCMC,simulate,dprior,logLikelihood,gradLogLikelihood=NULL,fisherInformation=NULL){
+mcmcInit <- function(beta,parMCMC,simulate,dprior,gprior,logLikelihood,gradLogLikelihood=NULL,fisherInformation=NULL){
 	simulations <- simulate(parMCMC)
 	attr(parMCMC,"beta") <- beta
 	attr(parMCMC,"simulations") <- simulations
 	attr(parMCMC,"prior")  <- dprior(parMCMC)
-	attr(parMCMC,"logLikelihood") <- beta*logLikelihood(parMCMC)
-	if(!is.null(fisherInformation)) attr(parMCMC,"fisherInformation") <- beta*beta*fisherInformation(parMCMC)
-	if(!is.null(gradLogLikelihood)) attr(parMCMC,"gradLogLikelihood") <- beta*gradLogLikelihood(parMCMC)
+	attr(parMCMC,"logLikelihood") <- logLikelihood(parMCMC)
+	if(!is.null(fisherInformation)) attr(parMCMC,"fisherInformation") <- fisherInformation(parMCMC)
+	if(!is.null(gradLogLikelihood)) attr(parMCMC,"gradLogLikelihood") <- gradLogLikelihood(parMCMC)
+	if(!is.null(gprior)) attr(parMCMC,"gradLogPrior") <- gprior(parMCMC)
 	return(parMCMC)
 }
 
@@ -158,19 +159,18 @@ mcmc_mpi <- function(update,comm){
 			ll[i] <- LL
 			b[i]  <- B
 			if (r %% 2 == i %% 2) {
-					Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs, tag=1, comm=comm)
-					Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs, tag=2, comm=comm)
+				Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs, tag=1, comm=comm)
+				Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs, tag=2, comm=comm)
 			} else {
-					# e(x)ternal objects, from the other chain
-					xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=1, comm=comm)
-					xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=2, comm=comm)
+				# e(x)ternal objects, from the other chain
+				xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=1, comm=comm)
+				xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=2, comm=comm)
 			}
 			if (r %% 2 == i %% 2){
 				attr(parMCMC,"beta") <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=3, comm=comm)
 			} else if(change_temperature(B,LL,xB,xLL)){
 				Rmpi::mpi.send.Robj(B,dest=(r-1) %% cs, tag=3, comm=comm)
 				swaps <- swaps + 1
-				##cat(sprintf("swapping rank %i with rank %i\n",r,(r-1)%%cs))
 				attr(parMCMC,"beta") <- xB
 			} else {
 				Rmpi::mpi.send.Robj(xB,dest=(r-1) %% cs, tag=3, comm=comm)
@@ -221,11 +221,12 @@ loadSample_mpi <- function(files){
 smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
 	fiGiven <- attr(parGiven,"fisherInformation")
 	gradLGiven <- attr(parGiven,"gradLogLikelihood")
-	G <- (beta*fiGiven)+fisherInformationPrior
-	g <- solve(G,beta*gradLGiven)
+	gradPGiven <- attr(parGiven,"gradLogPrior")
+	G <- (beta^2*fiGiven)+fisherInformationPrior
+	g <- solve(G,beta*gradLGiven+gradPGiven)
 	parProposal <- mvtnorm::rmvnorm(1,
-		mean=parGiven+0.5*eps*eps*g,
-		sigma=eps*eps*solve(G)
+		mean=parGiven+0.5*eps*g,
+		sigma=eps*solve(G)
 	)
  return(as.numeric(parProposal))
 }
@@ -243,11 +244,12 @@ smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
 smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior,eps=1e-2){
 	fiGiven <- attr(parGiven,"fisherInformation")
 	gradLGiven <- attr(parGiven,"gradLogLikelihood")
-	G <- (beta*fiGiven)+fisherInformationPrior
-	g <- solve(G,beta*gradLGiven)
+	gradPGiven <- attr(parGiven,"gradLogPrior")
+	G <- (beta^2*fiGiven)+fisherInformationPrior
+	g <- solve(G,beta*gradLGiven+gradPGiven)
 	return(mvtnorm::dmvnorm(as.numeric(parProposal),
-		mean=parGiven+0.5*eps*eps*g,
-		sigma=eps*eps*solve(G))
+		mean=parGiven+0.5*eps*g,
+		sigma=eps*solve(G))
 	)
 }
 
@@ -265,11 +267,24 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 #' par{Current|Given|Proposal}, and similar.
 #'
 #' @export
-#' @param logLikelihood function, returns log(p(simulations|experiments))
-#' @param dprior prior probability density function
-#' @param eps a step size parameter for Markov chain moves (propotional to step size)
-#' @return a function that returns possibly updated states of the Markov chain
-mcmcUpdate <- function(simulate, experiments, model, logLikelihood, gradLogLikelihood, fisherInformation, fisherInformationPrior, dprior){
+#' @param simulate a function that simulates the model for a given
+#'     parMCMC
+#' @param experiments the list of experiments (with simulation
+#'     instructions)
+#' @param model the list of model functions
+#' @param logLikelihood a function that calculates log-likelihood
+#'     values for given parMCMC
+#' @param gradLogLikelihood a function that calculates the gradient of
+#'     the log-likelihood for given parMCMC
+#' @param fisherInformation a function that calculates approximates
+#'     Fisher information matrices
+#' @param fisherInformationPrior a constant matrix, the prior
+#'     distributions fisher information
+#' @param dprior prior density function
+#' @param gprior gradient of the prior density
+#' @return a function that returns possibly updated states of the
+#'     Markov chain
+mcmcUpdate <- function(simulate, experiments, model, logLikelihood, gradLogLikelihood, fisherInformation, fisherInformationPrior, dprior, gprior){
 	np <- length(model$par())
 	nu <- length(experiments[[1]]$input)
 	z <- numeric(np-nu)
@@ -294,14 +309,14 @@ mcmcUpdate <- function(simulate, experiments, model, logLikelihood, gradLogLikel
 		attr(parProposal,"prior") <- priorProposal
 		attr(parProposal,"fisherInformation") <- fisherInformation(parProposal)
 		attr(parProposal,"gradLogLikelihood") <- gradLogLikelihood(parProposal)
-
+		attr(parProposal,"gradLogPrior") <- gprior(parProposal)
 		fwdDensity <- smmala_move_density(beta,parProposal,parGiven,fp,eps)
 		bwdDensity <- smmala_move_density(beta,parGiven,parProposal,fp,eps)
 
 		L <- exp(beta*(llProposal - llGiven))
 		P <- priorProposal/priorGiven
 		K <- bwdDensity/fwdDensity
-
+		##cat("L: ",L,"P: ",P,"K: ",K,".\n")
 		if (r < L * P * K){
 			attr(parProposal,"accepted") <- TRUE
 			return(parProposal)
@@ -413,7 +428,7 @@ logLikelihood <- function(experiments){
 			stdv <- t(experiments[[i]]$errorValues)
 			for (k in seq(n)){
 				h <- simulations[[i]]$func[,,k]
-				L[k] <- L[k] - 0.5*sum(((y - h)/stdv)^2,na.rm=TRUE) + sum(log(stdv),na.rm=TRUE)
+				L[k] <- L[k] - 0.5*sum(((y - h)/stdv)^2,na.rm=TRUE) - sum(log(stdv),na.rm=TRUE)
 			}
 		}
 		return(L)

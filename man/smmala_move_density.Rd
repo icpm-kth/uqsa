@@ -5,7 +5,7 @@
 \title{SMMALA transition kernel density}
 \usage{
 smmala_move_density(
-  beta = 1,
+  beta,
   parProposal,
   parGiven,
   fisherInformationPrior,

@@ -4,7 +4,7 @@
 \alias{smmala_move}
 \title{SMMALA move}
 \usage{
-smmala_move(beta = 1, parGiven, fisherInformationPrior, eps = 0.01)
+smmala_move(beta, parGiven, fisherInformationPrior, eps = 0.01)
 }
 \arguments{
 \item{beta}{inverse temperature (parallel tempering)}

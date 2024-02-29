@@ -5,10 +5,11 @@
 \title{Initialize the Markov chain}
 \usage{
 mcmcInit(
-  beta = 1,
+  beta,
   parMCMC,
   simulate,
   dprior,
+  gprior,
   logLikelihood,
   gradLogLikelihood = NULL,
   fisherInformation = NULL
