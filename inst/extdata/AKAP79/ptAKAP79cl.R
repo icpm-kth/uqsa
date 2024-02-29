@@ -44,11 +44,12 @@ defRange <- 2 # log-10 space
 dprior <- dNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 rprior <- rNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 gprior <- gradLog_NormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
-print(gprior(parVal))
 ## ----simulate-----------------------------------------------------------------
 sensApprox <- sensitivityEquilibriumApproximation(experiments, model, log10ParMap, log10ParMapJac)
-simulate <- simc(experiments,modelName,log10ParMap,sensApprox)
-#simulate <- simulator.c(experiments,modelName,log10ParMap,noise=FALSE,sensApprox=sensApprox)
+#simulate <- simc(experiments,modelName,log10ParMap,sensApprox)
+
+options(mc.cores = 2)
+simulate <- simulator.c(experiments,modelName,log10ParMap,noise=FALSE,sensApprox=sensApprox)
 y <- simulate(parVal)
 #print(length(y))
 
@@ -90,7 +91,7 @@ if (file.exists(initFile)){
 		a <- attr(Sample,"acceptanceRate")
 		h <- h * L(a)
 		x <- attr(Sample,"lastPoint")
-		cat(sprintf("iteration %02i/%02i for rank %02i/%02i,\th = %g, acceptance = %i %%\n",j,nj,r,cs,h,round(100*a)))
+		cat(sprintf("iteration %02i/%02i for rank %02i/%02i,\th = %g,\tacceptance = %i %%\n",j,nj,r,cs,h,round(100*a)))
 		flush.console()
 	}
 	save(x,h,beta,file=initFile)
@@ -103,7 +104,7 @@ s <- ptsmmala(x,N,h) # the main amount of work is done here
 colnames(s) <- names(parVal)
 saveRDS(s,file=sprintf("Rmpi-testSample-rank%i-of%i.RData",r,cs))
 #save(,file="Workspace-for-rank%i-of%i.RData")
-cat(sprintf("rank %02i/%02i finished with acceptance rate = %02i %%.\n",r,cs,round(100*attr(s,"acceptanceRate"))))
+cat(sprintf("rank %02i/%02i finished with acceptance rate of %02i %% and swap rate of %02i %%.\n",r,cs,round(100*attr(s,"acceptanceRate")),round(100*attr(s,"swapRate"))))
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)
 mpi.finalize()
