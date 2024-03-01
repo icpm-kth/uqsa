@@ -30,7 +30,7 @@
 #' @param fisherInformation a function that calculates the Fisher Information matrix
 #' @return the same starting parameter vector, but with attributes.
 #' @export
-mcmcInit <- function(beta,parMCMC,simulate,dprior,gprior,logLikelihood,gradLogLikelihood=NULL,fisherInformation=NULL){
+mcmcInit <- function(beta,parMCMC,simulate,logLikelihood,dprior,gradLogLikelihood=NULL,gprior,fisherInformation=NULL){
 	simulations <- simulate(parMCMC)
 	attr(parMCMC,"beta") <- beta
 	attr(parMCMC,"simulations") <- simulations
@@ -200,6 +200,7 @@ loadSample_mpi <- function(files){
 	s <- lapply(files,readRDS)
 	betaTrace <- Reduce(function(a,b) c(a,attr(b,"beta")),s,init=NULL)
 	acc <- Reduce(function(a,b) c(a,attr(b,"acceptanceRate")),s,init=NULL)
+	ll <- Reduce(function(a,b) c(a,attr(b,"logLikelihood")),s,init=NULL)
 	cat("loading sample files with acceptances:\n")
 	print(acc)
 	Sample <- Reduce(rbind,s)
@@ -284,47 +285,65 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 #' @param gprior gradient of the prior density
 #' @return a function that returns possibly updated states of the
 #'     Markov chain
-mcmcUpdate <- function(simulate, experiments, model, logLikelihood, gradLogLikelihood, fisherInformation, fisherInformationPrior, dprior, gprior){
+mcmcUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gradLogLikelihood=NULL, gprior=NULL, fisherInformation=NULL, fisherInformationPrior=NULL){
 	np <- length(model$par())
 	nu <- length(experiments[[1]]$input)
 	z <- numeric(np-nu)
 	if (is.null(gradLogLikelihood)){
-		cat("unhandled case.\n")
-		U <- NULL
-	} else {
-	U <- function(parGiven, eps=1e-4){
-		r <- runif(1)
-		fp <- fisherInformationPrior
-		beta <- attr(parGiven,"beta") %otherwise% 1.0
-		llGiven <- attr(parGiven,"logLikelihood")
-		priorGiven <- attr(parGiven,"prior")
-		n <- length(parGiven)
-		## the very important step: suggest a successor to parGiven and simulate the model
-		parProposal <- smmala_move(beta,parGiven,fp,eps)
-		attr(parProposal,"simulations") <- simulate(parProposal)
-		llProposal <- logLikelihood(parProposal)
-		priorProposal <- dprior(parProposal)
-		attr(parProposal,"beta") <- beta
-		attr(parProposal,"logLikelihood") <- llProposal
-		attr(parProposal,"prior") <- priorProposal
-		attr(parProposal,"fisherInformation") <- fisherInformation(parProposal)
-		attr(parProposal,"gradLogLikelihood") <- gradLogLikelihood(parProposal)
-		attr(parProposal,"gradLogPrior") <- gprior(parProposal)
-		fwdDensity <- smmala_move_density(beta,parProposal,parGiven,fp,eps)
-		bwdDensity <- smmala_move_density(beta,parGiven,parProposal,fp,eps)
-
-		L <- exp(beta*(llProposal - llGiven))
-		P <- priorProposal/priorGiven
-		K <- bwdDensity/fwdDensity
-		##cat("L: ",L,"P: ",P,"K: ",K,".\n")
-		if (r < L * P * K){
-			attr(parProposal,"accepted") <- TRUE
-			return(parProposal)
-		} else {
-			attr(parGiven,"accepted") <- FALSE
-			return(parGiven)
+		U <- function(parGiven, eps=1e-4){
+			beta <- attr(parGiven,"beta") %otherwise% 1.0
+			llGiven <- attr(parGiven,"logLikelihood")
+			priorGiven <- attr(parGiven,"prior")
+			parProposal <- parGiven + rnorm(length(parGiven),0,1)*eps
+			attr(parProposal,"simulations") <- simulate(parProposal)
+			llProposal <- logLikelihood(parProposal)
+			attr(parProposal,"logLikelihood") <- llProposal
+			priorProposal <- dprior(parProposal)
+			attr(parProposal,"prior") <- priorProposal
+			L <- exp(beta*(llProposal - llGiven))
+			P <- priorProposal/priorGiven
+			if (runif(1) < L*P){
+				attr(parProposal,"accepted") <- TRUE
+				return(parProposal)
+			} else {
+				attr(parGiven,"accepted") <- FALSE
+				return(parGiven)
+			}
 		}
-	}
+		attr(U,"algorithm") <- "Metropolis-Hastings"
+	} else {
+		U <- function(parGiven, eps=1e-4){
+			fp <- fisherInformationPrior
+			beta <- attr(parGiven,"beta") %otherwise% 1.0
+			llGiven <- attr(parGiven,"logLikelihood")
+			priorGiven <- attr(parGiven,"prior")
+			n <- length(parGiven)
+			## the very important step: suggest a successor to parGiven and simulate the model
+			parProposal <- smmala_move(beta,parGiven,fp,eps)
+			attr(parProposal,"simulations") <- simulate(parProposal)
+			llProposal <- logLikelihood(parProposal)
+			priorProposal <- dprior(parProposal)
+			attr(parProposal,"beta") <- beta
+			attr(parProposal,"logLikelihood") <- llProposal
+			attr(parProposal,"prior") <- priorProposal
+			attr(parProposal,"fisherInformation") <- fisherInformation(parProposal)
+			attr(parProposal,"gradLogLikelihood") <- gradLogLikelihood(parProposal)
+			attr(parProposal,"gradLogPrior") <- gprior(parProposal)
+			fwdDensity <- smmala_move_density(beta,parProposal,parGiven,fp,eps)
+			bwdDensity <- smmala_move_density(beta,parGiven,parProposal,fp,eps)
+			L <- exp(beta*(llProposal - llGiven))
+			P <- priorProposal/priorGiven
+			K <- bwdDensity/fwdDensity
+			##cat("L: ",L,"P: ",P,"K: ",K,".\n")
+			if (runif(1) < L * P * K){
+				attr(parProposal,"accepted") <- TRUE
+				return(parProposal)
+			} else {
+				attr(parGiven,"accepted") <- FALSE
+				return(parGiven)
+			}
+		}
+		attr(U,"algorithm") <- "smmala"
 	}
 	return(U)
 }

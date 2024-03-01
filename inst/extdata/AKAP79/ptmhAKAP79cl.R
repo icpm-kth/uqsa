@@ -55,7 +55,7 @@ rprior <- rNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 gprior <- gradLog_NormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 ## ----simulate-----------------------------------------------------------------
 sensApprox <- sensitivityEquilibriumApproximation(experiments, model, log10ParMap, log10ParMapJac)
-simulate <- simc(experiments,modelName,log10ParMap,sensApprox)
+simulate <- simc(experiments,modelName,log10ParMap)
 
 #options(mc.cores = 2)
 #simulate <- simulator.c(experiments,modelName,log10ParMap,noise=FALSE,sensApprox=sensApprox)
@@ -64,25 +64,17 @@ y <- simulate(parVal)
 
 ## ----likelihood---------------------------------------------------------------
 llf <- logLikelihood(experiments)
-gradLL <- gradLogLikelihood(model,experiments, parMap=log10ParMap, parMapJac=log10ParMapJac)
-fiIn <- fisherInformation(model, experiments, parMap=log10ParMap)
-fiPrior <- solve(diag(defRange, length(parVal)))
 
 ## ----update-------------------------------------------------------------------
-smmala <- mcmcUpdate(simulate=simulate,
+metropolis<-mcmcUpdate(simulate=simulate,
 		          experiments=experiments,
 		          model=model,
 		          logLikelihood=llf,
-		          dprior=dprior,
-		          gradLogLikelihood=gradLL,
-		          gprior=gprior,
-		          fisherInformation=fiIn,
-		          fisherInformationPrior=fiPrior)
+		          dprior=dprior)
 ## ----init---------------------------------------------------------------------
 #m <- mcmc(smmala)                     # a serial Markov chain Monte Carlo function
-ptsmmala <- mcmc_mpi(smmala,comm=0)    # MPI aware function, passes messages on "comm"
+ptMetropolis <- mcmc_mpi(metropolis,comm=0)# MPI aware function, passes messages on "comm"
 #smmala <- mcmc(smmala)
-h <- 1e-3                              # initial step size guess
 ## ----adjust-------------------------------------------------------------------
 accTarget <- 0.25
 L <- function(a) { (1.0 / (1.0+exp(-(a-accTarget)/0.1))) + 0.5 }
@@ -96,9 +88,9 @@ if (file.exists(initFile)){
 	load(initFile)
 } else if (is.na(h)) {
 	h <- 1e-3
-	x <- mcmcInit(beta,x,simulate,llf,dprior,gradLL,gprior,fiIn)
+	x <- mcmcInit(beta,x,simulate,llf,dprior)
 	for (j in seq(nj)) {
-		Sample <- ptsmmala(x,100,eps=h)
+		Sample <- ptMetropolis(x,100,eps=h)
 		a <- attr(Sample,"acceptanceRate")
 		h <- h * L(a)
 		x <- attr(Sample,"lastPoint")
@@ -111,7 +103,7 @@ if (file.exists(initFile)){
 }
 ## ----sample-------------------------------------------------------------------
 
-s <- ptsmmala(x,Args['N'],h) # the main amount of work is done here
+s <- ptMetropolis(x,Args['N'],h) # the main amount of work is done here
 colnames(s) <- names(parVal)
 saveRDS(s,file=sprintf("Rmpi-testSample-rank%i-of%i.RData",r,cs))
 cat(sprintf("rank %02i/%02i finished with acceptance rate of %02i %% and swap rate of %02i %%.\n",r,cs,round(100*attr(s,"acceptanceRate")),round(100*attr(s,"swapRate"))))

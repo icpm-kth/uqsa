@@ -8,10 +8,10 @@ mcmcInit(
   beta,
   parMCMC,
   simulate,
-  dprior,
-  gprior,
   logLikelihood,
+  dprior,
   gradLogLikelihood = NULL,
+  gprior,
   fisherInformation = NULL
 )
 }

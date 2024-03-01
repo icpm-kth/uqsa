@@ -9,11 +9,11 @@ mcmcUpdate(
   experiments,
   model,
   logLikelihood,
-  gradLogLikelihood,
-  fisherInformation,
-  fisherInformationPrior,
   dprior,
-  gprior
+  gradLogLikelihood = NULL,
+  gprior = NULL,
+  fisherInformation = NULL,
+  fisherInformationPrior = NULL
 )
 }
 \arguments{
@@ -28,18 +28,18 @@ instructions)}
 \item{logLikelihood}{a function that calculates log-likelihood
 values for given parMCMC}
 
+\item{dprior}{prior density function}
+
 \item{gradLogLikelihood}{a function that calculates the gradient of
 the log-likelihood for given parMCMC}
+
+\item{gprior}{gradient of the prior density}
 
 \item{fisherInformation}{a function that calculates approximates
 Fisher information matrices}
 
 \item{fisherInformationPrior}{a constant matrix, the prior
 distributions fisher information}
-
-\item{dprior}{prior density function}
-
-\item{gprior}{gradient of the prior density}
 }
 \value{
 a function that returns possibly updated states of the
