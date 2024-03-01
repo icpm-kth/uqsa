@@ -139,9 +139,11 @@ mcmc <- function(update){
 #'
 #' @param update an update function
 #' @param comm an mpi comm which this function will use for send/receive operations
+#' @param swapDelay swaps will be attempted every 2*swapDelay+1 iterations
 #' @return an mcmc closure m(parMCMC,N,eps) that implicitly uses the supplied update function
 #' @export
-mcmc_mpi <- function(update,comm){
+mcmc_mpi <- function(update,comm,swapDelay=0){
+	D <- max(2*swapDelay+1,1) 
 	M <- function(parMCMC,N=1000,eps=1e-4){
 		r <- Rmpi::mpi.comm.rank(comm=comm) # 0..n-1
 		cs  <- Rmpi::mpi.comm.size(comm=comm)
@@ -158,23 +160,24 @@ mcmc_mpi <- function(update,comm){
 			a <- a + as.numeric(attr(parMCMC,"accepted"))
 			ll[i] <- LL
 			b[i]  <- B
-			if (r %% 2 == i %% 2) {
-				Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs, tag=1, comm=comm)
-				Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs, tag=2, comm=comm)
-			} else {
-				# e(x)ternal objects, from the other chain
-				xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=1, comm=comm)
-				xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=2, comm=comm)
-			}
-			if (r %% 2 == i %% 2){
-				attr(parMCMC,"beta") <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=3, comm=comm)
-			} else if(change_temperature(B,LL,xB,xLL)){
-				Rmpi::mpi.send.Robj(B,dest=(r-1) %% cs, tag=3, comm=comm)
-				swaps <- swaps + 1
-				attr(parMCMC,"beta") <- xB
-			} else {
-				Rmpi::mpi.send.Robj(xB,dest=(r-1) %% cs, tag=3, comm=comm)
-				attr(parMCMC,"beta") <- B
+			if (i %% D == 0){ # e.g. i = 3,6,9, or i = 5,10,15
+				if (r %% 2 == i %% 2) { # alternating, to swap with r-1 or r+1
+						Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs, tag=1, comm=comm)
+						Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs, tag=2, comm=comm)
+				} else { # get e(x)ternal objects, from the other chain
+						xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=1, comm=comm)
+						xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=2, comm=comm)
+				}
+				if (r %% 2 == i %% 2){
+						attr(parMCMC,"beta") <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=3, comm=comm)
+				} else if(change_temperature(B,LL,xB,xLL)){
+						Rmpi::mpi.send.Robj(B,dest=(r-1) %% cs, tag=3, comm=comm)
+						swaps <- swaps + 1
+						attr(parMCMC,"beta") <- xB
+				} else {
+						Rmpi::mpi.send.Robj(xB,dest=(r-1) %% cs, tag=3, comm=comm)
+						attr(parMCMC,"beta") <- B
+				}
 			}
 		}
 		attr(sample,"acceptanceRate") <- a/N
@@ -182,6 +185,7 @@ mcmc_mpi <- function(update,comm){
 		attr(sample,"lastPoint") <- parMCMC
 		attr(sample,"beta") <- b
 		attr(sample,"swapRate") <- swaps/N
+		attr(sample,"stepSize") <- eps
 		return(sample)
 	}
 }
