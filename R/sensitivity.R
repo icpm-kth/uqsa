@@ -217,22 +217,22 @@ sensitivityEquilibriumApproximation <- function(experiments, model, parMap=ident
 	SEA <- function(parMCMC,simulations){
 		stopifnot(length(simulations) == N)
 		for (i in seq(N)){
+			nt <- length(experiments[[i]]$outputTimes)
 			p <- c(parMap(parMCMC),experiments[[i]]$input)
-			tm <- experiments[[i]]$outputTimes
-			t0 <- experiments[[i]]$initialTime
-			simulations[[i]]$sens <- array(0.0,dim=c(n,length(parMCMC),length(tm)))
-			simulations[[i]]$funcsens <- array(0.0,dim=c(m,length(parMCMC),length(tm)))
-			for (j in seq(length(t))){
-				if (abs(tm[j]-t0) > 1e-16 * abs(t0)){
+			tm <- c(experiments[[i]]$initialTime,experiments[[i]]$outputTimes)
+			simulations[[i]]$sens <- array(0.0,dim=c(n,length(parMCMC),nt))
+			simulations[[i]]$funcsens <- array(0.0,dim=c(m,length(parMCMC),nt))
+			for (j in seq(nt)){
+				if (abs(tm[j+1]-tm[j]) > 1e-16 * abs(tm[j])){
 					y <- simulations[[i]]$state[,j,1]
-					A <- model$jac(tm[j], y, p)
-					B <- head(model$jacp(tm[j], y, p), c(n,d))
+					A <- model$jac(tm[j+1], y, p)
+					B <- head(model$jacp(tm[j+1], y, p), c(n,d))
 					AB <- solve(A,B)
 					# state variables:
-					C <- ((pracma::expm((t[j]-t0)*A) %*% AB) - AB)
+					C <- ((pracma::expm((tm[j+1]-tm[j])*A) %*% AB) - AB)
 					simulations[[i]]$sens[,,j] <- C %*% parMapJac(parMCMC)
 					# functions
-					CF <- model$funcJac(tm[j],y,p) %*% C + head(model$funcJacp(tm[j],y,p),c(m,d))
+					CF <- model$funcJac(tm[j+1],y,p) %*% C + head(model$funcJacp(tm[j+1],y,p),c(m,d))
 					simulations[[i]]$funcsens[,,j] <- CF %*% parMapJac(parMCMC)
 				}
 			}
