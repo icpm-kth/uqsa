@@ -143,7 +143,7 @@ mcmc <- function(update){
 #' @return an mcmc closure m(parMCMC,N,eps) that implicitly uses the supplied update function
 #' @export
 mcmc_mpi <- function(update,comm,swapDelay=0){
-	D <- max(2*swapDelay+1,1) 
+	D <- max(2*swapDelay+1,1)
 	M <- function(parMCMC,N=1000,eps=1e-4){
 		r <- Rmpi::mpi.comm.rank(comm=comm) # 0..n-1
 		cs  <- Rmpi::mpi.comm.size(comm=comm)
@@ -164,19 +164,24 @@ mcmc_mpi <- function(update,comm,swapDelay=0){
 				if (r %% 2 == i %% 2) { # alternating, to swap with r-1 or r+1
 					Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs, tag=1, comm=comm)
 					Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs, tag=2, comm=comm)
+					Rmpi::mpi.send.Robj(eps, dest=(r+1)%%cs, tag=4, comm=comm)
 				} else { # get e(x)ternal objects, from the other chain
 					xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=1, comm=comm)
 					xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=2, comm=comm)
+					xEps <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=4, comm=comm)
 				}
 				if (r %% 2 == i %% 2){
 					attr(parMCMC,"beta") <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=3, comm=comm)
+					eps <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=5, comm=comm)
 				} else if(change_temperature(B,LL,xB,xLL)){
 					Rmpi::mpi.send.Robj(B,dest=(r-1) %% cs, tag=3, comm=comm)
+					Rmpi::mpi.send.Robj(eps,dest=(r-1) %% cs, tag=5, comm=comm)
 					swaps <- swaps + 1
 					attr(parMCMC,"beta") <- xB
+					eps <- xEps
 				} else {
 					Rmpi::mpi.send.Robj(xB,dest=(r-1) %% cs, tag=3, comm=comm)
-					attr(parMCMC,"beta") <- B
+					Rmpi::mpi.send.Robj(xEps,dest=(r-1) %% cs, tag=5, comm=comm)
 				}
 			}
 		}
@@ -203,17 +208,15 @@ mcmc_mpi <- function(update,comm,swapDelay=0){
 loadSample_mpi <- function(files){
 	s <- lapply(files,readRDS)
 	betaTrace <- Reduce(function(a,b) c(a,attr(b,"beta")),s,init=NULL)
+	uB <- sort(unique(betaTrace),decreasing=TRUE)
+	bSelection <- lapply(uB,function(b) abs(betaTrace-b)<1e-8)
 	acc <- Reduce(function(a,b) c(a,attr(b,"acceptanceRate")),s,init=NULL)
 	sR <- Reduce(function(a,b) c(a,attr(b,"swapRate")),s,init=NULL)
 	ll <- Reduce(function(a,b) c(a,attr(b,"logLikelihood")),s,init=NULL)
 	cat("loading sample files with acceptances:\n")
 	print(acc)
 	Sample <- Reduce(rbind,s)
-	attr(Sample,"beta") <- betaTrace
-	attr(Sample,"acceptanceRate") <- acc
-	attr(Sample,"swapRate") <- sR
-	attr(Sample,"logLikelihood") <- ll
-	return(Sample)
+	return(list(Sample=Sample,beta=betaTrace,acceptanceRate=acc,swapRate=sR,logLikelihood=ll,betaSelection=bSelection))
 }
 
 #' SMMALA move
