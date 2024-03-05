@@ -30,7 +30,7 @@
 #' @param fisherInformation a function that calculates the Fisher Information matrix
 #' @return the same starting parameter vector, but with attributes.
 #' @export
-mcmcInit <- function(beta,parMCMC,simulate,logLikelihood,dprior,gradLogLikelihood=NULL,gprior,fisherInformation=NULL){
+mcmcInit <- function(beta,parMCMC,simulate,logLikelihood,dprior,gradLogLikelihood=NULL,gprior=NULL,fisherInformation=NULL){
 	simulations <- simulate(parMCMC)
 	attr(parMCMC,"beta") <- beta
 	attr(parMCMC,"simulations") <- simulations
@@ -57,9 +57,9 @@ mcmcInit <- function(beta,parMCMC,simulate,logLikelihood,dprior,gradLogLikelihoo
 #' @return TRUE is the chains should swap their temperatures
 #' @export
 change_temperature <- function(b1,ll1,b2,ll2){
-		a <- exp((b2-b1)*(ll1-ll2))
-		r <- runif(1)
-		return(r<a)
+	a <- exp((b2-b1)*(ll1-ll2))
+	r <- runif(1)
+	return(r<a)
 }
 
 #' Swap the end-points of two Markov chains
@@ -162,21 +162,21 @@ mcmc_mpi <- function(update,comm,swapDelay=0){
 			b[i]  <- B
 			if (i %% D == 0){ # e.g. i = 3,6,9, or i = 5,10,15
 				if (r %% 2 == i %% 2) { # alternating, to swap with r-1 or r+1
-						Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs, tag=1, comm=comm)
-						Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs, tag=2, comm=comm)
+					Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs, tag=1, comm=comm)
+					Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs, tag=2, comm=comm)
 				} else { # get e(x)ternal objects, from the other chain
-						xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=1, comm=comm)
-						xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=2, comm=comm)
+					xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=1, comm=comm)
+					xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=2, comm=comm)
 				}
 				if (r %% 2 == i %% 2){
-						attr(parMCMC,"beta") <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=3, comm=comm)
+					attr(parMCMC,"beta") <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=3, comm=comm)
 				} else if(change_temperature(B,LL,xB,xLL)){
-						Rmpi::mpi.send.Robj(B,dest=(r-1) %% cs, tag=3, comm=comm)
-						swaps <- swaps + 1
-						attr(parMCMC,"beta") <- xB
+					Rmpi::mpi.send.Robj(B,dest=(r-1) %% cs, tag=3, comm=comm)
+					swaps <- swaps + 1
+					attr(parMCMC,"beta") <- xB
 				} else {
-						Rmpi::mpi.send.Robj(xB,dest=(r-1) %% cs, tag=3, comm=comm)
-						attr(parMCMC,"beta") <- B
+					Rmpi::mpi.send.Robj(xB,dest=(r-1) %% cs, tag=3, comm=comm)
+					attr(parMCMC,"beta") <- B
 				}
 			}
 		}
@@ -204,12 +204,15 @@ loadSample_mpi <- function(files){
 	s <- lapply(files,readRDS)
 	betaTrace <- Reduce(function(a,b) c(a,attr(b,"beta")),s,init=NULL)
 	acc <- Reduce(function(a,b) c(a,attr(b,"acceptanceRate")),s,init=NULL)
+	sR <- Reduce(function(a,b) c(a,attr(b,"swapRate")),s,init=NULL)
 	ll <- Reduce(function(a,b) c(a,attr(b,"logLikelihood")),s,init=NULL)
 	cat("loading sample files with acceptances:\n")
 	print(acc)
 	Sample <- Reduce(rbind,s)
 	attr(Sample,"beta") <- betaTrace
 	attr(Sample,"acceptanceRate") <- acc
+	attr(Sample,"swapRate") <- sR
+	attr(Sample,"logLikelihood") <- ll
 	return(Sample)
 }
 
@@ -403,7 +406,7 @@ fisherInformationFromGSA <- function(Sample,yf=NULL,E){
 #' @param parMap mapping between MCMC variables and ODE parameters
 #' @param parMapJac the jacobian of the above map
 #' @return fisher information calculating funciton
-fisherInformation <- function(model, experiments, parMap=identity, parMapJac=1){
+fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac=1){
 	nF <- length(model$func(0.0,model$init(),model$par()))
 	l10 <- log(10)
 	F <- function(parMCMC){
@@ -438,7 +441,7 @@ fisherInformation <- function(model, experiments, parMap=identity, parMapJac=1){
 #'
 #' @param experiment will be compared tp the simulation results
 #' @export
-logLikelihood <- function(experiments){
+logLikelihoodFunc <- function(experiments){
 	N <- length(experiments)
 	llf <- function(parMCMC){
 		simulations <- attr(parMCMC,"simulations")
@@ -492,7 +495,7 @@ log10ParMapJac <- function(parMCMC){
 #'
 #' @param experiment will be compared tp the simulation results
 #' @export
-gradLogLikelihood <- function(model,experiments,parMap=identity,parMapJac=1){
+gradLogLikelihoodFunc <- function(model,experiments,parMap=identity,parMapJac=1){
 	N <- length(experiments)
 	gradLL <- function(parMCMC){
 		simulations <- attr(parMCMC,"simulations")

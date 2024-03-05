@@ -63,9 +63,9 @@ y <- simulate(parVal)
 #print(length(y))
 
 ## ----likelihood---------------------------------------------------------------
-llf <- logLikelihood(experiments)
-gradLL <- gradLogLikelihood(model,experiments, parMap=log10ParMap, parMapJac=log10ParMapJac)
-fiIn <- fisherInformation(model, experiments, parMap=log10ParMap)
+llf <- logLikelihoodFunc(experiments)
+gradLL <- gradLogLikelihoodFunc(model,experiments, parMap=log10ParMap, parMapJac=log10ParMapJac)
+fiIn <- fisherInformationFunc(model, experiments, parMap=log10ParMap)
 fiPrior <- solve(diag(defRange, length(parVal)))
 
 ## ----update-------------------------------------------------------------------
@@ -102,6 +102,7 @@ if (file.exists(initFile)){
 		a <- attr(Sample,"acceptanceRate")
 		h <- h * L(a)
 		x <- attr(Sample,"lastPoint")
+		beta <- attr(x,"beta")
 		cat(sprintf("iteration %02i/%02i for rank %02i/%02i,\th = %g,\tacceptance = %i %%\n",j,nj,r,cs,h,round(100*a)))
 		flush.console()
 	}
@@ -114,6 +115,9 @@ if (file.exists(initFile)){
 s <- ptsmmala(x,Args['N'],h) # the main amount of work is done here
 colnames(s) <- names(parVal)
 saveRDS(s,file=sprintf("Rmpi-testSample-rank%i-of%i.RData",r,cs))
+x <- attr(s,"lastPoint")
+beta <- attr(x,"beta")
+
 cat(sprintf("rank %02i/%02i finished with acceptance rate of %02i %% and swap rate of %02i %%.\n",r,cs,round(100*attr(s,"acceptanceRate")),round(100*attr(s,"swapRate"))))
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)

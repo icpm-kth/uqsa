@@ -54,7 +54,6 @@ dprior <- dNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 rprior <- rNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 gprior <- gradLog_NormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 ## ----simulate-----------------------------------------------------------------
-sensApprox <- sensitivityEquilibriumApproximation(experiments, model, log10ParMap, log10ParMapJac)
 simulate <- simc(experiments,modelName,log10ParMap)
 
 #options(mc.cores = 2)
@@ -63,7 +62,7 @@ y <- simulate(parVal)
 #print(length(y))
 
 ## ----likelihood---------------------------------------------------------------
-llf <- logLikelihood(experiments)
+llf <- logLikelihoodFunc(experiments)
 
 ## ----update-------------------------------------------------------------------
 metropolis<-mcmcUpdate(simulate=simulate,
@@ -94,6 +93,7 @@ if (file.exists(initFile)){
 		a <- attr(Sample,"acceptanceRate")
 		h <- h * L(a)
 		x <- attr(Sample,"lastPoint")
+		beta <- attr(x,"beta")
 		cat(sprintf("iteration %02i/%02i for rank %02i/%02i,\th = %g,\tacceptance = %i %%\n",j,nj,r,cs,h,round(100*a)))
 		flush.console()
 	}
@@ -105,7 +105,10 @@ if (file.exists(initFile)){
 
 s <- ptMetropolis(x,Args['N'],h) # the main amount of work is done here
 colnames(s) <- names(parVal)
+x <- attr(s,"lastPoint")
+beta <- attr(x,"beta")
 saveRDS(s,file=sprintf("Rmpi-testSample-rank%i-of%i.RData",r,cs))
+save(x,h,beta,file=initFile)
 cat(sprintf("rank %02i/%02i finished with acceptance rate of %02i %% and swap rate of %02i %%.\n",r,cs,round(100*attr(s,"acceptanceRate")),round(100*attr(s,"swapRate"))))
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)

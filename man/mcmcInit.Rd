@@ -11,7 +11,7 @@ mcmcInit(
   logLikelihood,
   dprior,
   gradLogLikelihood = NULL,
-  gprior,
+  gprior = NULL,
   fisherInformation = NULL
 )
 }
