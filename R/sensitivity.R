@@ -210,7 +210,7 @@ sensitivityEquilibriumApproximation <- function(experiments, model, parMap=ident
 	m  <- ncol(experiments[[1]]$outputValues)
 	u <- experiments[[1]]$input
 	nu <- length(u)
-	defaultPar <- c(model$par(),u)
+	defaultPar <- model$par()
 	np <- length(defaultPar)
 	d <- np - nu
 	N <- length(experiments)
@@ -230,6 +230,7 @@ sensitivityEquilibriumApproximation <- function(experiments, model, parMap=ident
 					AB <- solve(A,B)
 					# state variables:
 					C <- ((pracma::expm((tm[j+1]-tm[j])*A) %*% AB) - AB)
+					#cat("(np,nu,d):",c(np,nu,d),"sim(A): ",dim(A),", dim(B): ",dim(B), ", dim(C): ",dim(C),", dim(parMapJac): ",dim(parMapJac(parMCMC)),"\n")
 					simulations[[i]]$sens[,,j] <- C %*% parMapJac(parMCMC)
 					# functions
 					CF <- model$funcJac(tm[j+1],y,p) %*% C + head(model$funcJacp(tm[j+1],y,p),c(m,d))
