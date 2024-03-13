@@ -102,17 +102,34 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 #'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
 #'  #  simulate <- simulator.c(experiments, modelName,  parABC)
 #'  #  yf <- sim(parABC)
-simc <- function(experiments, modelName, parMap=identity, sensApprox=NULL){
+simc <- function(experiments, modelName, parMap=identity){
+	N <- length(experiments)
 	sim <- function(parABC){
 		modelPar <- parMap(parABC)
+		m <- NCOL(parABC)
 		yf <- rgsl::r_gsl_odeiv2_outer(modelName, experiments, as.matrix(modelPar))
-		if (length(experiments)==length(yf)) {
+		if (N==length(yf)) {
 			names(yf) <- names(experiments)
 		} else {
-			warning(sprintf("experiments(%i) should be the same length as simulations(%i), but isn't.",length(experiments),length(yf)))
+			message(sprintf("experiments(%i) should be the same length as simulations(%i), but isn't.",length(experiments),length(yf)))
 		}
-		if (!is.null(sensApprox)) {
-			yf <- sensApprox(parABC,yf)
+		for (i in seq(N)){
+			for (j in seq(m)){
+				## state variables
+				l <- is.finite(yf[[i]]$stateSensitivity[[j]])
+				if (any(!l)){
+					message(sprintf("state-sensitivity approximation produced %i erroneous elements. Setting invalid elements to 0.0.",sum(!l)))
+					print(yf[[i]]$stateSensitivity[[j]])
+					yf[[i]]$stateSensitivity[[j]][!l] <- 0.0
+				}
+				## functions
+				l <- is.finite(yf[[i]]$stateSensitivity[[j]])
+				if (any(!l)){
+					message(sprintf("function-sensitivity approximation produced %i erroneous elements. Setting invalid elements to 0.",sum(!l)))
+					print(yf[[i]]$stateSensitivity[[j]])
+					yf[[i]]$stateSensitivity[[j]][!l] <- 0.0
+				}
+			}
 		}
 		return(yf)
 	}

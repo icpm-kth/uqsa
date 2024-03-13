@@ -36,9 +36,12 @@ mcmcInit <- function(beta,parMCMC,simulate,logLikelihood,dprior,gradLogLikelihoo
 	attr(parMCMC,"simulations") <- simulations
 	attr(parMCMC,"prior")  <- dprior(parMCMC)
 	attr(parMCMC,"logLikelihood") <- logLikelihood(parMCMC)
-	if(!is.null(fisherInformation)) attr(parMCMC,"fisherInformation") <- fisherInformation(parMCMC)
-	if(!is.null(gradLogLikelihood)) attr(parMCMC,"gradLogLikelihood") <- gradLogLikelihood(parMCMC)
-	if(!is.null(gprior)) attr(parMCMC,"gradLogPrior") <- gprior(parMCMC)
+	if(!is.null(fisherInformation))
+		attr(parMCMC,"fisherInformation") <- fisherInformation(parMCMC)
+	if(!is.null(gradLogLikelihood))
+		attr(parMCMC,"gradLogLikelihood") <- gradLogLikelihood(parMCMC)
+	if(!is.null(gprior))
+		attr(parMCMC,"gradLogPrior") <- gprior(parMCMC)
 	return(parMCMC)
 }
 
@@ -67,10 +70,13 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #' This is a conditional swap, according to the rules of parallel
 #' tempering. This function is only useful if the Markov chains have
 #' returned to the global scope and one process will make the decision
-#' and perform the swap.
+#' and perform the swap, i.e.: the current state of each chain is
+#' locally available.
 #'
 #' @export
-#' @param parMCMC a list of Markov chain end points
+#' @param parMCMC a list of Markov chain end points, each entry
+#'     annotated with a temperature attribute
+#'     `attr(parMCMC[[i]],"beta")`
 #' @return a list with some members swapped
 swap_points <- function(parMCMC){
 	for (j in seq(1,nChains-1)){
@@ -96,7 +102,8 @@ swap_points <- function(parMCMC){
 #' Markov Chain Monte Carlo
 #'
 #' This function creates an MCMC function for a given set of
-#' experiments.
+#' experiments. The Markov chains have no communication between them
+#' if more than one is created using this mechanism.
 #'
 #' The algorithm is entirely determined by the update function.  Any
 #' intermediate values that updates requires aside from simulation
@@ -135,7 +142,8 @@ mcmc <- function(update){
 #'
 #' this version of the MCMC function returns a Markov chain closure
 #' that assumes that it is bein run in an MPI context: R was launched
-#' using `runmpi` and the Rmpi package is installed.
+#' using `runmpi` and the Rmpi package is installed. The chains shall
+#' communicate using the provided `comm`.
 #'
 #' @param update an update function
 #' @param comm an mpi comm which this function will use for send/receive operations
@@ -233,11 +241,18 @@ smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
 	fiGiven <- attr(parGiven,"fisherInformation")
 	gradLGiven <- attr(parGiven,"gradLogLikelihood")
 	gradPGiven <- attr(parGiven,"gradLogPrior")
-	G <- (beta^2*fiGiven)+fisherInformationPrior
-	g <- solve(G,beta*gradLGiven+gradPGiven)
+	G0 <- fisherInformationPrior
+	G <- (beta^2*fiGiven)+G0
+	if (rcond(G)>1e-16){
+		g <- solve(G,beta*gradLGiven+gradPGiven)
+		Sigma <- solve(G)
+	} else {
+		g <- solve(G0,beta*gradLGiven+gradPGiven)
+		Sigma <- solve(G0)
+	}
 	parProposal <- mvtnorm::rmvnorm(1,
 		mean=parGiven+0.5*eps*g,
-		sigma=eps*solve(G)
+		sigma=eps*Sigma
 	)
  return(as.numeric(parProposal))
 }
@@ -256,13 +271,86 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 	fiGiven <- attr(parGiven,"fisherInformation")
 	gradLGiven <- attr(parGiven,"gradLogLikelihood")
 	gradPGiven <- attr(parGiven,"gradLogPrior")
-	G <- (beta^2*fiGiven)+fisherInformationPrior
-	g <- solve(G,beta*gradLGiven+gradPGiven)
+	G0 <- fisherInformationPrior
+	G <- (beta^2*fiGiven)+G0
+	if (rcond(G)>1e-16){
+		g <- solve(G,beta*gradLGiven+gradPGiven)
+		Sigma <- solve(G)
+	} else {
+		g <- solve(G0,beta*gradLGiven+gradPGiven)
+		Sigma <- solve(G0)
+	}
 	return(mvtnorm::dmvnorm(as.numeric(parProposal),
 		mean=parGiven+0.5*eps*g,
-		sigma=eps*solve(G))
+		sigma=eps*Sigma)
 	)
 }
+
+
+metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior){
+	U <- function(parGiven, eps=1e-4){
+		beta <- attr(parGiven,"beta") %otherwise% 1.0
+		llGiven <- attr(parGiven,"logLikelihood")
+		priorGiven <- attr(parGiven,"prior")
+		parProposal <- parGiven + rnorm(length(parGiven),0,1)*eps
+		attr(parProposal,"simulations") <- simulate(parProposal)
+		llProposal <- logLikelihood(parProposal)
+		attr(parProposal,"logLikelihood") <- llProposal
+		priorProposal <- dprior(parProposal)
+		attr(parProposal,"prior") <- priorProposal
+		L <- exp(beta*(llProposal - llGiven))
+		P <- priorProposal/priorGiven
+		if (runif(1) < L*P){
+			attr(parProposal,"accepted") <- TRUE
+			return(parProposal)
+		} else {
+			attr(parGiven,"accepted") <- FALSE
+			return(parGiven)
+		}
+	}
+	attr(U,"algorithm") <- "Metropolis-Hastings"
+	return(U)
+}
+
+smmalaUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior){
+	#np <- length(model$par())
+	#nu <- length(experiments[[1]]$input)
+
+	U <- function(parGiven, eps=1e-4){
+		fp <- fisherInformationPrior
+		beta <- attr(parGiven,"beta") %otherwise% 1.0
+		llGiven <- attr(parGiven,"logLikelihood")
+		priorGiven <- attr(parGiven,"prior")
+		n <- length(parGiven)
+		## the very important step: suggest a successor to parGiven and simulate the model
+		parProposal <- smmala_move(beta,parGiven,fp,eps)
+		attr(parProposal,"simulations") <- simulate(parProposal)
+		llProposal <- logLikelihood(parProposal)
+		priorProposal <- dprior(parProposal)
+		attr(parProposal,"beta") <- beta
+		attr(parProposal,"logLikelihood") <- llProposal
+		attr(parProposal,"prior") <- priorProposal
+		attr(parProposal,"fisherInformation") <- fisherInformation(parProposal)
+		attr(parProposal,"gradLogLikelihood") <- gradLogLikelihood(parProposal)
+		attr(parProposal,"gradLogPrior") <- gprior(parProposal)
+		fwdDensity <- smmala_move_density(beta,parProposal,parGiven,fp,eps)
+		bwdDensity <- smmala_move_density(beta,parGiven,parProposal,fp,eps)
+		L <- exp(beta*(llProposal - llGiven))
+		P <- priorProposal/priorGiven
+		K <- bwdDensity/fwdDensity
+		##cat("L: ",L,"P: ",P,"K: ",K,".\n")
+		if (is.finite(L) && is.finite(K) && runif(1) < L * P * K){
+			attr(parProposal,"accepted") <- TRUE
+			return(parProposal)
+		} else {
+			attr(parGiven,"accepted") <- FALSE
+			return(parGiven)
+		}
+	}
+	attr(U,"algorithm") <- "smmala"
+	return(U)
+}
+
 
 #' This function proposes an MCMC candidate variable, and either accepts or rejects the candidate
 #'
@@ -296,66 +384,11 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 #' @return a function that returns possibly updated states of the
 #'     Markov chain
 mcmcUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gradLogLikelihood=NULL, gprior=NULL, fisherInformation=NULL, fisherInformationPrior=NULL){
-	np <- length(model$par())
-	nu <- length(experiments[[1]]$input)
-	z <- numeric(np-nu)
-	if (is.null(gradLogLikelihood)){
-		U <- function(parGiven, eps=1e-4){
-			beta <- attr(parGiven,"beta") %otherwise% 1.0
-			llGiven <- attr(parGiven,"logLikelihood")
-			priorGiven <- attr(parGiven,"prior")
-			parProposal <- parGiven + rnorm(length(parGiven),0,1)*eps
-			attr(parProposal,"simulations") <- simulate(parProposal)
-			llProposal <- logLikelihood(parProposal)
-			attr(parProposal,"logLikelihood") <- llProposal
-			priorProposal <- dprior(parProposal)
-			attr(parProposal,"prior") <- priorProposal
-			L <- exp(beta*(llProposal - llGiven))
-			P <- priorProposal/priorGiven
-			if (runif(1) < L*P){
-				attr(parProposal,"accepted") <- TRUE
-				return(parProposal)
-			} else {
-				attr(parGiven,"accepted") <- FALSE
-				return(parGiven)
-			}
-		}
-		attr(U,"algorithm") <- "Metropolis-Hastings"
+	if (is.null(gradLogLikelihood)){ # Metropolis Hastings
+		return(metropolisUpdate(simulate, experiments, model, logLikelihood, dprior))
 	} else {
-		U <- function(parGiven, eps=1e-4){
-			fp <- fisherInformationPrior
-			beta <- attr(parGiven,"beta") %otherwise% 1.0
-			llGiven <- attr(parGiven,"logLikelihood")
-			priorGiven <- attr(parGiven,"prior")
-			n <- length(parGiven)
-			## the very important step: suggest a successor to parGiven and simulate the model
-			parProposal <- smmala_move(beta,parGiven,fp,eps)
-			attr(parProposal,"simulations") <- simulate(parProposal)
-			llProposal <- logLikelihood(parProposal)
-			priorProposal <- dprior(parProposal)
-			attr(parProposal,"beta") <- beta
-			attr(parProposal,"logLikelihood") <- llProposal
-			attr(parProposal,"prior") <- priorProposal
-			attr(parProposal,"fisherInformation") <- fisherInformation(parProposal)
-			attr(parProposal,"gradLogLikelihood") <- gradLogLikelihood(parProposal)
-			attr(parProposal,"gradLogPrior") <- gprior(parProposal)
-			fwdDensity <- smmala_move_density(beta,parProposal,parGiven,fp,eps)
-			bwdDensity <- smmala_move_density(beta,parGiven,parProposal,fp,eps)
-			L <- exp(beta*(llProposal - llGiven))
-			P <- priorProposal/priorGiven
-			K <- bwdDensity/fwdDensity
-			##cat("L: ",L,"P: ",P,"K: ",K,".\n")
-			if (runif(1) < L * P * K){
-				attr(parProposal,"accepted") <- TRUE
-				return(parProposal)
-			} else {
-				attr(parGiven,"accepted") <- FALSE
-				return(parGiven)
-			}
-		}
-		attr(U,"algorithm") <- "smmala"
+		return(smmalaUpdate(simulate, experiments, model, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior))
 	}
-	return(U)
 }
 
 #' Calculate Global Fisher Information
@@ -409,7 +442,7 @@ fisherInformationFromGSA <- function(Sample,yf=NULL,E){
 #' @param parMap mapping between MCMC variables and ODE parameters
 #' @param parMapJac the jacobian of the above map
 #' @return fisher information calculating funciton
-fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac=1){
+fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac=function (x) {diag(1,length(x))}){
 	nF <- length(model$func(0.0,model$init(),model$par()))
 	l10 <- log(10)
 	F <- function(parMCMC){
@@ -418,17 +451,30 @@ fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac
 		fi  <- matrix(0.0,np,np)
 		for (i in seq(length(experiments))){
 			errF <- t(experiments[[i]]$errorValues)
-			errF[is.na(errF)] <- Inf
+			if (any(is.na(errF))){
+				errF[is.na(errF)] <- Inf
+			}
 			nt <- length(experiments[[i]]$outputTimes)
 			for (j in seq(nt)){
 				sigma_j <- matrix(errF[,j],nF,np)
+				if (any(is.na(sigma_j))){
+					message(sprintf("sigma_j has invalid elements"));
+				}
 				# output function sensitivity:
-				Sh <- matrix(simulations[[i]]$funcsens[,seq(np),j],nF,np)/sigma_j
+				Sh <- simulations[[i]]$funcSensitivity[[1]][,seq(np),j]
+				dim(Sh) <- c(nF,np)
+				pmj <- parMapJac(as.numeric(parMCMC))
+				if (any(is.na(pmj))){
+					message(sprintf("parMapJac has invalid elements"));
+					print(pmj)
+				}
+				Sh <- (Sh %*% pmj)/sigma_j
 				fi  <-  fi + t(Sh) %*% Sh
 			}
 		}
 		if (any(is.na(as.numeric(fi)))) {
-			stop()
+			message(sprintf("Fisher-information has %i missing values. Setting them to 0.0.\n",sum(is.na(as.numeric(fi)))))
+			fi[!is.finite(fi)] <- 0.0
 		}
 		return(fi)
 	}
@@ -486,6 +532,10 @@ log10ParMap <- function(parMCMC){
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
 log10ParMapJac <- function(parMCMC){
+	if (any(is.na(parMCMC))) {
+		stop("invalid Markov chain state")
+		print(parMCMC)
+	}
 	return(diag(10^(parMCMC) * log(10)))
 }
 
@@ -498,31 +548,36 @@ log10ParMapJac <- function(parMCMC){
 #'
 #' @param experiment will be compared tp the simulation results
 #' @export
-gradLogLikelihoodFunc <- function(model,experiments,parMap=identity,parMapJac=1){
+gradLogLikelihoodFunc <- function(model,experiments,parMap=identity,parMapJac=function(x) {diag(1,length(x))})
+{
 	N <- length(experiments)
+	nF <- length(model$func(0.0,model$init(),model$par()))
 	gradLL <- function(parMCMC){
 		simulations <- attr(parMCMC,"simulations")
-		lMCMC <- length(parMCMC) # the dimension of the MCMC variable (parMCMC)
-		gL <- rep(0,length(parMCMC))
+		np <- length(parMCMC) # the dimension of the MCMC variable (parMCMC)
+		z <- rep(0,np)
+		gL <- z
 		for (i in seq(N)){
 			d <- dim(simulations[[i]]$func)
-			T <- length(experiments[[i]]$outputTimes)
+			nt <- length(experiments[[i]]$outputTimes)
 			y <- t(experiments[[i]]$outputValues)
 			y[is.na(y)] <- 0.0
 			h <- simulations[[i]]$func[,,1]
 			dim(h) <- head(d,2)
 			stdv2 <- t(experiments[[i]]$errorValues)^2 # sigma^2
 			stdv2[is.na(stdv2)] <- Inf
-			Sh <- simulations[[i]]$funcsens
-			dS <- dim(Sh)
-			for (j in seq(T)){
-				Shj <- Sh[,,j]
-				dim(Shj) <- head(dS,2)
-				gL <- gL + as.numeric(t((y[,j] - h[,j])/stdv2[,j]) %*% Shj)
+			Sh <- simulations[[i]]$funcSensitivity[[1]]
+			for (j in seq(nt)){
+				Shj <- Sh[,seq(np),j]
+				dim(Shj) <- c(nF,np)
+				Shj <- Shj %*% parMapJac(as.numeric(parMCMC))
+				gj <- as.numeric(t((y[,j] - h[,j])/stdv2[,j]) %*% Shj)
+				if (all(is.finite(gj))) {
+					gL <- gL + gj
+				}
 			}
 		}
 		return(gL)
 	}
 	return(gradLL)
 }
-

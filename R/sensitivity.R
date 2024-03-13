@@ -216,6 +216,7 @@ sensitivityEquilibriumApproximation <- function(experiments, model, parMap=ident
 	N <- length(experiments)
 	SEA <- function(parMCMC,simulations){
 		stopifnot(length(simulations) == N)
+		flush.console()
 		for (i in seq(N)){
 			nt <- length(experiments[[i]]$outputTimes)
 			p <- c(parMap(parMCMC),experiments[[i]]$input)
@@ -224,6 +225,7 @@ sensitivityEquilibriumApproximation <- function(experiments, model, parMap=ident
 			simulations[[i]]$funcsens <- array(0.0,dim=c(m,length(parMCMC),nt))
 			for (j in seq(nt)){
 				if (abs(tm[j+1]-tm[j]) > 1e-16 * abs(tm[j])){
+					flush.console()
 					y <- simulations[[i]]$state[,j,1]
 					A <- model$jac(tm[j+1], y, p)
 					B <- head(model$jacp(tm[j+1], y, p), c(n,d))

@@ -55,18 +55,17 @@ dprior <- dNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 rprior <- rNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 gprior <- gradLog_NormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 ## ----simulate-----------------------------------------------------------------
-sensApprox <- sensitivityEquilibriumApproximation(experiments, model, log10ParMap, log10ParMapJac)
-simulate <- simc(experiments,modelName,log10ParMap,sensApprox)
+simulate <- simc(experiments,modelName,log10ParMap)
 
 #options(mc.cores = 2)
 #simulate <- simulator.c(experiments,modelName,log10ParMap,noise=FALSE,sensApprox=sensApprox)
 y <- simulate(parVal)
-#print(length(y))
+print(names(y[[1]]))
 
 ## ----likelihood---------------------------------------------------------------
 llf <- logLikelihoodFunc(experiments)
 gradLL <- gradLogLikelihoodFunc(model,experiments, parMap=log10ParMap, parMapJac=log10ParMapJac)
-fiIn <- fisherInformationFunc(model, experiments, parMap=log10ParMap)
+fiIn <- fisherInformationFunc(model, experiments, parMap=log10ParMap, parMapJac=log10ParMapJac)
 fiPrior <- solve(diag(defRange, length(parVal)))
 
 ## ----update-------------------------------------------------------------------
