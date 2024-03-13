@@ -324,6 +324,10 @@ smmalaUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gr
 		n <- length(parGiven)
 		## the very important step: suggest a successor to parGiven and simulate the model
 		parProposal <- smmala_move(beta,parGiven,fp,eps)
+		if (any(is.na(parProposal))) {
+			attr(parGiven,"accepted") <- FALSE
+			return(parGiven)
+		}
 		attr(parProposal,"simulations") <- simulate(parProposal)
 		llProposal <- logLikelihood(parProposal)
 		priorProposal <- dprior(parProposal)
@@ -469,7 +473,9 @@ fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac
 					print(pmj)
 				}
 				Sh <- (Sh %*% pmj)/sigma_j
-				fi  <-  fi + t(Sh) %*% Sh
+				if (any(is.finite(Sh))){
+					fi  <-  fi + t(Sh) %*% Sh
+				}
 			}
 		}
 		if (any(is.na(as.numeric(fi)))) {
