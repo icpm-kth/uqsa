@@ -5,11 +5,25 @@ library(uqsa)
 library(parallel)
 library(rgsl)
 library(SBtabVFGEN)
-library(Rmpi)
+library(pbdMPI)
+
+MPI <- 'pbdMPI'
 
 start_time <- Sys.time()                         # measure sampling time
-r <- mpi.comm.rank(comm=0)
-cs <- mpi.comm.size(comm=0)
+comm  <- 0
+if (MPI == 'Rmpi'){
+	r <- Rmpi::mpi.comm.rank(comm=comm)
+	cs <- Rmpi::mpi.comm.size(comm=comm)
+} else if (MPI == "pbdMPI"){
+	r <- pbdMPI::comm.rank(comm=comm)
+	cs <- pbdMPI::comm.size(comm=comm)
+	pbdMPI::init()
+} else {
+	stop('unknown type of MPI')
+}
+attr(comm,"rank") <- r
+attr(comm,"size") <- cs
+
 nChains <- cs # this number can be used to pretend like we have more than cs chains, for the calculation of beta
 
 a <- commandArgs(trailing=TRUE)
@@ -80,7 +94,8 @@ smmala <- mcmcUpdate(simulate=simulate,
 		          fisherInformationPrior=fiPrior)
 ## ----init---------------------------------------------------------------------
 #m <- mcmc(smmala)                     # a serial Markov chain Monte Carlo function
-ptsmmala <- mcmc_mpi(smmala,comm=0)    # MPI aware function, passes messages on "comm"
+ptsmmala <- mcmc_mpi(smmala,comm=comm,swapDelay=0,swapFunc=pbdMPI_swap_temperatures)
+## ptsmmala is a now an MPI aware function, passes messages on "comm"
 #smmala <- mcmc(smmala)
 ## ----adjust-------------------------------------------------------------------
 accTarget <- 0.25
@@ -122,5 +137,9 @@ beta <- attr(x,"beta")
 cat(sprintf("rank %02i/%02i finished with acceptance rate of %02i %% and swap rate of %02i %%.\n",r,cs,round(100*attr(s,"acceptanceRate")),round(100*attr(s,"swapRate"))))
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)
-mpi.finalize()
 
+if (MPI == "Rmpi"){
+	Rmpi::mpi.finalize()
+} else {
+	finalize()
+}

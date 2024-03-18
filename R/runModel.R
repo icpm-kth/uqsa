@@ -107,7 +107,7 @@ simc <- function(experiments, modelName, parMap=identity){
 	sim <- function(parABC){
 		modelPar <- parMap(parABC)
 		m <- NCOL(parABC)
-		yf <- rgsl::r_gsl_odeiv2_outer(modelName, experiments, as.matrix(modelPar))
+		yf <- rgsl::r_gsl_odeiv2_outer_sens(modelName, experiments, as.matrix(modelPar))
 		if (N==length(yf)) {
 			names(yf) <- names(experiments)
 		} else {

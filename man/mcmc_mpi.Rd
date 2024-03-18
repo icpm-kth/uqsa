@@ -4,7 +4,7 @@
 \alias{mcmc_mpi}
 \title{The MPI version of the mcmc function}
 \usage{
-mcmc_mpi(update, comm, swapDelay = 0)
+mcmc_mpi(update, comm, swapDelay = 0, swapFunc = rmpi_swap_temperatures)
 }
 \arguments{
 \item{update}{an update function}
@@ -19,5 +19,6 @@ an mcmc closure m(parMCMC,N,eps) that implicitly uses the supplied update functi
 \description{
 this version of the MCMC function returns a Markov chain closure
 that assumes that it is bein run in an MPI context: R was launched
-using \code{runmpi} and the Rmpi package is installed.
+using \code{runmpi} and the Rmpi package is installed. The chains shall
+communicate using the provided \code{comm}.
 }

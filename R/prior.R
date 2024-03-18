@@ -169,10 +169,10 @@ rNormalPrior <- function(mean,sd){
 #' @param sd vector of standard deviation values
 #' @return g(x) a closure that remembers mean and sd from its creation
 #' @export
-gradLog_NormalPrior <- function(mean,sd){
-	np <- length(mean)
-	stopifnot(np==length(sd))
+gradLog_NormalPrior <- function(mean=0,sd=1){
+	stopifnot(length(mean)==length(sd))
+	sd2 <- sd^2
 	g <- function(x){
-		return(-1.0*(x-mean)/sd^2)
+		return(-1.0*(x-mean)/sd2)
 	}
 }

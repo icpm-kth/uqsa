@@ -78,7 +78,7 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #'     annotated with a temperature attribute
 #'     `attr(parMCMC[[i]],"beta")`
 #' @return a list with some members swapped
-swap_points <- function(parMCMC){
+swap_points_locally <- function(parMCMC){
 	for (j in seq(1,nChains-1)){
 		L1 <- attr(parMCMC[[j  ]],"logLikelihood")
 		L2 <- attr(parMCMC[[j+1]],"logLikelihood")
@@ -138,6 +138,94 @@ mcmc <- function(update){
 	}
 }
 
+#' Communicate with other ranks and swap beta
+#'
+#' Given a current log-likelihood, temperature and step-size, this
+#' decides whether to send or receive the same variables from a
+#' neighboring process and swap temperatures with them.
+#'
+#' @param i MCMC iteration
+#' @param B inverse temperature (parallel tempering)
+#' @param LL log-likelihood value of current point
+#' @param H algorithm's step size (often called epsilon in literature)
+#' @param r MPI rank
+#' @param comm MPI communicator
+#' @param cs MPI comm size
+#' @export
+Rmpi_swap_temperatures <- function(i, B, LL, H, r, comm, cs){
+	if (r %% 2 == i %% 2) { # alternating, to swap with r-1 or r+1
+		Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs, tag=1, comm=comm)
+		Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs, tag=2, comm=comm)
+		Rmpi::mpi.send.Robj(H, dest=(r+1)%%cs, tag=4, comm=comm)
+	} else { # get e(x)ternal objects, from the other chain
+		xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=1, comm=comm)
+		xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=2, comm=comm)
+		xH <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=4, comm=comm)
+	}
+	if (r %% 2 == i %% 2){
+		B <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=3, comm=comm)
+		H <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=5, comm=comm)
+	} else if(change_temperature(B,LL,xB,xLL)){
+		Rmpi::mpi.send.Robj(B,dest=(r-1) %% cs, tag=3, comm=comm)
+		Rmpi::mpi.send.Robj(H,dest=(r-1) %% cs, tag=5, comm=comm)
+		swaps <- swaps + 1
+		B <- xB
+		H <- xH
+	} else {
+		Rmpi::mpi.send.Robj(xB,dest=(r-1) %% cs, tag=3, comm=comm)
+		Rmpi::mpi.send.Robj(xH,dest=(r-1) %% cs, tag=5, comm=comm)
+	}
+	return(list(B,LL,H))
+}
+
+#' Communicate with other ranks and swap beta
+#'
+#' Given a current log-likelihood, temperature and step-size, this
+#' decides whether to send or receive the same variables from a
+#' neighboring process and swap temperatures with them.
+#'
+#' Only one of the two communicating ranks is allowed to make the
+#' decision to swap, because a random variable is used to make this
+#' decision. Which rank will make this swap decision needs to be
+#' determined somehow. Currently we alternate this reposibility based
+#' on the current iteration `i`.
+#'
+#' @param i MCMC iteration
+#' @param B inverse temperature (parallel tempering)
+#' @param LL log-likelihood value of current point
+#' @param H algorithm's step size (often called epsilon in literature)
+#' @param r MPI rank
+#' @param comm MPI communicator
+#' @param cs MPI comm size
+#' @export
+pbdMPI_swap_temperatures <- function(i, B, LL, H, r, comm, cs){
+	## 1. either send LL, B, and H to neighbor or receive them
+	if (r %% 2 == i %% 2) { # alternating, to swap with r-1 or r+1
+		pbdMPI::send(LL, rank.dest=(r+1)%%cs, tag=1, comm=comm)
+		pbdMPI::send(B, rank.dest=(r+1)%%cs, tag=2, comm=comm)
+		pbdMPI::send(H, rank.dest=(r+1)%%cs, tag=4, comm=comm)
+	} else { # get e(x)ternal objects, from the other chain
+		xLL <- pbdMPI::recv(rank.source=(r-1) %% cs, tag=1, comm=comm)
+		xB <- pbdMPI::recv(rank.source=(r-1) %% cs, tag=2, comm=comm)
+		xH <- pbdMPI::recv(rank.source=(r-1) %% cs, tag=4, comm=comm)
+	}
+	## 2. either make a decision on swapping or accept the other rank's decision
+	if (r %% 2 == i %% 2){
+		B <- pbdMPI::recv(rank.source=(r+1)%%cs, tag=3, comm=comm)
+		H <- pbdMPI::recv(rank.source=(r+1)%%cs, tag=5, comm=comm)
+	} else if(change_temperature(B,LL,xB,xLL)){
+		pbdMPI::send(B,rank.dest=(r-1) %% cs, tag=3, comm=comm)
+		pbdMPI::send(H,rank.dest=(r-1) %% cs, tag=5, comm=comm)
+		B <- xB
+		H <- xH
+	} else {
+		pbdMPI::send(xB,rank.dest=(r-1) %% cs, tag=3, comm=comm)
+		pbdMPI::send(xH,rank.dest=(r-1) %% cs, tag=5, comm=comm)
+	}
+	return(list(B=B,LL=LL,H=H))
+}
+
+
 #' The MPI version of the mcmc function
 #'
 #' this version of the MCMC function returns a Markov chain closure
@@ -150,11 +238,11 @@ mcmc <- function(update){
 #' @param swapDelay swaps will be attempted every 2*swapDelay+1 iterations
 #' @return an mcmc closure m(parMCMC,N,eps) that implicitly uses the supplied update function
 #' @export
-mcmc_mpi <- function(update,comm,swapDelay=0){
+mcmc_mpi <- function(update,comm,swapDelay=0, swapFunc=rmpi_swap_temperatures){
 	D <- max(2*swapDelay+1,1)
 	M <- function(parMCMC,N=1000,eps=1e-4){
-		r <- Rmpi::mpi.comm.rank(comm=comm) # 0..n-1
-		cs  <- Rmpi::mpi.comm.size(comm=comm)
+		r <- attr(comm,"rank") # 0..n-1
+		cs  <- attr(comm,"size")
 		sample <- matrix(nrow=N,ncol=length(parMCMC))
 		ll <- numeric(N)
 		b <- numeric(N)
@@ -169,28 +257,11 @@ mcmc_mpi <- function(update,comm,swapDelay=0){
 			ll[i] <- LL
 			b[i]  <- B
 			if (i %% D == 0){ # e.g. i = 3,6,9, or i = 5,10,15
-				if (r %% 2 == i %% 2) { # alternating, to swap with r-1 or r+1
-					Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs, tag=1, comm=comm)
-					Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs, tag=2, comm=comm)
-					Rmpi::mpi.send.Robj(eps, dest=(r+1)%%cs, tag=4, comm=comm)
-				} else { # get e(x)ternal objects, from the other chain
-					xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=1, comm=comm)
-					xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=2, comm=comm)
-					xEps <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=4, comm=comm)
-				}
-				if (r %% 2 == i %% 2){
-					attr(parMCMC,"beta") <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=3, comm=comm)
-					eps <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=5, comm=comm)
-				} else if(change_temperature(B,LL,xB,xLL)){
-					Rmpi::mpi.send.Robj(B,dest=(r-1) %% cs, tag=3, comm=comm)
-					Rmpi::mpi.send.Robj(eps,dest=(r-1) %% cs, tag=5, comm=comm)
-					swaps <- swaps + 1
-					attr(parMCMC,"beta") <- xB
-					eps <- xEps
-				} else {
-					Rmpi::mpi.send.Robj(xB,dest=(r-1) %% cs, tag=3, comm=comm)
-					Rmpi::mpi.send.Robj(xEps,dest=(r-1) %% cs, tag=5, comm=comm)
-				}
+				res <- swapFunc(i,B,LL,eps,r,comm,cs)
+				if (res$B != B) swaps <- swaps+1
+				B <- res$B
+				LL <- res$LL
+				eps <- res$H
 			}
 		}
 		attr(sample,"acceptanceRate") <- a/N
@@ -247,7 +318,7 @@ smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
 		g <- solve(G,beta*gradLGiven+gradPGiven)
 		Sigma <- solve(G)
 	} else {
-		g <- solve(G0,beta*gradLGiven+gradPGiven)
+		g <- solve(G0,gradPGiven)
 		Sigma <- solve(G0)
 	}
 	parProposal <- mvtnorm::rmvnorm(1,
@@ -277,7 +348,7 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 		g <- solve(G,beta*gradLGiven+gradPGiven)
 		Sigma <- solve(G)
 	} else {
-		g <- solve(G0,beta*gradLGiven+gradPGiven)
+		g <- solve(G0,gradPGiven)
 		Sigma <- solve(G0)
 	}
 	return(mvtnorm::dmvnorm(as.numeric(parProposal),
@@ -315,7 +386,6 @@ metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior
 smmalaUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior){
 	#np <- length(model$par())
 	#nu <- length(experiments[[1]]$input)
-
 	U <- function(parGiven, eps=1e-4){
 		fp <- fisherInformationPrior
 		beta <- attr(parGiven,"beta") %otherwise% 1.0
@@ -324,10 +394,12 @@ smmalaUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gr
 		n <- length(parGiven)
 		## the very important step: suggest a successor to parGiven and simulate the model
 		parProposal <- smmala_move(beta,parGiven,fp,eps)
-		if (any(is.na(parProposal))) {
-			attr(parGiven,"accepted") <- FALSE
-			return(parGiven)
-		}
+		#if (any(is.na(parProposal))) {
+		#	attr(parGiven,"accepted") <- FALSE
+		#	return(parGiven)
+		#}
+		##cat("rank ",r,", parProposal: ",as.numeric(parProposal),"\n")
+		flush.console()
 		attr(parProposal,"simulations") <- simulate(parProposal)
 		llProposal <- logLikelihood(parProposal)
 		priorProposal <- dprior(parProposal)
@@ -335,14 +407,19 @@ smmalaUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gr
 		attr(parProposal,"logLikelihood") <- llProposal
 		attr(parProposal,"prior") <- priorProposal
 		attr(parProposal,"fisherInformation") <- fisherInformation(parProposal)
+		##cat("rank ",r," rcond(fisherInformation): ", rcond(attr(parProposal,"fisherInformation")),".\n")
 		attr(parProposal,"gradLogLikelihood") <- gradLogLikelihood(parProposal)
+		##cat("rank",r,"gradient-LL: ", attr(parProposal,"gradLogLikelihood"),"\n")
 		attr(parProposal,"gradLogPrior") <- gprior(parProposal)
+		##cat("rank",r,"gradient-PR: ", attr(parProposal,"gradLogPrior"),"\n")
 		fwdDensity <- smmala_move_density(beta,parProposal,parGiven,fp,eps)
 		bwdDensity <- smmala_move_density(beta,parGiven,parProposal,fp,eps)
 		L <- exp(beta*(llProposal - llGiven))
 		P <- priorProposal/priorGiven
 		K <- bwdDensity/fwdDensity
-		##cat("L: ",L,"P: ",P,"K: ",K,".\n")
+		##cat("rank: ",r,"; beta: ",beta, "; llProposal: ",llProposal,"; llGiven: ",llGiven,".\n")
+		##cat("rank: ",r,";L ",L,";P: ",P,";K: ",K,".\n")
+		flush.console()
 		if (is.finite(L) && is.finite(K) && runif(1) < L * P * K){
 			attr(parProposal,"accepted") <- TRUE
 			return(parProposal)
@@ -468,10 +545,6 @@ fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac
 				Sh <- simulations[[i]]$funcSensitivity[[1]][,seq(np),j]
 				dim(Sh) <- c(nF,np)
 				pmj <- parMapJac(as.numeric(parMCMC))
-				if (any(is.na(pmj))){
-					message(sprintf("parMapJac has invalid elements"));
-					print(pmj)
-				}
 				Sh <- (Sh %*% pmj)/sigma_j
 				if (any(is.finite(Sh))){
 					fi  <-  fi + t(Sh) %*% Sh
@@ -538,10 +611,6 @@ log10ParMap <- function(parMCMC){
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
 log10ParMapJac <- function(parMCMC){
-	if (any(is.na(parMCMC))) {
-		stop("invalid Markov chain state")
-		print(parMCMC)
-	}
 	return(diag(10^(parMCMC) * log(10)))
 }
 

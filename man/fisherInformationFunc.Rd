@@ -4,7 +4,12 @@
 \alias{fisherInformationFunc}
 \title{Fisher Information from Sensitivity}
 \usage{
-fisherInformationFunc(model, experiments, parMap = identity, parMapJac = 1)
+fisherInformationFunc(
+  model,
+  experiments,
+  parMap = identity,
+  parMapJac = function(x) {     diag(1, length(x)) }
+)
 }
 \arguments{
 \item{model}{list of R functions for the ODE model}
