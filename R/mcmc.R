@@ -543,6 +543,11 @@ fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac
 				}
 				# output function sensitivity:
 				Sh <- simulations[[i]]$funcSensitivity[[1]][,seq(np),j]
+				lNA <- is.na(Sh)
+				if (any(lNA)) {
+					Sh[lNA] <- 0.0
+					##message(sprintf("Sensitivity has %i missing values. Replacing with 0.",sum(lNA)))
+				}
 				dim(Sh) <- c(nF,np)
 				pmj <- parMapJac(as.numeric(parMCMC))
 				Sh <- (Sh %*% pmj)/sigma_j
@@ -551,8 +556,9 @@ fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac
 				}
 			}
 		}
-		if (any(is.na(as.numeric(fi)))) {
-			message(sprintf("Fisher-information has %i missing values. Setting them to 0.0.\n",sum(is.na(as.numeric(fi)))))
+		lNAfi <- is.na(fi)
+		if (any(lNAfi)) {
+			##message(sprintf("Fisher-information has %i missing values. Setting them to 0.0.\n",sum(lNAfi)))
 			fi[!is.finite(fi)] <- 0.0
 		}
 		return(fi)

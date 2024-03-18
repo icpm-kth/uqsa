@@ -4,7 +4,7 @@
 \alias{gradLog_NormalPrior}
 \title{Gradient of the logarithm of a normal prior}
 \usage{
-gradLog_NormalPrior(mean, sd)
+gradLog_NormalPrior(mean = 0, sd = 1)
 }
 \arguments{
 \item{mean}{vector of mu values}
