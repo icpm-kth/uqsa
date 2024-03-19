@@ -314,7 +314,7 @@ smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
 	gradPGiven <- attr(parGiven,"gradLogPrior")
 	G0 <- fisherInformationPrior
 	G <- (beta^2*fiGiven)+G0
-	if (rcond(G)>1e-16){
+	if (isSymmetric(G) && rcond(G) > 1e-11){
 		g <- solve(G,beta*gradLGiven+gradPGiven)
 		Sigma <- solve(G)
 	} else {
