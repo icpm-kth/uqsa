@@ -111,18 +111,19 @@ if (file.exists(initFile)){
 } else if (is.na(h)) {
 	h <- 1e-3
 	x <- mcmcInit(beta,x,simulate,llf,dprior,gradLL,gprior,fiIn)
+	txtLog <- paste0("adjusting-step-size-for-rank-",r,"-of-",cs,"-",gsub(" ","T",Sys.time()),".txt")
 	for (j in seq(nj)) {
 		Sample <- ptsmmala(x,100,eps=h)
 		a <- attr(Sample,"acceptanceRate")
 		h <- h * L(a)
 		x <- attr(Sample,"lastPoint")
 		beta <- attr(x,"beta")
-		cat(sprintf("iteration %02i/%02i for rank %02i/%02i,\th = %g,\tacceptance = %i %%\n",j,nj,r,cs,h,round(100*a)))
+		cat(sprintf("iteration %02i/%02i for rank\t%02i/%02i,\th = %10g,\tacceptance = %i %%\n",j,nj,r,cs,h,round(100*a)),file=txtLog,append=TRUE)
 		flush.console()
 	}
 	save(x,h,beta,file=initFile)
-	cat("final step size: ",h,"\n")
-	cat("finished adjusting after",difftime(Sys.time(),start_time,units="sec")," seconds\n")
+	cat("final step size: ",h,"\n",file=txtLog,append=TRUE)
+	cat("finished adjusting after",difftime(Sys.time(),start_time,units="sec")," seconds\n",file=txtLog,append=TRUE)
 } else {
 	x <- mcmcInit(beta,x,simulate,llf,dprior,gradLL,gprior,fiIn)
 }
