@@ -130,7 +130,7 @@ simc <- function(experiments, modelName, parMap=identity){
 				l <- is.finite(yf[[i]]$funcSensitivity[[j]])
 				if (any(!l)){
 					message(sprintf("function-sensitivity approximation produced %i erroneous elements. Setting invalid elements to 0.",sum(!l)))
-					##print(yf[[i]]$stateSensitivity[[j]])
+					##print(yf[[i]]$funcSensitivity[[j]])
 					yf[[i]]$funcSensitivity[[j]][!l] <- 0.0
 				}
 			}

@@ -44,20 +44,16 @@ approximation is exact for state-variable values close to an
 equilibrium point q(p) (fixed-point): f(t,q(p);p)=0.
 }
 \details{
-The state sensitivity matrix:
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{           d state(time[k],state, param)[i]
+The state sensitivity matrix:\preformatted{           d state(time[k],state, param)[i]
 S[i,j,k] = --------------------------------  ,
            d param[j]
-}\if{html}{\out{</div>}}
+}
 
 where param are the raw model parameters.
-This matrix is calculated as an intermediate and then transformed into:
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{            d func(time[k], state, c(parMap(parMCMC),input))[i]
+This matrix is calculated as an intermediate and then transformed into:\preformatted{            d func(time[k], state, c(parMap(parMCMC),input))[i]
 Sh[i,j,k] = --------------------------------------------------
             d parMCMC[j]
-}\if{html}{\out{</div>}}
+}
 
 where parMCMC is the Markov chain variable and usually shorter than
 param as we typically don't sample all of the model's
