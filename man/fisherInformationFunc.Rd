@@ -8,9 +8,7 @@ fisherInformationFunc(
   model,
   experiments,
   parMap = identity,
-  parMapJac = function(x) {
-     diag(1, length(x))
- }
+  parMapJac = function(x) {     diag(1, length(x)) }
 )
 }
 \arguments{

@@ -42,7 +42,7 @@ if (!is.null(a) && length(a)>0) {
 print(Args)
 N <- Args['N']
 nChains <- Args['nChains']
-beta <- (1.0 - (r/nChains))^2
+beta <- (1.0 - (r/nChains))
 
 cat(sprintf("rank %i of %i workers will sample %i points.\n",r,cs,N))
 ## ----label="SBtab content"----------------------------------------------------
@@ -87,7 +87,7 @@ metropolis <- mcmcUpdate(simulate=simulate,
 		          dprior=dprior)
 ## ----init---------------------------------------------------------------------
 #m <- mcmc(smmala)                     # a serial Markov chain Monte Carlo function
-ptMetropolis <- mcmc_mpi(metropolis,comm=comm,swapDelay=0,swapFunc=pbdMPI_bcast_reduce_temperature)# MPI aware function, passes messages on "comm"
+ptMetropolis <- mcmc_mpi(metropolis,comm=comm,swapDelay=0,swapFunc=pbdMPI_bcast_reduce_temperatures)# MPI aware function, passes messages on "comm"
 #smmala <- mcmc(smmala)
 ## ----adjust-------------------------------------------------------------------
 accTarget <- 0.25
@@ -95,22 +95,22 @@ L <- function(a) { (1.0 / (1.0+exp(-(a-accTarget)/0.1))) + 0.5 }
 
 start_time <- Sys.time()
 x <- parVal
-nj <- 20
+nj <- 25
 h <- Args['h']
 initFile <- sprintf("%s-init-rank-%i-of-%i.RData",MPI,r,cs)
 if (file.exists(initFile)){
 	load(initFile)
 } else if (is.na(h)) {
-	h <- 1e-3
+	h <- 2.0
 	x <- mcmcInit(beta,x,simulate,llf,dprior)
 	txtLog <- paste0("adjusting-step-size-for-rank-",r,"-of-",cs,"-",gsub(" ","T",Sys.time()),".txt")
 	for (j in seq(nj)) {
 		Sample <- ptMetropolis(x,100,eps=h)
 		a <- attr(Sample,"acceptanceRate")
-		h <- h * L(a)
+		h <- attr(Sample,"stepSize") * L(a)
 		x <- attr(Sample,"lastPoint")
 		beta <- attr(x,"beta")
-		cat(sprintf("iteration %02i/%02i for rank\t%02i/%02i,\th = %10g,\tacceptance = %i %%\n",j,nj,r,cs,h,round(100*a)),file=txtLog,append=TRUE)
+		cat(sprintf("iteration %02i/%02i for rank\t%02i/%02i,\tlog10(h) = %5g,\tacceptance = %i %%, swap rate = %i %%\n",j,nj,r,cs,log10(h),round(100*a),round(attr(Sample,"swapRate")*100)),file=txtLog,append=TRUE)
 		flush.console()
 	}
 	save(x,h,beta,file=initFile)

@@ -267,8 +267,9 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 		msg <- -1
 	}
 	xr <- pbdMPI::allreduce(msg,op="max",comm=comm) # now everyone knows which two will swap
+	ret <- list(B=B,LL=LL,H=H)
 	if (xr>=0 && xr < cs){ # do the swap
-		message(sprintf("On iteration %i rank %i and rank %i are swapping temperatures.",i,root,xr))
+		##message(sprintf("On iteration %i rank %i and rank %i are swapping temperatures.",i,root,xr))
 		if (r == root){
 			xrB  <- pbdMPI::recv(rank.source = xr, tag = 1, comm = comm)
 			xrLL <- pbdMPI::recv(rank.source = xr, tag = 2, comm = comm)
@@ -280,8 +281,6 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 			pbdMPI::send(H,rank.dest = root, comm = comm, tag = 3)
 			ret <- list(B=rootB,LL=rootLL,H=rootH)
 		}
-	} else { # unchanged
-		ret <- list(B=B,LL=LL,H=H)
 	}
 	return(ret)
 }
@@ -427,25 +426,23 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 
 metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior){
 	U <- function(parGiven, eps=1e-4){
+		stopifnot(is.numeric(parGiven) && length(parGiven)>0 && all(is.finite(parGiven)))
 		stopifnot(parGiven %has% c("logLikelihood","prior"))
 		beta <- attr(parGiven,"beta") %otherwise% 1.0
 		llGiven <- attr(parGiven,"logLikelihood")
 		priorGiven <- attr(parGiven,"prior")
+		stopifnot(is.numeric(llGiven) && length(llGiven)==1 && is.finite(llGiven))
+		stopifnot(is.numeric(priorGiven) && length(priorGiven)==1 && is.finite(priorGiven))
 		parProposal <- parGiven + rnorm(length(parGiven),0,eps)
+		stopifnot(is.numeric(parProposal) && all(is.finite(priorGiven)))
 		attr(parProposal,"simulations") <- simulate(parProposal)
 		llProposal <- logLikelihood(parProposal)
+		stopifnot(is.numeric(llProposal) && length(llProposal)==1 && is.finite(llProposal))
 		attr(parProposal,"logLikelihood") <- llProposal
 		priorProposal <- dprior(parProposal)
 		attr(parProposal,"prior") <- priorProposal
 		L <- exp(beta*(llProposal - llGiven))
 		P <- priorProposal/priorGiven
-
-		cat("llProposal: ",llProposal,", llGiven:",llGiven,".\n")
-		cat("L: ",L,"P: ",P,"\n")
-		print(llProposal)
-		print(names(attributes(parGiven)))
-		print(names(attributes(parProposal)))
-		flush.console()
 		if (runif(1) < L*P){
 			attr(parProposal,"accepted") <- TRUE
 			return(parProposal)
