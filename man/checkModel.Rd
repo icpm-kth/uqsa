@@ -21,9 +21,11 @@ This function returns the model name, with some additional comments
 about the file
 }
 \details{
-As an alternative to this function, it is sufficient to write\preformatted{modelName <- "test_ode_model"             # or some other model name
+As an alternative to this function, it is sufficient to write
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{modelName <- "test_ode_model"             # or some other model name
 comment(modelName) <- "test_ode_model.so"
-}
+}\if{html}{\out{</div>}}
 
 This function will not attempt to find a model file, other than in
 the current directory. But, \code{checkModel} will compile a GSL

@@ -236,6 +236,56 @@ pbdMPI_swap_temperatures <- function(i, B, LL, H, r, comm, cs){
 	return(list(B=B,LL=LL,H=H))
 }
 
+#' Broadcast to other ranks and swap temperatures with any of them
+#'
+#' Using this function, at most two ranks will swap.
+#'
+#' Given a current log-likelihood, temperature and step-size, this
+#' funcion will broadcast a log-likelihood value to all other ranks
+#' and they can each decide to swap temperatures with the root
+#' process. Root is cycled around all ranks (round-robin).
+#'
+#' Each other rank is allowed to make the
+#' offer to swap. The root process decides which rank to swap with.
+#'
+#' @param i MCMC iteration
+#' @param B inverse temperature (parallel tempering)
+#' @param LL log-likelihood value of current point
+#' @param H algorithm's step size (often called epsilon in literature)
+#' @param r MPI rank
+#' @param comm MPI communicator
+#' @param cs MPI comm size
+#' @export
+pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
+	root <- (i %% cs) # rank of root process
+	rootLL <- pbdMPI::bcast(LL,root,comm)
+	rootB  <- pbdMPI::bcast(B,root,comm)
+	rootH  <- pbdMPI::bcast(H,root,comm)
+	if (root != r && change_temperature(B,LL,rootB,rootLL)){ # each _other_ process can propose this
+		msg <- r
+	} else {
+		msg <- -1
+	}
+	xr <- pbdMPI::allreduce(msg,op="max",comm=comm) # now everyone knows which two will swap
+	if (xr>=0 && xr < cs){ # do the swap
+		message(sprintf("On iteration %i rank %i and rank %i are swapping temperatures.",i,root,xr))
+		if (r == root){
+			xrB  <- pbdMPI::recv(rank.source = xr, tag = 1, comm = comm)
+			xrLL <- pbdMPI::recv(rank.source = xr, tag = 2, comm = comm)
+			xrH  <- pbdMPI::recv(rank.source = xr, tag = 3, comm = comm)
+			ret <- list(B=xrB,LL=xrLL,H=xrH)
+		} else if (r == xr){
+			pbdMPI::send(B,rank.dest = root, comm = comm, tag = 1)
+			pbdMPI::send(LL,rank.dest = root, comm = comm, tag = 2)
+			pbdMPI::send(H,rank.dest = root, comm = comm, tag = 3)
+			ret <- list(B=rootB,LL=rootLL,H=rootH)
+		}
+	} else { # unchanged
+		ret <- list(B=B,LL=LL,H=H)
+	}
+	return(ret)
+}
+
 
 #' The MPI version of the mcmc function
 #'
@@ -249,7 +299,7 @@ pbdMPI_swap_temperatures <- function(i, B, LL, H, r, comm, cs){
 #' @param swapDelay swaps will be attempted every 2*swapDelay+1 iterations
 #' @return an mcmc closure m(parMCMC,N,eps) that implicitly uses the supplied update function
 #' @export
-mcmc_mpi <- function(update,comm,swapDelay=0, swapFunc=rmpi_swap_temperatures){
+mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=rmpi_swap_temperatures){
 	D <- max(2*swapDelay+1,1)
 	M <- function(parMCMC,N=1000,eps=1e-4){
 		r <- attr(comm,"rank") # 0..n-1
@@ -381,7 +431,7 @@ metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior
 		beta <- attr(parGiven,"beta") %otherwise% 1.0
 		llGiven <- attr(parGiven,"logLikelihood")
 		priorGiven <- attr(parGiven,"prior")
-		parProposal <- parGiven + rnorm(length(parGiven),0,1)*eps
+		parProposal <- parGiven + rnorm(length(parGiven),0,eps)
 		attr(parProposal,"simulations") <- simulate(parProposal)
 		llProposal <- logLikelihood(parProposal)
 		attr(parProposal,"logLikelihood") <- llProposal
@@ -389,6 +439,13 @@ metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior
 		attr(parProposal,"prior") <- priorProposal
 		L <- exp(beta*(llProposal - llGiven))
 		P <- priorProposal/priorGiven
+
+		cat("llProposal: ",llProposal,", llGiven:",llGiven,".\n")
+		cat("L: ",L,"P: ",P,"\n")
+		print(llProposal)
+		print(names(attributes(parGiven)))
+		print(names(attributes(parProposal)))
+		flush.console()
 		if (runif(1) < L*P){
 			attr(parProposal,"accepted") <- TRUE
 			return(parProposal)

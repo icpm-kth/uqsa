@@ -1,4 +1,4 @@
-#!/bin/env Rscript
+#!/usr/bin/env Rscript
 
 ## ----setup--------------------------------------------------------------------
 library(uqsa)
@@ -74,7 +74,7 @@ simulate <- simcf(experiments,modelName,log10ParMap) # no sensitivities
 #options(mc.cores = 2)
 #simulate <- simulator.c(experiments,modelName,log10ParMap,noise=FALSE,sensApprox=sensApprox)
 y <- simulate(parVal)
-print(names(y[[1]]))
+#print(length(y))
 
 ## ----likelihood---------------------------------------------------------------
 llf <- logLikelihoodFunc(experiments)
@@ -84,12 +84,10 @@ metropolis <- mcmcUpdate(simulate=simulate,
 		          experiments=experiments,
 		          model=model,
 		          logLikelihood=llf,
-		          dprior=dprior,
-)
+		          dprior=dprior)
 ## ----init---------------------------------------------------------------------
 #m <- mcmc(smmala)                     # a serial Markov chain Monte Carlo function
-ptMetropolis <- mcmc_mpi(metropolis,comm=comm,swapDelay=0,swapFunc=pbdMPI_swap_temperatures)
-## ptsmmala is a now an MPI aware function, passes messages on "comm"
+ptMetropolis <- mcmc_mpi(metropolis,comm=comm,swapDelay=0,swapFunc=pbdMPI_bcast_reduce_temperature)# MPI aware function, passes messages on "comm"
 #smmala <- mcmc(smmala)
 ## ----adjust-------------------------------------------------------------------
 accTarget <- 0.25
@@ -121,14 +119,15 @@ if (file.exists(initFile)){
 } else {
 	x <- mcmcInit(beta,x,simulate,llf,dprior)
 }
-
 ## ----sample-------------------------------------------------------------------
+
 s <- ptMetropolis(x,Args['N'],h) # the main amount of work is done here
 colnames(s) <- names(parVal)
 saveRDS(s,file=sprintf("%s-testSample-rank%i-of%i.RData",MPI,r,cs))
 x <- attr(s,"lastPoint")
 beta <- attr(x,"beta")
 
+save(x,h,beta,file=initFile)
 cat(sprintf("rank %02i/%02i finished with acceptance rate of %02i %% and swap rate of %02i %%.\n",r,cs,round(100*attr(s,"acceptanceRate")),round(100*attr(s,"swapRate"))))
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)
