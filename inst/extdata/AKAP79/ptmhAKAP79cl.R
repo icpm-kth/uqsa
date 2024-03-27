@@ -5,29 +5,35 @@ library(uqsa)
 library(parallel)
 library(rgsl)
 library(SBtabVFGEN)
-library(Rmpi)
+library(pbdMPI)
+
+pbdMPI::init()
+
+comm=0
+r <- pbdMPI::comm.rank(comm=comm)
+cs <- pbdMPI::comm.size(comm=comm)
+attr(comm,"rank") <- r
+attr(comm,"size") <- cs
 
 start_time <- Sys.time()                         # measure sampling time
-r <- mpi.comm.rank(comm=0)
-cs <- mpi.comm.size(comm=0)
-beta <- (1.0 - (r/cs))^2
-nChains <- cs
-
 a <- commandArgs(trailing=TRUE)
 
 if (!is.null(a) && length(a)>0) {
 	if (length(a)==1) {
-		Args <- c(N=as.numeric(a[1]),h=NA)
+		Args <- c(N=as.numeric(a[1]),h=NA,nChains=cs)
 	} else {
 		a <- strsplit(a,"=")
 		Args <- Reduce(\(a,b) {c(a,as.numeric(b[2]))},a,init=NULL)
 		names(Args) <- Reduce(\(a,b) c(a,make.names(b[1])),a,init=NULL)
 	}
 } else {
-	Args <- c(N=300,h=NA)
+	Args <- c(N=300,h=NA,nChains=cs)
 }
 print(Args)
 N <- Args['N']
+nChains <- Args['nChains']
+beta <- (1.0 - (r/nChains))^2
+
 cat(sprintf("rank %i of %i workers will sample %i points.\n",r,cs,N))
 ## ----label="SBtab content"----------------------------------------------------
 modelFiles <- uqsa_example("AKAP79",pattern="[.]tsv$",full.names=TRUE)
@@ -39,7 +45,7 @@ modelName <- checkModel("AKAP79","./AKAP79.so")
 
 ## ----ConservationLaws---------------------------------------------------------
 load(uqsa_example("AKAP79",pat="^ConservationLaws[.]RData$"))
-##print(ConLaw$Text)
+print(ConLaw$Text)
 experiments <- sbtab.data(SBtab,ConLaw)
 
 
@@ -54,25 +60,28 @@ dprior <- dNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 rprior <- rNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 gprior <- gradLog_NormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 ## ----simulate-----------------------------------------------------------------
-simulate <- simc(experiments,modelName,log10ParMap)
+simulate <- simcf(experiments,modelName,log10ParMap)
 
 #options(mc.cores = 2)
 #simulate <- simulator.c(experiments,modelName,log10ParMap,noise=FALSE,sensApprox=sensApprox)
 y <- simulate(parVal)
-#print(length(y))
+stopifnot(is.list(y) && length(y)==length(experiments) && !all(c("state","func") %in% names(y[[1]])))
 
 ## ----likelihood---------------------------------------------------------------
 llf <- logLikelihoodFunc(experiments)
 
 ## ----update-------------------------------------------------------------------
-metropolis<-mcmcUpdate(simulate=simulate,
+## metropolis <- metropolisUpdate(simulate, experiments, model, logLikelihood=llf, dprior=dprior)
+
+## (simulate, experiments, model, logLikelihood, dprior, gradLogLikelihood=NULL, gprior=NULL, fisherInformation=NULL, fisherInformationPrior=NULL)
+metropolis <- mcmcUpdate(simulate=simulate,
 		          experiments=experiments,
 		          model=model,
 		          logLikelihood=llf,
 		          dprior=dprior)
 ## ----init---------------------------------------------------------------------
 #m <- mcmc(smmala)                     # a serial Markov chain Monte Carlo function
-ptMetropolis <- mcmc_mpi(metropolis,comm=0)# MPI aware function, passes messages on "comm"
+ptMetropolis <- mcmc_mpi(metropolis,comm=comm,swapDelay=0,swapFunc=pbdMPI_bcast_reduce_temperature)# MPI aware function, passes messages on "comm"
 #smmala <- mcmc(smmala)
 ## ----adjust-------------------------------------------------------------------
 accTarget <- 0.25
@@ -80,7 +89,7 @@ L <- function(a) { (1.0 / (1.0+exp(-(a-accTarget)/0.1))) + 0.5 }
 
 start_time <- Sys.time()
 x <- parVal
-nj <- 5
+nj <- 20
 h <- Args['h']
 initFile <- sprintf("rmpi-init-rank-%i-of-%i.RData",r,cs)
 if (file.exists(initFile)){
@@ -100,6 +109,8 @@ if (file.exists(initFile)){
 	save(x,h,beta,file=initFile)
 	cat("final step size: ",h,"\n")
 	cat("finished adjusting after",difftime(Sys.time(),start_time,units="sec")," seconds\n")
+} else {
+	x <- mcmcInit(beta,x,simulate,llf,dprior)
 }
 ## ----sample-------------------------------------------------------------------
 
@@ -112,5 +123,5 @@ save(x,h,beta,file=initFile)
 cat(sprintf("rank %02i/%02i finished with acceptance rate of %02i %% and swap rate of %02i %%.\n",r,cs,round(100*attr(s,"acceptanceRate")),round(100*attr(s,"swapRate"))))
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)
-mpi.finalize()
+finalize()
 

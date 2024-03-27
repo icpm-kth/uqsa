@@ -21,7 +21,7 @@ removing whitespace on each side: \code{"A + 2 B <=> AB2"} will be split
 into a list with two entries
 }
 \details{
-\preformatted{list$reactants == c("A","2*B")
+\if{html}{\out{<div class="sourceCode">}}\preformatted{list$reactants == c("A","2*B")
 list$products == c("AB2")
-}
+}\if{html}{\out{</div>}}
 }

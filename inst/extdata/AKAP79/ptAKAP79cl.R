@@ -15,9 +15,9 @@ if (MPI == 'Rmpi'){
 	r <- Rmpi::mpi.comm.rank(comm=comm)
 	cs <- Rmpi::mpi.comm.size(comm=comm)
 } else if (MPI == "pbdMPI"){
+	pbdMPI::init()
 	r <- pbdMPI::comm.rank(comm=comm)
 	cs <- pbdMPI::comm.size(comm=comm)
-	pbdMPI::init()
 } else {
 	stop('unknown type of MPI')
 }
