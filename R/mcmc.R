@@ -16,6 +16,17 @@
 	}
 }
 
+
+#' checks whether a variable has the named attributes
+#'
+#' @param var a variable to check for attributes
+#' @param attrNames named attributes
+#' @return TRUE if all attributes are present
+#' @export
+`%has%` <- function(var,attrNames){
+	return(all(attrNames %in% names(attributes(var))))
+}
+
 #' Initialize the Markov chain
 #'
 #' This function must append all required attributes to the MCMC
@@ -259,8 +270,8 @@ mcmc_mpi <- function(update,comm,swapDelay=0, swapFunc=rmpi_swap_temperatures){
 			if (i %% D == 0){ # e.g. i = 3,6,9, or i = 5,10,15
 				res <- swapFunc(i,B,LL,eps,r,comm,cs)
 				if (res$B != B) swaps <- swaps+1
-				B <- res$B
-				LL <- res$LL
+				attr(parMCMC,"beta") <- res$B
+				attr(parMCMC,"logLikelihood") <- res$LL
 				eps <- res$H
 			}
 		}
@@ -309,15 +320,18 @@ loadSample_mpi <- function(files){
 #' @param parGiven given point
 #' @return SMMALA proposal point
 smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
+	stopifnot(parGiven %has% c("fisherInformation","gradLogLikelihood","gradLogPrior"))
 	fiGiven <- attr(parGiven,"fisherInformation")
 	gradLGiven <- attr(parGiven,"gradLogLikelihood")
 	gradPGiven <- attr(parGiven,"gradLogPrior")
 	G0 <- fisherInformationPrior
 	G <- (beta^2*fiGiven)+G0
+	stopifnot(is.matrix(G))
 	if (isSymmetric(G) && rcond(G) > 1e-11){
 		g <- solve(G,beta*gradLGiven+gradPGiven)
 		Sigma <- solve(G)
 	} else {
+		stopifnot(is.matrix(G0) && isSymmetric(G0))
 		g <- solve(G0,gradPGiven)
 		Sigma <- solve(G0)
 	}
@@ -339,15 +353,18 @@ smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
 #' @param parGiven given point
 #' @return SMMALA proposal point
 smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior,eps=1e-2){
+	stopifnot(parGiven %has% c("fisherInformation","gradLogLikelihood","gradLogPrior"))
 	fiGiven <- attr(parGiven,"fisherInformation")
 	gradLGiven <- attr(parGiven,"gradLogLikelihood")
 	gradPGiven <- attr(parGiven,"gradLogPrior")
 	G0 <- fisherInformationPrior
 	G <- (beta^2*fiGiven)+G0
+	stopifnot(is.matrix(G))
 	if (isSymmetric(G) && rcond(G)>1e-11){
 		g <- solve(G,beta*gradLGiven+gradPGiven)
 		Sigma <- solve(G)
 	} else {
+		stopifnot(is.matrix(G0) && isSymmetric(G0))
 		g <- solve(G0,gradPGiven)
 		Sigma <- solve(G0)
 	}
@@ -360,6 +377,7 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 
 metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior){
 	U <- function(parGiven, eps=1e-4){
+		stopifnot(parGiven %has% c("logLikelihood","prior"))
 		beta <- attr(parGiven,"beta") %otherwise% 1.0
 		llGiven <- attr(parGiven,"logLikelihood")
 		priorGiven <- attr(parGiven,"prior")
@@ -387,7 +405,9 @@ smmalaUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gr
 	#np <- length(model$par())
 	#nu <- length(experiments[[1]]$input)
 	U <- function(parGiven, eps=1e-4){
+		stopifnot(parGiven %has% c("logLikelihood","prior","fisherInformation","gradLogLikelihood","gradLogPrior"))
 		fp <- fisherInformationPrior
+		stopifnot(is.matrix(fp) && isSymmetric(fp))
 		beta <- attr(parGiven,"beta") %otherwise% 1.0
 		llGiven <- attr(parGiven,"logLikelihood")
 		priorGiven <- attr(parGiven,"prior")
