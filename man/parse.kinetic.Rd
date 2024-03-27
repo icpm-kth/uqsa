@@ -18,8 +18,10 @@ not possible to tell apart which part of a kinetic law is which.
 }
 \details{
 But for mass action kinetics, and positive reaction rate
-coefficients, the expressions mostly look like this:\preformatted{kf*prod(reactants.concentration) - kb*prod(product.concentrations)
-}
+coefficients, the expressions mostly look like this:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{kf*prod(reactants.concentration) - kb*prod(product.concentrations)
+}\if{html}{\out{</div>}}
 
 this functions splits at \code{-}, and if none is present, then the
 reaction is assumed to be irreversible.

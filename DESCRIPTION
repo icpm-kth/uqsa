@@ -12,21 +12,24 @@ Description: This package will solve an initial value problem (given an ordinary
 License: GPL (>=3)
 Encoding: UTF-8
 LazyData: true
+Depends:
+    R (>= 3.5)
 Imports:
-	parallel,
-	VineCopula,
-	MASS,
-	ks,
-	SBtabVFGEN,
-	rgsl
+    parallel,
+    VineCopula,
+    MASS,
+    ks,
+    SBtabVFGEN
 Suggests:
-    deSolve,
+    remotes,
     ggplot2,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
     hexbin
-RoxygenNote: 7.2.3
+Remotes:
+    icpm-kth/rgsl
+RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
