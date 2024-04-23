@@ -24,23 +24,22 @@ if (MPI == 'Rmpi'){
 attr(comm,"rank") <- r
 attr(comm,"size") <- cs
 
-nChains <- cs # this number can be used to pretend like we have more than cs chains, for the calculation of beta
+Args=c(N=100,h=NA,nChains=cs) # nChains can be used to pretend like we have more than cs chains, for the calculation of beta
 
 a <- commandArgs(trailing=TRUE)
 
 if (!is.null(a) && length(a)>0) {
 	if (length(a)==1) {
-		Args <- c(N=as.numeric(a[1]),h=NA,nChains=cs)
+		Args['N']=as.numeric(a[1])
 	} else {
 		a <- strsplit(a,"=")
 		Args <- Reduce(\(a,b) {c(a,as.numeric(b[2]))},a,init=NULL)
 		names(Args) <- Reduce(\(a,b) c(a,make.names(b[1])),a,init=NULL)
 	}
-} else {
-	Args <- c(N=300,h=NA,nChains=cs)
 }
 print(Args)
 N <- Args['N']
+nChains <- Args['nChains']
 beta <- (1.0 - (r/nChains))^2
 
 cat(sprintf("rank %i of %i workers will sample %i points.\n",r,cs,N))
@@ -61,7 +60,10 @@ experiments <- sbtab.data(SBtab,ConLaw)
 ## ----default------------------------------------------------------------------
 n <- length(experiments[[1]]$input)
 stopifnot(n>0)
-parVal <- log10(head(AKAP79_default(),-n))
+parVal <- c( 1.84512,  -1.11594,  -3.28677,  -0.225118,  0.630559,  -1.44445,  -3.19814,  -4.59471,  -2.1549,  -4.4207,  -2.17395,  0.937206,  -1.53715,  0.163359,  -2.40479,  2.12073,  -3.34629,  -0.913875,  0.492607,  -0.532405,  1.75744,  -1.6767,  -1.02841,  0.982068,  1.93345,  0.118566,  -0.197953)
+
+# alternatively:
+defaultVal <- log10(head(AKAP79_default(),-n))
 
 ## ----range--------------------------------------------------------------------
 defRange <- 2 # log-10 space

@@ -137,7 +137,7 @@ mcmc <- function(update){
 		for (i in seq(N)){
 			parMCMC <- update(parMCMC,eps)
 			ll[[i]] <- attr(parMCMC,"logLikelihood")
-			sample[i,] <- parMCMC
+			sample[i,] <- as.numeric(parMCMC)
 			b[i] <- attr(parMCMC,"beta")
 			a <- a + as.numeric(attr(parMCMC,"accepted"))
 		}
@@ -145,6 +145,7 @@ mcmc <- function(update){
 		attr(sample,"logLikelihood") <- ll
 		attr(sample,"lastPoint") <- parMCMC
 		attr(sample,"beta") <- b
+		attr(sample,"stepSize") <- eps
 		return(sample)
 	}
 }
@@ -332,6 +333,7 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=rmpi_swap_temperatures)
 		attr(sample,"stepSize") <- eps
 		return(sample)
 	}
+	return(M)
 }
 
 #' This function merges mpi-samples into one
@@ -358,6 +360,30 @@ loadSample_mpi <- function(files){
 	return(list(Sample=Sample,beta=betaTrace,acceptanceRate=acc,swapRate=sR,logLikelihood=ll,betaSelection=bSelection))
 }
 
+is.invertible <- function(G=NULL,abs_tol=1e-11){
+	return(!is.null(G) && is.numeric(G) && is.matrix(G) && all(dim(G)>0) && !any(is.na(G)) && all(is.finite(G)) && isSymmetric(G) && rcond(G) > abs_tol)
+}
+
+dmvnorm <- function(x,mean,precision){
+	mu <- mean
+	stopifnot(!is.null(x) && is.numeric(x) && is.numeric(mu) && length(x) == length(mu))
+	stopifnot(!is.null(precision) && is.matrix(precision))
+	k <- length(mu)
+	xm <- (x-mu)
+	xmPxm <- (x-mu) %*% precision %*% (x-mu)
+	C <- (2*pi)^(-0.5*k) * sqrt(abs(det(precision))) * exp(-0.5 * xmPxm)
+	return(C)
+}
+
+rmvnorm <- function(mean,precision){
+	mu <- mean
+	stopifnot(is.numeric(mu) && is.matrix(precision))
+	k <- length(mu)
+	P <- chol(0.5*(t(precision) %*% precision))
+	x <- solve(P,rnorm(k,0,1))+mu
+	return(x)
+}
+
 #' SMMALA move
 #'
 #' The Simiplified Manifold Metropolis Adjusted Langevin Algorithm uses a
@@ -370,23 +396,26 @@ loadSample_mpi <- function(files){
 #' @return SMMALA proposal point
 smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
 	stopifnot(parGiven %has% c("fisherInformation","gradLogLikelihood","gradLogPrior"))
+	stopifnot(!is.null(beta) && !any(is.na(beta)) && is.finite(beta))
 	fiGiven <- attr(parGiven,"fisherInformation")
 	gradLGiven <- attr(parGiven,"gradLogLikelihood")
 	gradPGiven <- attr(parGiven,"gradLogPrior")
 	G0 <- fisherInformationPrior
 	G <- (beta^2*fiGiven)+G0
-	stopifnot(is.matrix(G))
-	if (isSymmetric(G) && rcond(G) > 1e-11){
+	stopifnot(!is.null(G) && is.matrix(G))
+	#cat("is.invertible(G): ",is.invertible(G), " (rcond: ",rcond(G),").\n")
+	if (isTRUE(is.invertible(G))){
 		g <- solve(G,beta*gradLGiven+gradPGiven)
-		Sigma <- solve(G)
+		#Sigma <- solve(G)
 	} else {
 		stopifnot(is.matrix(G0) && isSymmetric(G0))
 		g <- solve(G0,gradPGiven)
-		Sigma <- solve(G0)
+		G <- G0
+		#Sigma <- solve(G0)
 	}
-	parProposal <- mvtnorm::rmvnorm(1,
+	parProposal <- rmvnorm(
 		mean=parGiven+0.5*eps*g,
-		sigma=eps*Sigma
+		precision=G/eps
 	)
  return(as.numeric(parProposal))
 }
@@ -403,23 +432,26 @@ smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
 #' @return SMMALA proposal point
 smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior,eps=1e-2){
 	stopifnot(parGiven %has% c("fisherInformation","gradLogLikelihood","gradLogPrior"))
+	stopifnot(!is.null(beta) && !any(is.na(beta)) && is.finite(beta))
 	fiGiven <- attr(parGiven,"fisherInformation")
 	gradLGiven <- attr(parGiven,"gradLogLikelihood")
 	gradPGiven <- attr(parGiven,"gradLogPrior")
 	G0 <- fisherInformationPrior
 	G <- (beta^2*fiGiven)+G0
-	stopifnot(is.matrix(G))
-	if (isSymmetric(G) && rcond(G)>1e-11){
+	stopifnot(!is.null(G) && is.matrix(G))
+	#cat("is.invertible(G): ",is.invertible(G), " (rcond: ",rcond(G),").\n")
+	if (isTRUE(is.invertible(G))){
 		g <- solve(G,beta*gradLGiven+gradPGiven)
-		Sigma <- solve(G)
+		#Sigma <- solve(G)
 	} else {
 		stopifnot(is.matrix(G0) && isSymmetric(G0))
 		g <- solve(G0,gradPGiven)
-		Sigma <- solve(G0)
+		G <- G0
+		#Sigma <- solve(G0)
 	}
-	return(mvtnorm::dmvnorm(as.numeric(parProposal),
+	return(dmvnorm(as.numeric(parProposal),
 		mean=parGiven+0.5*eps*g,
-		sigma=eps*Sigma)
+		precision=G/eps)
 	)
 }
 
@@ -433,6 +465,7 @@ metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior
 		priorGiven <- attr(parGiven,"prior")
 		stopifnot(is.numeric(llGiven) && length(llGiven)==1 && is.finite(llGiven))
 		stopifnot(is.numeric(priorGiven) && length(priorGiven)==1 && is.finite(priorGiven))
+		stopifnot(!is.null(eps) && is.numeric(eps) && length(eps)==1 && is.finite(eps))
 		parProposal <- parGiven + rnorm(length(parGiven),0,eps)
 		stopifnot(is.numeric(parProposal) && all(is.finite(priorGiven)))
 		attr(parProposal,"simulations") <- simulate(parProposal)
@@ -442,8 +475,9 @@ metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior
 		priorProposal <- dprior(parProposal)
 		attr(parProposal,"prior") <- priorProposal
 		L <- exp(beta*(llProposal - llGiven))
+		if (is.null(L)) cat("llProposal: ",llProposal," llGiven: ",llGiven," beta: ",beta," L:",L,"\n")
 		P <- priorProposal/priorGiven
-		if (runif(1) < L*P){
+		if (!is.null(L) && is.finite(L) && runif(1) < L*P){
 			attr(parProposal,"accepted") <- TRUE
 			return(parProposal)
 		} else {
@@ -655,13 +689,15 @@ logLikelihoodFunc <- function(experiments){
 		simulations <- attr(parMCMC,"simulations")
 		dimFunc <- dim(simulations[[1]]$func)
 		n <- dimFunc[3]
-		m <- dimFunc[1]*dimFunc[2]
-		L <- rep(-0.5*m*N*log(2*pi),n)
+		m <- head(dimFunc,2)
+		L <- rep(-0.5*prod(m)*N*log(2*pi),n)
 		for (i in seq(N)){
 			y <- t(experiments[[i]]$outputValues)
 			stdv <- t(experiments[[i]]$errorValues)
 			for (k in seq(n)){
 				h <- simulations[[i]]$func[,,k]
+				dim(h) <- m
+				stopifnot(all(dim(h)==dim(y)) && all(dim(y)==dim(stdv)))
 				L[k] <- L[k] - 0.5*sum(((y - h)/stdv)^2,na.rm=TRUE) - sum(log(stdv),na.rm=TRUE)
 			}
 		}
