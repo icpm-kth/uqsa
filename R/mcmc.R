@@ -377,7 +377,10 @@ dmvnorm <- function(x,mean,precision){
 
 rmvnorm <- function(mean,precision){
 	mu <- mean
+	stopifnot(!is.null(precision) && !is.null(mu))
 	stopifnot(is.numeric(mu) && is.matrix(precision))
+	stopifnot(all(is.finite(mu)))
+	stopifnot(all(is.finite(precision)))
 	k <- length(mu)
 	P <- chol(0.5*(t(precision) %*% precision))
 	x <- solve(P,rnorm(k,0,1))+mu
