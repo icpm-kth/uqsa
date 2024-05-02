@@ -53,7 +53,7 @@ modelName <- checkModel("AKAP79","./AKAP79.so")
 
 ## ----ConservationLaws---------------------------------------------------------
 load(uqsa_example("AKAP79",pat="^ConservationLaws[.]RData$"))
-##print(ConLaw$Text)
+print(ConLaw$Text)
 experiments <- sbtab.data(SBtab,ConLaw)
 
 
