@@ -382,7 +382,7 @@ rmvnorm <- function(mean,precision){
 	stopifnot(all(is.finite(mu)))
 	stopifnot(all(is.finite(precision)))
 	k <- length(mu)
-	P <- chol(0.5*(t(precision) %*% precision))
+	P <- precision # chol(0.5*(t(precision) %*% precision))
 	x <- solve(P,rnorm(k,0,1))+mu
 	return(x)
 }

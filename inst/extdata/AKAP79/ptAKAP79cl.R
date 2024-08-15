@@ -24,7 +24,7 @@ if (MPI == 'Rmpi'){
 attr(comm,"rank") <- r
 attr(comm,"size") <- cs
 
-Args=c(N=100,h=NA,nChains=cs) # nChains can be used to pretend like we have more than cs chains, for the calculation of beta
+Args=c(N=1000,h=NA,nChains=cs) # nChains can be used to pretend like we have more than cs chains, for the calculation of beta
 
 a <- commandArgs(trailing=TRUE)
 
@@ -53,7 +53,10 @@ modelName <- checkModel("AKAP79","./AKAP79.so")
 
 ## ----ConservationLaws---------------------------------------------------------
 load(uqsa_example("AKAP79",pat="^ConservationLaws[.]RData$"))
-print(ConLaw$Text)
+if (0 == r) {
+	cat("Conservation laws for this model:")
+	print(ConLaw$Text)
+}
 experiments <- sbtab.data(SBtab,ConLaw)
 
 
@@ -63,8 +66,11 @@ stopifnot(n>0)
 parVal <- c( 1.84512,  -1.11594,  -3.28677,  -0.225118,  0.630559,  -1.44445,  -3.19814,  -4.59471,  -2.1549,  -4.4207,  -2.17395,  0.937206,  -1.53715,  0.163359,  -2.40479,  2.12073,  -3.34629,  -0.913875,  0.492607,  -0.532405,  1.75744,  -1.6767,  -1.02841,  0.982068,  1.93345,  0.118566,  -0.197953)
 
 # alternatively:
-defaultVal <- log10(head(AKAP79_default(),-n))
-
+if (n>0){
+	defaultVal <- log10(head(AKAP79_default(),-n))
+} else {
+	defaultVal <- log10(AKAP79_default())
+}
 ## ----range--------------------------------------------------------------------
 defRange <- 2 # log-10 space
 dprior <- dNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
@@ -76,7 +82,7 @@ simulate <- simc(experiments,modelName,log10ParMap)
 #options(mc.cores = 2)
 #simulate <- simulator.c(experiments,modelName,log10ParMap,noise=FALSE,sensApprox=sensApprox)
 y <- simulate(parVal)
-print(names(y[[1]]))
+#print(names(y[[1]]))
 
 ## ----likelihood---------------------------------------------------------------
 llf <- logLikelihoodFunc(experiments)
@@ -131,9 +137,14 @@ if (file.exists(initFile)){
 }
 
 ## ----sample-------------------------------------------------------------------
+sfile <- sprintf("Rmpi-AKAP79-rank%i-of%i.RData",r,cs)
+if (file.exists(sfile)){ # continue from last sample
+	s <- readRDS(sfile)
+	x <- attr(s,"lastPoint")
+}
 s <- ptsmmala(x,Args['N'],h) # the main amount of work is done here
 colnames(s) <- names(parVal)
-saveRDS(s,file=sprintf("Rmpi-testSample-rank%i-of%i.RData",r,cs))
+saveRDS(s,file=sfile)
 x <- attr(s,"lastPoint")
 beta <- attr(x,"beta")
 
