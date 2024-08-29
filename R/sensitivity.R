@@ -61,22 +61,21 @@ sum.of.bin.variance  <- function(hst,binMeans,totalMean){
 #' @return sensitivity S[i,j] of output[i] with respect to parameter[j]
 globalSensitivity<-function(parSample,outputSample,nBins="Sturges"){
 	isNA <- apply(is.na(outputSample),1,any)
-	parSample <- parSample[!isNA,]
-	outputSample <- outputSample[!isNA,]
+	parSample <- parSample[!isNA,,drop=FALSE]
+	outputSample <- outputSample[!isNA,,drop=FALSE]
 	meanOutput <- colMeans(outputSample)
 	varOutput <- diag(cov(outputSample))
-	SampleSize <- dim(parSample)
 	outputSize <- dim(outputSample)
-	hst <- vector("list",SampleSize[2])
-	id <- vector("list",SampleSize[2])
-	for (i in 1:SampleSize[2]){
+	hst <- vector("list",NCOL(parSample))
+	id <- vector("list",NCOL(parSample))
+	for (i in 1:NCOL(parSample)){
 		hst[[i]] <- hist(parSample[,i],plot=FALSE,breaks=nBins)
 		id[[i]] <- findInterval(parSample[,i],hst[[i]]$breaks,all.inside=TRUE)
 	}
 	# a list, one item per fixed parameter
 	binMeans <- lapply(id,observable.mean.in.bin,outputSample=outputSample)
-	S <- matrix(0.0,outputSize[2],SampleSize[2])
-	for (i in 1:SampleSize[2]){
+	S <- matrix(0.0,NCOL(outputSample),NCOL(parSample))
+	for (i in 1:NCOL(parSample)){
 		Vi <- sum.of.bin.variance(hst[[i]],binMeans[[i]],totalMean=meanOutput)
 		S[,i] <- Vi/(1e-300+varOutput)
 	}

@@ -27,7 +27,7 @@
 #' @export
 uqsa_example<-function(modelName=NULL, full.names=TRUE, pattern='[.]tsv$', f=NULL) {
 	if (!is.null(f)){
-		pattern <- sprintf("[.]%s$",f)
+		pattern <- sprintf("%s$",gsub("[.]","[.]",f))
 	}
 	if (is.null(modelName)) {
 		return(dir(system.file("extdata", package = "uqsa")))

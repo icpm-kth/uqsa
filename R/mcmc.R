@@ -685,26 +685,68 @@ fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac
 #' rgsl::r_gsl_odeiv2_outer().
 #'
 #' @param experiment will be compared tp the simulation results
+#' @param perExpLLF (optional) a user supplied function with the
+#'     interface `perExpLLF(p,s,e)`, where `p` are the parameters, `s`
+#'     are the simulations and `e` are the experiments (with
+#'     data). Supply this function if some of your experiments need to
+#'     be normalized by the other experiments (and other complex
+#'     cases).
+#' @param simpleUserLLF (optional) a user supplied function that is
+#'     used instead of the default sum of ((y-h)/stdv)^2 terms. The
+#'     interface is: `simpleUserLLF(y,h,stdv)`, where each of them is
+#'     an N-M-matrix where N is the dimensionality of the model output
+#'     and M the number of data time-points.  Here, `y` is
+#'     `t(experiments[[i]]$outputValues)` and may contain NA values.
+#' @return llf(p), a closure (function) of the mcmc-variable: parMCMC;
+#'     returns a scalar logLikelihood value
 #' @export
-logLikelihoodFunc <- function(experiments){
+logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	N <- length(experiments)
-	llf <- function(parMCMC){
-		simulations <- attr(parMCMC,"simulations")
-		dimFunc <- dim(simulations[[1]]$func)
-		n <- dimFunc[3]
-		m <- head(dimFunc,2)
-		L <- rep(-0.5*prod(m)*N*log(2*pi),n)
-		for (i in seq(N)){
-			y <- t(experiments[[i]]$outputValues)
-			stdv <- t(experiments[[i]]$errorValues)
-			for (k in seq(n)){
-				h <- simulations[[i]]$func[,,k]
-				dim(h) <- m
-				stopifnot(all(dim(h)==dim(y)) && all(dim(y)==dim(stdv)))
-				L[k] <- L[k] - 0.5*sum(((y - h)/stdv)^2,na.rm=TRUE) - sum(log(stdv),na.rm=TRUE)
+	if (!is.null(simpleUserLLF)){
+		llf <- function(parMCMC){
+			simulations <- attr(parMCMC,"simulations")
+			dimFunc <- dim(simulations[[1]]$func)
+			n <- dimFunc[3]
+			m <- head(dimFunc,2)
+			L <- rep(0,n)
+			for (i in seq(N)){
+				y <- t(experiments[[i]]$outputValues)
+				stdv <- t(experiments[[i]]$errorValues)
+				for (k in seq(n)){
+					h <- simulations[[i]]$func[,,k]
+					dim(h) <- m
+					stopifnot(all(dim(h)==dim(y)) && all(dim(y)==dim(stdv)))
+					L[k] <- L[k] + simpleUserLLF(y,h,stdv)
+				}
 			}
+			return(L)
 		}
-		return(L)
+	} else if (!is.null(perExpLLF)){
+		llf <- function(parMCMC){
+			simulations <- attr(parMCMC,"simulations")
+			dimFunc <- dim(simulations[[1]]$func)
+			L <- perExpLLF(parMCMC,simulations,experiments)
+			return(L)
+		}
+	} else {
+		llf <- function(parMCMC){
+			simulations <- attr(parMCMC,"simulations")
+			dimFunc <- dim(simulations[[1]]$func)
+			n <- dimFunc[3]
+			m <- head(dimFunc,2)
+			L <- rep(-0.5*prod(m)*N*log(2*pi),n)
+			for (i in seq(N)){
+				y <- t(experiments[[i]]$outputValues)
+				stdv <- t(experiments[[i]]$errorValues)
+				for (k in seq(n)){
+					h <- simulations[[i]]$func[,,k]
+					dim(h) <- m
+					stopifnot(all(dim(h)==dim(y)) && all(dim(y)==dim(stdv)))
+					L[k] <- L[k] - 0.5*sum(((y - h)/stdv)^2,na.rm=TRUE) - sum(log(stdv),na.rm=TRUE)
+				}
+			}
+			return(L)
+		}
 	}
 	return(llf)
 }
