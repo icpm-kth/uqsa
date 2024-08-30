@@ -4,10 +4,28 @@
 \alias{logLikelihoodFunc}
 \title{Default log-likelihood function}
 \usage{
-logLikelihoodFunc(experiments)
+logLikelihoodFunc(experiments, perExpLLF = NULL, simpleUserLLF = NULL)
 }
 \arguments{
+\item{perExpLLF}{(optional) a user supplied function with the
+interface \code{perExpLLF(p,s,e)}, where \code{p} are the parameters, \code{s}
+are the simulations and \code{e} are the experiments (with
+data). Supply this function if some of your experiments need to
+be normalized by the other experiments (and other complex
+cases).}
+
+\item{simpleUserLLF}{(optional) a user supplied function that is
+used instead of the default sum of ((y-h)/stdv)^2 terms. The
+interface is: \code{simpleUserLLF(y,h,stdv)}, where each of them is
+an N-M-matrix where N is the dimensionality of the model output
+and M the number of data time-points.  Here, \code{y} is
+\code{t(experiments[[i]]$outputValues)} and may contain NA values.}
+
 \item{experiment}{will be compared tp the simulation results}
+}
+\value{
+llf(p), a closure (function) of the mcmc-variable: parMCMC;
+returns a scalar logLikelihood value
 }
 \description{
 This returns a function f(simulations), which maps simulation

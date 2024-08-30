@@ -458,7 +458,6 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 	)
 }
 
-
 metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior){
 	U <- function(parGiven, eps=1e-4){
 		stopifnot(is.numeric(parGiven) && length(parGiven)>0 && all(is.finite(parGiven)))
