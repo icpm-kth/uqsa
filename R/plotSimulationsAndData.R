@@ -13,16 +13,16 @@
 #' @return list of plots with simulations and experimental data
 ggplotTimeSeries <- function(simulations, experiments, nrow=NULL, ncol=NULL, plot.state=FALSE){
 	num.experiments <- length(simulations)
-	num.simulations <- dim(simulations[[1]]$func)[3]
-	stopifnot(num.experiments == length(experiments))
-	num.out.funcs <- dim(experiments[[1]]$outputValues)[2]
+	N <- dim(simulations[[1]]$func)[3]
+	stopifnot(length(simulations) == length(experiments))
+	num.out.funcs <- NCOL(experiments[[1]]$outputValues)
 	p <- list()
 	for(i in seq(length(experiments))){
 		oNames <- names(experiments[[i]][["outputValues"]])
 		for(j in seq(num.out.funcs)){
 			df.experiments <- data.frame(t=experiments[[i]][["outputTimes"]], y=experiments[[i]][["outputValues"]][[j]])
 			y <- as.numeric(simulations[[i]]$func[j,,])
-			df.simulations <- data.frame(t=rep(experiments[[i]][["outputTimes"]],num.simulations), y=y, sim=rep(seq(num.simulations),each=length(experiments[[i]][["outputTimes"]])))
+			df.simulations <- data.frame(t=rep(experiments[[i]][["outputTimes"]],N), y=y, sim=rep(seq(N),each=length(experiments[[i]][["outputTimes"]])))
 			p[[i]] <-
 				ggplot2::ggplot(df.simulations,aes(x=t, y=y, group=sim))+
 				ggplot2::geom_line(color="blue", alpha = 0.1, size=1.5)+
@@ -30,14 +30,11 @@ ggplotTimeSeries <- function(simulations, experiments, nrow=NULL, ncol=NULL, plo
 				ggplot2::ggtitle(paste0("Experiment: ", names(experiments[i])))+labs(y=oNames[j])
 		}
 	}
-	if (is.null(nrow) || is.null(ncol)){
-		f <- pracma::factors(length(experiments))
-	}
 	if (is.null(nrow)){
-		nrow <- prod(head(f,1))
+		nrow <- num.of.funcs
 	}
 	if (is.null(ncol)){
-		ncol <- tail(f,1)
+		ncol <- num.experiments
 	}
 	gridExtra::marrangeGrob(nrow=nrow,ncol=ncol,grobs=p)
 }
@@ -56,37 +53,45 @@ ggplotTimeSeries <- function(simulations, experiments, nrow=NULL, ncol=NULL, plo
 #' @param show.plot boolean variable. Set show.plot=TRUE to display plots
 #'      when running the funcion, FALSE otherwise
 #' @return list of plots with simulations and experimental data
-ggplotTimeSeriesStates <- function(simulations, experiments, nrow=NULL, ncol=NULL){
+ggplotTimeSeriesStates <- function(simulations, experiments, nrow=NULL, ncol=NULL, var.names=NULL, type="boxes"){
 	num.experiments <- length(experiments)
 	stopifnot(num.experiments == length(simulations))
-	num.of.funcs <- dim(experiments[[1]]$outputValues)[2]
-	num.of.vars <- length(experiments[[1]]$initialState)
+	num.of.funcs <- NCOL(experiments[[1]]$outputValues)
+	num.of.vars <- NROW(simulations[[1]]$state)
 	N <- dim(simulations[[1]]$func)[3]
 	p <- list()
 	M <- (num.of.funcs+num.of.vars)
-	T1 <- theme(plot.title=element_text(size=rel(4)),
-	            axis.text=element_text(size=rel(2.2)),
-	            axis.title=element_text(size=rel(2.5)))
+	T1 <- theme(plot.title=element_text(size=rel(2)),
+	            axis.text=element_text(size=rel(1.5)),
+	            axis.title=element_text(size=rel(1.6)))
+	if (type == "boxes") {
+		g <- ggplot2::geom_boxplot(aes(x=t,y=y,group=t),outlier.size=0.1)
+	} else {
+		g <- ggplot2::geom_line(,aes(x=t, y=y, group=sim),color="magenta", alpha = 0.05, linewidth=1)
+	}
+
 	for(i in seq(length(experiments))){
 		oNames <- names(experiments[[i]][["outputValues"]])
-		xNames <- names(experiments[[i]][["initialState"]])
+		if (is.null(var.names) && "initialState" %in% names(experiments[[i]])){
+			xNames <- names(experiments[[i]][["initialState"]])
+		} else if (is.null(var.names)){
+			xNames <- rownames(simulations[[i]]$state)
+		} else {
+			xNames <- var.names
+		}
 		for(j in seq(num.of.funcs)){
 			df.experiments <- data.frame(t=experiments[[i]][["outputTimes"]], y=experiments[[i]][["outputValues"]][[j]])
 			y <- as.numeric(simulations[[i]]$func[j,,])
-			df.simulations <- data.frame(t=rep(experiments[[i]][["outputTimes"]],N), y=y, sim=rep(seq(N),each=length(experiments[[i]][["outputTimes"]])))
-			p[[(i-1)*M+j]] <-
-				ggplot2::ggplot(df.simulations,aes(x=t, y=y, group=sim))+
-				ggplot2::geom_line(color="blue", alpha = 10/N, size=1.5)+
-				ggplot2::geom_point(data=df.experiments, aes(x=t, y=y), inherit.aes=FALSE)+
+			df.simulations <- data.frame(t=experiments[[i]][["outputTimes"]], y=y, sim=rep(seq(N),each=length(experiments[[i]][["outputTimes"]])))
+			p[[(i-1)*M+j]] <- ggplot2::ggplot(df.simulations)+g+
+				ggplot2::geom_point(data=df.experiments, aes(x=t, y=y, color="red"), inherit.aes=FALSE)+
 				ggplot2::ggtitle(names(experiments[i]))+T1+
 				ggplot2::labs(y=oNames[j])
 		}
 		for(j in seq(num.of.vars)){
 			y <- as.numeric(simulations[[i]]$state[j,,])
 			df.simulations <- data.frame(t=rep(experiments[[i]][["outputTimes"]],N), y=y, sim=rep(seq(N), each=length(experiments[[i]][["outputTimes"]])))
-			p[[(i-1)*M+j+num.of.funcs]] <-
-				ggplot2::ggplot(df.simulations,aes(x=t, y=y, group=sim))+
-				ggplot2::geom_line(color="magenta", alpha = 10/N, size=1.5)+
+			p[[(i-1)*M+j+num.of.funcs]] <- ggplot2::ggplot(df.simulations,aes(x=t, y=y, group=sim))+g+
 				ggplot2::ggtitle(names(experiments[i]))+T1+
 				ggplot2::labs(y=xNames[j])
 		}
@@ -97,7 +102,7 @@ ggplotTimeSeriesStates <- function(simulations, experiments, nrow=NULL, ncol=NUL
 	if (is.null(ncol)){
 		ncol <- num.experiments
 	}
-	gridExtra::marrangeGrob(grobs=p,ncol=ncol,nrow=nrow)
+	return(gridExtra::marrangeGrob(grobs=p,ncol=ncol,nrow=nrow))
 }
 
 plotTimeSeriesBase <- function(simulations, experiments, nmax=NULL){

@@ -350,15 +350,61 @@ loadSample_mpi <- function(files){
 	s <- lapply(files,readRDS)
 	betaTrace <- Reduce(function(a,b) c(a,attr(b,"beta")),s,init=NULL)
 	uB <- sort(unique(betaTrace),decreasing=TRUE)
-	bSelection <- lapply(uB,function(b) abs(betaTrace-b)<1e-8)
+	bSelection <- lapply(uB,function(b) abs(betaTrace-b)<1e-10)
 	acc <- Reduce(function(a,b) c(a,attr(b,"acceptanceRate")),s,init=NULL)
 	sR <- Reduce(function(a,b) c(a,attr(b,"swapRate")),s,init=NULL)
 	ll <- Reduce(function(a,b) c(a,attr(b,"logLikelihood")),s,init=NULL)
 	cat("loading sample files with acceptances:\n")
 	print(acc)
 	Sample <- Reduce(rbind,s)
-	return(list(Sample=Sample,beta=betaTrace,acceptanceRate=acc,swapRate=sR,logLikelihood=ll,betaSelection=bSelection))
+	return(list(Sample=Sample,beta=betaTrace,acceptanceRate=acc,swapRate=sR,logLikelihood=ll,betaSelection=bSelection,uB=uB))
 }
+
+#' This function merges mpi-samples into one
+#'
+#' When using MPI, we save the sample immediately into a file, each
+#' rank saves to its own file. This function collects all of these
+#' smaller samples into one. The samples should be saved with
+#' `saveRDS()`.
+#'
+#' @export
+#' @param files the files where the individual samples are stored
+#' @return a list of matrices, by temperature, concatenated.
+loadSubSample_mpi <- function(files,size=NA,selection=NA){
+	S <- parallel::mclapply(files,function(f){
+		s <- readRDS(f)
+		b <- attr(s,"beta")
+		cat(sprintf("acceptance rate: %02f\n",attr(s,"acceptanceRate")))
+		if (!any(is.na(size))){
+			j <- seq(1,NROW(s),length.out=size)
+			s <- s[j,]
+			b <- b[j]
+		}
+		attr(s,"beta") <- b
+		return (s)
+	},mc.cores=parallel::detectCores())
+	uB <- unique(unlist(parallel::mclapply(S,function(s) {return(unique(attr(s,"beta")))})))
+	cat("unique temperatures:",uB,"\n")
+	stopifnot(length(uB)==length(files))
+	uB <- sort(uB,decreasing=TRUE)
+	if (!any(is.na(selection))) uB <- uB[selection]
+	else selection <- seq_long(uB)
+	n <- NROW(S[[1]])
+	m <- NCOL(S[[1]])
+	l <- length(uB)
+
+	x <- array(NA,dim=c(n,m,l))
+	dimnames(x) <- list(NULL,colnames(S[[1]]),sprintf("beta_%02i",selection))
+	for (i in seq_along(S)){
+		for (k in seq_along(uB)){
+			j <- which(attr(S[[i]],"beta") == uB[k])
+			x[j,,k] <- S[[i]][j,]
+		}
+	}
+	attr(x,"beta") <- uB
+	return(x)
+}
+
 
 is.invertible <- function(G=NULL,abs_tol=1e-11){
 	return(!is.null(G) && is.numeric(G) && is.matrix(G) && all(dim(G)>0) && !any(is.na(G)) && all(is.finite(G)) && isSymmetric(G) && rcond(G) > abs_tol)
@@ -704,11 +750,11 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	if (!is.null(simpleUserLLF)){
 		llf <- function(parMCMC){
 			simulations <- attr(parMCMC,"simulations")
-			dimFunc <- dim(simulations[[1]]$func)
-			n <- dimFunc[3]
-			m <- head(dimFunc,2)
-			L <- rep(0,n)
 			for (i in seq(N)){
+				dimFunc <- dim(simulations[[i]]$func)
+				n <- dimFunc[3]
+				m <- head(dimFunc,2)
+				L <- rep(0,n)
 				y <- t(experiments[[i]]$outputValues)
 				stdv <- t(experiments[[i]]$errorValues)
 				for (k in seq(n)){
@@ -723,18 +769,17 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	} else if (!is.null(perExpLLF)){
 		llf <- function(parMCMC){
 			simulations <- attr(parMCMC,"simulations")
-			dimFunc <- dim(simulations[[1]]$func)
 			L <- perExpLLF(parMCMC,simulations,experiments)
 			return(L)
 		}
 	} else {
 		llf <- function(parMCMC){
 			simulations <- attr(parMCMC,"simulations")
-			dimFunc <- dim(simulations[[1]]$func)
-			n <- dimFunc[3]
-			m <- head(dimFunc,2)
-			L <- rep(-0.5*prod(m)*N*log(2*pi),n)
 			for (i in seq(N)){
+				dimFunc <- dim(simulations[[i]]$func)
+				n <- dimFunc[3]
+				m <- head(dimFunc,2)
+				L <- rep(-0.5*prod(m)*N*log(2*pi),n)
 				y <- t(experiments[[i]]$outputValues)
 				stdv <- t(experiments[[i]]$errorValues)
 				for (k in seq(n)){
