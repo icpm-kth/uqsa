@@ -4,7 +4,14 @@
 \alias{ggplotTimeSeriesStates}
 \title{Plot time series simulation with state variables}
 \usage{
-ggplotTimeSeriesStates(simulations, experiments, nrow = NULL, ncol = NULL)
+ggplotTimeSeriesStates(
+  simulations,
+  experiments,
+  nrow = NULL,
+  ncol = NULL,
+  var.names = NULL,
+  type = "boxes"
+)
 }
 \arguments{
 \item{simulations}{list of simualtions as output from the simulator}

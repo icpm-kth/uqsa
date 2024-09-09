@@ -65,9 +65,9 @@ ggplotTimeSeriesStates <- function(simulations, experiments, nrow=NULL, ncol=NUL
 	            axis.text=element_text(size=rel(1.5)),
 	            axis.title=element_text(size=rel(1.6)))
 	if (type == "boxes") {
-		g <- ggplot2::geom_boxplot(aes(x=t,y=y,group=t),outlier.size=0.1)
+		g <- ggplot2::geom_boxplot(aes(x=t,y=y,group=t),outlier.size=0.1,outlier.color="gray",outlier.stroke=0.1)
 	} else {
-		g <- ggplot2::geom_line(,aes(x=t, y=y, group=sim),color="magenta", alpha = 0.05, linewidth=1)
+		g <- ggplot2::geom_line(aes(x=t, y=y, group=sim),color="blue", alpha = 0.05, linewidth=1)
 	}
 
 	for(i in seq(length(experiments))){
@@ -80,11 +80,14 @@ ggplotTimeSeriesStates <- function(simulations, experiments, nrow=NULL, ncol=NUL
 			xNames <- var.names
 		}
 		for(j in seq(num.of.funcs)){
-			df.experiments <- data.frame(t=experiments[[i]][["outputTimes"]], y=experiments[[i]][["outputValues"]][[j]])
+			y <- experiments[[i]][["outputValues"]][[j]]
+			y_upper <- y + experiments[[i]][["errorValues"]][[j]]
+			y_lower <- y - experiments[[i]][["errorValues"]][[j]]
+			df.experiments <- data.frame(t=experiments[[i]][["outputTimes"]], y=y, upper=y_upper, lower=y_lower)
 			y <- as.numeric(simulations[[i]]$func[j,,])
 			df.simulations <- data.frame(t=experiments[[i]][["outputTimes"]], y=y, sim=rep(seq(N),each=length(experiments[[i]][["outputTimes"]])))
 			p[[(i-1)*M+j]] <- ggplot2::ggplot(df.simulations)+g+
-				ggplot2::geom_point(data=df.experiments, aes(x=t, y=y, color="red"), inherit.aes=FALSE)+
+				ggplot2::geom_errorbar(data=df.experiments, aes(x=t, y=y, ymin = lower, ymax = upper, color="red"), inherit.aes=FALSE)+
 				ggplot2::ggtitle(names(experiments[i]))+T1+
 				ggplot2::labs(y=oNames[j])
 		}
