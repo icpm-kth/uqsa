@@ -383,10 +383,9 @@ loadSubSample_mpi <- function(files,size=NA,selection=NA){
 		attr(s,"beta") <- b
 		return (s)
 	},mc.cores=parallel::detectCores())
-	uB <- unique(unlist(parallel::mclapply(S,function(s) {return(unique(attr(s,"beta")))})))
+	uB <- sort(unique(unlist(parallel::mclapply(S,function(s) {return(unique(attr(s,"beta")))}))),decreasing=TRUE)
 	cat("unique temperatures:",uB,"\n")
 	stopifnot(length(uB)==length(files))
-	uB <- sort(uB,decreasing=TRUE)
 	if (!any(is.na(selection))) uB <- uB[selection]
 	else selection <- seq_long(uB)
 	n <- NROW(S[[1]])
