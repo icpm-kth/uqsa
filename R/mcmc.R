@@ -760,7 +760,7 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 					h <- simulations[[i]]$func[,,k]
 					dim(h) <- m
 					stopifnot(all(dim(h)==dim(y)) && all(dim(y)==dim(stdv)))
-					L[k] <- L[k] + simpleUserLLF(y,h,stdv)
+					L[k] <- L[k] + simpleUserLLF(y,h,stdv,names(experiments)[i])
 				}
 			}
 			return(L)

@@ -7,10 +7,13 @@
 ggplotTimeSeriesStates(
   simulations,
   experiments,
-  nrow = NULL,
-  ncol = NULL,
   var.names = NULL,
-  type = "boxes"
+  type = "boxes",
+  plot.states = TRUE,
+  ttf = identity,
+  xl = "t",
+  yl.func = NULL,
+  yl.state = NULL
 )
 }
 \arguments{
@@ -18,8 +21,27 @@ ggplotTimeSeriesStates(
 
 \item{experiments}{list of experiments}
 
-\item{show.plot}{boolean variable. Set show.plot=TRUE to display plots
-when running the funcion, FALSE otherwise}
+\item{var.names}{override the rownames of the simulation results}
+
+\item{type}{'boxes' or 'lines'}
+
+\item{plot.states}{TRUE (or FALSE) - whether to plot the state
+variables or only the functions}
+
+\item{ttf}{time transformation function - the plot will be against
+ttf(t), where \code{t} is a vector of the experiment's output times,
+ttf can adjust the time vector if it is very uneven or requires
+other modification only when plotting, e.g. \code{seq_along}.}
+
+\item{xl}{x-axis label (time usually)}
+
+\item{yl.func}{y-axis-limits of function plots, can be a list of
+ggplot2::ylim() objects, with NULL elements for automatic mode
+(the neutral element), NA elements will trigger tight bounds
+based on quantile-0.1-0.9.}
+
+\item{yl.state}{y-axis-limits for state variable plots, with
+similar rules as for yl.func}
 }
 \value{
 list of plots with simulations and experimental data
