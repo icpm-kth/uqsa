@@ -36,7 +36,7 @@
 #'     values
 #' @return a list containing a sample matrix and a vector of scores
 #'     (values of delta for each sample)
-ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior){
+ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, batchSize = 100){
   cat("Started chain.\n")
   Sigma1 <- 0.25*diag(diag(Sigma0))
   curDelta <- Inf
@@ -54,7 +54,6 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior){
   n <- 0
   acceptedSamples <- 0
   nRegularizations <- 0
-  batchSize <- 100
   while (n/batchSize < nSims){
     if(n %% batchSize == 0 && acceptedSamples<0.00005*n){
       nRegularizations <- nRegularizations + 1

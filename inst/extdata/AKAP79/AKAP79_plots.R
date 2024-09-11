@@ -35,7 +35,7 @@ plotAKAP79Simulations <- function(draws, num.sub.samples = 100, show.plot = TRUE
     simulate <- simulator.c(experiments[i], modelName, parMap, noise = TRUE)
     #output_yy <- simulate(t(draws[order(ABCMCMCoutput$scores)[1:100],]))
     output_yy <- simulate(t(draws[sample(1:dim(draws)[1],num.sub.samples),]))
-    
+    parMap <- function(parABC){return(10^parABC)}
     experiment <- experiments[[i]]
     df.experiments <- data.frame(t=experiment[["outputTimes"]], y=experiment[["outputValues"]][[1]])
     
@@ -47,9 +47,13 @@ plotAKAP79Simulations <- function(draws, num.sub.samples = 100, show.plot = TRUE
     # 
     # df <- reshape2::melt(df,id=c("t","y"))
     # 
+    
+    KTHred <- rgb(232,106,88, max=255, alpha=100)
+    
     p[[i]] <- 
       ggplot(df.simulations,aes(x=t, y=y, group=sim))+
-      geom_line(color="blue", alpha = 0.1)+
+      #geom_line(color="blue", alpha = 0.1)+
+      geom_line(color=KTHred, alpha = 0.1)
       geom_point(data=df.experiments, aes(x=t, y=y), inherit.aes=FALSE)
   }
   if(show.plot)  show(do.call(gridExtra::grid.arrange,p))
@@ -95,6 +99,26 @@ plotAKAP79tcSimulations <- function(draws, num.sub.samples = 100, show.plot = TR
       geom_line(color="blue", alpha = 0.1)+
       geom_point(data=df.experiments, aes(x=t, y=y), inherit.aes=FALSE)
   }
-  if(show.plot)  show(do.call(gridExtra::grid.arrange,p))
+  
+  num_cols <- 3
+  # Arrange the plots in a grid
+  if(show.plot)  show(grid.arrange(grobs = p, ncol = num_cols))
+  #if(show.plot)  show(do.call(gridExtra::grid.arrange,p))
   return(p)
 }
+
+#for(i in 1:9){
+#for(i in 10:18){
+for(i in 19:25){
+  hist(draws[,i],breaks=100,col="blue", main=parNames[i],xlab=" ", probability = T)
+  mean <- (ll[i]+ul[i])/2
+  sd <- (ul[i]-ll[i])/5
+  xgrid <- seq(mean-3*sd,mean+3*sd,0.01)
+  lines(xgrid, dnorm(xgrid, mean, sd), col="red")
+  b1 <- (xgrid>rep(mean-log10(defRange[i]),length(xgrid)))
+  b2 <- (xgrid<rep(mean+log10(defRange[i]),length(xgrid)))
+  lines(xgrid, dnorm(mean, mean, sd)*as.integer(b1&b2), col="green")
+}
+
+
+

@@ -11,12 +11,11 @@ nChains <- 4
 #options(mc.cores=parallel::detectCores() %/% nChains)
 options(mc.cores=4)
 
-SBtabDir <- getwd()
 #model = import_from_SBtab(SBtabDir)
 model.tsv <- uqsa_example("AKAR4",full.names=TRUE) 
 source(uqsa_example("AKAR4",pat = "^AKAR4[.]R",full.names=TRUE)) # model is loaded
 model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
-modelName <- checkModel(comment(model.tab),"./AKAR4_gvf.c")
+modelName <- checkModel(comment(model.tab),"./inst/extdata/AKAR4/AKAR4_gvf.c")
 
 parVal <- model.tab[["Parameter"]][["!DefaultValue"]]
 parNames <- model.tab[["Parameter"]][["!Name"]]
@@ -88,13 +87,13 @@ i<-1
   ## If First Experimental Setting, Create an Independente Colupla
   if(i==1){
     cat(sprintf("- Starting with uniform prior \n"))
-    priorPDF <- dUniformPrior(ll, ul)
+    dprior <- dUniformPrior(ll, ul)
     rprior <- rUniformPrior(ll, ul)
     ## Otherwise, Take Copula from the Previous Exp Setting and Use as a Prior
   } else {
     cat(sprintf("- Fitting Copula based on previous MCMC runs\n"))
     C<-fitCopula(draws$draws)
-    priorPDF <- dCopulaPrior(C)
+    dprior <- dCopulaPrior(C)
     rprior <- rCopulaPrior(C)
   }
   ## Run Pre-Calibration Sampling
@@ -123,13 +122,13 @@ i<-1
   cat(sprintf("- Running MCMC\n"))
   time_ABC <- Sys.time()
   cl <- makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
-  clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "priorPDF"))
+  clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
   out_ABCMCMC <- parLapply(cl,
                            1:nChains,
                            function(j) {
                              tryCatch(
-                               ABCMCMC(objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, priorPDF),
-                               error=function(cond) {message("ABCMCMC crashed"); print(M); print(j); return(NULL)}
+                               ABCMCMC(objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior, batchSize = 1),
+                               error=function(cond) {message("ABCMCMC crashed"); return(NULL)}
                              )
                            }
   )
@@ -143,7 +142,7 @@ i<-1
     ABCMCMCoutput$scores <- as.numeric(t(ABCMCMCoutput$scores))
   }
   
-  #draws <- ABCMCMC(objectiveFunction, startPar, ns, Sigma, delta, priorPDF)
+  #draws <- ABCMCMC(objectiveFunction, startPar, ns, Sigma, delta, dprior)
   
   time_ABC <- Sys.time() - time_ABC
   cat(sprintf("- time for ABCMCMC: \n"))
@@ -181,47 +180,48 @@ print(time_)
 
 
 #### PLOT SIMULATIONS FROM DRAWS
-# simulateSSA <- function(e, param, nStochSim){
-#   avgOutput <- rep(0, length(e[["outputTimes"]]))
-#   for(i in 1:nStochSim){
-#     out_ssa <- GillespieSSA2::ssa(
-#       initial_state = ceil(e[["initialState"]]*Phi),
-#       reactions = compiled_reactions,
-#       params = c(parMap(param), Phi=Phi),
-#       final_time = max(e[["outputTimes"]]),
-#       method = ssa_exact(),
-#       verbose = FALSE,
-#       log_propensity = TRUE,
-#       log_firings = TRUE,
-#       census_interval = 0.001,
-#       sim_name = modelName)
-#     
-#     # out$state is a matrix of dimension (time points)x(num compounds)
-#     output <- apply(out_ssa$state/Phi, 1, e[["outputFunction"]])
-#     interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
-#     interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
-#     avgOutput <- avgOutput + interpOutput$y
-#   }
-#   avgOutput <- avgOutput/nStochSim
-#   return(avgOutput)
-# }
+simulateSSA <- function(e, param, nStochSim){
+  avgOutput <- rep(0, length(e[["outputTimes"]]))
+  for(i in 1:nStochSim){
+    out_ssa <- GillespieSSA2::ssa(
+      initial_state = ceil(e[["initialState"]]*Phi),
+      reactions = compiled_reactions,
+      params = c(parMap(param), Phi=Phi),
+      final_time = max(e[["outputTimes"]]),
+      method = ssa_exact(),
+      verbose = FALSE,
+      log_propensity = TRUE,
+      log_firings = TRUE,
+      census_interval = 0.001,
+      sim_name = modelName)
+
+    # out$state is a matrix of dimension (time points)x(num compounds)
+    output <- apply(out_ssa$state/Phi, 1, function(state) model$func(t=0,state=state,parameters=param))
+    interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
+    #interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
+    avgOutput <- avgOutput + interpOutput$y
+  }
+  avgOutput <- avgOutput/nStochSim
+  return(avgOutput)
+}
 
 
-# exp.ind <- 2
-# par(mfrow=c(1,1))
-# plot(experiments[[exp.ind]][["outputTimes"]],experiments[[exp.ind]][["outputValues"]],ylim=c(90,250))
-# for(i in 1:100){
-#   #param <- ABCMCMCoutput$draws[i,]
-#   param <- pC$prePar[,i]
-#   names(param) <- parNames
-#   sim <- simulateSSA(experiments[[exp.ind]], param, nStochSim = 3)
-#   points(experiments[[exp.ind]][["outputTimes"]],sim, col="blue")
-# }
+exp.ind <- 2
+par(mfrow=c(1,1))
+plot(experiments[[exp.ind]][["outputTimes"]],experiments[[exp.ind]][["outputValues"]][[1]],ylim=c(90,250))
+for(i in 1:100){
+  param <- ABCMCMCoutput$draws[i,]
+  #param <- pC$prePar[,i]
+  names(param) <- parNames
+  sim <- simulateSSA(experiments[[exp.ind]], param, nStochSim = 3)
+  lines(experiments[[exp.ind]][["outputTimes"]],sim, col="blue", type="s")
+}
+points(experiments[[exp.ind]][["outputTimes"]],experiments[[exp.ind]][["outputValues"]][[1]],ylim=c(90,250))
 
 
 
-# library(plotly)
-# df = as.data.frame(draws$draws)
-# colnames(df) <- parNames
-# plot_ly(dat = df, x = ~kf_C_AKAR4, y = ~kb_C_AKAR4, z = ~kcat_AKARp, type="scatter3d", mode="markers", marker=list(size = 1, color = "red"))
-# 
+library(plotly)
+df = as.data.frame(ABCMCMCoutput$draws)
+colnames(df) <- parNames
+plot_ly(dat = df, x = ~kf_C_AKAR4, y = ~kb_C_AKAR4, z = ~kcat_AKARp, type="scatter3d", mode="markers", marker=list(size = 1, color = "red"))
+
