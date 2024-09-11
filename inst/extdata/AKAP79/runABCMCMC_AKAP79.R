@@ -17,7 +17,12 @@ model.tab <- sbtab_from_tsv(model.tsv)
 source(uqsa_example("AKAP79",pat="^AKAP79[.]R$"))
 source(uqsa_example("AKAP79",pat="^AKAP79_plots[.]R$"))
 
-experiments <- sbtab.data(model.tab)
+# without conservation laws
+#experiments <- sbtab.data(model.tab)
+
+# with conservation laws
+load("./inst/extdata/AKAP79/ConservationLaws.RData")
+experiments <- sbtab.data(model.tab,ConLaw)
 
 print(comment(model.tab))
 modelName <- checkModel(comment(model.tab),uqsa_example("AKAP79",pat="_gvf.c"))

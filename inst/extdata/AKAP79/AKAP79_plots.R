@@ -35,7 +35,7 @@ plotAKAP79Simulations <- function(draws, num.sub.samples = 100, show.plot = TRUE
     simulate <- simulator.c(experiments[i], modelName, parMap, noise = TRUE)
     #output_yy <- simulate(t(draws[order(ABCMCMCoutput$scores)[1:100],]))
     output_yy <- simulate(t(draws[sample(1:dim(draws)[1],num.sub.samples),]))
-    
+    parMap <- function(parABC){return(10^parABC)}
     experiment <- experiments[[i]]
     df.experiments <- data.frame(t=experiment[["outputTimes"]], y=experiment[["outputValues"]][[1]])
     
@@ -47,9 +47,13 @@ plotAKAP79Simulations <- function(draws, num.sub.samples = 100, show.plot = TRUE
     # 
     # df <- reshape2::melt(df,id=c("t","y"))
     # 
+    
+    KTHred <- rgb(232,106,88, max=255, alpha=100)
+    
     p[[i]] <- 
       ggplot(df.simulations,aes(x=t, y=y, group=sim))+
-      geom_line(color="blue", alpha = 0.1)+
+      #geom_line(color="blue", alpha = 0.1)+
+      geom_line(color=KTHred, alpha = 0.1)
       geom_point(data=df.experiments, aes(x=t, y=y), inherit.aes=FALSE)
   }
   if(show.plot)  show(do.call(gridExtra::grid.arrange,p))
