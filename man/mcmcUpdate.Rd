@@ -9,23 +9,41 @@ mcmcUpdate(
   experiments,
   model,
   logLikelihood,
-  gradLogLikelihood,
-  fisherInformation,
-  fisherInformationPrior,
   dprior,
-  parMap = identity,
-  parMapJac = 1
+  gradLogLikelihood = NULL,
+  gprior = NULL,
+  fisherInformation = NULL,
+  fisherInformationPrior = NULL
 )
 }
 \arguments{
-\item{logLikelihood}{function, returns log(p(simulations|experiments))}
+\item{simulate}{a function that simulates the model for a given
+parMCMC}
 
-\item{dprior}{prior probability density function}
+\item{experiments}{the list of experiments (with simulation
+instructions)}
 
-\item{eps}{a step size parameter for Markov chain moves (propotional to step size)}
+\item{model}{the list of model functions}
+
+\item{logLikelihood}{a function that calculates log-likelihood
+values for given parMCMC}
+
+\item{dprior}{prior density function}
+
+\item{gradLogLikelihood}{a function that calculates the gradient of
+the log-likelihood for given parMCMC}
+
+\item{gprior}{gradient of the prior density}
+
+\item{fisherInformation}{a function that calculates approximates
+Fisher information matrices}
+
+\item{fisherInformationPrior}{a constant matrix, the prior
+distributions fisher information}
 }
 \value{
-a function that returns possibly updated states of the Markov chain
+a function that returns possibly updated states of the
+Markov chain
 }
 \description{
 This function receives a current MCMC variable, then calculates a

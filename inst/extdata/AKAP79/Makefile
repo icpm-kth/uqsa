@@ -1,18 +1,24 @@
-MODEL = AKAP79
 CC = gcc
 CFLAGS = -O2 `pkg-config --cflags gsl`
 LIBS = `pkg-config --libs gsl`
-ODE = ode
+
+CC = gcc
+ODE = ~/RPN-derivative/sh/ode.sh
+VF = ~/SBtabVFGEN/sbtab_to_vfgen
 
 .PHONY: all
 
-all: $(MODEL).so
+all: $(addprefix AKAP79, _gvf.c .R)
 
 
-$(MODEL).so: $(MODEL)_gvf.c
+%.so: %_gvf.c
 	$(CC) -shared -fPIC $(CFLAGS) $^ $(LIBS) -o $@
 
-$(MODEL)_gvf.c: $(MODEL).vf
-	$(ODE) $^ > $@
+%.R: %.vf
+	$(ODE) --maxima -R $^ > $@
 
+%_gvf.c: %.vf
+	$(ODE) --maxima -C $^ > $@
 
+%.vf: *.tsv
+	$(VF) --cla $^

@@ -61,22 +61,21 @@ sum.of.bin.variance  <- function(hst,binMeans,totalMean){
 #' @return sensitivity S[i,j] of output[i] with respect to parameter[j]
 globalSensitivity<-function(parSample,outputSample,nBins="Sturges"){
 	isNA <- apply(is.na(outputSample),1,any)
-	parSample <- parSample[!isNA,]
-	outputSample <- outputSample[!isNA,]
+	parSample <- parSample[!isNA,,drop=FALSE]
+	outputSample <- outputSample[!isNA,,drop=FALSE]
 	meanOutput <- colMeans(outputSample)
 	varOutput <- diag(cov(outputSample))
-	SampleSize <- dim(parSample)
 	outputSize <- dim(outputSample)
-	hst <- vector("list",SampleSize[2])
-	id <- vector("list",SampleSize[2])
-	for (i in 1:SampleSize[2]){
+	hst <- vector("list",NCOL(parSample))
+	id <- vector("list",NCOL(parSample))
+	for (i in 1:NCOL(parSample)){
 		hst[[i]] <- hist(parSample[,i],plot=FALSE,breaks=nBins)
 		id[[i]] <- findInterval(parSample[,i],hst[[i]]$breaks,all.inside=TRUE)
 	}
 	# a list, one item per fixed parameter
 	binMeans <- lapply(id,observable.mean.in.bin,outputSample=outputSample)
-	S <- matrix(0.0,outputSize[2],SampleSize[2])
-	for (i in 1:SampleSize[2]){
+	S <- matrix(0.0,NCOL(outputSample),NCOL(parSample))
+	for (i in 1:NCOL(parSample)){
 		Vi <- sum.of.bin.variance(hst[[i]],binMeans[[i]],totalMean=meanOutput)
 		S[,i] <- Vi/(1e-300+varOutput)
 	}
@@ -210,29 +209,32 @@ sensitivityEquilibriumApproximation <- function(experiments, model, parMap=ident
 	m  <- ncol(experiments[[1]]$outputValues)
 	u <- experiments[[1]]$input
 	nu <- length(u)
-	defaultPar <- c(model$par(),u)
+	defaultPar <- model$par()
 	np <- length(defaultPar)
 	d <- np - nu
 	N <- length(experiments)
 	SEA <- function(parMCMC,simulations){
 		stopifnot(length(simulations) == N)
+		flush.console()
 		for (i in seq(N)){
+			nt <- length(experiments[[i]]$outputTimes)
 			p <- c(parMap(parMCMC),experiments[[i]]$input)
-			tm <- experiments[[i]]$outputTimes
-			t0 <- experiments[[i]]$initialTime
-			simulations[[i]]$sens <- array(0.0,dim=c(n,length(parMCMC),length(tm)))
-			simulations[[i]]$funcsens <- array(0.0,dim=c(m,length(parMCMC),length(tm)))
-			for (j in seq(length(t))){
-				if (abs(tm[j]-t0) > 1e-16 * abs(t0)){
+			tm <- c(experiments[[i]]$initialTime,experiments[[i]]$outputTimes)
+			simulations[[i]]$sens <- array(0.0,dim=c(n,length(parMCMC),nt))
+			simulations[[i]]$funcsens <- array(0.0,dim=c(m,length(parMCMC),nt))
+			for (j in seq(nt)){
+				if (abs(tm[j+1]-tm[j]) > 1e-16 * abs(tm[j])){
+					flush.console()
 					y <- simulations[[i]]$state[,j,1]
-					A <- model$jac(tm[j], y, p)
-					B <- head(model$jacp(tm[j], y, p), c(n,d))
+					A <- model$jac(tm[j+1], y, p)
+					B <- head(model$jacp(tm[j+1], y, p), c(n,d))
 					AB <- solve(A,B)
 					# state variables:
-					C <- ((pracma::expm((t[j]-t0)*A) %*% AB) - AB)
+					C <- ((pracma::expm((tm[j+1]-tm[j])*A) %*% AB) - AB)
+					#cat("(np,nu,d):",c(np,nu,d),"sim(A): ",dim(A),", dim(B): ",dim(B), ", dim(C): ",dim(C),", dim(parMapJac): ",dim(parMapJac(parMCMC)),"\n")
 					simulations[[i]]$sens[,,j] <- C %*% parMapJac(parMCMC)
 					# functions
-					CF <- model$funcJac(tm[j],y,p) %*% C + head(model$funcJacp(tm[j],y,p),c(m,d))
+					CF <- model$funcJac(tm[j+1],y,p) %*% C + head(model$funcJacp(tm[j+1],y,p),c(m,d))
 					simulations[[i]]$funcsens[,,j] <- CF %*% parMapJac(parMCMC)
 				}
 			}

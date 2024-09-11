@@ -15,7 +15,8 @@ number of Markov chain steps
 }
 \description{
 This function creates an MCMC function for a given set of
-experiments.
+experiments. The Markov chains have no communication between them
+if more than one is created using this mechanism.
 }
 \details{
 The algorithm is entirely determined by the update function.  Any

@@ -16,7 +16,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Olivia Eriksson \email{olivia@mech.kth.se}
+\strong{Maintainer}: Olivia Eriksson \email{olivia@kth.se}
 
 Authors:
 \itemize{

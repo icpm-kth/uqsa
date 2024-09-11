@@ -5,14 +5,19 @@
 \title{Initialize the Markov chain}
 \usage{
 mcmcInit(
+  beta,
   parMCMC,
   simulate,
   logLikelihood,
+  dprior,
   gradLogLikelihood = NULL,
+  gprior = NULL,
   fisherInformation = NULL
 )
 }
 \arguments{
+\item{beta}{inverse temperature for the Markov chain (parallel tempering)}
+
 \item{parMCMC}{a plain starting value for the Markov chain}
 
 \item{logLikelihood}{a function that maps simulations to

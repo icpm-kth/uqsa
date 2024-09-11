@@ -160,5 +160,19 @@ rNormalPrior <- function(mean,sd){
   return(rprior)
 }
 
-
-
+#' Gradient of the logarithm of a normal prior
+#'
+#' This makes a function that returns grad(log(dprior(x))) The
+#' returned function implictly remembers the parameters of the normal
+#' distribution.
+#' @param mean vector of mu values
+#' @param sd vector of standard deviation values
+#' @return g(x) a closure that remembers mean and sd from its creation
+#' @export
+gradLog_NormalPrior <- function(mean=0,sd=1){
+	stopifnot(length(mean)==length(sd))
+	sd2 <- sd^2
+	g <- function(x){
+		return(-1.0*(x-mean)/sd2)
+	}
+}

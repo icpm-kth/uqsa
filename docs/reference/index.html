@@ -47,6 +47,7 @@
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Sensitivity analysis</h6>
     <a class="dropdown-item" href="../articles/GSA.html">GSA following UQ</a>
+    <a class="dropdown-item" href="../articles/mpi.html">Multiple chains via MPI</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -55,8 +56,9 @@
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
     <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4</a>
-    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Make a Shared Library</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4 with ABC</a>
+    <a class="dropdown-item" href="../articles/AKAR4cl.html">sample AKAR4 with MCMC</a>
+    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Build a Model</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -121,6 +123,26 @@
         <dd>dUniformPrior creates a uniform density function</dd>
       </dl><dl><dt>
           
+          <code><a href="defaultAcceptance.html">defaultAcceptance()</a></code> 
+        </dt>
+        <dd>default ABC acceptance probability function for one experiment</dd>
+      </dl><dl><dt>
+          
+          <code><a href="defaultDistance.html">defaultDistance()</a></code> 
+        </dt>
+        <dd>default distance function for one experiment</dd>
+      </dl><dl><dt>
+          
+          <code><a href="fisherInformationFromGSA.html">fisherInformationFromGSA()</a></code> 
+        </dt>
+        <dd>Calculate Global Fisher Information</dd>
+      </dl><dl><dt>
+          
+          <code><a href="fisherInformation.html">fisherInformation()</a></code> 
+        </dt>
+        <dd>Fisher Information from Sensitivity</dd>
+      </dl><dl><dt>
+          
           <code><a href="fitCopula.html">fitCopula()</a></code> 
         </dt>
         <dd>Makes a Probability Density Estimate (from a sample)</dd>
@@ -131,9 +153,34 @@
         <dd>Selects MCMC scheme specific setup parameters</dd>
       </dl><dl><dt>
           
+          <code><a href="globalSensitivity.html">globalSensitivity()</a></code> 
+        </dt>
+        <dd>Global Sensitivity Analysis</dd>
+      </dl><dl><dt>
+          
+          <code><a href="gradLogLikelihood.html">gradLogLikelihood()</a></code> 
+        </dt>
+        <dd>Default log-likelihood function, gradient</dd>
+      </dl><dl><dt>
+          
           <code><a href="importReactionsSSA.html">importReactionsSSA()</a></code> 
         </dt>
         <dd>Functions to construct and run the stochastic simulation using GillespieSSA2 package</dd>
+      </dl><dl><dt>
+          
+          <code><a href="logLikelihood.html">logLikelihood()</a></code> 
+        </dt>
+        <dd>Default log-likelihood function</dd>
+      </dl><dl><dt>
+          
+          <code><a href="log10ParMap.html">log10ParMap()</a></code> 
+        </dt>
+        <dd>LOG10 parameter mapping used by the MCMC module</dd>
+      </dl><dl><dt>
+          
+          <code><a href="log10ParMapJac.html">log10ParMapJac()</a></code> 
+        </dt>
+        <dd>LOG10 parameter mapping, jacobian</dd>
       </dl><dl><dt>
           
           <code><a href="makeGillespieModel.html">makeGillespieModel()</a></code> 
@@ -154,6 +201,21 @@
           <code><a href="makeObjectiveSSA.html">makeObjectiveSSA()</a></code> 
         </dt>
         <dd>Function that creates the objective function</dd>
+      </dl><dl><dt>
+          
+          <code><a href="mcmc.html">mcmc()</a></code> 
+        </dt>
+        <dd>Markov Chain Monte Carlo</dd>
+      </dl><dl><dt>
+          
+          <code><a href="mcmcInit.html">mcmcInit()</a></code> 
+        </dt>
+        <dd>Initialize the Markov chain</dd>
+      </dl><dl><dt>
+          
+          <code><a href="mcmcUpdate.html">mcmcUpdate()</a></code> 
+        </dt>
+        <dd>This function proposes an MCMC candidate variable, and either accepts or rejects the candidate</dd>
       </dl><dl><dt>
           
           <code><a href="parUpdate.html">parUpdate()</a></code> 
@@ -186,24 +248,74 @@
         <dd>rUniformPrior returns a random vector generator</dd>
       </dl><dl><dt>
           
-          <code><a href="sensitivity.html">sensitivity()</a></code> 
-        </dt>
-        <dd>Global Sensitivity Analysis</dd>
-      </dl><dl><dt>
-          
           <code><a href="sensitivity.graph.html">sensitivity.graph()</a></code> 
         </dt>
         <dd>plot the sensitivity matrix</dd>
       </dl><dl><dt>
           
+          <code><a href="sensitivityEquilibriumApproximation.html">sensitivityEquilibriumApproximation()</a></code> 
+        </dt>
+        <dd>Equilibrium state approximation of the solution sensitivity for ODE systems</dd>
+      </dl><dl><dt>
+          
           <code><a href="simulator.c.html">simulator.c()</a></code> 
         </dt>
-        <dd>This creates a closure that simulates Experiments using the ODE Model</dd>
+        <dd>This creates a closure that simulates the model</dd>
       </dl><dl><dt>
           
           <code><a href="uqsa_example.html">uqsa_example()</a></code> 
         </dt>
         <dd>Load an example model for this package</dd>
+      </dl><dl><dt>
+          
+          <code><a href="grapes-otherwise-grapes.html">`%otherwise%`</a></code> 
+        </dt>
+        <dd>This function can be used to specify default values</dd>
+      </dl><dl><dt>
+          
+          <code><a href="smmala_move.html">smmala_move()</a></code> 
+        </dt>
+        <dd>SMMALA move</dd>
+      </dl><dl><dt>
+          
+          <code><a href="smmala_move_density.html">smmala_move_density()</a></code> 
+        </dt>
+        <dd>SMMALA transition kernel density</dd>
+      </dl><dl><dt>
+          
+          <code><a href="swap_points.html">swap_points()</a></code> 
+        </dt>
+        <dd>Swap the end-points of two Markov chains</dd>
+      </dl><dl><dt>
+          
+          <code><a href="ggplotTimeSeries.html">ggplotTimeSeries()</a></code> 
+        </dt>
+        <dd>Plot time series simulations with experimental data</dd>
+      </dl><dl><dt>
+          
+          <code><a href="ggplotTimeSeriesStates.html">ggplotTimeSeriesStates()</a></code> 
+        </dt>
+        <dd>Plot time series simulation with state variables</dd>
+      </dl><dl><dt>
+          
+          <code><a href="change_temperature.html">change_temperature()</a></code> 
+        </dt>
+        <dd>Should 2 Markov chains exchange their temperatures</dd>
+      </dl><dl><dt>
+          
+          <code><a href="loadSample_mpi.html">loadSample_mpi()</a></code> 
+        </dt>
+        <dd>This function merges mpi-samples into one</dd>
+      </dl><dl><dt>
+          
+          <code><a href="mcmc_mpi.html">mcmc_mpi()</a></code> 
+        </dt>
+        <dd>The MPI version of the mcmc function</dd>
+      </dl><dl><dt>
+          
+          <code><a href="simc.html">simc()</a></code> 
+        </dt>
+        <dd>This creates a closure that simulates the model, similar to simulator.c</dd>
       </dl></div><div class="section level2">
       <h2 id="internal-functions">Internal Functions<a class="anchor" aria-label="anchor" href="#internal-functions"></a></h2>
       

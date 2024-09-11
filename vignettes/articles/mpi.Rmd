@@ -1,0 +1,189 @@
+---
+title: "Parallel chains with MPI"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Motivation
+
+Markov chain Monte Carlo scales exponentially with the problem
+size. For models with ~50 parameters it already becomes hard to
+intialize a Markov chain with good values:
+- starting parameters
+- step size
+
+The effect is a slow moving chain, and a sample with high auto-correlation.
+
+To reduce auto-correlation, we suggest the parallel tempering
+technique, where several Markov chains run in parallel and each
+experiences a different likelihood: $p(D|\theta)^\beta$ where $\theta$
+is the Markov chain variable (maps to the model's kinetic parameters)
+and $D$ is the available data. In this context $0 \le \beta \le 1$
+plays the role of an inverse temperature. A value of $\beta = 1.0$ is
+equivalent to the original problem; the lower $\beta$ gets, the more
+does the target distribution resemble the prior distribution.
+
+The different chains are then allowed to exchange their positions if
+it is benefitial (according to the specific rules of parallel
+tempering). This exchange of information makes the chain with $\beta =
+1$ explore the sampling space much faster than the Markov chain
+algorithm by itself would allow.
+
+Even though the implementation of Parallel Tempering is possible
+without MPI, we now have several experiments to simulate on many
+parallel chains, for AKAP79 this is 20 experiments and e.g. 32
+chains. At this point, it becomes benefitial to do the simulations on
+more than one machine (mine has 16 cores). The _high performance
+computing_ cluster at KTH (Parallel Dator Center, Dardel cluster) has
+128 cores per node. This means that we can simulate 6 chains per node
+and still process all experiments at the same time (using
+`parLapply`), but also start 24 chains distributed accross 3 nodes.
+
+The distribution requires message passing between nodes, for this prupose we use [Rmpi](https://cran.r-project.org/package=Rmpi).
+
+MPI code is difficult to understand, write, test, and debug. So, the
+below instructions may not work for everyone.
+
+# AKAP79
+
+MPI has several mechanisms to launch worker processes, one ow which is
+the `spawn` method (`MPI_Comm_spawn`). We don't use this here. 
+
+Instead we launch an Rscript via `mpirun` (and we use the `send` and
+`recv` functions on `MPI_COMM_WORLD`, which corresponds to `comm=0` in
+Rmpi). The script is written with MPI in mind and assumes that it runs
+in parallel, every command listed below will execute on every
+worker. This is different from the `parLapply` paradigm, where work is
+dispatched to worker threads (or processes).
+
+The only difference between the workers is the `rank`. The rank will
+determine the value of $\beta$ and thus the kind of sample the worker
+obtains.
+
+The `mpirun` command:
+
+```{sh, eval=FALSE, label="mpirun"}
+mpirun -H localhost:16 -N 8 ./AKAP79.R 5000
+```
+
+where `5000` is the sample size and `-N 8` means that we launch 8 MPI
+workers per node, and here we have one node (host), with 16 slots to
+run workers in. On a cluster, we can increase these numbers (and there
+is no need for `-H`).
+
+
+```{r, eval=FALSE, label="AKAP79.R"}
+#!/bin/env Rscript
+
+## ----setup--------------------------------------------------------------------
+library(uqsa)
+library(parallel)
+library(rgsl)
+library(SBtabVFGEN)
+library(Rmpi)
+
+start_time <- Sys.time()                         # measure sampling time
+r <- mpi.comm.rank(comm=0)
+cs <- mpi.comm.size(comm=0)
+beta <- (1.0 - (r/cs))^4
+nChains <- cs
+
+a <- commandArgs(trailing=TRUE)
+N <- 300 # default
+if (!is.null(a)) {
+	N <- as.numeric(a[1])
+}
+
+## ----label="SBtab content"----------------------------------------------------
+modelFiles <- uqsa_example("AKAP79",pattern="[.]tsv$",full.names=TRUE)
+SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
+
+## ----model--------------------------------------------------------------------
+source(uqsa_example("AKAP79",pat="^AKAP79[.]R$"))
+modelName <- checkModel("AKAP79","./AKAP79.so")
+
+## ----ConservationLaws---------------------------------------------------------
+load(uqsa_example("AKAP79",pat="^ConservationLaws[.]RData$"))
+experiments <- sbtab.data(SBtab,ConLaw)
+
+
+## ----default------------------------------------------------------------------
+n <- length(experiments[[1]]$input)
+stopifnot(n>0)
+parVal <- log10(head(AKAP79_default(),-n))
+
+## ----range--------------------------------------------------------------------
+defRange <- 2 # log-10 space
+dprior <- dNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
+rprior <- rNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
+
+## ----simulate-----------------------------------------------------------------
+sensApprox <- sensitivityEquilibriumApproximation(experiments, model, log10ParMap, log10ParMapJac)
+options(mc.cores = 2)
+simulate <- simulate.c(experiments,modelName,log10ParMap,noise=FALSE,sensApprox=sensApprox)
+y <- simulate(parVal)
+
+## ----likelihood---------------------------------------------------------------
+llf <- logLikelihood(experiments)
+gradLL <- gradLogLikelihood(model,experiments, parMap=log10ParMap, parMapJac=log10ParMapJac)
+fiIn <- fisherInformation(model, experiments, parMap=log10ParMap)
+fiPrior <- solve(diag(defRange, length(parVal)))
+
+## ----update-------------------------------------------------------------------
+update <- mcmcUpdate(simulate=simulate,
+		          experiments=experiments,
+		          model=model,
+		          logLikelihood=llf,
+		          gradLogLikelihood=gradLL,
+		          fisherInformation=fiIn,
+		          fisherInformationPrior=fiPrior,
+		          dprior=dprior)
+## ----init---------------------------------------------------------------------
+#m <- mcmc(update)              # a serial Markov chain Monte Carlo function
+m <- mcmc_mpi(update,comm=0)    # MPI aware function, passes messages on "comm"
+h <- 1e-3                       # initial step size guess
+## ----adjust-------------------------------------------------------------------
+accTarget <- 0.25
+L <- function(a) { (1.0 / (1.0+exp(-(a-accTarget)/0.1))) + 0.5 }
+
+start_time <- Sys.time()
+x <- parVal
+nj <- 7
+initFile <- sprintf("rmpi-init-rank-%i-of-%i.RData",r,cs)
+if (file.exists(initFile)){
+	load(initFile)
+} else {
+	for (j in seq(nj)){
+		x <- mcmcInit(beta,x,simulate,dprior,llf,gradLL,fiIn)
+		Sample <- m(x,100,eps=h)
+		a <- attr(Sample,"acceptanceRate")
+		h <- h * L(a)
+		x <- attr(Sample,"lastPoint")
+		cat(sprintf("iteration %02i/%02i for rank %02i/%02i,\th = %g\n",j,nj,r,cs,h))
+	}
+	save(x,h,beta,file=initFile)
+	cat("final step size: ",h,"\n")
+	cat("finished adjusting after",difftime(Sys.time(),start_time,units="sec")," seconds\n")
+}
+## ----sample-------------------------------------------------------------------
+
+s <- m(x,N,h) # the main amount of work is done here
+colnames(s) <- names(parVal)
+
+saveRDS(s,file=sprintf("Rmpi-testSample-rank%i-of%i.RData",r,cs))
+time_ <- difftime(Sys.time(),start_time,units="sec")
+mpi.finalize()
+print(time_)
+
+```
+
+In this script these is an *adjust* phase where we find an appropriate
+step size for the given problem. This is done by trying to make the
+Markov chain acceptance rate roughly `1/4`, which seems to be a good
+enough value to reduce the auto-correlation within the resulting
+sample (it is further decreased through parallel tempering).

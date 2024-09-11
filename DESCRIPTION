@@ -3,7 +3,7 @@ Type: Package
 Title: Uncertainty Quanitification and Global Sensitivity Analysis via ABC sampling
 Version: 0.1.4
 Authors@R: c(person("Alexandra","Jauhiainen",email="Alexandra.Jauhiainen@astrazeneca.com",role=c("aut")),
-             person("Olivia","Eriksson",email="olivia@mech.kth.se",role=c("aut","cre")),
+             person("Olivia","Eriksson",email="olivia@kth.se",role=c("aut","cre")),
              person("Federica","Milinanni",email="fedmil@kth.se",role="aut"),
              person("Andrei","Kramer",email="andreikr@kth.se",role=c("aut","ctb")))
 Description: This package will solve an initial value problem (given an ordinary differential equation)
@@ -12,21 +12,24 @@ Description: This package will solve an initial value problem (given an ordinary
 License: GPL (>=3)
 Encoding: UTF-8
 LazyData: true
+Depends:
+    R (>= 3.5)
 Imports:
-	parallel,
-	VineCopula,
-	MASS,
-	ks,
-	SBtabVFGEN,
-	rgsl
+    parallel,
+    VineCopula,
+    MASS,
+    ks
 Suggests:
-    deSolve,
+    remotes,
     ggplot2,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
     hexbin
-RoxygenNote: 7.2.3
+Remotes:
+    icpm-kth/rgsl,
+    icpm-kth/SBtabVFGEN
+RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
