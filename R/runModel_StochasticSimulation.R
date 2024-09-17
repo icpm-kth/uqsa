@@ -399,7 +399,7 @@ makeObjectiveSSA <- function(experiments, model, parNames, distance, parMap=iden
           interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
           avgOutput <- avgOutput + interpOutput$y
         } else {
-          avgOutput
+          avgOutput <- Inf*avgOutput
         }
       }
       avgOutput <- avgOutput/nStochSim
