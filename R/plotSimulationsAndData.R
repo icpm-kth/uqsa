@@ -45,7 +45,6 @@ ggplotTimeSeries <- function(simulations, experiments, nrow=NULL, ncol=NULL, plo
 	gridExtra::marrangeGrob(nrow=nrow,ncol=ncol,grobs=p)
 }
 
-
 #' Plot time series simulation with state variables
 #'
 #' This function plots simulations of time series experiments and plots them
@@ -56,28 +55,41 @@ ggplotTimeSeries <- function(simulations, experiments, nrow=NULL, ncol=NULL, plo
 #' @export
 #' @param simulations list of simualtions as output from the simulator
 #' @param experiments list of experiments
-#' @param show.plot boolean variable. Set show.plot=TRUE to display plots
-#'      when running the funcion, FALSE otherwise
+#' @param var.names override the rownames of the simulation results
+#' @param type 'boxes' or 'lines'
+#' @param plot.states TRUE (or FALSE) - whether to plot the state
+#'     variables or only the functions
+#' @param ttf time transformation function - the plot will be against
+#'     ttf(t), where `t` is a vector of the experiment's output times,
+#'     ttf can adjust the time vector if it is very uneven or requires
+#'     other modification only when plotting, e.g. `seq_along`.
+#' @param xl x-axis label (time usually)
+#' @param yl.func y-axis-limits of function plots, can be a list of
+#'     ggplot2::ylim() objects, with NULL elements for automatic mode
+#'     (the neutral element), NA elements will trigger tight bounds
+#'     based on quantile-0.1-0.9.
+#' @param yl.state y-axis-limits for state variable plots, with
+#'     similar rules as for yl.func
 #' @return list of plots with simulations and experimental data
-ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, type="boxes", plot.states=TRUE,ttf=identity){
+ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, type="boxes", plot.states=TRUE, ttf=identity, xl="t", yl.func=NULL, yl.state=NULL){
 	num.experiments <- length(experiments)
 	stopifnot(num.experiments == length(simulations))
 	num.of.funcs <- NCOL(experiments[[1]]$outputValues)
 	num.of.vars <- NROW(simulations[[1]]$state)
-
-	p <- list()
-	if (plot.states){
-		M <- (num.of.funcs+num.of.vars)
+	if (missing(ttf)){
+		t_txt <- xl
 	} else {
-		M <- (num.of.funcs)
+		t_txt <- sprintf("%s(%s)",as.character(quote(ttf)),xl)
 	}
-	T1 <- theme(plot.title=element_text(size=rel(2)),
+	p <- list()
+	M <- num.of.funcs + plot.states*num.of.vars
+	T1 <- ggplot2::theme(plot.title=element_text(size=rel(2)),
 	            axis.text=element_text(size=rel(1.5)),
 	            axis.title=element_text(size=rel(1.6)))
 	if (type == "boxes") {
-		g <- ggplot2::geom_boxplot(aes(x=t,y=y,group=t),outlier.size=0.1,outlier.color="gray",outlier.stroke=0.1)
+		g <- ggplot2::geom_boxplot(ggplot2::aes(x=t,y=y,group=t),outlier.size=0.3,outlier.color="green")
 	} else {
-		g <- ggplot2::geom_line(aes(x=t, y=y, group=sim),color="blue", alpha = 0.05, linewidth=1)
+		g <- ggplot2::geom_line(ggplot2::aes(x=t, y=y, group=sim),color="blue", alpha = 0.07, linewidth=1)
 	}
 
 	for(i in seq(length(experiments))){
@@ -100,22 +112,42 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 			}
 			df.experiments <- data.frame(t=t_, y=z, upper=z+dz, lower=z-dz)
 			f <- as.numeric(simulations[[i]]$func[j,,])
-			Q <- quantile(c(z,f),probs=c(0.1,0.5,0.9),na.rm=TRUE)
+			if (is.null(yl.func)){
+				YLIMIT <- NULL
+			} else if (is.logical(yl.func[[j]]) && is.na(yl.func[[j]])){
+				R <- range(c(z+dz,z-dz))
+				Q <- quantile(f,probs=c(0.1,0.5,0.9),na.rm=TRUE)
+				YLIMIT <- ggplot2::ylim(min(Q[1],R[1]),max(Q[3],R[2]))
+			} else if (is.numeric(yl.func[[j]]) && length(yl.func[[j]])==2){
+				YLIMIT <- ggplot2::ylim(yl.func[[j]][1],yl.func[[j]][2])
+			} else {
+				YLIMIT <- yl.func[[j]]
+			}
 			tf <- ttf(experiments[[i]][["outputTimes"]])
 			df.simulations <- data.frame(t=rep(tf,N), y=f, sim=rep(seq(N),each=length(tf)))
 			p[[(i-1)*M+j]] <- ggplot2::ggplot(df.simulations)+g+
-				ggplot2::geom_errorbar(data=df.experiments, aes(x=t, y=y, ymin = lower, ymax = upper, color="red"), inherit.aes=FALSE)+
+				ggplot2::geom_errorbar(data=df.experiments, ggplot2::aes(x=t, y=y, ymin = lower, ymax = upper, color="red",linewidth=2), inherit.aes=FALSE)+
 				ggplot2::ggtitle(names(experiments[i]))+T1+
-				ggplot2::labs(y=oNames[j])+ylim(Q[1],Q[3])
+				ggplot2::labs(y=oNames[j],x=t_txt)+YLIMIT
 		}
 		if (plot.states){
 			for(j in seq(num.of.vars)){
 				y <- as.numeric(simulations[[i]]$state[j,,])
+				if (is.null(yl.state)){
+					YLIMIT <- NULL
+				} else if (is.logical(yl.state[[j]]) && is.na(yl.state[[j]])){
+					Q <- quantile(y,probs=c(0.1,0.5,0.9),na.rm=TRUE)
+					YLIMIT <- ggplot2::ylim(Q[1],Q[3])
+				} else if (is.numeric(yl.state[[j]]) && length(yl.state[[j]])==2){
+					YLIMIT <- ggplot2::ylim(yl.state[[j]][1],yl.state[[j]][2])
+				} else {
+					YLIMIT <- yl.state[[j]]
+				}
 				ty <- ttf(experiments[[i]][["outputTimes"]])
 				df.simulations <- data.frame(t=rep(ty,N), y=y, sim=rep(seq(N), each=length(ty)))
-				p[[(i-1)*M+j+num.of.funcs]] <- ggplot2::ggplot(df.simulations,aes(x=t, y=y, group=sim))+g+
+				p[[(i-1)*M+j+num.of.funcs]] <- ggplot2::ggplot(df.simulations,ggplot2::aes(x=t, y=y, group=sim))+g+
 					ggplot2::ggtitle(names(experiments[i]))+T1+
-					ggplot2::labs(y=xNames[j])
+					ggplot2::labs(y=xNames[j],x=t_txt)+YLIMIT
 			}
 		}
 	}
