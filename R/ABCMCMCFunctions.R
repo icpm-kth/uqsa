@@ -94,7 +94,6 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
     }
     if(n %% 10000 == 0){
       cat("\nn =", n)
-      print(gc())
     }
   }
   #cat("Finished chain.\n")
