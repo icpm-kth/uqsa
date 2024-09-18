@@ -4,10 +4,25 @@
 \alias{loadSubSample_mpi}
 \title{This function merges mpi-samples into one}
 \usage{
-loadSubSample_mpi(files, size = NA, selection = NA)
+loadSubSample_mpi(
+  files,
+  size = NA,
+  selection = NA,
+  mc.cores = parallel::detectCores()
+)
 }
 \arguments{
 \item{files}{the files where the individual samples are stored}
+
+\item{size}{sub sample size, if not set, the whole sample is
+returned}
+
+\item{selection}{integer index vector or logical vector indicating
+which temperatures to return: beta\link{selection} is returned, in
+decreasing order of beta.}
+
+\item{mc.cores}{defaults to the total number of cores, but can be
+reduced with this option.}
 }
 \value{
 a list of matrices, by temperature, concatenated.

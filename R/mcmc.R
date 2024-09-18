@@ -369,8 +369,15 @@ loadSample_mpi <- function(files){
 #'
 #' @export
 #' @param files the files where the individual samples are stored
+#' @param size sub sample size, if not set, the whole sample is
+#'     returned
+#' @param selection integer index vector or logical vector indicating
+#'     which temperatures to return: beta[selection] is returned, in
+#'     decreasing order of beta.
+#' @param mc.cores defaults to the total number of cores, but can be
+#'     reduced with this option.
 #' @return a list of matrices, by temperature, concatenated.
-loadSubSample_mpi <- function(files,size=NA,selection=NA){
+loadSubSample_mpi <- function(files,size=NA,selection=NA,mc.cores=parallel::detectCores()){
 	S <- parallel::mclapply(files,function(f){
 		s <- readRDS(f)
 		b <- attr(s,"beta")
@@ -382,12 +389,14 @@ loadSubSample_mpi <- function(files,size=NA,selection=NA){
 		}
 		attr(s,"beta") <- b
 		return (s)
-	},mc.cores=parallel::detectCores())
+	},mc.cores=mc.cores)
 	uB <- sort(unique(unlist(parallel::mclapply(S,function(s) {return(unique(attr(s,"beta")))}))),decreasing=TRUE)
 	cat("unique temperatures:",uB,"\n")
-	stopifnot(length(uB)==length(files))
+	if (length(uB)!=length(files)) {
+		warning(sprintf("number of temperatures (%i) not the same as number of files (%i).",length(uB),length(files)))
+	}
 	if (!any(is.na(selection))) uB <- uB[selection]
-	else selection <- seq_long(uB)
+	else selection <- seq_along(uB)
 	n <- NROW(S[[1]])
 	m <- NCOL(S[[1]])
 	l <- length(uB)
@@ -401,6 +410,38 @@ loadSubSample_mpi <- function(files,size=NA,selection=NA){
 		}
 	}
 	attr(x,"beta") <- uB
+	return(x)
+}
+
+#' gatherSample collects all sample points, from all files, with the
+#' given temperature
+#'
+#' This function assumes that each supplied RDS file contains a matrix
+#' of model MCMC parameters, with an attribute called "beta" that
+#' lists the temperature of each row.
+#'
+#' This function selects and collects all rows, from all files with
+#' the same (given) temperature.
+#' @export
+#' @param files a list of file names
+#' @param beta the inverse temperture to extract sample for
+#' @param size a size the is smaller than the actual sample size, if
+#'     left unchanged, all sampled points are returned
+#' @return a matrix of sampled points, all with the same temperature
+gatherSample <- function(files,beta=1.0,size=NA){
+	x <- numeric(0)
+	for (f in files){
+		s <- readRDS(f)
+		b <- attr(s,"beta")
+		if (!any(is.na(size)) && size <= NROW(s)){
+			j <- round(seq(1,NROW(s),length.out=size))
+			s <- s[j,]
+			b <- b[j]
+		}
+		i <- (abs(b - beta) <= 1e-9*beta)
+		x <- rbind(x,s[i,,drop=FALSE])
+	}
+	attr(x,"beta") <- beta
 	return(x)
 }
 

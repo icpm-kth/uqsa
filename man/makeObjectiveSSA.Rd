@@ -12,7 +12,8 @@ makeObjectiveSSA(
   parMap = identity,
   Phi,
   reactions,
-  nStochSim = 1
+  nStochSim = 1,
+  parameters_from_expressions = NULL
 )
 }
 \arguments{

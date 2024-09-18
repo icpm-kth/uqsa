@@ -4,7 +4,15 @@
 \alias{ABCMCMC}
 \title{Performs and Approximate Bayesian Computation Sampling of Model Parameters}
 \usage{
-ABCMCMC(objectiveFunction, startPar, nSims, Sigma0, delta, dprior)
+ABCMCMC(
+  objectiveFunction,
+  startPar,
+  nSims,
+  Sigma0,
+  delta,
+  dprior,
+  batchSize = 100
+)
 }
 \arguments{
 \item{objectiveFunction}{function that, given a (vectorial)
