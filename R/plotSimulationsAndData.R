@@ -87,7 +87,7 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 	            axis.text=element_text(size=rel(1.5)),
 	            axis.title=element_text(size=rel(1.6)))
 	if (type == "boxes") {
-		g <- ggplot2::geom_boxplot(ggplot2::aes(x=t,y=y,group=t),outlier.size=0.3,outlier.color="green")
+		g <- ggplot2::geom_boxplot(ggplot2::aes(x=t,y=y,group=t),outliers=FALSE) #outlier.size=0.3,outlier.color="green")
 	} else {
 		g <- ggplot2::geom_line(ggplot2::aes(x=t, y=y, group=sim),color="blue", alpha = 0.07, linewidth=1)
 	}
@@ -124,6 +124,9 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 				YLIMIT <- yl.func[[j]]
 			}
 			tf <- ttf(experiments[[i]][["outputTimes"]])
+			#cat(sprintf("[experiment %i, output function %i] N = %i; length(tf): %i, length(f): %i; tf; f\n",i,j,N,length(tf), length(f)))
+			#print(tf)
+			#print(f)
 			df.simulations <- data.frame(t=rep(tf,N), y=f, sim=rep(seq(N),each=length(tf)))
 			p[[(i-1)*M+j]] <- ggplot2::ggplot(df.simulations)+g+
 				ggplot2::geom_errorbar(data=df.experiments, ggplot2::aes(x=t, y=y, ymin = lower, ymax = upper, color="red",linewidth=2), inherit.aes=FALSE)+

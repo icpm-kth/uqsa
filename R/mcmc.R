@@ -397,10 +397,14 @@ loadSubSample_mpi <- function(files,size=NA,selection=NA,mc.cores=parallel::dete
 	}
 	if (!any(is.na(selection))) uB <- uB[selection]
 	else selection <- seq_along(uB)
-	n <- NROW(S[[1]])
-	m <- NCOL(S[[1]])
-	l <- length(uB)
-
+	if (is.list(S) && length(S) == length(files) && is.numeric(S[[1]]) && is.matrix(S[[1]])){
+		n <- NROW(S[[1]])
+		m <- NCOL(S[[1]])
+		l <- length(uB)
+	} else {
+		print(S)
+		error("loading samples did not succeed")
+	}
 	x <- array(NA,dim=c(n,m,l))
 	dimnames(x) <- list(NULL,colnames(S[[1]]),sprintf("beta_%02i",selection))
 	for (i in seq_along(S)){
