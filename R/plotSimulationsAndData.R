@@ -129,7 +129,7 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 			#print(f)
 			df.simulations <- data.frame(t=rep(tf,N), y=f, sim=rep(seq(N),each=length(tf)))
 			p[[(i-1)*M+j]] <- ggplot2::ggplot(df.simulations)+g+
-				ggplot2::geom_errorbar(data=df.experiments, ggplot2::aes(x=t, y=y, ymin = lower, ymax = upper, color="red",linewidth=2), inherit.aes=FALSE)+
+				ggplot2::geom_errorbar(data=df.experiments, ggplot2::aes(x=t, y=y, ymin = lower, ymax = upper), color="red", inherit.aes=FALSE)+
 				ggplot2::ggtitle(names(experiments[i]))+T1+
 				ggplot2::labs(y=oNames[j],x=t_txt)+YLIMIT
 		}
