@@ -562,7 +562,11 @@ metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior
 		stopifnot(is.numeric(parProposal) && all(is.finite(priorGiven)))
 		attr(parProposal,"simulations") <- simulate(parProposal)
 		llProposal <- logLikelihood(parProposal)
-		stopifnot(is.numeric(llProposal) && length(llProposal)==1 && is.finite(llProposal))
+		if (!is.numeric(llProposal) || length(llProposal)!=1 || !is.finite(llProposal)){
+			warning(sprintf("metropolis update encountered an invalid likelihood value: %f\n",llProposal[1]))
+			print(llProposal)
+			print(as.numeric(parGiven))
+		}
 		attr(parProposal,"logLikelihood") <- llProposal
 		priorProposal <- dprior(parProposal)
 		attr(parProposal,"prior") <- priorProposal
