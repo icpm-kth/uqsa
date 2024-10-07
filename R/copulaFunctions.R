@@ -21,11 +21,10 @@
 #' @importFrom ks kde kcde
 #' @export
 #' @param X sample that characterizes the traget distribution (rows)
-#' @param nCores passed to parallel::mclapply()
 #' @return as list: vineCop, U, Z, and Y where U are marginal
 #'     probability samples, Z are cummulative density values for U,
 #'     and Y are the probability density values of U.
-fitCopula <- function(X,nCores=detectCores()){
+fitCopula <- function(X){
   stopifnot(is.matrix(X))
   ncx <- ncol(X)
   ns <- nrow(X)
@@ -58,7 +57,7 @@ fitCopula <- function(X,nCores=detectCores()){
   }
 
   # fit copula
-  vineCop <- RVineStructureSelect(Z,indeptest = T, cores = nCores)
+  vineCop <- RVineStructureSelect(Z,indeptest = T)
   return(list(copula=vineCop, U=U, Z=Z, Y=Y))
 }
 
