@@ -21,25 +21,25 @@ navbar:
         href: articles/uq.html
       - text: Sensiticity Analysis
         href: articles/sa.html
+      - text: -------	
       - text: Model and data management
       - text: SBtab
         href: articles/SBtab.html
-      - text: Importing a model
+      - text: Importing Models
         href: articles/models.html
-      - text: Importing data
+      - text: Importing Data
         href: articles/data.html
-      - text: -------
       - text: Build your own Model
         href: articles/user_model.html
       - text: -------
       - text: Paremeter estimation and uncertainty quantification
-      - text: Simulating a model
+      - text: Simulating a Model
         href: articles/simulate.html
-      - text: ABC sampling
+      - text: ABC Sampling
         href: articles/ABC_sampling.html
       - text: -------
-      - text: Sensitivity analysis
-      - text: GSA following UQ
+      - text: Sensitivity Analysis
+      - text: Global Sensitivity Analysis
         href: articles/GSA.html
     tutorials:
         text: Examples
@@ -48,11 +48,11 @@ navbar:
           href: articles/examples_overview.html
         - text: Simulate AKAP79
           href: articles/simAKAP79.html
-        - text: sample AKAP79
+        - text: Sample AKAP79
           href: articles/AKAP79.html
-        - text: sample AKAR4 with ABC
+        - text: Sample AKAR4 with ABC
           href: articles/AKAR4.html
-        - text: sample AKAR4 with MCMC
+        - text: Sample AKAR4 with MCMC
           href: articles/AKAR4cl.html
         - text: Build a Model
           href: articles/shortMakeSharedLibrary.html

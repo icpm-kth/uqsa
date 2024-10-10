@@ -1,5 +1,5 @@
 ---
-title: "Using your own model"
+title: "Build your own Model"
 ---
 
 ```{r, include = FALSE}
@@ -26,23 +26,29 @@ automatically convert both `.xlsx` and `.ods` to a set of `.tsv` files if
 you want the benefits of version control (which works on text
 files). But, `.ods` and `.xlsx` both work with `SBtabVFGEN`.
 
-In addition to how SBtab mdels are usually written, we require some
-mandatory components/tables (see SBtab topic). Our scripts find the
-tables by name convention, there is no manifest file. But the
-*Reaction* table can be seen as the main item of the model, while the
-*Experiments* table is the main file that relates experimental data to
-the model. All things mentioned in these two files need to be further
-explained in the other tables.
+[SBtab](./SBtab.html) models contain a data portion, and a model portion; the SBtab
+tables also relate both to one another: the *Output* table describes
+Observables: functions we calculate to allow a comparison of
+simulations to data. The *Experiments* table specifies which inputs
+and initial conditions to set to replicate a data-set. The user must
+include a table/file that contains the data for each experiment, the
+file/table must be named like the identifier of the experiment
+(*leftmost column* stores the identifiers of each row).
 
-In summary: SBtab models contain a data portion, and a model portion;
-the SBtab tables also relate both to one another: the *Output* table
-describes what the model needs to calculate to allow direct comparison
-to the data (there are exceptions). The *Experiments* table specifies
-which inputs to apply, and initial conditions to set to replicate a
-data-set. It names each experiment, and the user must include a
-table/file that contains the data for each experiment, the file/table
-must be named like the identifier of the experiment (*leftmost column*
-stores the identifiers of each row).
+In addition to how SBtab mdels are usually written, we require some
+mandatory components/tables: Reaction, Compound, Parameter, Output,
+Experiments. Our scripts find the tables by name:
+
+- TSV files: `TableName` attribute is the name of the table
+- ODS files: the Sheet's name is the name of the table, `TableName`
+  attribute is not parsed
+- Excel files: the Sheet's name (same as ODS)
+
+The *Reaction* table
+can be seen as the main item of the model, while the *Experiments*
+table is the main file that relates experimental data to the
+model. All things mentioned in these two files need to be further
+explained in the other tables.
 
 We'll assume that the model is called `DemoModel`, for all exaple lines.
 
