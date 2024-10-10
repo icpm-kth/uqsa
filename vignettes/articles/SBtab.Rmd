@@ -24,17 +24,6 @@ conversion are not guaranteed to work here. They are user-friendly,
 i.e. a human can open SBtab files with a text editor and edit them
 manually.
 
-# Advantages of SBtab
-
-Data and models are tightly linked and we also include two tables on
-the relationships between the data and model simulations in all our
-examples:
-
-1. *Experiments*, a table with a list of experiments together with appropriate model settings
-2. *Output*, a list of output functions that correspond to measurable
-   values for this model, named the same as the corresponding data
-   columns
-
 An SBtab Document is a set of tables that represent reactions,
 compounds, parameters, and measured data that correspond to
 simulations of the model under certain input conditions and initial
@@ -44,48 +33,10 @@ model of the input signal). The values of the input parameters are
 always known, while the model' s internal parameters (e.g. reaction
 rate coefficients) can be subject to optimization or sampling.
 
-SBML level 2 lacks the ability to carry data with the model and also
-lacks the vocabulary to define which parameters are *inputs* and which
-are *model internal*. There is also no way to define an *observable*
-in SBML (a function that models the measurement device, an
-observation). For this reason, an SBML document cannot be converted
-into an SBtab document that has these qualities (which we need).
-
-# Issues to be aware of with any File format
-
-According to the specifications of the SBtab authors, MS Excel
-spreadsheets are an acceptable storage format - but we don't use any
-of their original code and therefore do not carry over any guarantees.
-
-Our [SBtabVFGEN](icpm-kth/SBtabVFGEN) package uses either multiple TSV
-files or one [ODS](https://en.wikipedia.org/wiki/OpenDocument)
-file. The TSV reading is done using core R functions, while ODS is
-read through
-[readODS](https://cran.r-project.org/package=readODS). Both formats
-can have issues that are general and not specific to this package:
-
-- TSV
-    - line endings can be `\n` or `\n\r`
-    - fields could be automatically and unnecessarily quoted by a spreadsheet software
-    - encoding (UTF-8, or something else)
-    - some spreadsheets may want to write a unicode minus sign `−` rather than `-` into a tsv file: `U+2212`, be careful
-    - lines can be blank, but not quite, if they contain just tabs or spaces
-- ODS
-    - comments inside fields could be imported as field content and confuse the model parser
-    - same issue with unicode minus signs
-    - `readODS` could theoretically be discontinued (deprecated), despite the format continuing to exist
-
-Models can be automatically converted between the SBtab format and
-other modelling formats (such as SBML). For more information about
-SBtab please refer to [the official git
-repository](https://github.com/tlubitz/SBtab). Be aware that the
-conversion from SBML to SBtab has to be done with the official SBtab
-tools, not ours (SBML is hard).
-
 For the most part, in our case, an SBtab document is a collection of
 [tsv](https://en.wikipedia.org/wiki/Tab-separated_values) files (has
 to be one file per table). This can be written by hand, in a text
-editor (one that doesn't auto convert tabs to *N* spaces).  format.
+editor (one that doesn't auto convert tabs to *N* spaces).
 Each table contains information about the model, data, and their
 relationship to one another:
 
@@ -100,9 +51,33 @@ Each type of items (e.g. parameters) gets a TSV file
 From these files you can automatically generate ODE code for R and C
 solvers, and load the data from them.
 
+
+# Advantages of SBtab
+
+Data and models are tightly linked and we also include two tables on
+the relationships between the data and model simulations in all our
+examples:
+
+1. *Experiments*, a table with a list of experiments together with appropriate model settings
+2. *Output*, a list of output functions that correspond to measurable
+   values for this model, named the same as the corresponding data
+   columns
+
+
+SBML level 2 lacks the ability to carry data with the model and also
+lacks the vocabulary to define which parameters are *inputs* and which
+are *model internal*. There is also no way to define an *observable*
+in SBML (a function that models the measurement device, an
+observation). For this reason, an SBML document cannot be converted
+into an SBtab document that has these qualities (which we need).  But,
+we may be wrong about what SBML can and cannot do. Future versions of
+SBML may of course add new features. In general, SBML is hard.
+
+
+
 # SBtab File Structure
 
-Each file has a header, e.g.:
+Each file has a header, with attributes `key='value'` separated by spaces or tabs, e.g.:
 
 ```{txt}
 !!SBtab SBtabVersion='1.0' TableName='Reaction' TableType='Reaction' TableTitle='A list of Reactions' Document='myModel'
@@ -118,10 +93,11 @@ column names have special meanings, unknown columns will not be parsed
 We don't parse the version attribute or any other attribute other than
 `TableName` and `Document`. We use the `Document` attribute to assign
 a name to each model we read from the files; it is stored as a comment
-attached to the list of data.frames `SBtabVFGEN::sbtab_from_tsv()`
-generates, `comment(model.tab)` will print it.
+attached to the list of data.frames that `model.tab <-
+SBtabVFGEN::sbtab_from_tsv()` returns. The command
+`comment(model.tab)` will show it.
 
-The second line contains the table column headers. The first column
+The second line contains the table column names. The first column
 can be called either `!ID` or `!Name` (it is harmless to have both,
 but only the first one counts). If the first column is not called
 that, the scripts will carry on regardless, assuming that it is some
@@ -134,8 +110,9 @@ ignored.
 In the following sub-sections we will list the minimum set of columns
 for each table, the sub-section heading refers to the required
 `TableName` attribute for this kind of table. The set of columns are
-given as example tables. Each time we omit the `!!SBtab` heading from
-the table to not mess up formatting.
+given as example tables. We print the `!!SBtab` heading line
+separately from the table matter (in this document) to not mess up
+formatting due to different numbers of elements.
 
 There are two generic table-types that can be used if no specific one
 is applicable: `TableType='Quantity'` and
@@ -189,11 +166,11 @@ we did to the model during an experiment.
 
 Here the `!Scale` column is optional, but often useful; several values
 are possible: `log10`,`log`,`linear` (in various spellings). If
-missing `linear` is assumed.
+missing, `linear` is assumed.
 
 ## Expression
 
-mathematical sub-expressions that can be used in reaction fluxes. Can
+Mathematical sub-expressions that can be used in reaction fluxes. Can
 be used to encode thermodynamic relationships between parameters,
 model an input signal. This is used to assign a name to an algebraic
 expression.
@@ -202,23 +179,23 @@ expression.
 !!SBtab TableName='Expression' Document='myModel'
 ```
 
-|!ID|!Unit|!Formula|
-|--:|:---:|:-------|
-|KD_1|nM|`(KD_3*KD_4)/KD_2`|
-|...|...|...|
+|  !ID | !Unit | !Formula           |
+|-----:|:-----:|:-------------------|
+| KD_1 | nM    | `(KD_3*KD_4)/KD_2` |
+|  ... | ...   | ...                |
 
 ## Compound
 
-In SBML language, these are *species*.
+In SBML parlance, these are *species*.
 
 ```sh
 !!SBtab TableName='Compound' TableType='Compound' Document='myModel'
 ```
 
-|!ID|!Unit|!InitialValue|
-|--:|:---:|:------------|
-|PP2B_CaM|uM|0.0|
-|...|...|...|
+|      !ID | !Unit | !InitialValue |
+|---------:|:-----:|:--------------|
+| PP2B_CaM | uM    | 0.0           |
+|      ... | ...   | ...           |
 
 There are several optional columns, e.g. `!IsConstant` and
 `!Type`. These variables are usually used as state variables in an ODE
@@ -230,10 +207,10 @@ framework.
 !!SBtab TableName='Reaction' TableType='Reaction' Document='myModel'
 ```
 
-|!ID|!KineticLaw|!IsReversible|!ReactionFormula|
-|--:|:---------:|:-----------:|:--------------:|
-|Reaction1|`kf*A*B-kb*C`|`TRUE`|`A + B <=> C`|
-|...|...|...|
+|       !ID | !KineticLaw   | !IsReversible | !ReactionFormula |
+|----------:|:-------------:|:-------------:|:----------------:|
+| Reaction1 | `kf*A*B-kb*C` | `TRUE`        | `A + B <=> C`    |
+|       ... | ...           | ...           |                  |
 
 ## Output
 
@@ -241,28 +218,54 @@ framework.
 !!SBtab TableName='Output' Document='myModel'
 ```
 
-|!ID|!Unit|!Formula|
-|--:|:---:|:-------|
-|CaPerCaM|1|`totalCa/totalCaM`|
-|...|...|...|
+|      !ID | !Unit | !Formula           |
+|---------:|:-----:|:-------------------|
+| CaPerCaM | 1     | `totalCa/totalCaM` |
+|      ... | ...   | ...                |
 
 A unit of `1` means the same as `'dimensionless'` in SBML.
 
-## Event
+## Transformation
 
-Events will interrupt the solver in the rgsl package, change the valuse of input parameters, or state variables, and then re-initialize the ODE solver to continue from there.
+A table of all possible transformations (maps) that are part of any
+experiments described procedure. An event can trigger any of these
+transformation at specific event-times.
 
-```sh
-!!SBtab TableName='ActivationEvent' Document='myModel'
+```
+!!SBtab TableName='Transformation' Document='MyModel'
 ```
 
-|!TimePoint|!Time|>SET:Calcium|
-|--:|:---:|:-------|
-|Event0Time0|0.0|200|
-|...|...|...|
+| !ID | >A      | >B      | >C      |
+|----:|:-------:|:-------:|:-------:|
+| TF1 | `A-B`   | `B`     | `C`     |
+| TF2 | `A`     | `B/2`   | `C`     |
+| TF3 | `A*0.1` | `B*0.1` | `C*0.1` |
 
-Possible operations in >*OP*:*ID*: `SET`,`ADD`,`SUB`,`MUL`,`DIV`,
-while ID can refer to any parameter or state variable (compound).
+Here we see one transformation per line that affects the variables listed in the column names `>Var`, i.e.:
+
+```{R, eval=FALSE}
+A<-A-B  # TF1
+
+B<-B/2  # TF2
+```
+
+This is what woudl conceptually happen in the generated code.
+
+## Event
+
+Events will interrupt the ODE solver in the rgsl package (not other
+solvers), change the values of input parameters, or state variables
+according to the available named tranformations (see above). After the
+transformation the solver is re-initialized to continue from there.
+
+```sh
+!!SBtab TableName='SubtractB' Document='myModel'
+```
+
+|  !TimePoint | !Time | !Tranformation |
+|------------:|:-----:|:---------------|
+| Event0Time0 | 10.0  | TF1            |
+|         ... | ...   | ...            |
 
 ## Experiments
 
@@ -270,18 +273,52 @@ while ID can refer to any parameter or state variable (compound).
 !!SBtab TableName='Experiments' Document='myModel'
 ```
 
-|!ID|!Type|!Time|!T0|!Event|!Citation|
-|--:|:---:|:---:|:-:|:----:|:--------|
-|Bradshaw2003Fig2E|Dose Response|600.0|-100.0|Activation0|https://doi.org/10.[...]|
-|...|...|...|...|...|...|
+|               !ID | !Type         | !Time | !T0    | !Event      | !Citation                |
+|------------------:|:-------------:|:-----:|:------:|:-----------:|:-------------------------|
+| Bradshaw2003Fig2E | Dose Response | 600.0 | -100.0 | Activation0 | https://doi.org/10.[...] |
+|               ... | ...           | ...   | ...    | ...         | ...                      |
 
 where `Type` is: `Time Series`, or `Dose Response`. The initial time
-for the ODE $t0$ corresponds to the beginning of the experiment setup:
+for the ODE $t_0$ corresponds to the beginning of the experiment setup:
 `!T0` (the time value). The plain `!Time` is the default time of
 measurements; for dose response experiments, this is the only place to
 specify the measurement time. `!Event` names the table that contains
 instructions for scheduled events (see above). The `!Citation` column
 is entirely optional.
+
+# Issues to be aware of with any File format
+
+According to the specifications of the SBtab authors, MS Excel
+spreadsheets are an acceptable storage format - but we don't use any
+of their original code and therefore do not carry over any guarantees.
+
+Our [SBtabVFGEN](icpm-kth/SBtabVFGEN) package uses either multiple TSV
+files or one [ODS](https://en.wikipedia.org/wiki/OpenDocument)
+file. The TSV reading is done using core R functions, while ODS is
+read through
+[readODS](https://cran.r-project.org/package=readODS). Both formats
+can have issues that are general and not specific to this package:
+
+- TSV
+    - line endings can be `\n` or `\n\r`
+    - fields could be automatically and unnecessarily quoted by a spreadsheet software
+    - encoding (UTF-8, or something else)
+    - some spreadsheets may want to write a unicode minus sign `−` rather than `-` into a tsv file: `U+2212` (vs ascii dash), be careful
+    - lines can be blank, but not quite, if they contain just tabs or spaces
+- ODS
+    - comments inside fields could be imported as field content and confuse the model parser
+    - same issue with unicode minus signs
+    - `readODS` could theoretically be discontinued (deprecated), despite the format continuing to exist
+    - all spreadsheet software comes with auto-correct and will
+      correct SBtab to Sbtab and probably also all of the unusual
+      protein names (PKA to Pka or similar)
+
+Models can be automatically converted between the SBtab format and
+other modelling formats (such as SBML). For more information about
+SBtab please refer to [the official git
+repository](https://github.com/tlubitz/SBtab). Be aware that the
+conversion from SBML to SBtab has to be done with the official SBtab
+tools, not ours (SBML is hard).
 
 # Alternatives
 

@@ -9,17 +9,17 @@ navbar:
     installation:
       text: Installation
       menu:
-      - text: Full Installation Instructions
-        href: articles/install.html
       - text: Short Instructions
         href: articles/installation.html
+      - text: Full Installation Instructions
+        href: articles/install.html
     articles:
       text: Documentation
       menu:
       - text: Introduction
       - text: Uncertainty Quantification
         href: articles/uq.html
-      - text: Sensiticity Analysis
+      - text: Sensitivity Analysis
         href: articles/sa.html
       - text: -------	
       - text: Model and data management
@@ -73,14 +73,10 @@ reference:
   - dUniformPrior
   - defaultAcceptance
   - defaultDistance
-  - fisherInformationFromGSA
-  - fisherInformation
   - fitCopula
   - getMCMCPar
   - globalSensitivity
-  - gradLogLikelihood
   - importReactionsSSA
-  - logLikelihood
   - log10ParMap
   - log10ParMapJac
   - makeGillespieModel
@@ -103,7 +99,6 @@ reference:
   - "%otherwise%"
   - smmala_move
   - smmala_move_density
-  - swap_points
   - ggplotTimeSeries
   - ggplotTimeSeriesStates
   - change_temperature
@@ -126,3 +121,17 @@ reference:
   - getDose
   - plotDoseResponse
   - plotTimeSeries
+  - Rmpi_swap_temperatures
+  - fisherInformationFromGSA
+  - fisherInformationFunc
+  - gatherSample
+  - gradLogLikelihoodFunc
+  - gradLog_NormalPrior
+  - "%has%"
+  - loadSubSample_mpi
+  - logLikelihoodFunc
+  - pbdMPI_bcast_reduce_temperatures
+  - pbdMPI_swap_temperatures
+  - sampleWithNoise
+  - simcf
+  - swap_points_locally
