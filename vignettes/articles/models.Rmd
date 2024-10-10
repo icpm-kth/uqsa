@@ -18,9 +18,9 @@ model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
 SBtabVFGEN::sbtab_to_vfgen(model.tab,cla=FALSE)
 ```
 
-this will write a file called MODEL.vf (where MODEL is whatever you
-chose as the model name); MODEL.vf encodes the model as an ODE. This
-file is compatible with the
+this will write a file called MODEL.vf (where `MODEL` is taken from
+the `Document='MODEL'` attribute in the SBtab files); MODEL.vf encodes the model
+as an ODE. This file is compatible with the
 [vfgen](https://warrenweckesser.github.io/vfgen/) tool; it creates
 code in many languages from this `vf` file.
 

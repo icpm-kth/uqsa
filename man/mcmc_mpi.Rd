@@ -4,7 +4,12 @@
 \alias{mcmc_mpi}
 \title{The MPI version of the mcmc function}
 \usage{
-mcmc_mpi(update, comm, swapDelay = 0, swapFunc = rmpi_swap_temperatures)
+mcmc_mpi(
+  update,
+  comm,
+  swapDelay = 0,
+  swapFunc = pbdMPI_bcast_reduce_temperatures
+)
 }
 \arguments{
 \item{update}{an update function}
