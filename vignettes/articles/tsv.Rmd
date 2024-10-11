@@ -97,3 +97,23 @@ ssconvert --merge-to="OUT-FILE.ods" *.tsv
 
 and the `.ods` file ending can be replaced by a different format.
 
+## Boolean Values
+
+Spreadsheets can contain the values `TRUE` and `FALSE`, these Boolean
+values are written exactly like this in both C and R. So, even when
+not converted to numerical values these words shoudl work out of the
+box.
+
+Some spreadsheet software converts them to `1` and `0` when exporting
+to TSV. This works even better.
+
+If, for some reason, the C model still contains `TRUE` and `FALSE`
+values written out literally and the `TRUE`/`FALSE` macros are not
+defined (so that the compiler complains), you can define them yourself
+without rebuilding the model.  Insert the following code block at the
+beginning of the model file:
+
+```{c, eval=FALSE}
+enum logical {FALSE, TRUE};
+```
+

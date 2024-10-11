@@ -63,7 +63,6 @@ examples:
    values for this model, named the same as the corresponding data
    columns
 
-
 SBML level 2 lacks the ability to carry data with the model and also
 lacks the vocabulary to define which parameters are *inputs* and which
 are *model internal*. There is also no way to define an *observable*
@@ -73,13 +72,11 @@ into an SBtab document that has these qualities (which we need).  But,
 we may be wrong about what SBML can and cannot do. Future versions of
 SBML may of course add new features. In general, SBML is hard.
 
-
-
 # SBtab File Structure
 
 Each file has a header, with attributes `key='value'` separated by spaces or tabs, e.g.:
 
-```{txt}
+```{sh, eval=FALSE}
 !!SBtab SBtabVersion='1.0' TableName='Reaction' TableType='Reaction' TableTitle='A list of Reactions' Document='myModel'
 ```
 
@@ -123,24 +120,49 @@ property at all, but it is needed for the official
 If there is a specific table-type setting for a table, we list that
 setting in the following sections.
 
+An example of an SBtab file:
+
+```{sh, label="Reaction.tsv", eval=FALSE}
+!!SBtab	Document='myModel' TableName='Reaction' TableType='Reaction'
+!ID    !KineticLaw         !IsReversible  !ReactionFormula
+flux1  Cag0/taug-Cag/taug  TRUE           NULL <=>Cag
+flux2  Cal0/taul-Cal/taul  TRUE           NULL <=>Cal
+flux3  k1f_Ca*Np-k1b*Vdh   TRUE           Np<=>Vdh
+flux4  k2f_Ca*Vdh-k2b*Vph  TRUE           Vdh<=>Vph
+flux5  k4f*Vph             FALSE          Vph<=>Nu
+flux6  k5f_Ca*Nu           FALSE          Nu<=>Np
+flux7  k1f_Ca*Np-k1b*Vdl   TRUE           Np<=>Vdl
+flux8  k2f_Ca*Vdl-k2b*Vpl  TRUE           Vdl<=>Vpl
+flux9  k3f*Vpl             FALSE          Vpl<=>Nu
+```
+
+Note 1
+: our code ignores almost everything in the first line, except `TableName`
+
+Note 2
+: `FALSE` and `TRUE` work in R correctly, they also work (literally)
+  in C (if they are defined as macros).  Some spreadsheet software
+  exports `TRUE`/`FALSE` as `1`/`0` into TSV (this is also fine).
+
 ## Constant
 
 A list of constants, values that never change for this model.
 
-```sh
-!!SBtab TableName='Constant' Document='myModel'
-```
+| !!SBtab | TableName='Constant' | Document='myModel' |
+|     !ID | !Unit                | !Value             |
+|--------:|:--------------------:|:-------------------|
+|       a | µM                   | 3.9                |
+|     ... | ...                  | ...                |
 
-|!ID|!Unit|!Value|
-|--:|:---:|:-----|
-|a|µM|3.9|
-|...|...|...|
+The number of items in the first line is usually different from the
+rest, as this is a header, for this reason we print them separately
+from this point on.
 
 ## Input
 
 Known paramters of the model, can vary between experiments.
 
-```sh
+```{sh, eval=FALSE}
 !!SBtab TableName='Input' Document='myModel'
 ```
 
@@ -155,7 +177,7 @@ Possibly unknown parameters of the model, these parameters typically
 refer to internal properties of the model itself rather than something
 we did to the model during an experiment.
 
-```sh
+```
 !!SBtab TableName='Parameter' Document='myModel'
 ```
 
@@ -175,7 +197,7 @@ be used to encode thermodynamic relationships between parameters,
 model an input signal. This is used to assign a name to an algebraic
 expression.
 
-```sh
+```{sh, eval=FALSE}
 !!SBtab TableName='Expression' Document='myModel'
 ```
 
@@ -188,7 +210,7 @@ expression.
 
 In SBML parlance, these are *species*.
 
-```sh
+```{sh, eval=FALSE}
 !!SBtab TableName='Compound' TableType='Compound' Document='myModel'
 ```
 
@@ -203,7 +225,7 @@ framework.
 
 ## Reaction
 
-```sh
+```{sh, eval=FALSE}
 !!SBtab TableName='Reaction' TableType='Reaction' Document='myModel'
 ```
 
@@ -214,7 +236,7 @@ framework.
 
 ## Output
 
-```
+```{sh, eval=FALSE}
 !!SBtab TableName='Output' Document='myModel'
 ```
 
@@ -231,7 +253,7 @@ A table of all possible transformations (maps) that are part of any
 experiments described procedure. An event can trigger any of these
 transformation at specific event-times.
 
-```
+```{sh, eval=FALSE}
 !!SBtab TableName='Transformation' Document='MyModel'
 ```
 
@@ -245,7 +267,6 @@ Here we see one transformation per line that affects the variables listed in the
 
 ```{R, eval=FALSE}
 A<-A-B  # TF1
-
 B<-B/2  # TF2
 ```
 
@@ -286,6 +307,29 @@ specify the measurement time. `!Event` names the table that contains
 instructions for scheduled events (see above). The `!Citation` column
 is entirely optional.
 
+# A Note on Units
+
+Units should be defined for every entity. This unit can be written in
+a human readable conventional form (we don't insist on it being
+correct). It is mostly intended for human readers, but we do parse it
+and use the information for SBML export.
+
+Units are not optional.
+
+Dimensionless quantities are ok, e.g. Hill-exponents, the unit is just
+`1` in such cases.
+
+But, even though we do parse them, we currently don't auto-convert
+units: If a flux is `kf*a - kb*b`, then the units of `kf`, `a`, `kb`,
+and `b` have to be compatible, such that the unit of `kf*a` is the
+same as `kb*b`. It is of course legal (in general) to calculate `1 m +
+1 cm`, but we don't do this unit-conversion automatically (maybe never
+will).
+
+The units are used in the SBML export (but sotware support for units
+on the SBML side is also not feature-complete in all cases we know
+about).
+
 # Issues to be aware of with any File format
 
 According to the specifications of the SBtab authors, MS Excel
@@ -315,10 +359,10 @@ can have issues that are general and not specific to this package:
 
 Models can be automatically converted between the SBtab format and
 other modelling formats (such as SBML). For more information about
-SBtab please refer to [the official git
-repository](https://github.com/tlubitz/SBtab). Be aware that the
-conversion from SBML to SBtab has to be done with the official SBtab
-tools, not ours (SBML is hard).
+SBtab please refer to [the official git repository](https://github.com/tlubitz/SBtab). 
+
+Be aware that the conversion from SBML to SBtab has to be done with
+the official SBtab tools, not ours (SBML is hard).
 
 # Alternatives
 
@@ -331,8 +375,12 @@ generates code. Or, if the model is small enough, you can also write
 these files using a text editor without any other tool.
 
 The data we load from SBtab files is stored as a list in R, each item
-is itself a list of data.frames or vectors (it's not an opaque
+is itself a list of `data.frames` or vectors (it's not a black-box
 object). A user can just create such a list (e.g. in an R script), if
-they want to avoid SBtab. If the data is stored in an entirely
-different format, such as an hdf5 file, it could be read using e.g. hdf5r
-and re-roganized into a list like this.
+they want to avoid SBtab entirely. If the data is stored in a
+different format, such as an hdf5 file, it could be read using
+e.g. hdf5r and re-roganized into a list like this.
+
+Ultimately, the code in uqsa expects a likelihood function or
+objective-function that assigns a scalar value to a parameter vector,
+what this function does to calculate it is up to every user.

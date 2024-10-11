@@ -42,9 +42,10 @@ more than one machine (mine has 16 cores). The _high performance
 computing_ cluster at KTH (Parallel Dator Center, Dardel cluster) has
 128 cores per node. This means that we can simulate 6 chains per node
 and still process all experiments at the same time (using
-`parLapply`), but also start 24 chains distributed accross 3 nodes.
+`parLapply` or `mclapply`), but also start 24 chains distributed accross 3 nodes.
 
-The distribution requires message passing between nodes, for this prupose we use [Rmpi](https://cran.r-project.org/package=Rmpi).
+The distribution requires message passing between nodes, for this
+prupose we use [pbdMPI](https://cran.r-project.org/package=pbdMPI)
 
 MPI code is difficult to understand, write, test, and debug. So, the
 below instructions may not work for everyone.
@@ -54,136 +55,162 @@ below instructions may not work for everyone.
 MPI has several mechanisms to launch worker processes, one ow which is
 the `spawn` method (`MPI_Comm_spawn`). We don't use this here. 
 
-Instead we launch an Rscript via `mpirun` (and we use the `send` and
+Instead we launch an Rscript via `mpirun` (and the `send` and
 `recv` functions on `MPI_COMM_WORLD`, which corresponds to `comm=0` in
-Rmpi). The script is written with MPI in mind and assumes that it runs
-in parallel, every command listed below will execute on every
-worker. This is different from the `parLapply` paradigm, where work is
+pbdMPI). 
+
+This is different from the `parLapply` paradigm, where work is
 dispatched to worker threads (or processes).
 
 The only difference between the workers is the `rank`. The rank will
 determine the value of $\beta$ and thus the kind of sample the worker
 obtains.
 
-The `mpirun` command:
+
+Locally you can test the MPI script using the `mpirun` command:
 
 ```{sh, eval=FALSE, label="mpirun"}
 mpirun -H localhost:16 -N 8 ./AKAP79.R 5000
 ```
 
-where `5000` is the sample size and `-N 8` means that we launch 8 MPI
-workers per node, and here we have one node (host), with 16 slots to
-run workers in. On a cluster, we can increase these numbers (and there
-is no need for `-H`).
+For this to work, `AKAP79.R` has to start with the line:
+
+```{sh, eval=FALSE}
+#!/usr/bin/env Rscript
+[...]
+# R code follows here ...
+```
+
+If you want to call Rscript explicitly, then:
+
+```{sh, eval=FALSE, label="Rscript"}
+mpirun -H localhost:16 -N 8 Rscript ./AKAP79.R 5000
+```
+
+On the cluster the `-H` option is not necessary, because a queue
+system like slurm will determine which machines to use.
+
+For this particular script the argument `5000` is the sample size and
+`-N 8` means that we launch 8 MPI workers per node (node means the
+same as machine or host). We have one node (localhost), with 16 slots
+to run workers in (because we assume 16 cores).
+
+On a cluster, we can have many more chains.
 
 
-```{r, eval=FALSE, label="AKAP79.R"}
-#!/bin/env Rscript
+# MPI Script Template
 
-## ----setup--------------------------------------------------------------------
-library(uqsa)
-library(parallel)
+This is an example that will sample a model using the Metropolis
+algorithm, using `pbdMPI` and the parallel tempering technique.
+
+```{r, eval=FALSE, label="mpi-pt-sampling.R"}
+#!/usr/bin/env Rscript
+
+## ^^^ the above has to be on line 1, 
+## nothing may be written before that .
+
 library(rgsl)
 library(SBtabVFGEN)
-library(Rmpi)
+library(uqsa)
+library(parallel)
+library(pbdMPI)
 
 start_time <- Sys.time()                         # measure sampling time
-r <- mpi.comm.rank(comm=0)
-cs <- mpi.comm.size(comm=0)
-beta <- (1.0 - (r/cs))^4
-nChains <- cs
+comm  <- 0
+pbdMPI::init()
+r <- pbdMPI::comm.rank(comm=comm)
+cs <- pbdMPI::comm.size(comm=comm)
 
-a <- commandArgs(trailing=TRUE)
-N <- 300 # default
-if (!is.null(a)) {
-	N <- as.numeric(a[1])
-}
+attr(comm,"rank") <- r
+attr(comm,"size") <- cs
+N <- 10000                 # sample size
+h <- 1e-2                  # step size
+
+beta <- (1.0 - (r/cs))^2   # PT: inverse temperature
 
 ## ----label="SBtab content"----------------------------------------------------
-modelFiles <- uqsa_example("AKAP79",pattern="[.]tsv$",full.names=TRUE)
-SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
 
-## ----model--------------------------------------------------------------------
-source(uqsa_example("AKAP79",pat="^AKAP79[.]R$"))
-modelName <- checkModel("AKAP79","./AKAP79.so")
+modelFiles <- dir("..",pattern="[.]tsv$",full.names=TRUE)
+sb <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
 
-## ----ConservationLaws---------------------------------------------------------
-load(uqsa_example("AKAP79",pat="^ConservationLaws[.]RData$"))
-experiments <- sbtab.data(SBtab,ConLaw)
+modelName <- checkModel(comment(sb),sprintf("./%s_gvc.c",comment(sb)))
 
+## ----ConservationLaws----------------------------------------------------------
+if (file.exists("../ConservationLaws.RData")){
+	load("../ConservationLaws.RData")
+	if (any(is.na(ConLaw))) {
+	  ConLaw <- NULL
+	}
+} else {
+	ConLaw <- NULL
+}
+experiments <- sbtab.data(sb,ConLaw)
 
 ## ----default------------------------------------------------------------------
 n <- length(experiments[[1]]$input)
-stopifnot(n>0)
-parVal <- log10(head(AKAP79_default(),-n))
+
+if (n>0){
+	parMCMC <- log10(head(model$par(),-n))
+} else {
+	parMCMC <- log10(model$par())
+}
 
 ## ----range--------------------------------------------------------------------
-defRange <- 2 # log-10 space
-dprior <- dNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
-rprior <- rNormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
+stdv <- head(sb$Parameter[["!Std"]],length(parMCMC))              # this as well
+dprior <- dNormalPrior(mean=parMCMC,sd=stdv)
+rprior <- rNormalPrior(mean=parMCMC,sd=stdv)
 
 ## ----simulate-----------------------------------------------------------------
-sensApprox <- sensitivityEquilibriumApproximation(experiments, model, log10ParMap, log10ParMapJac)
-options(mc.cores = 2)
-simulate <- simulate.c(experiments,modelName,log10ParMap,noise=FALSE,sensApprox=sensApprox)
-y <- simulate(parVal)
+sim <- simulator.c(experiments,modelName,log10ParMap)
+
+y <- sim(parMCMC) ## little test
+stopifnot(is.list(y) && length(y)==length(experiments))
+stopifnot(all(c("state","func") %in% names(y[[1]])))
 
 ## ----likelihood---------------------------------------------------------------
-llf <- logLikelihood(experiments)
-gradLL <- gradLogLikelihood(model,experiments, parMap=log10ParMap, parMapJac=log10ParMapJac)
-fiIn <- fisherInformation(model, experiments, parMap=log10ParMap)
-fiPrior <- solve(diag(defRange, length(parVal)))
+logLH <- function(y,h,stdv,name){
+	n <- sum(!is.na(stdv))
+	llf_const <- sum(log(stdv),na.rm=TRUE) + 0.5*log(2*pi)*n
+	llf_sq <- 0.5*sum(((y - h)/stdv)^2,na.rm=TRUE)
+	return(-llf_const-llf_sq)
+}
+
+llf <- logLikelihoodFunc(experiments,simpleUserLLF=logLH)
 
 ## ----update-------------------------------------------------------------------
-update <- mcmcUpdate(simulate=simulate,
-		          experiments=experiments,
-		          model=model,
-		          logLikelihood=llf,
-		          gradLogLikelihood=gradLL,
-		          fisherInformation=fiIn,
-		          fisherInformationPrior=fiPrior,
-		          dprior=dprior)
+metropolis <- mcmcUpdate(simulate=sim,
+	experiments=experiments,
+	model=model,
+	logLikelihood=llf,
+	dprior=dprior)
+
 ## ----init---------------------------------------------------------------------
-#m <- mcmc(update)              # a serial Markov chain Monte Carlo function
-m <- mcmc_mpi(update,comm=0)    # MPI aware function, passes messages on "comm"
-h <- 1e-3                       # initial step size guess
-## ----adjust-------------------------------------------------------------------
-accTarget <- 0.25
-L <- function(a) { (1.0 / (1.0+exp(-(a-accTarget)/0.1))) + 0.5 }
-
-start_time <- Sys.time()
-x <- parVal
-nj <- 7
-initFile <- sprintf("rmpi-init-rank-%i-of-%i.RData",r,cs)
-if (file.exists(initFile)){
-	load(initFile)
-} else {
-	for (j in seq(nj)){
-		x <- mcmcInit(beta,x,simulate,dprior,llf,gradLL,fiIn)
-		Sample <- m(x,100,eps=h)
-		a <- attr(Sample,"acceptanceRate")
-		h <- h * L(a)
-		x <- attr(Sample,"lastPoint")
-		cat(sprintf("iteration %02i/%02i for rank %02i/%02i,\th = %g\n",j,nj,r,cs,h))
-	}
-	save(x,h,beta,file=initFile)
-	cat("final step size: ",h,"\n")
-	cat("finished adjusting after",difftime(Sys.time(),start_time,units="sec")," seconds\n")
-}
+ptMetropolis <- mcmc_mpi(metropolis,comm=comm,swapDelay=0,swapFunc=pbdMPI_bcast_reduce_temperatures)
 ## ----sample-------------------------------------------------------------------
+x <- mcmcInit(
+	beta,
+	parMCMC,
+	simulate=sim,
+	logLikelihood=llf,
+	dprior)
+s <- ptMetropolis(x,N,h) # the main amount of work is done here
+saveRDS(s,file=sprintf("sample-rank-%i.RDS",r))
+# ---- when all are done, we load the sampled points from the files but only for the right temperature:
+pbdMPI::barrier()
+f <- dir(pattern=sprintf('sample-rank-.*RDS$'))
+stopifnot(length(f) == cs)                                          # MPI comm size
+X <- uqsa::gatherSample(f,beta,size=N/2)
+Copula <- fitCopula(X)
+dprior <- dCopulaPrior(Copula)
+rprior <- rCopulaPrior(Copula)
+parMCMC <- as.numeric(tail(X,1))
+attr(Copula,"beta") <- beta
+attr(X,"beta") <- beta
 
-s <- m(x,N,h) # the main amount of work is done here
-colnames(s) <- names(parVal)
+saveRDS(Copula,file=sprintf("Copula-for-beta-%i-%g.RDS",r,-100*log10(beta)))
+saveRDS(X,file="parameter-sample-for-beta-%i-%g.RDS",r,-100*log10(beta))
 
-saveRDS(s,file=sprintf("Rmpi-testSample-rank%i-of%i.RData",r,cs))
-time_ <- difftime(Sys.time(),start_time,units="sec")
-mpi.finalize()
+time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)
-
+finalize()
 ```
-
-In this script these is an *adjust* phase where we find an appropriate
-step size for the given problem. This is done by trying to make the
-Markov chain acceptance rate roughly `1/4`, which seems to be a good
-enough value to reduce the auto-correlation within the resulting
-sample (it is further decreased through parallel tempering).

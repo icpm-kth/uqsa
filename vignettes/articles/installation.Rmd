@@ -9,13 +9,13 @@ knitr::opts_chunk$set(cache = TRUE,
 )
 ```
 
-# Prerequisites
+# Prerequisites for Model Building
 
 * Install the [GNU Scientific Library](https://www.gnu.org/software/gsl/)
 * The auto-generation of code for each model is done using the shell script in
-  `icpm-kth/RPN-derivative`; that package has several backends for
+  `icpm-kth/RPN-derivative`; that package has several methods for
   analystic (symbolc) math (the thing that computer algebra systems
-  do)
+  do), either of this is OK in most cases:
     - [maxima](https://maxima.sourceforge.io/)
     - [yacas](http://www.yacas.org/index.html)
     - the [RPN-derivative](icpm-kth/RPN-derivative) package

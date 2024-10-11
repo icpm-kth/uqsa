@@ -1,5 +1,6 @@
 ---
-title: "Installation"
+title: "Explanation for System Prerequisites
+"
 ---
 
 ```{r, include = FALSE}
@@ -9,60 +10,137 @@ knitr::opts_chunk$set(cache = TRUE,
 )
 ```
 
+Everything in this article should be already known to all users and
+cover basic interactions with an operating system in the context of
+modelling, scientific computing, and simulations. 
+
+In this guide we explain these things in much more detail than will be
+necessary for most (you probably already know how to install things).
+
+So here is the shortest version of what you need to do, assuming that
+you use `debian` or `ubuntu`:
+
+```{sh, label="debian/ubuntu", eval=FALSE}
+# tl;dr:
+sudo apt install gcc pkg-config libgsl-dev r-base
+```
+
+You already know which commands to run on your distribution, with the
+package manager it uses.
+
+The `pkgconf` on alpine already provides the `pkg-config`
+command, no symlink necessary:
+
+```{sh, label="alpine"}
+sudo apk add gcc gsl pkgconf R         # should suffice
+```
+
+The following material is the long explanation on a few example
+systems (it is impossible for to list all of them). 
+
+# Motivation
+
 In this package, we frequently solve an ordinary differential equation
 model in the context of biological experiments. This can be done using
-`deSolve`, but we prefer to use `gsl_odeiv2`, for whcih we have
-written a binding into R (called `rgsl`). The user facing interface is
-designed around the idea of *experiments* and is more convenient (and
-faster). To use this simulation backend, your system requires the gnu
-scientific library, which R cannot install by itself, usually the
-admin of your machine can do this. If that is you and you don't have
-GSL yet, then follow the guide in the next section.
+`deSolve`, but we prefer to use the solvers from the [GNU Scientific
+Library](https://www.gnu.org/software/gsl/), GSL, specifically the
+`gsl_odeiv2` library. We have written an interface to these solvers
+(called `rgsl`). The user facing interface is designed around the idea
+of simulation *experiments*: a list of instructions that result in a
+model simulation, possibly with multiple calls to the ODE solver to
+obtain the final time-series.
 
-We know that it is in principle possible to use this package on
-windows, but have no experience with this, and cannot provide
-instructions or help with problems.
+This experiment oriented interface is more convenient in our context
+(and usually much faster than using deSolve). The GSL is a system
+level dependency, which R cannot install by itself, usually the admin
+of your machine can do this (on the cluster). If that is you (e.g. on
+your laptop) and you don't have GSL yet, then it is usually a one or two line
+command to install it.
 
-# GNU Scientific Library (optional)
+# System Prerequisites
 
-For the simulation backend using the [GNU Scientific
-Library](https://www.gnu.org/software/gsl/) (gsl, odeiv2), the library
-needs to be installed in your OS, it is not an R package (it's a
-library dependency).
+If you are using an apple device for modelling work (may the
+science-gods have mercy), then you need a package manager that
+macbooks don't come pre-configured with. One such package-manager is
+[homebrew](https://brew.sh/) (this is unofficial work funded by
+donations) - install it using the command pasted on the homebrew
+homepage.
 
-To compile sources with gsl requires c compiler options related to
-linking and the librarie's location. They can look like this: `-lgsl
--lgslcblas -lm`, but also more complex (this depends on your
-system). We use
+WARNING: macOS will definitely mention xcode at some point, apple is
+really keen on this. We have absolutely nothing to do with xcode,
+neither does gcc, or pkg-config. The insistence of macOS to provide
+gcc only through xcode is despicable.
+
+## GNU Scientific Library and pkg-config
+
+To compile C sources at all (with or without gsl) requires a c
+compiler. We also need system specific compiler options related to
+linking and the location where gsl is stored. These compiler options
+can look like this: `-lgsl -lgslcblas -lm`, but also more complex
+(this depends on your system) -- in an HPC environment they will
+almost certainly be very different.
+
+We use
 [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) to
-determine the right options (or `pkgconf`, which does the same thing
-(but faster)). If `pkg-config` is missing from the system,
-installation will fail (it is available for MAC, GNU Linux, Unix, BSD,
-and Windows).
+determine the right compiler options (or `pkgconf`, which does the
+same thing (but faster)); `pkg-config` is available for macOS, GNU
+Linux, Unix, and *BSD (even Windows, not that it helps).
 
-|  Operating System | install gsl                   | install pkg-config                     |
-|------------------:|:------------------------------|:---------------------------------------|
-| Debian and Ubuntu | `sudo apt install libgsl-dev` | `sudo apt install pkg-config`          |
-|      Alpine Linux | `sudo apk add gsl`            | `sudo apk add pkgconf`                 |
-|          GNU Guix | `guix install gsl`            | `guix install pkg-config`              |
-|        Arch Linux | `sudo pacman -S gsl`          | `sudo pacman -S pkgconf`               |
-|            Gentoo | `sudo emerge sci-libs/gsl`    | `sudo emerge virtual/pkgconfig`        |
-|             MACOS | `brew install gsl`            | `brew install pkg-config` or `pkgconf` |
+|  Operating System | install gsl                   | install pkg-config              |
+|------------------:|:------------------------------|:--------------------------------|
+| Debian and Ubuntu | `sudo apt install libgsl-dev` | `sudo apt install pkg-config`   |
+|      Alpine Linux | `sudo apk add gsl`            | `sudo apk add pkgconf`          |
+|          GNU Guix | `guix install gsl`            | `guix install pkg-config`       |
+|        Arch Linux | `sudo pacman -S gsl`          | `sudo pacman -S pkgconf`        |
+|            Gentoo | `sudo emerge sci-libs/gsl`    | `sudo emerge virtual/pkgconfig` |
+|             macOS | `brew install gsl`            | `brew install pkg-config`       |
+|                   |                               |                                 |
 
 
 Once `gsl` and `pkg-config` are available on the system, the
 `icpm-kth/rgsl` package should compile nicely.
 
 If you are in a *normal user* shell (not a root shell, `su -`), and not
-using `guix` or `NixOS`, then the commands require `sudo` or `doas` in
+using `guix` (or `NixOS`), then the commands require `sudo` or `doas` in
 front of them to have the required system administration rights. GNU
 Guix and NIXOS have package managers that don't require administration
 rights.
 
-# R itself
+### macOS and pkgconf
 
-Availability of specific versions depend on the version of your OS,
-how up-to-date your package database. Here is a quick list of the
+You can use `pkgconf` instead of `pkg-config` on macOS. This is again
+not something that has anything to do with us. Everyone who wants to
+use `pkg-config` via pkgconf on macOS needs to consider these things.
+
+Please, make sure that the literal command `pkg-config` is actually
+available after installation.  If it is not, then you can make a symbolic
+link to `pkgconf` and make it available:
+
+```{sh, eval=FALSE}
+which pkg-config      # e.g.: /usr/bin/pkg-config
+```
+
+should print a path if that command is available (or nothing, then it
+isn't).  If `which pkgconf` prints a valid path (it should), then make
+a symlink to it:
+
+```
+# see which PATHs you have defined, or set a new one in ~/.profile
+echo $PATH
+# pick a path, e.g.
+cd ~/.local/bin
+# make the link
+ln -s `which pkgconf` pkg-config
+```
+
+Look at the directories listed in the `PATH` environment variable,
+find one where you can add files (for me this is `~/.local/bin`) and
+make a symbolic link there using `ln`.
+
+## R itself
+
+Availability of specific versions of R depend on the version of your OS,
+how up-to-date your package database is, etc.. Here is a quick list of the
 approximate command:
 
 | Operating System | install R                 |
@@ -74,16 +152,8 @@ approximate command:
 |           Gentoo | `emerge --ask dev-lang/R` |
 
 On MAC, please follow the instructions on the
-[R-studio](https://posit.co/download/rstudio-desktop/) web-site.
-
-We do not have experience with R on windows, specifically when it
-comes to GSL and C compilers to compile the C code included in an R
-package, it may just work, but if not, then maybe these could help:
-
-- [WSL](https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux)
-- [Cygwin](https://en.wikipedia.org/wiki/Cygwin))
-
-
+[R-studio](https://posit.co/download/rstudio-desktop/) web-site. Or
+install the version from homebrew.
 
 # R packages
 
@@ -94,15 +164,17 @@ your machine. In HPC environments this is preferable as user accounts
 can have harsh quotas on *file sizes* and *file numbers*.
 
 But, R packages can also be installed from within R (for individual
-users), but only to a location that is writable to you, typically in your
-`$HOME` diectory. Please ensure that `.libPaths()` returns at least
-one location that you have write access to.
+users), but only to a location that is writable to you, typically in
+your `$HOME` diectory. Please ensure that `.libPaths()` returns at
+least one location that you have write access to (this -- again -- is
+true for everyone, has nothing to do with us).
 
 ```{r, .libPaths, eval=FALSE}
 .libPaths()
 ```
 
-If not, you can create a new directory, and make it known to R:
+If this command doesn't print a path that you can write to, then you
+can create a new directory (in your home), and make it known to R:
 
 ```{sh, eval=FALSE}
 mkdir -p ~/R/library && echo "R_LIBS=~/R/library" >> ~/.Renviron
@@ -114,7 +186,7 @@ Now, you can install R packages from *The Comprehensive R Archive Network* [cran
 install.packages("remotes")
 ```
 
-Our packages are not on CRAN, and can be installe dlike this:
+Our packages are not on CRAN, and can be installed like this:
 
 ```{r, remotes, eval=FALSE}
 remotes::install_github("icpm-kth/uqsa")
@@ -170,9 +242,6 @@ large models).
 remotes::install_github("icpm-kth/uqsa")       # this package
 library(uqsa)                                  # to load it
 ```
-
-Read the articles on this website, especially the *Example* articles
-to learn more: AKAR4, AKAP79, and CaMKII.
 
 ## Examples in the Package
 

@@ -11,7 +11,7 @@ navbar:
       menu:
       - text: Short Instructions
         href: articles/installation.html
-      - text: Full Installation Instructions
+      - text: Explanation for System Prerequisites
         href: articles/install.html
     articles:
       text: Documentation
