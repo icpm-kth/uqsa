@@ -71,7 +71,7 @@ ggplotTimeSeries <- function(simulations, experiments, nrow=NULL, ncol=NULL, plo
 #' @param yl.state y-axis-limits for state variable plots, with
 #'     similar rules as for yl.func
 #' @return list of plots with simulations and experimental data
-ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, type="boxes", plot.states=TRUE, ttf=identity, xl="t", yl.func=NULL, yl.state=NULL){
+ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, type="boxes", plot.states=TRUE, ttf=identity, xl="t", yl.func=NULL, yl.state=NULL, par=NULL){
 	num.experiments <- length(experiments)
 	stopifnot(num.experiments == length(simulations))
 	num.of.funcs <- NCOL(experiments[[1]]$outputValues)
@@ -86,6 +86,12 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 	T1 <- ggplot2::theme(plot.title=element_text(size=rel(2)),
 	            axis.text=element_text(size=rel(1.5)),
 	            axis.title=element_text(size=rel(1.6)))
+	if (!is.null(par) && "logLikelihood" %in% names(attributes(par))) {
+		I <- order(attr(par,"logLikelihood"),decreasing=TRUE)
+		MLE <- I[1]
+	} else {
+		MLE <- 1
+	}
 	if (type == "boxes") {
 		g <- ggplot2::geom_boxplot(ggplot2::aes(x=t,y=y,group=t),outliers=FALSE) #outlier.size=0.3,outlier.color="green")
 	} else {
@@ -131,7 +137,9 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 			p[[(i-1)*M+j]] <- ggplot2::ggplot(df.simulations)+g+
 				ggplot2::geom_errorbar(data=df.experiments, ggplot2::aes(x=t, y=y, ymin = lower, ymax = upper), color="red", inherit.aes=FALSE)+
 				ggplot2::ggtitle(names(experiments[i]))+T1+
-				ggplot2::labs(y=oNames[j],x=t_txt)+YLIMIT
+				ggplot2::labs(y=oNames[j],x=t_txt)+YLIMIT+
+				ggplot2::geom_line(data=data.frame(t=tf,y=simulations[[i]]$func[j,,MLE]), aes(x=t,y=y), color="magenta", linewidth=2, inherit.aes=FALSE)
+
 		}
 		if (plot.states){
 			for(j in seq(num.of.vars)){
@@ -150,7 +158,8 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 				df.simulations <- data.frame(t=rep(ty,N), y=y, sim=rep(seq(N), each=length(ty)))
 				p[[(i-1)*M+j+num.of.funcs]] <- ggplot2::ggplot(df.simulations,ggplot2::aes(x=t, y=y, group=sim))+g+
 					ggplot2::ggtitle(names(experiments[i]))+T1+
-					ggplot2::labs(y=xNames[j],x=t_txt)+YLIMIT
+					ggplot2::labs(y=xNames[j],x=t_txt)+YLIMIT+
+					ggplot2::geom_line(data=data.frame(t=tf,y=simulations[[i]]$state[j,,MLE]), aes(x=t,y=y), color="blue", linewidth=2, inherit.aes=FALSE)
 			}
 		}
 	}

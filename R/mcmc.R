@@ -434,18 +434,23 @@ loadSubSample_mpi <- function(files,size=NA,selection=NA,mc.cores=parallel::dete
 #' @return a matrix of sampled points, all with the same temperature
 gatherSample <- function(files,beta=1.0,size=NA){
 	x <- numeric(0)
+	lL <- numeric(0)
 	for (f in files){
 		s <- readRDS(f)
 		b <- attr(s,"beta")
+		l <- attr(s,"logLikelihood")
 		if (!any(is.na(size)) && size <= NROW(s)){
 			j <- round(seq(1,NROW(s),length.out=size))
 			s <- s[j,]
 			b <- b[j]
+			l <- l[j]
 		}
 		i <- (abs(b - beta) <= 1e-9*beta)
 		x <- rbind(x,s[i,,drop=FALSE])
+		lL <- c(lL,l)
 	}
 	attr(x,"beta") <- beta
+	attr(x,"logLikelihood") <- lL
 	return(x)
 }
 

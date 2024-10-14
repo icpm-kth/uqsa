@@ -13,7 +13,8 @@ ggplotTimeSeriesStates(
   ttf = identity,
   xl = "t",
   yl.func = NULL,
-  yl.state = NULL
+  yl.state = NULL,
+  par = NULL
 )
 }
 \arguments{
