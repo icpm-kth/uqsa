@@ -9,30 +9,42 @@ knitr::opts_chunk$set(cache = TRUE,
 )
 ```
 
+The most straightforward way to describe the model is through [SBtab
+tables](./SBtab.html), if the model can be described in terms of
+reactions, inputs, and outputs. For other models, the user must write
+their own likelihood function (or cost-function, or
+objective-function).
 
-If you need the model as an ordinary differential equation (compatible with deSolve):
+It is possible to make models compatible with deSolve (but without scheduled events):
 
 ```R
-model.tsv <- dir(pattern="[.]tsv$")
-model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
-SBtabVFGEN::sbtab_to_vfgen(model.tab,cla=FALSE)
+model.tsv <- dir(pattern="[.]tsv$",full.names=TRUE)  # file names
+sb <- SBtabVFGEN::sbtab_from_tsv(model.tsv)          # a list of data.frames
+cl <- SBtabVFGEN::sbtab_to_vfgen(sb,cla=FALSE)       # conservation laws, if any
 ```
 
-this will write a file called MODEL.vf (where MODEL is whatever you
-chose as the model name); MODEL.vf encodes the model as an ODE. This
-file is compatible with the
-[vfgen](https://warrenweckesser.github.io/vfgen/) tool; it creates
-code in many languages from this `vf` file.
+The function `sbtab_to_vfgen` will produce several files, using the
+model's name (`Document='model_name'` attribute of SBtab):
 
-Alternatively, you can use our tool:
-[icpm-kth/RPN-derivative](icpm-kth/RPN-derivative), which contains a
+- `model_name.vf`, a vfgen compatible file
+- `model_name.mod`, a NEURON mod file
+- `model_name.xml`, an SBML file, if you have the R bindings to libsbml installed in R and libsbml in your system
+- `*.txt`, the math for the ODE system, not tied to any specification (human readable math text files)
+- `model.tar.gz`, the same text files, bundled as a zip
+- `model.zip`, the same as `tar.gz` but for people who only know `zip`, for compatibility
+
+The vf file is compatible with the [vfgen](https://warrenweckesser.github.io/vfgen/) tool, which creates
+code in many languages from this `vf` file (matlab, cvode, octave, python, xppaut).
+
+Alternatively, you can use our tool, which reads the same file, or one of the archive files (`zip`/`tar.gz`).
+The repository [icpm-kth/RPN-derivative](icpm-kth/RPN-derivative) contains a
 shell script [ode.sh](icpm-kth/RPN/derivative/sh/ode.sh); this script
-uses either the derivative binary from RPN-derivative,
-[maxima](https://maxima.sourceforge.io/), or
-[yacas](https://yacas.readthedocs.io/en/latest/) to calculate
-analytical derivative functions for the jacobian (vfgen uses the
-[ginac](https://www.ginac.de/) library). Our own tool also accepts the
-`.zip` file or `.tar.gz` file that `sbtab_to_vfgen()` creates.
+uses one of three methods to calculate analytical derivatives:
+1. [maxima](https://maxima.sourceforge.io/),
+2. [yacas](https://yacas.readthedocs.io/en/latest/),
+3. the `bin/derivative` binary that RPN-derivative contains (after `make && make install`)
+
+The vfgen tool uses the [ginac](https://www.ginac.de/) library to calculate jacobians.
 
 ```sh
 $ git clone https://github.com/icpm-kth/RPN-derivative.git
@@ -63,7 +75,9 @@ functions that return default initial values, default parameters, the
 parameter jacobian, and the output functions (a model of the
 measurements available for the system). In the same file, there is a
 `model` variable (named *model*) which contains the same functions but
-with anonymous names, e.g.: `model$jac()` is the jacobian function.
+with generic names, e.g.: `model$jac()` is the jacobian
+function (_generic_ means that the model name is not part of the
+function's name).
 
 # Parameters
 
@@ -89,12 +103,15 @@ explicit algebraic functions) have to become part of the model. These
 input parameters can be different between experiments, but the
 intrinsic parameters are always the same.
 
-The ordinary differential equation on the other hand does not need to know the distinction between known or unknown parameters. For these reasons:
+The ordinary differential equation on the other hand does not need to
+know the distinction between known or unknown parameters. For these
+reasons:
 
 ```R
-k = [...] # some parameter set
-u = experiments[[i]]$input
-p = c(k,u)
+parMCMC <- [...]             # some sampling variable
+k <- parMap(parMCMC)         # a model compatible parameter vector
+u <- experiments[[i]]$input  # a valid model input vector
+p <- c(k,u)
 # solve ODE using p
 ```
 
@@ -102,9 +119,18 @@ where `k` are intrinsic, unknown parameters (subject to sampling), and
 `u` are the known input parameters that are encoded in the `input`
 field of an experiment.
 
-If input parameters exist, then they are always concatenated in that
-order and passed to the model, the model's C code only sees `p`. The
-wrapper functions in the `rgsl` package do this concatenation when the
-solver is called. We sample `k` usually in logarithmic space, but the
-solver gets the proposed `k` and appends the right `u` for each
-experiment, both in linear space.
+If input parameters `u` exist, then they are always concatenated (`p <-c(k,u)`) 
+in that order and passed to the model, the model's C code
+only sees `p`. The wrapper functions in the `rgsl` package do this
+concatenation when the solver is called. We sample in
+logarithmic space, but the solver gets `k` and appends
+the right `u` for each experiment, both in linear space.
+
+So, if `parMCMC` is in log10-space, then `parMap` is the
+transformation to linear-space for the solver to work in:
+
+```
+parMap <- function(par) {
+    return(10^(par))
+}
+```
