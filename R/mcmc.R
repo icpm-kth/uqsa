@@ -439,15 +439,16 @@ gatherSample <- function(files,beta=1.0,size=NA){
 		s <- readRDS(f)
 		b <- attr(s,"beta")
 		l <- attr(s,"logLikelihood")
-		if (!any(is.na(size)) && size <= NROW(s)){
-			j <- round(seq(1,NROW(s),length.out=size))
-			s <- s[j,]
-			b <- b[j]
-			l <- l[j]
-		}
-		i <- (abs(b - beta) <= 1e-9*beta)
-		x <- rbind(x,s[i,,drop=FALSE])
+		i <- which(abs(b - beta) <= 1e-9*beta)
+		s <- s[i,,drop=FALSE]
+		l <- l[i]
+		x <- rbind(x,s)
 		lL <- c(lL,l)
+	}
+	if (!any(is.na(size)) && size <= NROW(x)){
+		j <- round(seq(1,NROW(x),length.out=size))
+		x <- x[j,,drop=FALSE]
+		lL<- lL[j]
 	}
 	attr(x,"beta") <- beta
 	attr(x,"logLikelihood") <- lL
