@@ -1,5 +1,5 @@
 ---
-title: "Build C and R source for a model"
+title: "Build a Shared Library"
 ---
 
 ```{r, include = FALSE}
@@ -14,7 +14,8 @@ knitr::opts_chunk$set(cache=TRUE,
 library(uqsa)
 ```
 
-This is a short summary of how to make models for the simulator in the
+This is a short summary of how to make a loadable shared library file
+for a model intended for use with the simulators in the
 [rgsl](https://github.com/icpm-kth/rgsl) package:
 
 |   | Steps                             | tl;dr           |
@@ -30,39 +31,44 @@ The GSL solvers that rgsl uses will load this `.so` file
 calculates derivatives or offloads that work on maxima or yacas,
 install them if you want to use the `--maxima` or `--yacas` options.
 
-**Note**: SBtab is a kind of *content*, but several *file-types* can
-store it (see Summary section below).
-
-If you are on MAC, please install the [homebrew](https://brew.sh/)
-package manager to install essential software that everyone should
-have (a C compiler, pkg-config, etc.). We recommend that you do not
-use official apple software like xcode.
-
 # Create a Vector Field for ODE solvers
 
-Here we assume that you wrote your own model in SBtab. For testing you
-can also download one of our example models. All code here is meant to
-be run in a terminal with a POSIX shell (bash, zsh, dash, ash) should
-all work (this is not usually pre-installed on windows).
-
-Please be aware that some of the scripts use `awk` and `sed`, which
-may differ on different platforms (there is *one true awk*, GNU
-`gawk`, `mawk`, etc.). They differ in options they accept and regular
-expressions they understand.
-
-We further assume that the format is a collection of tsv files.
-
-The SBtabVFGEN package contains a file called `sbtab_to_vfgen` (it is
-a script, an RScript, R needed). Copy it into the directory of the
-model (or alias itm or symlink it, whatever you prefer)
+Here we assume that you wrote your own model in SBtab (here we use TSV
+files). For testing you can also download one of our example models.
+The SBtabVFGEN package contains a file called `sbtab_to_vfgen` (it
+runs via `Rscript`, R is needed). This has been made only for convenience:
 
 ```{sh}
 ./sbtab_to_vfgen *.tsv
 ```
 
+This script loads the SBtabVFGEN package and executes all commands
+needed to process an SBtab model into an ODE.
+
 Afterwards, the directory should also contain a `.vf` file as well as
 an sbml `.xml` file and a zip file (with essentially the same content
 as the vf file).
+
+## The same thing in R
+
+```{r, eval=FALSE}
+# be in the right folder, where your tsv files are
+stopifnot(require(SBtabVFGEN))
+f <- dir(pattern='[.]tsv$') # everything that ends in .tsv
+sb <- sbtab_from_tsv(f)     # a list of data.frames
+if (sbtab.valid(sb)){
+	cl <- sbtab_to_vfgen(sb)
+	print(cl) # these are conservation laws found by sbtab_to_vfgen
+}
+```
+
+The above code will create a `vf` file as well as a `tar.gz` file and
+a `zip` file. Dependeing on what you wrote in the SBtab file, these
+three may contain mathematically valid content that can be processed
+further. 
+
+The `vf` file can be read and used by the `vfgen` tool (but we don't
+use that).
 
 ## Make Source Code for your Model
 
@@ -71,39 +77,76 @@ we need to calculate the appropriate expressions for the jacobian. To
 do these calculations you should either download the contents of the
 `sh` directory in the
 [icpm-kth/RPN-derivative](https://github.com/icpm-kth/RPN-derivative),
-or clone the entire repository (and optionally `make install`). 
+or clone the entire repository (and optionally `make install`) as
+covered in the [installation instructions](articles/installation.html). The short version:
 
-If you want to run the conversion from ODE to code from any directory,
-the easiest way is to set an alias: so, here we `alias` the `ode.sh`
-script. An alternative is to write out the path to it every time, or
-set a variable with the full path (the script loads other files so
-doesn't work if copied without the others). Here we assume that the
-repository clone lies in your `$HOME` directory.
+Assuming that `.local/bin` is in your PATH, this will make a symbolic
+link to the `ode.sh` script.
 
-```{sh}
-alias ode.sh='~/RPN-derivative/sh/ode.sh'
-ode.sh -C --maxima myModel.vf > myModel_gvf.c
-[ -f myModel_gvf.c ] && gcc -shared -fPIC -O2 -o myModel.so myModel_gvf.c
+```{sh, label="make ode.sh available from everywhere", eval=FALSE}
+git clone https://github.com/icpm-kth/RPN-derivative && cd RPN-derivative/sh
+pushd -n `pwd`
+mkdir -p "$HOME/.local/bin" && cd "$HOME/.local/bin"
+ln -s "`dirs -0`/ode.sh" ode
+popd
+
+[ `echo "$PATH" | grep "$HOME/[.]local/bin"` ] && echo "OK" || echo "put ~/.local/bin in your PATH"
 ```
 
-Now you have a `.c` source file and a shared library `.so` file
-(unless the model has errors, or the model is too complex for this
-translation).
+If you only want to try out the script, as a temporary measure, make an alias instead:
+
+```{sh, label="make an alias to test things out", eval=FALSE}
+git clone https://github.com/icpm-kth/RPN-derivative && cd RPN-derivative/sh
+alias ode="`pwd`/sh/ode.sh"
+```
+
+If you did one of those things and have maxima installed:
+
+```{sh, eval=FALSE}
+MODEL="`ls -1 *.vf | head -n 1`"
+MODELC="`basename $MODEL .vf`_gvf.c"
+MODELSO="`basename $MODEL .vf`.so"
+echo "we are trying to turn '$MODEL' into '$MODELSO'"
+[ -f "$MODEL" ] && ode -C --maxima "$MODEL" > "$MODELC"
+[ -f "$MODELC" ] && gcc -shared -fPIC -O2 -o "$MODELSO" "$MODELC"
+```
+
+Now you have a `_gvf.c` source file and a shared library `.so` (unless
+an error occurred). The shared library is what the ODE solver actually
+loads to simulate the model. You can read the C source, check that it
+looks correct and even change what the model does if SBtab was not
+expressive enough.
+
+### Note on sh code
+
+All code in this section is meant to be run in a terminal (emulator)
+with a POSIX compliant shell (bash, zsh, dash, ash) should all work.
+
+Please be aware that some of the scripts use `awk`, `sed` and `perl -p`
+(i.e. perl in sed mode), which may differ on different platforms
+(there is *one true awk*, GNU `gawk`, `mawk`, etc. -- there is no
+consensus on how any of them should behave exactly). 
+
+They differ in options they accept and regular expressions they
+understand. One example is that BSD sed uses `[:<:]` to mean _left
+word boundary_ and gawk uses `\<` for the same thing. In such cases we use `perl -p`.
+
 
 # Summary
 
-Here you can find code blocks for each storage format.
+Here you can find code blocks for each storage format. With simplified
+assumptions on where you downloaded the git repositories.
 
 ## SBtab as TSV
 
 This is a summary of the code in the previous section:
 
-```{sh}
+```{sh, eval=FALSE}
 alias sbtab_to_vfgen='~/SBtabVFGEN/sbtab_to_vfgen'
-alias ode.sh='~/RPN-derivative/sh/ode.sh'
-./sbtab_to_vfgen *.tsv
-ode.sh -C myModel.vf > myModel_gvf.c
-ode.sh -R myModel.vf > myModel.R
+alias ode='~/RPN-derivative/sh/ode.sh'
+sbtab_to_vfgen *.tsv
+ode -C myModel.vf > myModel_gvf.c
+ode -R myModel.vf > myModel.R
 [ -f myModel_gvf.c ] && gcc -shared -fPIC -O2 -o myModel.so myModel_gvf.c
 ```
 
@@ -117,10 +160,10 @@ this time.
 
 ```{sh}
 alias sbtab_to_vfgen='~/SBtabVFGEN/sbtab_to_vfgen'
-alias ode.sh='~/RPN-derivative/sh/ode.sh'
-./sbtab_to_vfgen myModel.xlsx
-ode.sh -C --yacas myModel.vf > myModel_gvf.c
-ode.sh -R --yacas myModel.vf > myModel.R
+alias ode='~/RPN-derivative/sh/ode.sh'
+sbtab_to_vfgen myModel.xlsx
+ode -C --yacas myModel.vf > myModel_gvf.c
+ode -R --yacas myModel.vf > myModel.R
 [ -f myModel_gvf.c ] && gcc -shared -fPIC -O2 -o myModel.so myModel_gvf.c
 ```
 
@@ -132,10 +175,10 @@ variable, and the C compiler is whatever target `cc` links to:
 ```{sh}
 modelName='myModel'
 alias sbtab_to_vfgen='~/SBtabVFGEN/sbtab_to_vfgen'
-alias ode.sh='~/RPN-derivative/sh/ode.sh'
-./sbtab_to_vfgen ${modelName}.ods
-ode.sh -C --yacas ${modelName}.vf > ${modelName}_gvf.c
-ode.sh -R --yacas ${modelName}.vf > ${modelName}.R
+alias ode='~/RPN-derivative/sh/ode.sh'
+sbtab_to_vfgen ${modelName}.ods
+ode -C --yacas ${modelName}.vf > ${modelName}_gvf.c
+ode -R --yacas ${modelName}.vf > ${modelName}.R
 [ -f ${modelName}_gvf.c ] && cc -shared -fPIC -O2 -o ${modelName}.so ${modelName}_gvf.c
 ```
 

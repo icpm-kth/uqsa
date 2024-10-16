@@ -1,5 +1,5 @@
 ---
-title: "Importing Models"
+title: "Importing Models into R"
 ---
 
 ```{r, include = FALSE}
@@ -9,17 +9,19 @@ knitr::opts_chunk$set(cache = TRUE,
 )
 ```
 
-The most straightforward way to describe the model is through [SBtab
-tables](./SBtab.html), if the model can be described in terms of
-reactions, inputs, and outputs. For other models, the user must write
-their own likelihood function (or cost-function, or
-objective-function).
+If the model can be described in terms of reactions, inputs, and
+outputs, then the most straightforward way to define it is through
+[SBtab tables](./SBtab.html). 
 
-It is possible to make models compatible with deSolve (but without scheduled events):
+For completely different models (or solvers), the user must either write their own
+likelihood function (cost-function/objective-function) or write a vf
+file manually to generate C code from.
+
+It is also possible to directly write the model functions in C (for `gsl_odeiv2`).
 
 ```R
-model.tsv <- dir(pattern="[.]tsv$",full.names=TRUE)  # file names
-sb <- SBtabVFGEN::sbtab_from_tsv(model.tsv)          # a list of data.frames
+f <- dir(pattern="[.]tsv$",full.names=TRUE)          # file names
+sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
 cl <- SBtabVFGEN::sbtab_to_vfgen(sb,cla=FALSE)       # conservation laws, if any
 ```
 
@@ -33,53 +35,48 @@ model's name (`Document='model_name'` attribute of SBtab):
 - `model.tar.gz`, the same text files, bundled as a zip
 - `model.zip`, the same as `tar.gz` but for people who only know `zip`, for compatibility
 
-The vf file is compatible with the [vfgen](https://warrenweckesser.github.io/vfgen/) tool, which creates
-code in many languages from this `vf` file (matlab, cvode, octave, python, xppaut).
+The vf file is compatible with the
+[vfgen](https://warrenweckesser.github.io/vfgen/) tool, which creates
+code in many languages from this `vf` file (matlab, cvode, octave,
+python, xppaut). Use this tool if you want to use the created source
+code in other programming languages.
 
-Alternatively, you can use our tool, which reads the same file, or one of the archive files (`zip`/`tar.gz`).
-The repository [icpm-kth/RPN-derivative](icpm-kth/RPN-derivative) contains a
-shell script [ode.sh](icpm-kth/RPN/derivative/sh/ode.sh); this script
-uses one of three methods to calculate analytical derivatives:
+We use our tool, [RPN-derivative](github.com/icpm-kth/RPN-derivative),
+which reads the same file (or one of the archive files:
+`zip`/`tar.gz`) to create slightly different C code. The main
+advantages are:
+
+- a vector valued output function with a predictable name: `int MODEL_func()`
+- the error code of each function is the length of the output buffers that need to be allocated
+- more functions are created:
+    + initial conditions: `int MODEL_init()`
+	+ default parameter values: `int MODEL_default()`
+- mathematical expressions can be inequalities, e.g. `a < b` which
+  evaluates to `0` or `1` in C and is as valid a math expression as
+  `a + b` 
+
+The repository of this tool, [icpm-kth/RPN-derivative](icpm-kth/RPN-derivative),
+contains a shell script [ode.sh](icpm-kth/RPN/derivative/sh/ode.sh);
+this script uses one of three methods to calculate analytical
+derivatives for the Jacobians:
 1. [maxima](https://maxima.sourceforge.io/),
 2. [yacas](https://yacas.readthedocs.io/en/latest/),
 3. the `bin/derivative` binary that RPN-derivative contains (after `make && make install`)
 
-The vfgen tool uses the [ginac](https://www.ginac.de/) library to calculate jacobians.
+The vfgen tool uses the [ginac](https://www.ginac.de/) library to calculate Jacobians. 
+Ginac cannot parse vf files with inequality expressions.
 
-```sh
-$ git clone https://github.com/icpm-kth/RPN-derivative.git
-$ cd RPN-derivative
-$ sh/ode.sh -R --maxima ${MODEL:-myModel}.vf
+Assuming that you followed all [installation instructions](articles/installation.html):
+
+```{sh, eval=FALSE}
+ode -R --maxima ${MODEL:-myModel}.vf > ${MODEL:-myModel}.R 
 ```
 
 Note: `ode.sh` is compatible with the same vf files from SBtabVFGEN,
-but doesn't support all of the outputs VFGEN can do, and does nothing
-related to delays.
+but doesn't support all of the output formats that VFGEN can do, and
+does nothing related to delays.
 
-Maxima needs to be installed for this backend to work. Same with
-Yacas, if you prefer.
-
-Alternatively:
-
-```sh
-$ git clone https://github.com/icpm-kth/RPN-derivative.git
-$ cd RPN-derivative
-$ make && sudo make install
-$ sh/ode.sh -R MODEL.vf
-```
-
-which by default will use the `derivative` binary the third line has
-installed, hopefully. The R script created this way contains the
-functions that `deSolve` would need to simulate the model, but also
-functions that return default initial values, default parameters, the
-parameter jacobian, and the output functions (a model of the
-measurements available for the system). In the same file, there is a
-`model` variable (named *model*) which contains the same functions but
-with generic names, e.g.: `model$jac()` is the jacobian
-function (_generic_ means that the model name is not part of the
-function's name).
-
-# Parameters
+# Background on Parameters
 
 Our goal is to perform *parameter estimation*. A *systems biology*
 model typically has parameters that are either reaction rate

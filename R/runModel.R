@@ -31,7 +31,7 @@
 #'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
 #'  #  simulate <- simulator.c(experiments, modelName,  parABC)
 #'  #  yf <- sim(parABC)
-simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, sensApprox=NULL){
+simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE){
 	require(rgsl)
 	sim <- function(parABC){
 		modelPar <- parMap(parABC)
@@ -39,18 +39,11 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 			mclapply(
 				experiments,
 				function(EX) {
-					rgsl::r_gsl_odeiv2_outer(modelName, list(EX), as.matrix(modelPar))
+					rgsl::r_gsl_odeiv2_outer_sens(modelName, list(EX), as.matrix(modelPar))
 				}
 			),
 			recursive=FALSE)
-		if (length(experiments)==length(yf)) {
-			names(yf) <- names(experiments)
-		} else {
-			warning(sprintf("experiments(%i) should be the same length as simulations(%i), but isn't.",length(experiments),length(yf)))
-		}
-		if (!is.null(sensApprox)) {
-			yf <- sensApprox(parABC,yf)
-		}
+		stopifnot(length(experiments)==length(yf))
 		if(noise){
 			for(i in 1:length(experiments)){
 				out <- yf[[i]]$func

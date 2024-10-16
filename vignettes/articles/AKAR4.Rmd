@@ -1,5 +1,5 @@
 ---
-title: "AKAR4"
+title: "Sample AKAR4"
 ---
 
 ```{r, include = FALSE}
@@ -198,7 +198,7 @@ are defined in the table `SBtab$Output`.
 
 ```{r plot}
 f<-aperm(y[[1]]$func[1,,]) # aperm makes the sample-index (3rd) the first index of f, default permutation
-S<-sensitivity(mcmc$draws,f)
+S<-globalSensitivity(mcmc$draws,f)
 S[1,]<-0 # the first index of S is time, and initially sensitivity is 0
 cuS<-t(apply(S,1,cumsum))
 plot.new()

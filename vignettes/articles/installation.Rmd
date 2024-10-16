@@ -3,13 +3,15 @@ title: "Short Installation Instructions"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
+knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
 # Prerequisites for Model Building
+
+See the Sections below for instructions. Short summary of what they do:
 
 * Install the [GNU Scientific Library](https://www.gnu.org/software/gsl/)
 * The auto-generation of code for each model is done using the shell script in
@@ -39,23 +41,28 @@ sudo apt install pkg-config gcc libgsl-dev maxima
 
 ## Analytical derivatives and Model Code Generation
 
-You may have to adjust this to fit your specific setup (do you use `zsh`? Does it parse `.profile`)
+You may have to adjust this to fit your specific circumstances (do you use `zsh`? Does it parse `.profile`?)
 
 ```{sh derivatives, eval=FALSE}
 git pull https://github.com/icpm-kth/RPN-derivative.git
 cd RPN-derivative
 make
-# these commands (or similar) make the ode script available from any location
 [ -d "$HOME/.local/bin" ] && ln -s "`pwd`/sh/ode.sh" "$HOME/.local/bin/ode"
-[ -L "$HOME/.local/bin/ode" ] && echo "export PATH=\"$HOME/.local/bin:$PATH\"" >> $HOME/.profile
 ```
 
-```{sh optionally}
+
+RPN-derivative contains a c program that can calculate simple derivatives, it can be installed like this:
+```{sh optionally, eval=FALSE}
 # this installs the derivative program in RPN-derivative
+make && make test
 sudo make install
 ```
 
-# Installation
+The `ode.sh` script will work regardless of whether you run `make`,
+but without the above block the `--maxima` or `--yacas` backend options are
+mandatory.
+
+# Installation of the R packages
 
 ```{r remotes, eval=FALSE}
 # requires the 'remotes' package
@@ -65,3 +72,20 @@ remotes::install_github("icpm-kth/rgsl",dependencies=TRUE)
 remotes::install_github("icpm-kth/uqsa",dependencies=TRUE)
 ```
 
+
+# MPI
+
+If you want to run on several nodes of a cluster via MPI:
+
+```{sh MPI, eval=FALSE}
+sudo apt install libopenmpi-dev
+```
+
+and in R:
+
+```{r pbdMPI}
+install.packages("pbdMPI")
+```
+
+
+This is on debian and ubuntu (and their distribution relatives).

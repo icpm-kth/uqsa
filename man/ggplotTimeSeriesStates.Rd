@@ -14,7 +14,7 @@ ggplotTimeSeriesStates(
   xl = "t",
   yl.func = NULL,
   yl.state = NULL,
-  par = NULL
+  MLE = 1
 )
 }
 \arguments{

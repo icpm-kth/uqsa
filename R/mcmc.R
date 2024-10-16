@@ -465,8 +465,9 @@ dmvnorm <- function(x,mean,precision){
 	stopifnot(!is.null(x) && is.numeric(x) && is.numeric(mu) && length(x) == length(mu))
 	stopifnot(!is.null(precision) && is.matrix(precision))
 	k <- length(mu)
+	stopifnot(dim(precision) == c(k,k))
 	xm <- (x-mu)
-	xmPxm <- (x-mu) %*% precision %*% (x-mu)
+	xmPxm <- (x-mu) %*% (precision %*% (x-mu))
 	C <- (2*pi)^(-0.5*k) * sqrt(abs(det(precision))) * exp(-0.5 * xmPxm)
 	return(C)
 }
@@ -549,7 +550,7 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 		#Sigma <- solve(G0)
 	}
 	return(dmvnorm(as.numeric(parProposal),
-		mean=parGiven+0.5*eps*g,
+		mean=as.numeric(parGiven+0.5*eps*g),
 		precision=G/eps)
 	)
 }
@@ -738,7 +739,7 @@ fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac
 	l10 <- log(10)
 	F <- function(parMCMC){
 		simulations <- attr(parMCMC,"simulations")
-		np <- length(parMCMC)
+		np <- NROW(parMCMC)
 		fi  <- matrix(0.0,np,np)
 		for (i in seq(length(experiments))){
 			errF <- t(experiments[[i]]$errorValues)
@@ -888,7 +889,7 @@ gradLogLikelihoodFunc <- function(model,experiments,parMap=identity,parMapJac=fu
 	nF <- length(model$func(0.0,model$init(),model$par()))
 	gradLL <- function(parMCMC){
 		simulations <- attr(parMCMC,"simulations")
-		np <- length(parMCMC) # the dimension of the MCMC variable (parMCMC)
+		np <- NROW(parMCMC) # the dimension of the MCMC variable (parMCMC)
 		z <- rep(0,np)
 		gL <- z
 		for (i in seq(N)){

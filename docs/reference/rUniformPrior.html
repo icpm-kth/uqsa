@@ -32,7 +32,7 @@ function."><!-- mathjax --><script src="file:///usr/share/javascript/mathjax/Mat
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-installation">Installation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
-    <a class="dropdown-item" href="../articles/install.html">Full Installation Instructions</a>
+    <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -41,19 +41,19 @@ function."><!-- mathjax --><script src="file:///usr/share/javascript/mathjax/Mat
     <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
     <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
     <a class="dropdown-item" href="../articles/sa.html">Sensitivity Analysis</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
-    <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
-    <a class="dropdown-item" href="../articles/data.html">Importing data</a>
-    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
+    <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
-    <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
-    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
+    <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
+    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC Sampling</a>
     <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Sensitivity analysis</h6>
-    <a class="dropdown-item" href="../articles/GSA.html">GSA following UQ</a>
+    <h6 class="dropdown-header" data-toc-skip>Sensitivity Analysis</h6>
+    <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -61,9 +61,8 @@ function."><!-- mathjax --><script src="file:///usr/share/javascript/mathjax/Mat
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4 with ABC</a>
-    <a class="dropdown-item" href="../articles/AKAR4cl.html">sample AKAR4 with MCMC</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">Sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">Sample AKAR4</a>
     <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Build a Model</a>
     <a class="dropdown-item" href="../articles/mpi.html">Multiple chains via MPI</a>
   </div>
@@ -126,18 +125,18 @@ where n is the requested number of vectors (rows)</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">rup</span><span class="op">&lt;-</span><span class="fu">rUniformPrior</span><span class="op">(</span>ll<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,ul<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rup</span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]     [,2]     [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.12811576 1.538633 2.129016</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.51096488 1.543793 2.241776</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.80314412 1.947914 2.407361</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.51474456 1.981542 2.354187</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.45584015 1.220025 2.081833</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.36923607 1.126667 2.739873</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.95586629 1.668675 2.468089</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.53819245 1.330954 2.628682</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.45255247 1.888015 2.784202</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.13805955 1.281313 2.706946</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.44218692 1.677699 2.700715</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.06840642 1.958504 2.244484</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.38960928 1.019758 2.385794</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.09107509 1.813702 2.939016</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.43557938 1.007462 2.959061</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.76874721 1.038207 2.072994</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.87530668 1.845603 2.955224</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.61826582 1.892419 2.812289</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.01354854 1.201513 2.264608</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.15779681 1.339681 2.131866</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.27374969 1.334899 2.555503</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.14438761 1.762571 2.174073</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.99892964 1.520942 2.946327</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.84529365 1.841886 2.219356</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

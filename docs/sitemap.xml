@@ -52,6 +52,9 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/install.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/installExplanations.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/installation.html</loc>
   </url>
   <url>
@@ -59,6 +62,18 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/models.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/models_BACKUP_13759.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/models_BASE_13759.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/models_LOCAL_13759.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/mpi.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/sa.html</loc>
@@ -103,6 +118,9 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/install.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/installExplanations.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/installation.html</loc>
   </url>
   <url>
@@ -110,6 +128,18 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/models.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/models_BACKUP_13759.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/models_BASE_13759.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/models_LOCAL_13759.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/mpi.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/sa.html</loc>
@@ -148,6 +178,12 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/ABCMCMC.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/Rmpi_swap_temperatures.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/change_temperature.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/checkFitWithPreviousExperiments.html</loc>
   </url>
   <url>
@@ -178,7 +214,13 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/fisherInformationFromGSA.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/fisherInformationFunc.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/fitCopula.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/gatherSample.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/getDose.html</loc>
@@ -199,6 +241,15 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/gradLogLikelihood.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/gradLogLikelihoodFunc.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/gradLog_NormalPrior.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/grapes-has-grapes.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/grapes-otherwise-grapes.html</loc>
   </url>
   <url>
@@ -214,6 +265,12 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/index.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/loadSample_mpi.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/loadSubSample_mpi.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/log10ParMap.html</loc>
   </url>
   <url>
@@ -221,6 +278,9 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/logLikelihood.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/logLikelihoodFunc.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/makeAcceptanceProbability.html</loc>
@@ -253,6 +313,9 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/mcmcUpdate.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/mcmc_mpi.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/observable.mean.in.bin.html</loc>
   </url>
   <url>
@@ -266,6 +329,12 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/parse.kinetic.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/pbdMPI_bcast_reduce_temperatures.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/pbdMPI_swap_temperatures.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/plotDoseResponse.html</loc>
@@ -295,6 +364,9 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/runModel.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/sampleWithNoise.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/sensitivity.graph.html</loc>
   </url>
   <url>
@@ -302,6 +374,12 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/sensitivityEquilibriumApproximation.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/simc.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/simcf.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/simulator.R.html</loc>
@@ -320,6 +398,9 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/swap_points.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/swap_points_locally.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/uqsa-package.html</loc>

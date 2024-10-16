@@ -149,8 +149,8 @@ Note 2
 A list of constants, values that never change for this model.
 
 | !!SBtab | TableName='Constant' | Document='myModel' |
-|     !ID | !Unit                | !Value             |
 |--------:|:--------------------:|:-------------------|
+|     !ID | !Unit                | !Value             |
 |       a | µM                   | 3.9                |
 |     ... | ...                  | ...                |
 
@@ -265,12 +265,12 @@ transformation at specific event-times.
 
 Here we see one transformation per line that affects the variables listed in the column names `>Var`, i.e.:
 
-```{R, eval=FALSE}
-A<-A-B  # TF1
-B<-B/2  # TF2
+```{r, eval=FALSE}
+A <- A-B  # TF1
+B <- B/2  # TF2
 ```
 
-This is what woudl conceptually happen in the generated code.
+This is what would conceptually happen in the generated code.
 
 ## Event
 
@@ -314,6 +314,19 @@ a human readable conventional form (we don't insist on it being
 correct). It is mostly intended for human readers, but we do parse it
 and use the information for SBML export.
 
+You can test the unit parse like this:
+
+```{r, units, eval=TRUE}
+if (require(SBtabVFGEN)){
+	print(unit.from.string("cm"))
+	print(unit.from.string("uM"))
+	print(unit.from.string("nanomolar"))
+	print(unit.from.string("μM"))
+	print(unit.from.string("pm^3"))
+	print(unit.from.string("s^-1"))
+}
+```
+
 Units are not optional.
 
 Dimensionless quantities are ok, e.g. Hill-exponents, the unit is just
@@ -326,9 +339,9 @@ same as `kb*b`. It is of course legal (in general) to calculate `1 m +
 1 cm`, but we don't do this unit-conversion automatically (maybe never
 will).
 
-The units are used in the SBML export (but sotware support for units
-on the SBML side is also not feature-complete in all cases we know
-about).
+Although SBML has units as well the sotware support for units on the
+SBML side is also not feature-complete in all cases. Other software
+may have its own restrictions on possible units.
 
 # Issues to be aware of with any File format
 

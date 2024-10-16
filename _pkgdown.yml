@@ -12,7 +12,9 @@ navbar:
       - text: Short Instructions
         href: articles/installation.html
       - text: Explanation for System Prerequisites
-        href: articles/install.html
+        href: articles/installExplanations.html
+      - text: The PATH variable
+        href: articles/path.html
     articles:
       text: Documentation
       menu:
@@ -50,10 +52,8 @@ navbar:
           href: articles/simAKAP79.html
         - text: Sample AKAP79
           href: articles/AKAP79.html
-        - text: Sample AKAR4 with ABC
+        - text: Sample AKAR4
           href: articles/AKAR4.html
-        - text: Sample AKAR4 with MCMC
-          href: articles/AKAR4cl.html
         - text: Build a Model
           href: articles/shortMakeSharedLibrary.html
         - text: Multiple chains via MPI
@@ -93,7 +93,6 @@ reference:
   - rNormalPrior
   - rUniformPrior
   - sensitivity.graph
-  - sensitivityEquilibriumApproximation
   - simulator.c
   - uqsa_example
   - "%otherwise%"
