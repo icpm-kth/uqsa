@@ -22,7 +22,8 @@ It is also possible to directly write the model functions in C (for `gsl_odeiv2`
 ```R
 f <- dir(pattern="[.]tsv$",full.names=TRUE)          # file names
 sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
-cl <- SBtabVFGEN::sbtab_to_vfgen(sb,cla=FALSE)       # conservation laws, if any
+cl <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # conservation laws, if any
+ex <- SBtabVFGEN::sbtab.data(sb,cl)
 ```
 
 The function `sbtab_to_vfgen` will produce several files, using the
@@ -30,7 +31,7 @@ model's name (`Document='model_name'` attribute of SBtab):
 
 - `model_name.vf`, a vfgen compatible file
 - `model_name.mod`, a NEURON mod file
-- `model_name.xml`, an SBML file, if you have the R bindings to libsbml installed in R and libsbml in your system
+- (optional) `model_name.xml`, an SBML file, if you have the R bindings to libsbml installed in R and libsbml in your system
 - `*.txt`, the math for the ODE system, not tied to any specification (human readable math text files)
 - `model.tar.gz`, the same text files, bundled as a zip
 - `model.zip`, the same as `tar.gz` but for people who only know `zip`, for compatibility
@@ -39,7 +40,16 @@ The vf file is compatible with the
 [vfgen](https://warrenweckesser.github.io/vfgen/) tool, which creates
 code in many languages from this `vf` file (matlab, cvode, octave,
 python, xppaut). Use this tool if you want to use the created source
-code in other programming languages.
+code for other programming languages. Some SBtab content will be
+missing here (e.g. scheduled events). The vfgen tool uses the
+[ginac](https://www.ginac.de/) library to calculate Jacobians.  Ginac
+cannot parse vf files with inequality expressions in them (e.g. `a < b`).
+
+
+The `ex` variable will hold simulation instructions as a plain R list:
+inputs, initial values, measurement times, etc.
+
+## Converting the ODE to code
 
 We use our tool, [RPN-derivative](github.com/icpm-kth/RPN-derivative),
 which reads the same file (or one of the archive files:
@@ -51,9 +61,6 @@ advantages are:
 - more functions are created:
     + initial conditions: `int MODEL_init()`
 	+ default parameter values: `int MODEL_default()`
-- mathematical expressions can be inequalities, e.g. `a < b` which
-  evaluates to `0` or `1` in C and is as valid a math expression as
-  `a + b` 
 
 The repository of this tool, [icpm-kth/RPN-derivative](icpm-kth/RPN-derivative),
 contains a shell script [ode.sh](icpm-kth/RPN/derivative/sh/ode.sh);
@@ -63,20 +70,22 @@ derivatives for the Jacobians:
 2. [yacas](https://yacas.readthedocs.io/en/latest/),
 3. the `bin/derivative` binary that RPN-derivative contains (after `make && make install`)
 
-The vfgen tool uses the [ginac](https://www.ginac.de/) library to calculate Jacobians. 
-Ginac cannot parse vf files with inequality expressions.
 
 Assuming that you followed all [installation instructions](articles/installation.html):
 
 ```{sh, eval=FALSE}
-ode -R --maxima ${MODEL:-myModel}.vf > ${MODEL:-myModel}.R 
+ode -R --maxima ./myModel.vf > ./myModel.R 
+```
+
+```{sh, eval=FALSE}
+ode -C --maxima ./myModel.tar.gz > ./myModel_gvf.c
 ```
 
 Note: `ode.sh` is compatible with the same vf files from SBtabVFGEN,
 but doesn't support all of the output formats that VFGEN can do, and
 does nothing related to delays.
 
-# Background on Parameters
+# Background on Parameters vs Inputs
 
 Our goal is to perform *parameter estimation*. A *systems biology*
 model typically has parameters that are either reaction rate

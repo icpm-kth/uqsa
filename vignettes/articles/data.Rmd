@@ -3,7 +3,7 @@ title: "Importing Data"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
+knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -34,12 +34,11 @@ second is typically `!Time`, followed by the measured quantities
 labelled as `>outputFunctionID` (values) and `~outputFunctionID` (error estimates).
 
 
-|             label | example            | meaning                                                                 |
+|             Label | Example            | Meaning                                                                 |
 |------------------:|:------------------:|:------------------------------------------------------------------------|
 |        !TimePoint | `Experiment0Time0` | same as !ID, but for times (a unique string)                            |
 |             !Time | `-0.5`             | a floating point constant                                               |
 | >outputFunctionID | `>Calcium_Out`     | values that are meant to be compared to the Output called `Calcium_Out` |
-|                   |                    |                                                                         |
 | ~outputFunctionID | `~Calcium_Out`     | error estimated for the values in *>outputFunctionID*                   |
 
 Each time series typically requires one model simulation to reproduce
@@ -48,15 +47,12 @@ Each time series typically requires one model simulation to reproduce
 ### Example Time Series
 
 ```
-!!SBtab Document='myModel' TableType='QuantityMatrix' TableName='AutorYEARfigureS1a' TableTitle='Data originally published in CITATION'
+!!SBtab Document='myModel' TableName='DataSetBeta'
+ !TimePoint  !Time    >A_out  ~A_out      >totalB  ~totalB 
+       E0T0   -1.0      1.20  0.012         201.1  12
+       E0T1   +0.0      11.8  0.12          203.2  11
+       E0T2   +1.0      31.7  0.19          198.7  13
 ```
-
-| !TimePoint | !Time | `>A_out` | `~A_out` | `>totalB` | `~totalB` |
-|-----------:|------:|---------:|:---------|----------:|:----------|
-|       E0T0 |  -1.0 |     1.20 | 0.012    |     201.1 | 12        |
-|       E0T1 |  +0.0 |     11.8 | 0.12     |     203.2 | 11        |
-|       E0T2 |  +1.0 |     31.7 | 0.19     |     198.7 | 13        |
-
 
 ## Dose Response
 
@@ -78,15 +74,20 @@ A dose response curve requires *n* simulations of the model to reproduce.
 
 ### Example Dose Response Curve
 
+This curve has two inputs and one output (`A_final`), each line is a separate time
+series with one (final) _measurement time point_.
+
 ```
-!!SBtab Document='myModel' TableType='QuantityMatrix' TableName='AutorYEARfigureS1b' TableTitle='Data originally published in CITATION'
+!!SBtab Document='myModel' TableName='DataSetGamma'
+  !ID  >treatment_dose  >treatment_duration  >A_final  ~A_final 
+ E0D0  200                50                     50.1  1.2
+ E0D1  1000               50                     83.2  0.9
+ E0D2  7000               25                     74.7  1.8
 ```
 
-|  !ID | `>treatment_dose` | `>treatment_duration` | `>A_final` | `~A_final` |
-|-----:|:-----------------:|:---------------------:|-----------:|:-----------|
-| E0D0 | 200               | 50                    |       50.1 | 1.2        |
-| E0D1 | 1000              | 50                    |       83.2 | 0.9        |
-| E0D2 | 7000              | 25                    |       74.7 | 1.8        |
+Anything more complex has to be expressed as a `Time series` with an
+event schedule. The measurement time is taken from the `Experiments`
+table (Experiments.tsv).
 
 # Scheduled Events
 
@@ -110,41 +111,28 @@ An example of a Transformation table:
 
 ```
 !!SBtab  Document='myModel'  TableName='Transformation' 
+   !ID  >Cag      >Cal      >Vph        >Vpl        >Nu
+  APCa  Cag+dCag  Cal+dCal  Vph         Vpl         Nu
+   APV  Cag       Cal       Vphph*Vph   Vplpl*Vpl   Nu+ph*Vph+pl*Vpl 
+ Tsucr  Cag       Cal       0           0           Nu+Vph+Vpl
 ```
-
-
-|   `!ID` | `>Cag`     | `>Cal`     | `>Vph`       | `>Vpl`       | `>Nu`              |
-|--------:|:-----------|:-----------|:-------------|:-------------|:-------------------|
-|  `APCa` | `Cag+dCag` | `Cal+dCal` | `Vph`        | `Vpl`        | `Nu`               |
-|   `APV` | `Cag`      | `Cal`      | `Vph-ph*Vph` | `Vpl-pl*Vpl` | `Nu+ph*Vph+pl*Vpl` |
-| `Tsucr` | `Cag`      | `Cal`      | `0`          | `0`          | `Nu+Vph+Vpl`       |
-
-Note: Our code ignores most of the `!!SBtab` header attributes in TSV files,
-except the two given above. For excel and ods files, we ignore all
-`!!SBtab` attributes and skip the entire first line, instead we use
-the Sheet name as TableName and file name as Document name.
 
 These transformations apply at times given in an event schedule:
 
 ```
 !!SBtab  Document='myModel'  TableName='OneAP'
+ !ID  !Time  !Transformation  !Dose 
+ AP0  0      APCa             0
+ AP1  1E06   APV              0
 ```
-
-| `!ID` | `!Time` | `!Transformation` | `!Dose` |
-|------:|:-------:|:------------------|:-------:|
-| `AP0` | `0  `   | `APCa`            | `0`     |
-| `AP1` | `1E-06` | `APV`             | `0`     |
-
 
 And this schedule is applied to an experiment by listing it in the Experiment table:
 
 ```
- !!SBtab  Document='myModel'  TableName='Experiment' 
+!!SBtab  Document='myModel'  TableName='Experiment' 
+    !ID  !Event  !T0   >A  >B
+    PvR  OneAP    200  0   0
 ```
-
-| `!ID` | `!Event`          | `!T0`  | `>A` | `>B` | `>C` |
-|------:|:-----------------:|:------:|:----:|:----:|:----:|
-| `PvR` | >>>  `OneAP`  <<< | `-200` | `0`  | `0`  |      |
 
 The `!Event` column specifies the event schedule for this experiment
 (each experiment is one row).
@@ -196,13 +184,13 @@ int myModel_event(double t, double y_[], void *par, int EventLabel, double dose)
 
 The [icpm-kth/SBtabVFGEN](github.com/icpm-kth/SBtabVFGEN) package has functions to import a model with the data into R data structures. If you did not install this already:
 
-```R
+```{r}
 remotes::install_github("icpm-kth/SBtabVFGEN") # if you didn't do that yet
 ```
 
 and once it is installed:
 
-```R
+```{r}
 if (require(SBtabVFGEN)){
 	model.tsv <- dir(pattern="[.]tsv$",full.names=TRUE) # a vector of file paths to TSV files
 	sb <- SBtabVFGEN::sbtab_from_tsv(model.tsv)         # a list of data.frames
@@ -220,7 +208,7 @@ The `experiments` variable is a list, each member (itself a list), describes a s
 |  outputTimes | numeric vector | a time vector that corresponds to when measurements were taken             |
 |              |                |                                                                            |
 | outputValues | data.frame     | the values of the data at the above outputTimes                            |
-|  errorValues | data.frame     | an indication of the measurement error/noise                               |
+|  errorValues | data.frame     | an indication of the measurement error/noise (standard error)              |
 |       events | list           | a sudden transformation event                                              |
 
 

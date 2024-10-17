@@ -77,7 +77,7 @@ SBML may of course add new features. In general, SBML is hard.
 Each file has a header, with attributes `key='value'` separated by spaces or tabs, e.g.:
 
 ```{sh, eval=FALSE}
-!!SBtab SBtabVersion='1.0' TableName='Reaction' TableType='Reaction' TableTitle='A list of Reactions' Document='myModel'
+!!SBtab SBtabVersion='1.0' TableName='Reaction' TableType='Reaction' Document='AKAP79'
 ```
 
 This header doesn't have columns, it's a line of text, immediately
@@ -88,109 +88,153 @@ column names have special meanings, unknown columns will not be parsed
 (they are harmless).
 
 We don't parse the version attribute or any other attribute other than
-`TableName` and `Document`. We use the `Document` attribute to assign
-a name to each model we read from the files; it is stored as a comment
-attached to the list of data.frames that `model.tab <-
-SBtabVFGEN::sbtab_from_tsv()` returns. The command
-`comment(model.tab)` will show it.
+`TableName` and `Document`.
 
-The second line contains the table column names. The first column
-can be called either `!ID` or `!Name` (it is harmless to have both,
-but only the first one counts). If the first column is not called
-that, the scripts will carry on regardless, assuming that it is some
-kind of name (so `!Id`, `!id`, or `ID?` will also work for us -- not
-for other software). All other columns are found by name, exactly. All
-other columns can appear in any order. Any amount of columns can be
-added with names not starting with exclamation points, they are
-ignored.
+```{r, eval=TRUE}
+f <- uqsa_example("AKAP79")          # this is what the directory is called
+sb <- SBtabVFGEN::sbtab_from_tsv(f)
+print(comment(sb))                   # the value of the Document attribute of f[1]
+print(names(sb))                     # the values of the TableName attributes
+```
 
-In the following sub-sections we will list the minimum set of columns
-for each table, the sub-section heading refers to the required
-`TableName` attribute for this kind of table. The set of columns are
-given as example tables. We print the `!!SBtab` heading line
-separately from the table matter (in this document) to not mess up
-formatting due to different numbers of elements.
+Document
+: must be the same string for all tables. We don't check this.  We use
+this attribute to assign a name to each model we read from
+the files
 
-There are two generic table-types that can be used if no specific one
-is applicable: `TableType='Quantity'` and
-`TableType='QuantityMatrix'`. We usually don't use the `TableType`
-property at all, but it is needed for the official
-([sbtab.net](www.sbtab.net)) tool-set to work.
+TableType
+: (does not matter) There are two generic table-types that can be used
+if no specific one is applicable: `TableType='Quantity'` and
+`TableType='QuantityMatrix'`. We don't use the `TableType` property at
+all, but it is needed for the official ([sbtab.net](www.sbtab.net))
+tool-set to work.
 
-If there is a specific table-type setting for a table, we list that
-setting in the following sections.
+TableName
+: Some Tables have a pre-determined name, e.g. `Reaction`, or
+`Compound`. These are found by name, case sensitive spelling.  Other
+tables have to be mentioned somewhere to matter. An SBtab document can
+have any number of data tables, these can have any name as long as it
+is unique. The name of these tables has to be used as the experiment
+ID. The function `SBtabVFGEN::sbtab.data()` first reads the table
+called `Experiments`, collects all IDs and then searches for tables
+named like the experiment ID.
+The same mechanism is used for Event Schedules.
 
-An example of an SBtab file:
+SBtabVersion
+: ignored
+
+## Tabular Content
+
+The second line/row contains the table column names, which often start
+with an exclamation point, or another special character to signify a
+special meaning. 
+
+### Special Column Symbols
+
+- `!abc` means that this column has a special meaning, defined in the SBtab standard
+- `>xyz` means that this column specifies a value for variable `xyz`,
+  it has an entry in some other table 
+    + there must be a table where `xyz` appears in the `!ID` column,
+- `~xyz` this is our extension, we don't know how to express this in plain SBtab
+    + this column specifies the standard error for `>xyz`
+- any column that doesn't start with one of `!>~` isn't special and
+  isn't interpreted by us.
+
+The first column can be called either `!ID` or `!Name` (it is harmless
+to have both, but only the first one counts). If the first column is
+not called that, the scripts will carry on regardless, assuming that
+it is some kind of name (so `!Id`, `!id`, or `ID?` will also work for
+us -- not for other software). All other columns are found by name,
+exactly, and can appear in any order.
+
+### Examples
+
+The set of columns are given as example tables in the following
+Sections. An example of an SBtab file, in general, with header:
 
 ```{sh, label="Reaction.tsv", eval=FALSE}
-!!SBtab	Document='myModel' TableName='Reaction' TableType='Reaction'
-!ID    !KineticLaw         !IsReversible  !ReactionFormula
-flux1  Cag0/taug-Cag/taug  TRUE           NULL <=>Cag
-flux2  Cal0/taul-Cal/taul  TRUE           NULL <=>Cal
-flux3  k1f_Ca*Np-k1b*Vdh   TRUE           Np<=>Vdh
-flux4  k2f_Ca*Vdh-k2b*Vph  TRUE           Vdh<=>Vph
-flux5  k4f*Vph             FALSE          Vph<=>Nu
-flux6  k5f_Ca*Nu           FALSE          Nu<=>Np
-flux7  k1f_Ca*Np-k1b*Vdl   TRUE           Np<=>Vdl
-flux8  k2f_Ca*Vdl-k2b*Vpl  TRUE           Vdl<=>Vpl
-flux9  k3f*Vpl             FALSE          Vpl<=>Nu
+!!SBtab	Document='AKAP79' SBtabVersion='1.0' TableName='Reaction' TableTitle='Reactions in AKAP79 Model' TableType='Reaction'
+!ID          !KineticLaw                                                                                    !ReactionFormula                   !IsReversible
+reaction_51  kf_Rii_C__RiiP_C*Rii_C                                                                         Rii_C <=> RiiP_C                   0
+reaction_14  kf_RiiPxC__RiiP_C*RiiP*C - kb_RiiPxC__RiiP_C*RiiP_C                                            RiiP + C <=> RiiP_C                1
+reaction_12  kf_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C*cAMP - kb_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C_cAMP              RiiP_C + cAMP <=> RiiP_C_cAMP      1
+reaction_43  kf_RiiPXcAMP__RiiP_cAMP*cAMP*RiiP - kb_RiiPXcAMP__RiiP_cAMP*RiiP_cAMP                          cAMP + RiiP <=> RiiP_cAMP          1
+reaction_23  kf_RiiP_cAMPxC__RiiP_C_cAMP*RiiP_cAMP*C - kb_RiiP_cAMPxC__RiiP_C_cAMP*RiiP_C_cAMP              RiiP_cAMP + C <=> RiiP_C_cAMP      1
+reaction_78  kf_cAMPxRii__Rii_cAMP*cAMP*Rii - kb_cAMPxRii__Rii_cAMP*Rii_cAMP                                cAMP + Rii <=> Rii_cAMP            1
+reaction_56  kf_Rii_CxcAMP__Rii_C_cAMP*Rii_C*cAMP - kb_Rii_CxcAMP__Rii_C_cAMP*Rii_C_cAMP                    Rii_C + cAMP <=> Rii_C_cAMP        1
+reaction_76  kf_Rii_cAMPxC__Rii_C_cAMP*Rii_cAMP*C - kb_Rii_cAMPxC__Rii_C_cAMP*Rii_C_cAMP                    Rii_cAMP + C <=> Rii_C_cAMP        1
+reaction_62  kf_Rii_C_cAMP__RiiP_C_cAMP*Rii_C_cAMP                                                          Rii_C_cAMP <=> RiiP_C_cAMP         0
+reaction_58  kf_RiixC__Rii_C*Rii*C - kb_RiixC__Rii_C*Rii_C                                                  Rii + C <=> Rii_C                  1
+reaction_44  kf_RiiPxCaN__RiiP_CaN*RiiP*CaN - kb_RiiPxCaN__RiiP_CaN*RiiP_CaN                                RiiP + CaN <=> RiiP_CaN            1
+reaction_33  kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN*CaN*RiiP_cAMP - kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN*RiiP_cAMP_CaN  CaN + RiiP_cAMP <=> RiiP_cAMP_CaN  1
+reaction_48  kf_RiiP_CaN__RiixCaN*RiiP_CaN                                                                  RiiP_CaN <=> Rii + CaN             0
+reaction_37  kf_RiiP_cAMP_CaN__CaNXRii_cAMP*RiiP_cAMP_CaN                                                   RiiP_cAMP_CaN <=> CaN + Rii_cAMP   0
+reaction_1   kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C                                                        C + AKAR4 <=> AKAR4_C              1
+reaction_2   kcat_AKARp*AKAR4_C                                                                             AKAR4_C <=> AKAR4p + C             0
 ```
+
+The same file can look like this in spreadsheet software, e.g.[gnumeric](http://www.gnumeric.org/):
+![AKAP79 Reaction Table](AKAP79-Reaction.png)
 
 Note 1
 : our code ignores almost everything in the first line, except `TableName`
 
 Note 2
-: `FALSE` and `TRUE` work in R correctly, they also work (literally)
-  in C (if they are defined as macros).  Some spreadsheet software
-  exports `TRUE`/`FALSE` as `1`/`0` into TSV (this is also fine).
+: `FALSE` and `TRUE` (the Boolean values lots of spreadsheet software
+  uses) mostly work in R correctly, they can also work (literally) in
+  C (if they are defined as macros or enums).  Some spreadsheet
+  software exports `TRUE`/`FALSE` as `1`/`0` into TSV (this is usually
+  better). See the last Section on this page about this topic.
 
-## Constant
+All of the following examples are tab separated (originally) but
+printed using automatic vertical alignment, starting with the second
+line. You cannot copy paste them into new files, there must be tabs.
 
-A list of constants, values that never change for this model.
+### Constant
 
-| !!SBtab | TableName='Constant' | Document='myModel' |
-|--------:|:--------------------:|:-------------------|
-|     !ID | !Unit                | !Value             |
-|       a | µM                   | 3.9                |
-|     ... | ...                  | ...                |
+A list of constants, values that never change for this model, e.g. Avogadro's number.
+
+```{sh, eval=FALSE}
+ !!SBtab  TableName='Constant'  Document='myModel' 
+     !ID  !Unit                 !Value
+       L  1                     6.02214076E+23
+```
 
 The number of items in the first line is usually different from the
-rest, as this is a header, for this reason we print them separately
-from this point on.
+rest, as this is a header, so they don't always form a neat table.
 
-## Input
+### Input
 
 Known paramters of the model, can vary between experiments.
 
 ```{sh, eval=FALSE}
 !!SBtab TableName='Input' Document='myModel'
+              !ID  !DefaultValue  !Unit 
+ CalciumBaseLevel  2000.0         nM
+              ...  ...            ...
 ```
 
-|!ID|!DefaultValue|!Unit|
-|--:|:-----------:|:---:|
-|CalciumBaseLevel|2000.0|nM|
-|...|...|...|
+Inputs are what distinguishes experiments alongside initial values,
+and event schedules (interventions).
 
-## Parameter
+### Parameter
 
 Possibly unknown parameters of the model, these parameters typically
 refer to internal properties of the model itself rather than something
 we did to the model during an experiment.
 
-```
+```{sh, eval=FALSE}
 !!SBtab TableName='Parameter' Document='myModel'
+ !ID  !DefaultValue  !Std  !Unit     !Scale
+ kf1            1.8   0.1  s^(1)     natural logarithm 
+ ...            ...  ...   ...       ...
 ```
-
-|!ID|!DefaultValue|!Std|!Unit|!Scale|
-|--:|------------:|:---|:----|:----:|
-|kf1|-1.8|0.1|`s^(-1)`|natural logarithm|
-|...|...|...|...|...|
 
 Here the `!Scale` column is optional, but often useful; several values
 are possible: `log10`,`log`,`linear` (in various spellings). If
 missing, `linear` is assumed.
 
-## Expression
+### Expression
 
 Mathematical sub-expressions that can be used in reaction fluxes. Can
 be used to encode thermodynamic relationships between parameters,
@@ -199,55 +243,50 @@ expression.
 
 ```{sh, eval=FALSE}
 !!SBtab TableName='Expression' Document='myModel'
+  !ID  !Unit  !Formula
+ KD_1  nM     (KD_3*KD_4)/KD_2
+  ...  ...    ...
 ```
 
-|  !ID | !Unit | !Formula           |
-|-----:|:-----:|:-------------------|
-| KD_1 | nM    | `(KD_3*KD_4)/KD_2` |
-|  ... | ...   | ...                |
-
-## Compound
+### Compound
 
 In SBML parlance, these are *species*.
 
 ```{sh, eval=FALSE}
 !!SBtab TableName='Compound' TableType='Compound' Document='myModel'
+      !ID  !Unit  !InitialValue 
+ PP2B_CaM  μM     0.0
+      ...  ...    ...
 ```
 
-|      !ID | !Unit | !InitialValue |
-|---------:|:-----:|:--------------|
-| PP2B_CaM | uM    | 0.0           |
-|      ... | ...   | ...           |
 
 There are several optional columns, e.g. `!IsConstant` and
 `!Type`. These variables are usually used as state variables in an ODE
 framework.
 
-## Reaction
+### Reaction
 
 ```{sh, eval=FALSE}
 !!SBtab TableName='Reaction' TableType='Reaction' Document='myModel'
+       !ID  !KineticLaw    !IsReversible   !ReactionFormula 
+ Reaction1  kf*A*B - kb*C  TRUE            A + B <=> C
+       ...  ...            ...             ...
 ```
 
-|       !ID | !KineticLaw   | !IsReversible | !ReactionFormula |
-|----------:|:-------------:|:-------------:|:----------------:|
-| Reaction1 | `kf*A*B-kb*C` | `TRUE`        | `A + B <=> C`    |
-|       ... | ...           | ...           |                  |
 
-## Output
+### Output
 
 ```{sh, eval=FALSE}
 !!SBtab TableName='Output' Document='myModel'
+      !ID  !Unit  !Formula
+ CaPerCaM  1      totalCa/totalCaM
+      ...  ...    ...
 ```
 
-|      !ID | !Unit | !Formula           |
-|---------:|:-----:|:-------------------|
-| CaPerCaM | 1     | `totalCa/totalCaM` |
-|      ... | ...   | ...                |
 
 A unit of `1` means the same as `'dimensionless'` in SBML.
 
-## Transformation
+### Transformation
 
 A table of all possible transformations (maps) that are part of any
 experiments described procedure. An event can trigger any of these
@@ -255,13 +294,11 @@ transformation at specific event-times.
 
 ```{sh, eval=FALSE}
 !!SBtab TableName='Transformation' Document='MyModel'
+ !ID  >A     >B     >C
+ TF1  AB     B      C
+ TF2  A      B/2    C
+ TF3  A*0.1  B*0.1  C*0.1 
 ```
-
-| !ID | >A      | >B      | >C      |
-|----:|:-------:|:-------:|:-------:|
-| TF1 | `A-B`   | `B`     | `C`     |
-| TF2 | `A`     | `B/2`   | `C`     |
-| TF3 | `A*0.1` | `B*0.1` | `C*0.1` |
 
 Here we see one transformation per line that affects the variables listed in the column names `>Var`, i.e.:
 
@@ -272,40 +309,108 @@ B <- B/2  # TF2
 
 This is what would conceptually happen in the generated code.
 
-## Event
+### Event
 
 Events will interrupt the ODE solver in the rgsl package (not other
 solvers), change the values of input parameters, or state variables
 according to the available named tranformations (see above). After the
 transformation the solver is re-initialized to continue from there.
 
-```sh
-!!SBtab TableName='SubtractB' Document='myModel'
+```{sh, eval=FALSE}
+!!SBtab TableName='EventScheduleAlpha' Document='myModel' 
+  !TimePoint  !Time  !Tranformation 
+ Event0Time0  10.0   TF1
+ Event0Time0  11.0   TF2
+         ...  ...    ...
 ```
 
-|  !TimePoint | !Time | !Tranformation |
-|------------:|:-----:|:---------------|
-| Event0Time0 | 10.0  | TF1            |
-|         ... | ...   | ...            |
+### Experiments
 
-## Experiments
-
-```sh
+```{sh, eval=FALSE}
 !!SBtab TableName='Experiments' Document='myModel'
+               !ID  !Type          !Time  !T0    !Event              !Citation
+    Smith2019Fig2E  Time Series    600.0  -100.0  EventScheduleAlpha  https//doi.org/10.[...] 
+               ...  ...            ...    ...     ...                ...
 ```
 
-|               !ID | !Type         | !Time | !T0    | !Event      | !Citation                |
-|------------------:|:-------------:|:-----:|:------:|:-----------:|:-------------------------|
-| Bradshaw2003Fig2E | Dose Response | 600.0 | -100.0 | Activation0 | https://doi.org/10.[...] |
-|               ... | ...           | ...   | ...    | ...         | ...                      |
+Author-Year citation keys make good ID values for data sets.
 
-where `Type` is: `Time Series`, or `Dose Response`. The initial time
-for the ODE $t_0$ corresponds to the beginning of the experiment setup:
-`!T0` (the time value). The plain `!Time` is the default time of
-measurements; for dose response experiments, this is the only place to
-specify the measurement time. `!Event` names the table that contains
-instructions for scheduled events (see above). The `!Citation` column
-is entirely optional.
+`!Type` is one of: `Time Series`, or `Dose Response` for our
+purposes. The initial time for the ODE $t_0$ corresponds to the
+beginning of the experiment setup: `!T0` (the time value). The plain
+`!Time` is the default time of measurements; for dose response
+experiments, this is the only place to specify the measurement
+time. `!Event` names the table that contains instructions for
+scheduled events (see above). The `!Citation` column is entirely
+optional.
+
+
+### Data
+
+Data is stored in TSV files as well, but isn't used when building the ODE code. It is used in parameter estimation.
+
+#### Time Series
+
+```{sh, eval=FALSE}
+!!SBtab Document='myModel' Version='1.0' TableName='Smith2019Fig2E' TableType='QuantityMatrix'			
+!TimePoint  !Time  >AKAR4pOUT  ~AKAR4pOUT
+E0301T001   -15    99.4136     0.711886579917949
+E0301T002   -10    100.617     0.401234567901235
+E0301T003   -5     101.944     0.927467851933129
+E0301T004   0      NA
+E0301T005   5      101.204     0.28287504289851
+E0301T006   10     102.037     0.565750085797018
+E0301T007   15     102.346     0.432098765432101
+E0301T008   20     103.765     0.40478015582111
+E0301T009   25     105.463     1.14280917170207
+E0301T010   30     106.204     1.07316905251319
+E0301T011   35     110.648     0.509960235859822
+E0301T012   40     110.988     1.31417708987925
+E0301T013   45     112.438     1.60137305815714
+```
+
+`TimePoint` is a kind of `ID`, our scripts do not check what the first
+column is called, the contents are always used as `rownames` in R
+data-frames.
+
+In this particular Table, we find a missing value (was not measured).
+
+#### Dose Response
+
+In dose response experiments, the system reacts to an input dose
+repeatedly. Each row is simulated as a time series by itself.  
+
+The table works the same way, but rather than `Time` we have an input
+column:
+
+```{sh, eval=FALSE}
+!!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableName='Shifman2006Fig1Bsq' TableType='QuantityMatrix' 
+!ID    >Ca_set  >CaPerCaM  ~CaPerCaM
+E1D0   364      0.011      0.3985
+E1D1   2305     1.196      0.3985
+E1D2   2548     1.464      0.3985
+E1D3   2912     1.743      0.3985
+E1D4   3640     1.956      0.3985
+E1D5   4126     2.09       0.3985
+E1D6   3762     2.291      0.3985
+E1D7   4611     2.38       0.3985
+E1D8   4247     2.559      0.3985
+E1D9   5461     2.604      0.3985
+E1D10  4611     2.85       0.3985
+E1D11  6067     2.917      0.3985
+E1D12  5339     3.04       0.3985
+E1D13  6796     3.163      0.3985
+E1D14  6067     3.23       0.3985
+E1D15  7281     3.465      0.3985
+E1D16  8495     3.61       0.3985
+E1D17  9344     3.856      0.3985
+E1D18  24393    3.994      0.3985
+E1D19  34101    3.996      0.3985
+```
+
+Here `Ca_set` is an input value, and `CaPerCam` is an output
+value. This cannot be determined from the Table itself, only from the
+rest of the Document.
 
 # A Note on Units
 
@@ -317,14 +422,15 @@ and use the information for SBML export.
 You can test the unit parse like this:
 
 ```{r, units, eval=TRUE}
-if (require(SBtabVFGEN)){
-	print(unit.from.string("cm"))
-	print(unit.from.string("uM"))
-	print(unit.from.string("nanomolar"))
-	print(unit.from.string("μM"))
-	print(unit.from.string("pm^3"))
-	print(unit.from.string("s^-1"))
+prettyPrint <- function(units){
+	L <- paste0(rep("-",12),collapse="")
+	for (u in units){
+		cat(sprintf("%s[%12s]%s\n",L,u,L))
+		print(SBtabVFGEN::unit.from.string(u))
+		cat("\n")
+	}
 }
+prettyPrint(c("cm","uM","MM","1","μM","nanomolarity","s^-1"))
 ```
 
 Units are not optional.
@@ -397,3 +503,122 @@ e.g. hdf5r and re-roganized into a list like this.
 Ultimately, the code in uqsa expects a likelihood function or
 objective-function that assigns a scalar value to a parameter vector,
 what this function does to calculate it is up to every user.
+
+# Note on Boolean Values
+
+Special care has to be taken when the TSV files use TRUE and FALSE as
+values. This is useful, because the data in the tables can refer to
+inequality constraints.
+
+Consider this:
+
+```{sh, eval=FALSE}
+!!SBtab TableName='Output'
+!ID      !Formula
+a_lt_b   a < b
+```
+
+with an Experiment that checks this condition:
+
+```{sh, eval=FALSE}
+!!SBtab TableName='Experiments'
+              !ID  !T0  >A  >B  [...] % input settings, initial values
+CheckInequalities  -1.0  12  13
+```
+
+and this data table:
+
+```{sh, eval=FALSE}
+!!SBtab TableName='CheckInequalities',
+!TimePoint	!Time	>a_lt_b,
+        T1	0.00	TRUE
+        T2	0.01	TRUE
+        T3	0.03	FALSE
+```
+
+This is perfectly fine.
+
+Tests in R, to verify:
+
+```{r, eval=TRUE}
+# create a dummy file:
+cat("!!SBtab TableName='CheckInequalities'",
+"!TimePoint\t!Time\t>a_lt_b",
+"T1\t0.00\tTRUE",
+"T2\t0.01\tTRUE",
+"T3\t0.03\tFALSE",
+file="test.tsv",sep="\n")
+
+# read this dummy file:
+test <- read.delim("test.tsv",skip=1)
+file.remove("test.tsv")
+print(test)
+
+
+# check the type of the Booleans:
+print(test[[3]])
+lapply(test,class)
+```
+
+This setup makes sense, and will work out of the box because R's
+`read.delim` function infers the type of a column. It will probably
+stop working if the values are inconsistent (some logical some numeric).
+
+However, if the model's ODE content includes `TRUE` and `FALSE` values
+in some way, e.g. as switches between several distinct behaviours,
+then these Booleans should be written numerically as `0` and `1`. Consider this:
+
+```{r, eval=TRUE}
+# make a similar dummy file, but this time it's an input
+cat("!!SBtab TableName='Input'",
+"!ID\t!Value\t!Comment",
+"B\tTRUE\ta Boolean value",
+"M\t65.3\ta numeric value",
+file="test.tsv",sep="\n")
+
+# read the file:
+test <- read.delim("test.tsv",skip=1)
+file.remove("test.tsv")
+print(test)
+
+# check the type of the Booleans:
+print(test[[2]])
+lapply(test,class)
+
+# similarly:
+as.numeric(c("TRUE","1","FALSE","0"))
+as.logical(c("TRUE","1","FALSE","0"))
+```
+
+So, since we mixed types in one column, it didn't work right.
+
+To fix this use the integers `1` and `0` explicitly.
+
+
+However, even in the C code it can be made to work, even if you have explicit TRUE/FALSE values in the actual reactions:
+
+```{sh, label="a.c"}
+(
+cat<<EOF
+#!/usr/bin/tcc -run
+#include <stdlib.h>
+#include <stdio.h>
+
+enum logical {FALSE, TRUE};
+
+enum logical as_logical(int value){
+	return !!value;
+}
+
+int main(int argc, char *argv[]){
+	printf("TRUE=%i , FALSE=%i (both as integer), as_logical(2)=%i\n",TRUE, FALSE, as_logical(2));
+	return EXIT_SUCCESS;
+}
+EOF
+) > a.c
+chmod 744 a.c
+./a.c
+rm a.c
+```
+
+But, this is unlikely to be useful. But inequality statements are allowed in the ODE itself (for switches).

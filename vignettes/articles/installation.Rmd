@@ -44,12 +44,12 @@ sudo apt install pkg-config gcc libgsl-dev maxima
 You may have to adjust this to fit your specific circumstances (do you use `zsh`? Does it parse `.profile`?)
 
 ```{sh derivatives, eval=FALSE}
-git pull https://github.com/icpm-kth/RPN-derivative.git
+git clone https://github.com/icpm-kth/RPN-derivative.git
 cd RPN-derivative
 make
-[ -d "$HOME/.local/bin" ] && ln -s "`pwd`/sh/ode.sh" "$HOME/.local/bin/ode"
+dir=`pwd`
+mkdir -p ~/.local/bin && ln -s "$dir/sh/ode.sh" "$HOME/.local/bin/ode"
 ```
-
 
 RPN-derivative contains a c program that can calculate simple derivatives, it can be installed like this:
 ```{sh optionally, eval=FALSE}
@@ -72,10 +72,9 @@ remotes::install_github("icpm-kth/rgsl",dependencies=TRUE)
 remotes::install_github("icpm-kth/uqsa",dependencies=TRUE)
 ```
 
-
 # MPI
 
-If you want to run on several nodes of a cluster via MPI:
+If you want to run on several nodes of a cluster via MPI (debian/ubuntu):
 
 ```{sh MPI, eval=FALSE}
 sudo apt install libopenmpi-dev
@@ -83,9 +82,7 @@ sudo apt install libopenmpi-dev
 
 and in R:
 
-```{r pbdMPI}
+```{r pbdMPI, eval=FALSE}
 install.packages("pbdMPI")
 ```
 
-
-This is on debian and ubuntu (and their distribution relatives).
