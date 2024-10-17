@@ -30,16 +30,44 @@ modelName <- checkModel("AKAP79",uqsa_example("AKAP79",pat="_gvf[.]c$"))
 comment(modelName)
 
 # model related functions, in R, e.g. AKAP79_default() parameters
-source(uqsa_example("AKAP79",pat='^AKAP79[.]R$',full.names=TRUE))
+source(uqsa_example("AKAP79",pat='^AKAP79[.]R$'))
 print(AKAP79_default())
 ```
+
+Conservation laws (determined by `sbtab_to_vfgen` and saved as RDS file):
+
+```{r}
+clf <- uqsa_example("AKAP79",pat='Laws[.]RDS$')
+cl <- readRDS(clf)
+```
+
+With conservation laws, some species are calculated
+algebraically. Their initial values are turned into input parameters
+(using the found law):
+
+With this hypothetical relationship ($c$ is a constant):
+
+$$ A+B = c\,, $$
+
+we can determine that
+
+$$ c = A_0 + B_0\,. $$
+
+And thus we can replac either of the two species:
+
+$$ A(t) = A_0 + B_0 - B(t) $$
+
+And $A_0+B_0$ are turned into an input called `A_ConservedConst` (the
+$c$ above) with the value determined from the stated initial
+condition.
+
 
 # Load Experiments (data)
 
 This also includes instructions for the simulator.
 
 ```{r, experiments}
-experiments <- sbtab.data(SBtab)
+experiments <- sbtab.data(SBtab,cl) # with conservation laws
 # for example, these are the input
 # and initial state of experiment 1:
 print(experiments[[1]]$input)

@@ -42,6 +42,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
     <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
+    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -123,16 +124,41 @@ the <a href="user_model.html">user model</a> article.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">modelFiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,full.names<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">SBtab</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">modelFiles</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [tsv] file[1] «/tmp/Rtmp4Mqhp2/temp_libpath32ffe8c23f5b/uqsa/extdata/AKAP79/AKAP79_Compound.tsv» belongs to Document «AKAP79»</span></span>
+<span><span class="co">#&gt; [tsv] file[1] «/home/andreikr/.local/R/library/uqsa/extdata/AKAP79/AKAP79_Compound.tsv» belongs to Document «AKAP79»</span></span>
 <span><span class="co">#&gt;  I'll take this as the Model Name.</span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/AKAP79_Compound.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/AKAP79_Experiments.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/AKAP79_Expression.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/AKAP79_Input.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/AKAP79_Output.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/AKAP79_Parameter.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/AKAP79_Reaction.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X0uM_cAMPCaN_AKAP79_0_nM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X0uM_cAMPCaN_only_0_nM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X0uM_cAMPno_CaN_0_nM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X1000nM_cAMPCaN_AKAP79_1_uM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X1000nM_cAMPCaN_only_1_uM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X1000nM_cAMPno_CaN_1_uM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X100nM_cAMPCaN_AKAP79_100_nM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X100nM_cAMPCaN_only_100_nM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X100nM_cAMPno_CaN_100_nM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X2000nM_cAMPCaN_AKAP79_2_uM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X2000nM_cAMPCaN_only_2_uM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X2000nM_cAMPno_CaN_2_uM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X200nM_cAMPCaN_AKAP79_200_nM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X200nM_cAMPCaN_only_200_nM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X200nM_cAMPno_CaN_200_nM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X500nM_cAMPCaN_AKAP79_500_nM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X500nM_cAMPCaN_only_500_nM_cAMP.tsv </span></span>
+<span><span class="co">#&gt; /home/andreikr/.local/R/library/uqsa/extdata/AKAP79/X500nM_cAMPno_CaN_500_nM_cAMP.tsv</span></span>
 <span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,<span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,pat<span class="op">=</span><span class="st">"_gvf[.]c$"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).</span></span>
-<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './AKAP79.so' '/tmp/Rtmp4Mqhp2/temp_libpath32ffe8c23f5b/uqsa/extdata/AKAP79/AKAP79_gvf.c' `pkg-config --libs gsl`</span></span>
+<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './AKAP79.so' '/home/andreikr/.local/R/library/uqsa/extdata/AKAP79/AKAP79_gvf.c' `pkg-config --libs gsl`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">modelName</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "./AKAP79.so"</span></span>
 <span></span>
 <span><span class="co"># model related functions, in R, e.g. AKAP79_default() parameters</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,pat<span class="op">=</span><span class="st">'^AKAP79[.]R$'</span>,full.names<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,pat<span class="op">=</span><span class="st">'^AKAP79[.]R$'</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu">AKAP79_default</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            kf_Rii_C__RiiP_C kf_RiiP_CxcAMP__RiiP_C_cAMP </span></span>
 <span><span class="co">#&gt;                    33.00000                     0.49600 </span></span>
@@ -168,26 +194,44 @@ the <a href="user_model.html">user model</a> article.</p>
 <span><span class="co">#&gt;                     0.63000                     0.00000 </span></span>
 <span><span class="co">#&gt;          Rii_ConservedConst </span></span>
 <span><span class="co">#&gt;                     6.30000</span></span></code></pre></div>
+<p>Conservation laws (determined by <code>sbtab_to_vfgen</code> and
+saved as RDS file):</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">clf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,pat<span class="op">=</span><span class="st">'Laws[.]RDS$'</span><span class="op">)</span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="va">clf</span><span class="op">)</span></span></code></pre></div>
+<p>With conservation laws, some species are calculated algebraically.
+Their initial values are turned into input parameters (using the found
+law):</p>
+<p>With this hypothetical relationship (<span class="math inline">\(c\)</span> is a constant):</p>
+<p><span class="math display">\[ A+B = c\,, \]</span></p>
+<p>we can determine that</p>
+<p><span class="math display">\[ c = A_0 + B_0\,. \]</span></p>
+<p>And thus we can replac either of the two species:</p>
+<p><span class="math display">\[ A(t) = A_0 + B_0 - B(t) \]</span></p>
+<p>And <span class="math inline">\(A_0+B_0\)</span> are turned into an
+input called <code>A_ConservedConst</code> (the <span class="math inline">\(c\)</span> above) with the value determined from
+the stated initial condition.</p>
 </div>
 <div class="section level2">
 <h2 id="load-experiments-data">Load Experiments (data)<a class="anchor" aria-label="anchor" href="#load-experiments-data"></a>
 </h2>
 <p>This also includes instructions for the simulator.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">experiments</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">SBtab</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">experiments</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">SBtab</span>,<span class="va">cl</span><span class="op">)</span> <span class="co"># with conservation laws</span></span>
 <span><span class="co"># for example, these are the input</span></span>
 <span><span class="co"># and initial state of experiment 1:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 1</span></span>
+<span><span class="co">#&gt;               b_AKAP AKAR4_ConservedConst   CaN_ConservedConst </span></span>
+<span><span class="co">#&gt;                 1.00                 0.20                 1.50 </span></span>
+<span><span class="co">#&gt; Rii_C_ConservedConst  cAMP_ConservedConst   Rii_ConservedConst </span></span>
+<span><span class="co">#&gt;                 0.63                 0.00                 6.30</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">initialState</span><span class="op">)</span></span>
-<span><span class="co">#&gt;           Rii          cAMP          RiiP         Rii_C     RiiP_cAMP </span></span>
-<span><span class="co">#&gt;          6.30          0.00          0.00          0.63          0.00 </span></span>
-<span><span class="co">#&gt;        RiiP_C   RiiP_C_cAMP             C      Rii_cAMP    Rii_C_cAMP </span></span>
-<span><span class="co">#&gt;          0.00          0.00          0.00          0.00          0.00 </span></span>
-<span><span class="co">#&gt;           CaN      RiiP_CaN RiiP_cAMP_CaN         AKAR4       AKAR4_C </span></span>
-<span><span class="co">#&gt;          1.50          0.00          0.00          0.20          0.00 </span></span>
+<span><span class="co">#&gt;          RiiP     RiiP_cAMP        RiiP_C   RiiP_C_cAMP             C </span></span>
+<span><span class="co">#&gt;             0             0             0             0             0 </span></span>
+<span><span class="co">#&gt;      Rii_cAMP    Rii_C_cAMP      RiiP_CaN RiiP_cAMP_CaN       AKAR4_C </span></span>
+<span><span class="co">#&gt;             0             0             0             0             0 </span></span>
 <span><span class="co">#&gt;        AKAR4p </span></span>
-<span><span class="co">#&gt;          0.00</span></span>
+<span><span class="co">#&gt;             0</span></span>
 <span><span class="co"># pick prameters for simulation</span></span>
 <span><span class="va">nInput</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span><span class="op">)</span></span>
 <span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">AKAP79_default</span><span class="op">(</span><span class="op">)</span>,<span class="op">-</span><span class="va">nInput</span><span class="op">)</span></span>
@@ -218,12 +262,8 @@ the <a href="user_model.html">user model</a> article.</p>
 <span><span class="co">#&gt;                     0.10600                    10.20000 </span></span>
 <span><span class="co">#&gt;                       kmOFF                        kmON </span></span>
 <span><span class="co">#&gt;                   100.00000                     1.00000 </span></span>
-<span><span class="co">#&gt;                        KD_T                      b_AKAP </span></span>
-<span><span class="co">#&gt;                     0.70000                     0.00000 </span></span>
-<span><span class="co">#&gt;        AKAR4_ConservedConst          CaN_ConservedConst </span></span>
-<span><span class="co">#&gt;                     0.20000                     1.50000 </span></span>
-<span><span class="co">#&gt;        Rii_C_ConservedConst         cAMP_ConservedConst </span></span>
-<span><span class="co">#&gt;                     0.63000                     0.00000</span></span></code></pre></div>
+<span><span class="co">#&gt;                        KD_T </span></span>
+<span><span class="co">#&gt;                     0.70000</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="simulate">Simulate<a class="anchor" aria-label="anchor" href="#simulate"></a>
@@ -231,7 +271,7 @@ the <a href="user_model.html">user model</a> article.</p>
 <p>This will make a function <code>s</code>, which will always simulate
 the scenarios described in the <code>experiments</code> list, but for
 user supplied parameters.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">experiments</span>,<span class="va">modelName</span>,noise<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: rgsl</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">s</span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></code></pre></div>
@@ -239,7 +279,7 @@ user supplied parameters.</p>
 <div class="section level2">
 <h2 id="plot">Plot<a class="anchor" aria-label="anchor" href="#plot"></a>
 </h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">E</span> <span class="op">&lt;-</span> <span class="fl">10</span> <span class="co"># which experiment to plot</span></span>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="va">experiments</span><span class="op">[[</span><span class="va">E</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">$</span><span class="va">AKAR4pOUT</span></span>
 <span><span class="va">err</span> <span class="op">&lt;-</span> <span class="va">experiments</span><span class="op">[[</span><span class="va">E</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">errorValues</span><span class="op">$</span><span class="va">AKAR4pOUT</span></span>
@@ -264,7 +304,7 @@ user supplied parameters.</p>
 <div class="section level2">
 <h2 id="gg-plot">gg-Plot<a class="anchor" aria-label="anchor" href="#gg-plot"></a>
 </h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: ggplot2</span></span>
 <span></span>
