@@ -42,6 +42,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
     <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
+    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -59,7 +60,6 @@
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
-    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC Sampling</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Sensitivity Analysis</h6>
     <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
@@ -197,9 +197,9 @@ technique.</p>
 <span></span>
 <span><span class="va">start_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span>                         <span class="co"># measure sampling time</span></span>
 <span><span class="va">comm</span>  <span class="op">&lt;-</span> <span class="fl">0</span></span>
-<span><span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu">init</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu">comm.rank</span><span class="op">(</span>comm<span class="op">=</span><span class="va">comm</span><span class="op">)</span></span>
-<span><span class="va">cs</span> <span class="op">&lt;-</span> <span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu">comm.size</span><span class="op">(</span>comm<span class="op">=</span><span class="va">comm</span><span class="op">)</span></span>
+<span><span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">init</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">comm.rank</a></span><span class="op">(</span>comm<span class="op">=</span><span class="va">comm</span><span class="op">)</span></span>
+<span><span class="va">cs</span> <span class="op">&lt;-</span> <span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">comm.size</a></span><span class="op">(</span>comm<span class="op">=</span><span class="va">comm</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">comm</span>,<span class="st">"rank"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">r</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">comm</span>,<span class="st">"size"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">cs</span></span>
@@ -276,7 +276,7 @@ technique.</p>
 <span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu">ptMetropolis</span><span class="op">(</span><span class="va">x</span>,<span class="va">N</span>,<span class="va">h</span><span class="op">)</span> <span class="co"># the main amount of work is done here</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">s</span>,file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"sample-rank-%i.RDS"</span>,<span class="va">r</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># ---- when all are done, we load the sampled points from the files but only for the right temperature:</span></span>
-<span><span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu">barrier</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">barrier</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span>pattern<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'sample-rank-.*RDS$'</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span> <span class="op">==</span> <span class="va">cs</span><span class="op">)</span>                                          <span class="co"># MPI comm size</span></span>
 <span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/gatherSample.html">gatherSample</a></span><span class="op">(</span><span class="va">f</span>,<span class="va">beta</span>,size<span class="op">=</span><span class="va">N</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span></span>
@@ -292,7 +292,7 @@ technique.</p>
 <span></span>
 <span><span class="va">time_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/difftime.html" class="external-link">difftime</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span>,<span class="va">start_time</span>,units<span class="op">=</span><span class="st">"min"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">time_</span><span class="op">)</span></span>
-<span><span class="fu">finalize</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">finalize</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

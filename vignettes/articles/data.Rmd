@@ -9,23 +9,80 @@ knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
 )
 ```
 
-There are applications that would require the data to be separate from
-the model. This is the case where several competing models exist for
-the same set of data. Our focus is on the case where we are developing
-a singular model for a given data-set. For this reason, we store them
-together. Having two models would require us to copy the same data-set
-into the directories of all competing models. On a system where
-[symbolic links](https://en.wikipedia.org/wiki/Symbolic_link) are
-possible (or hard links) they can be used to conserve disk-space for
-large data-sets.
+The data is part of the SBtab document, but it can also be seen as
+separate from the model, so it's imported with a different function.
+This function also loads the inputs and initial values for the
+model. When determining the inputs, the function takes conservation
+laws into account and calculates input values for conserved
+quantities, based on the stated initial values. The imported object `ex` is
+a list of simulation instructions:
+
+```{r, eval=TRUE}
+library(uqsa)
+library(SBtabVFGEN)
+
+f <- uqsa_example('AKAR4cl')                         # file names
+sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
+cl <- readRDS(uqsa_example('AKAR4cl',f="RDS"))       # previously saved laws
+ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # includes the data
+ex[[1]]$input
+ex[[1]]$initialState
+```
 
 The data-sets themselves can be stored in a normal SBtab table, using
 any valid `TableName`. How many data sets there are and their type are
-listed in the *table of experiments*: `Experiments.tsv`
+listed in the *table of experiments*: `Experiments.tsv`.  Data not
+listed in the table of experiments is not loaded with the `sbtab.data`
+function:
 
-Each experiment can be a time series experiment, or a dose response
-curve (where each line is a separate time series with a single
-measurement time-point, a *final state* that counts).
+```{r, label='Experiments', eval=TRUE}
+sb$Experiments
+# The first one has this data-set
+head(ex$AKAR4_400nM$outputValues)
+```
+
+The values in `ex` are simulation instructions for all
+experiments. 
+
+|         item | type           | meaning                                                                    |
+|-------------:|:--------------:|:---------------------------------------------------------------------------|
+|        input | numeric vector | known input parameters                                                     |
+|  initialTime | numeric vector | a scalar time $t_0$                                                        |
+| initialState | numeric vector | initial state $x_0$ of the ode $\dot x = f(x(t),t,p=c(k,u))$, $x(t_0)=x_0$ |
+|  outputTimes | numeric vector | a time vector that corresponds to when measurements were taken             |
+|              |                |                                                                            |
+| outputValues | data.frame     | the values of the data at the above outputTimes                            |
+|  errorValues | data.frame     | an indication of the measurement error/noise (standard error)              |
+|       events | list           | a sudden transformation event                                              |
+
+
+But, any data sets not present in Experiments, are still
+accessible:
+
+```{r,label='sb data sets', eval=TRUE}
+head(sb$AKAR4_400nM)
+```
+
+This works for any data set that has a TSV file - or a sheet in any
+other valid format (ods, xlsx). This table is just not a simulation
+instruction:
+
+- `sb` has the values of all tsv files/sheets
+- `ex` has data and simulation instructions for the rgsl package
+
+Each experiment is a time series experiment, after the import (dose
+response sets are converted to one time series experiment per point).
+
+More about this topic can be found in the [SBtab](SBtab.html) section. 
+
+The rest of this page explains SBtab features that are related to
+data-sets and experiment descriptions.
+
+
+
+
+
+---
 
 ## Time Series
 
@@ -179,38 +236,6 @@ int myModel_event(double t, double y_[], void *par, int EventLabel, double dose)
 }
 
 ```
-
-# R-functions
-
-The [icpm-kth/SBtabVFGEN](github.com/icpm-kth/SBtabVFGEN) package has functions to import a model with the data into R data structures. If you did not install this already:
-
-```{r}
-remotes::install_github("icpm-kth/SBtabVFGEN") # if you didn't do that yet
-```
-
-and once it is installed:
-
-```{r}
-if (require(SBtabVFGEN)){
-	model.tsv <- dir(pattern="[.]tsv$",full.names=TRUE) # a vector of file paths to TSV files
-	sb <- SBtabVFGEN::sbtab_from_tsv(model.tsv)         # a list of data.frames
-	experiments <- SBtabVFGEN::sbtab.data(sb)           # a list of simulation experiments with data
-}
-```
-
-The `experiments` variable is a list, each member (itself a list), describes a simulation experiment. Each experiment may result in one or more calls to the simulator (in C this amounts to resetting the driver of the chosen solver). An experiment has the properties:
-
-|         item | type           | meaning                                                                    |
-|-------------:|:--------------:|:---------------------------------------------------------------------------|
-|        input | numeric vector | known input parameters                                                     |
-|  initialTime | numeric vector | a scalar time $t_0$                                                        |
-| initialState | numeric vector | initial state $x_0$ of the ode $\dot x = f(x(t),t,p=c(k,u))$, $x(t_0)=x_0$ |
-|  outputTimes | numeric vector | a time vector that corresponds to when measurements were taken             |
-|              |                |                                                                            |
-| outputValues | data.frame     | the values of the data at the above outputTimes                            |
-|  errorValues | data.frame     | an indication of the measurement error/noise (standard error)              |
-|       events | list           | a sudden transformation event                                              |
-
 
 # Gaussian Measurement errors
 

@@ -42,6 +42,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
     <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
+    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="active nav-item dropdown">
@@ -59,7 +60,6 @@
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
-    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC Sampling</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Sensitivity Analysis</h6>
     <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
@@ -108,33 +108,254 @@
 
     
     
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span></code></pre></div>
 <p>In this article we will assume that you have a model that you want to
 work on and that you have written the model in SBtab form. It may be a
-google spreadsheet, and open document spreadsheet (<code>ods</code>), MS
+google spreadsheet, an open document spreadsheet (<code>ods</code>), MS
 Excel file, a file for the <code>numbers</code> application on an Apple
 device or a <code>.gnumeric</code> file.</p>
+<p>Once you have the TSV files…</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># find the tsv files with "?dir", in the directory of your model</span></span>
+<span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span><span class="va">Location</span>,pattern<span class="op">=</span><span class="st">'tsv$'</span>,full.names<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co"># you don't need this 'Location' variable, just be in the directory where the TSV files are.</span></span>
+<span><span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span>                  <span class="co"># a list of data.frames</span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">sbtab_to_vfgen</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>                 <span class="co"># conservation laws, if any</span></span>
+<span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">sb</span>,<span class="va">cl</span><span class="op">)</span>                  <span class="co"># includes the data</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/system2.html" class="external-link">system2</a></span><span class="op">(</span><span class="st">"ode"</span>, args<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"-C"</span>, <span class="st">"--maxima"</span> ,<span class="st">"AKAR4cl.tar.gz"</span><span class="op">)</span>, stdout<span class="op">=</span><span class="st">"AKAR4cl_gvf.c"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="st">"AKAR4cl_gvf.c"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="st">"AKAR4cl"</span>,<span class="st">"AKAR4cl_gvf.c"</span><span class="op">)</span> <span class="co"># compiles the model if not yet compiled</span></span></code></pre></div>
+<p>This should produce this output:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># find the tsv files with "?dir", in the directory of your model</span></span>
+<span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span><span class="va">Location</span>,pattern<span class="op">=</span><span class="st">'tsv$'</span>,full.names<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co"># you don't need this 'Location' variable, just be in the directory where the TSV files are.</span></span>
+<span><span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span>                  <span class="co"># a list of data.frames</span></span>
+<span><span class="co">#&gt; [tsv] file[1] «100nM.tsv» belongs to Document «AKAR4cl»</span></span>
+<span><span class="co">#&gt;  I'll take this as the Model Name.</span></span>
+<span><span class="co">#&gt; 100nM.tsv  25nM.tsv  400nM.tsv  Compound.tsv  Experiments.tsv  Output.tsv  Parameter.tsv  Reaction.tsv</span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">sbtab_to_vfgen</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>                 <span class="co"># conservation laws, if any</span></span>
+<span><span class="co">#&gt; Document Name: AKAR4cl.</span></span>
+<span><span class="co">#&gt; SBtab has 8 tables.</span></span>
+<span><span class="co">#&gt; The names of SBtab[[1]]:</span></span>
+<span><span class="co">#&gt; !Time, &gt;AKAR4pOUT, ~AKAR4pOUT</span></span>
+<span><span class="co">#&gt;                 !Name                             !KineticLaw</span></span>
+<span><span class="co">#&gt; reaction_1 reaction_1 kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C</span></span>
+<span><span class="co">#&gt; reaction_2 reaction_2                      kcat_AKARp*AKAR4_C</span></span>
+<span><span class="co">#&gt;                  !ReactionFormula !IsReversible</span></span>
+<span><span class="co">#&gt; reaction_1  C + AKAR4 &lt;=&gt; AKAR4_C             1</span></span>
+<span><span class="co">#&gt; reaction_2 AKAR4_C &lt;=&gt; AKAR4p + C             0</span></span>
+<span><span class="co">#&gt; There is no «Constant» Table in this model. This is OK.</span></span>
+<span><span class="co">#&gt; There is no «Expression» Table in this model. This is OK.</span></span>
+<span><span class="co">#&gt; compound names:</span></span>
+<span><span class="co">#&gt; [1] "AKAR4"   "AKAR4_C" "AKAR4p"  "C"</span></span>
+<span><span class="co">#&gt; Units:</span></span>
+<span><span class="co">#&gt; [1] "micromole/liter" "micromole/liter" "micromole/liter" "micromole/liter"</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; There is no «Input» Table in this model.</span></span>
+<span><span class="co">#&gt; class(IsConstant): logical.</span></span>
+<span><span class="co">#&gt; [1] Formula Unit   </span></span>
+<span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span>
+<span><span class="co">#&gt; [1] Formula Unit   </span></span>
+<span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span>
+<span><span class="co">#&gt; character(0)</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; character</span></span>
+<span><span class="co">#&gt; Reaction 1:line (a-&gt;b): «C + AKAR4 » ←→ « AKAR4_C»</span></span>
+<span><span class="co">#&gt;  where a: [1] "C "      " AKAR4 "</span></span>
+<span><span class="co">#&gt;    and b: [1] " AKAR4_C"</span></span>
+<span><span class="co">#&gt; Products:</span></span>
+<span><span class="co">#&gt; 1 × AKAR4_C          (AKAR4_C is compound 2)</span></span>
+<span><span class="co">#&gt; Reactants:</span></span>
+<span><span class="co">#&gt; 1 × C            (C is compound 4)</span></span>
+<span><span class="co">#&gt; 1 × AKAR4            (AKAR4 is compound 1)</span></span>
+<span><span class="co">#&gt; Reaction 2:line (a-&gt;b): «AKAR4_C » ←→ « AKAR4p + C»</span></span>
+<span><span class="co">#&gt;  where a: [1] "AKAR4_C "</span></span>
+<span><span class="co">#&gt;    and b: [1] " AKAR4p " " C"      </span></span>
+<span><span class="co">#&gt; Products:</span></span>
+<span><span class="co">#&gt; 1 × AKAR4p           (AKAR4p is compound 3)</span></span>
+<span><span class="co">#&gt; 1 × C            (C is compound 4)</span></span>
+<span><span class="co">#&gt; Reactants:</span></span>
+<span><span class="co">#&gt; 1 × AKAR4_C          (AKAR4_C is compound 2)</span></span>
+<span><span class="co">#&gt; Number of compounds: 4</span></span>
+<span><span class="co">#&gt; Number of Reactions: 2</span></span>
+<span><span class="co">#&gt;      [,1] [,2]</span></span>
+<span><span class="co">#&gt; [1,]    0    1</span></span>
+<span><span class="co">#&gt; [2,]    1    0</span></span>
+<span><span class="co">#&gt; [3,]    0    1</span></span>
+<span><span class="co">#&gt; [4,]    1   -1</span></span>
+<span><span class="co">#&gt; Stoichiometric Matrix:</span></span>
+<span><span class="co">#&gt;      [,1] [,2]</span></span>
+<span><span class="co">#&gt; [1,]   -1    0</span></span>
+<span><span class="co">#&gt; [2,]    1   -1</span></span>
+<span><span class="co">#&gt; [3,]    0    1</span></span>
+<span><span class="co">#&gt; [4,]   -1    1</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Conservation Law dimensions: 4 × 2</span></span>
+<span><span class="co">#&gt; To check that the conservation laws apply: norm(t(StoichiometryMatrix) * ConservationLaw == 0.00000)</span></span>
+<span><span class="co">#&gt;      [,1] [,2]</span></span>
+<span><span class="co">#&gt; [1,]    0    1</span></span>
+<span><span class="co">#&gt; [2,]    1    0</span></span>
+<span><span class="co">#&gt; [3,]    0    1</span></span>
+<span><span class="co">#&gt; [4,]    1   -1</span></span>
+<span><span class="co">#&gt; [1] 2</span></span>
+<span><span class="co">#&gt; [1] 0 1 0 1</span></span>
+<span><span class="co">#&gt; [1] 0.2 0.0 0.0 0.0</span></span>
+<span><span class="co">#&gt; 1*AKAR4_C+1*C</span></span>
+<span><span class="co">#&gt; This will comment out compound 2 («AKAR4_C», initial value: 0), Conserved Constant = 0.000000</span></span>
+<span><span class="co">#&gt; [1]  1  0  1 -1</span></span>
+<span><span class="co">#&gt; [1] 0.2 0.0 0.0 0.0</span></span>
+<span><span class="co">#&gt; 1*AKAR4+1*AKAR4p-1*C</span></span>
+<span><span class="co">#&gt; This will comment out compound 1 («AKAR4», initial value: 0.2), Conserved Constant = 0.200000</span></span>
+<span><span class="co">#&gt; Loading required package: hdf5r</span></span>
+<span><span class="co">#&gt; StateVariable AKAR4 will be commented out as it was already defined as a Mass Conservation Law Expression.StateVariable AKAR4_C will be commented out as it was already defined as a Mass Conservation Law Expression.</span></span>
+<span><span class="co">#&gt; The vf content was written to: AKAR4cl.vf</span></span>
+<span><span class="co">#&gt; MOD: StateVariable AKAR4 will be commented out as it was already defined as a Mass Conservation Law Expression.</span></span>
+<span><span class="co">#&gt; MOD: StateVariable AKAR4_C will be commented out as it was already defined as a Mass Conservation Law Expression.</span></span>
+<span><span class="co">#&gt; The mod content was written to: AKAR4cl.mod</span></span>
+<span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">sb</span>,<span class="va">cl</span><span class="op">)</span>                  <span class="co"># includes the data</span></span>
+<span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/system2.html" class="external-link">system2</a></span><span class="op">(</span><span class="st">"ode"</span>, args<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"-C"</span>, <span class="st">"--maxima"</span> ,<span class="st">"AKAR4cl.tar.gz"</span><span class="op">)</span>, stdout<span class="op">=</span><span class="st">"AKAR4cl_gvf.c"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="st">"AKAR4cl_gvf.c"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="st">"AKAR4cl"</span>,<span class="st">"AKAR4cl_gvf.c"</span><span class="op">)</span> <span class="co"># compiles the model if not yet compiled</span></span>
+<span><span class="co">#&gt; building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).</span></span>
+<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './AKAR4cl.so' 'AKAR4cl_gvf.c' `pkg-config --libs gsl`</span></span></code></pre></div>
+<hr>
+<p>We have created the c source code, with these functions:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">grep</span> AKAR4cl_ ./AKAR4cl_gvf.c</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; int AKAR4cl_vf(double t, const double y_[], double f_[], void *par)</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; int AKAR4cl_netflux(double t, double y_[], double *flux, void *par){</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; int AKAR4cl_fwdflux(double t, double y_[], double *flux, void *par){</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; int AKAR4cl_bwdflux(double t, double y_[], double *flux, void *par){</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; int AKAR4cl_jac(double t, const double y_[], double *jac_, double *dfdt_, void *par)</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; int AKAR4cl_jacp(double t, const double y_[], double *jacp_, double *dfdt_, void *par)</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; int AKAR4cl_func(double t, const double y_[], double *func_, void *par)</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; int AKAR4cl_funcJac(double t, const double y_[], double *funcJac_, void *par)</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; int AKAR4cl_funcJacp(double t, const double y_[], double *funcJacp_, void *par)</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; int AKAR4cl_default(double t, void *par)</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; int AKAR4cl_init(double t, double *y_, void *par)</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="simulate">Simulate<a class="anchor" aria-label="anchor" href="#simulate"></a>
+</h2>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## we create a closure called "sim" a function that internally remembers the "experiments" (ex)</span></span>
+<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">ex</span>,<span class="va">modelName</span><span class="op">)</span>                   <span class="co"># ex holds the instructions for the solver</span></span>
+<span><span class="co">#&gt; Loading required package: rgsl</span></span>
+<span><span class="va">par</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!DefaultValue"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>  <span class="co"># one column - but can be several sets (as columns)</span></span>
+<span></span>
+<span><span class="co">## sim can be called with any parameter vector - or several and will always simulate the same set of experiments</span></span>
+<span><span class="va">sr</span> <span class="op">&lt;-</span> <span class="fu">sim</span><span class="op">(</span><span class="va">par</span><span class="op">)</span>                                     <span class="co"># simulation results (one per experiment)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">sr</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">70</span><span class="op">)</span></span>
+<span><span class="va">t</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
+<span><span class="va">dy</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">errorValues</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">z</span> <span class="op">&lt;-</span> <span class="va">sr</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="fl">1</span>,<span class="va">i</span>,<span class="fl">1</span><span class="op">]</span>                           <span class="co"># third dimension is the par column (just one here)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">z</span>,bty<span class="op">=</span><span class="st">'n'</span>,type<span class="op">=</span><span class="st">'l'</span>, ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>,<span class="fl">200</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">y</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">y</span>,<span class="va">t</span>,<span class="va">y</span><span class="op">+</span><span class="va">dy</span>,angle<span class="op">=</span><span class="fl">90</span>, length<span class="op">=</span><span class="fl">0.01</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">y</span>,<span class="va">t</span>,<span class="va">y</span><span class="op">-</span><span class="va">dy</span>,angle<span class="op">=</span><span class="fl">90</span>, length<span class="op">=</span><span class="fl">0.01</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"bottomright"</span>,legend<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"simulation"</span>,<span class="st">"data"</span><span class="op">)</span>, lty<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, pch<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="user_model_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
+<p>The simulation result <code>sr</code> is a list with several
+components, at least 2: - <code>state</code> state variable trajectories
+- <code>func</code> outout functions</p>
+<p>The output functions usually correspond to the data (in some way),
+but may need some sort of normalization. In this case the relationship
+is direct.</p>
+<p>Both <code>state</code> and <code>func</code> have three indexes:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sr</span><span class="op">[[</span><span class="va">l</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">state</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span>,<span class="va">k</span><span class="op">]</span>        <span class="co"># is a number</span></span></code></pre></div>
+<p>This corresponds to experiment <code>l</code>, state variable
+<code>i</code>, time-point <code>j</code>, and parameter column
+<code>k</code> (again, relevant when <code>par</code> is a matrix with
+multiple columns).</p>
+<hr>
+<p>The previously created <code>modelName</code> variable has a comment
+attribute (that you can also set yourself, there is no magic there),
+this attribute inidicates the location of the shared library used for
+simulations. You don’t have to re-make it evry time - as long as the
+model doesn’t change (<code>checkModel</code> does not need to be
+called):</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">modelName</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"./AKAR4cl.so"</span> <span class="co"># this is sufficient if the .so file already exists</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="simulations-of-several-parameter-sets">Simulations of Several Parameter Sets<a class="anchor" aria-label="anchor" href="#simulations-of-several-parameter-sets"></a>
+</h2>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">t</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span><span class="op">)</span></span>
+<span><span class="va">np</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">NROW</a></span><span class="op">(</span><span class="va">par</span><span class="op">)</span></span>
+<span><span class="va">REPS</span> <span class="op">&lt;-</span> <span class="fl">50</span></span>
+<span><span class="va">P</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">np</span><span class="op">*</span><span class="va">REPS</span>,min<span class="op">=</span><span class="fl">0</span>,max<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">par</span><span class="op">)</span><span class="op">*</span><span class="fl">2</span><span class="op">)</span>,<span class="va">np</span>,<span class="va">REPS</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">P</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1]  3 50</span></span>
+<span></span>
+<span></span>
+<span><span class="va">stm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">sr</span> <span class="op">&lt;-</span> <span class="fu">sim</span><span class="op">(</span><span class="va">P</span><span class="op">)</span></span>
+<span><span class="va">etm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/difftime.html" class="external-link">difftime</a></span><span class="op">(</span><span class="va">etm</span>,<span class="va">stm</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Time difference of 0.2752998 secs</span></span></code></pre></div>
+<p>let’s plot all trajectories in one picture:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="cn">T</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">t</span>,<span class="cn">NA</span><span class="op">)</span>,<span class="va">REPS</span><span class="op">)</span>                                  <span class="co"># the NA value will break the line</span></span>
+<span><span class="va">Z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">sr</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">t</span><span class="op">)</span>,<span class="cn">NA</span><span class="op">)</span>,<span class="op">]</span><span class="op">)</span>    <span class="co"># at the end, so it doesn't loop</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="cn">T</span>,<span class="va">Z</span>,type<span class="op">=</span><span class="st">'l'</span><span class="op">)</span></span></code></pre></div>
+<p><img src="user_model_files/figure-html/Plots-1.png" width="700"></p>
+<p>The new result is (just like the old one) an array with three
+indexes:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sr</span><span class="op">[[</span><span class="va">l</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span>,<span class="va">k</span><span class="op">]</span> <span class="co"># a number</span></span></code></pre></div>
+<ul>
+<li>
+<code>i</code> output function</li>
+<li>
+<code>j</code> time index</li>
+<li>
+<code>k</code> selects the trajectories that belong to
+<code>P[,k]</code>
+</li>
+</ul>
+<hr>
+<p>cleanup:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">gf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"AKAR4cl%s"</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">".vf"</span>,<span class="st">".tar.gz"</span>,<span class="st">".zip"</span>,<span class="st">".so"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">gf</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "AKAR4cl.vf"     "AKAR4cl.tar.gz" "AKAR4cl.zip"    "AKAR4cl.so"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.remove</a></span><span class="op">(</span><span class="va">gf</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE TRUE TRUE TRUE</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="other-formats">Other Formats<a class="anchor" aria-label="anchor" href="#other-formats"></a>
+</h2>
+<p>The SBtab content can be a normal spreadsheet.</p>
 <p>If it is a google spreadsheet (which can be good for collaborative
 work), you should write it until failry satisfied with all components
 and then export it as an <code>.xlsx</code>, or <code>.ods</code> file.
 The gnumeric application can automatically convert both
 <code>.xlsx</code> and <code>.ods</code> to a set of <code>.tsv</code>
 files if you want the benefits of version control (which works on text
-files). But, <code>.ods</code> and <code>.xlsx</code> both work with
-<code>SBtabVFGEN</code>.</p>
-<p><a href="./SBtab.html">SBtab</a> models contain a data portion, and a
-model portion; the SBtab tables also relate both to one another: the
-<em>Output</em> table describes Observables: functions we calculate to
-allow a comparison of simulations to data. The <em>Experiments</em>
-table specifies which inputs and initial conditions to set to replicate
-a data-set. The user must include a table/file that contains the data
-for each experiment, the file/table must be named like the identifier of
-the experiment (<em>leftmost column</em> stores the identifiers of each
-row).</p>
-<p>In addition to how SBtab mdels are usually written, we require some
-mandatory components/tables: Reaction, Compound, Parameter, Output,
-Experiments. Our scripts find the tables by name:</p>
+files). But, <code>.ods</code> and <code>.xlsx</code> both work:</p>
+<ul>
+<li>
+<code><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_ods.html" class="external-link">SBtabVFGEN::sbtab_from_ods</a></code> for ODS files</li>
+<li>
+<code><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_excel.html" class="external-link">SBtabVFGEN::sbtab_from_excel</a></code> for XLSX files</li>
+</ul>
+<p>Our scripts find the tables by name:</p>
 <ul>
 <li>TSV files: <code>TableName</code> attribute is the name of the
 table</li>
@@ -142,32 +363,6 @@ table</li>
 <code>TableName</code> attribute is not parsed</li>
 <li>Excel files: the Sheet’s name (same as ODS)</li>
 </ul>
-<p>The <em>Reaction</em> table can be seen as the main item of the
-model, while the <em>Experiments</em> table is the main file that
-relates experimental data to the model. All things mentioned in these
-two files need to be further explained in the other tables.</p>
-<p>We’ll assume that the model is called <code>DemoModel</code>, for all
-exaple lines.</p>
-<p>Create a fresh directory for your model:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">mkdir</span> DemoModel</span></code></pre></div>
-<p>Copy the SBtab file(s) there (in any of the formats above). Launch R
-in that directory (use <code><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd()</a></code> to check whether you are in
-the directory, if unsure). It can be RStudio, but we’ll assume plain R
-here.</p>
-<div class="section level2">
-<h2 id="loading-the-model">Loading the Model<a class="anchor" aria-label="anchor" href="#loading-the-model"></a>
-</h2>
-<p>If the model is a collection of tsv files, you need to create an R
-list of the names; if it is just one file you only need to type out its
-name. In all cases, you need to load SBtabVFGEN.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span></span></code></pre></div>
-<p>The instructions for <code>.ods</code> (readODS) and
-<code>.excel</code> (readxl) files will work as long as the packages we
-use to load them remain available. The <code>.tsv</code> format is the
-safest bet for reliability, because text files cannot object to being
-read very much (we read the <code>.tsv</code> files with
-<code><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">utils::read.delim</a></code>).</p>
 <div class="section level3">
 <h3 id="tab-separated-values">Tab Separated Values<a class="anchor" aria-label="anchor" href="#tab-separated-values"></a>
 </h3>
@@ -175,7 +370,7 @@ read very much (we read the <code>.tsv</code> files with
 files, see the <a href="./tsv.html">tsv topic</a>. We obtain a list of
 all tsv files in the current directory, and then import the contents,
 like this:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">modelFiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span>pattern<span class="op">=</span><span class="st">'[.]tsv$'</span><span class="op">)</span></span>
 <span><span class="va">SBtab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">modelFiles</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -185,7 +380,7 @@ like this:</p>
 <p>These files can be created with Libre Office, Apple’s
 <em>numbers</em> program, gnumeric, and any web-hosted spreadsheet
 application (like google spreadsheets).</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">modelFiles</span> <span class="op">&lt;-</span> <span class="st">"DemoModel.ods"</span></span>
 <span><span class="va">SBtab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_ods.html" class="external-link">sbtab_from_ods</a></span><span class="op">(</span><span class="va">modelFiles</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -193,193 +388,37 @@ application (like google spreadsheets).</p>
 <h3 id="excel">Excel<a class="anchor" aria-label="anchor" href="#excel"></a>
 </h3>
 <p>These can be created with MS Excel, and loaded like this:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">modelFiles</span> <span class="op">&lt;-</span> <span class="st">"DemoModel.xlsx"</span></span>
 <span><span class="va">SBtab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_excel.html" class="external-link">sbtab_from_excel</a></span><span class="op">(</span><span class="va">modelFiles</span><span class="op">)</span></span></code></pre></div>
-</div>
-</div>
-<div class="section level2">
-<h2 id="converting-to-an-ordinary-differential-equation-model">Converting to an Ordinary Differential Equation Model<a class="anchor" aria-label="anchor" href="#converting-to-an-ordinary-differential-equation-model"></a>
-</h2>
-<p>In R, the SBtab content is now a named list of data frames (with the
-<code>!ID</code> column serving as <code>row.names</code>):</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">SBtab</span><span class="op">$</span><span class="va">Reaction</span></span></code></pre></div>
-<p>This data frame corresponds to the sheet of the same name. The first
-column is always used to assign row names when creating the data frames.
-The next command produces a lot of output, with details how the script
-interprets the model. It will also do a conservation law analysis and
-automatically replace some of the state variables with algebraic
-assignments. The script picks the Compounds with the largest initial
-amount to be replaced. Normally, reacting compounds are represented by
-state variables, but the conserved quantities are interpreted as
-additional input parameters.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">conservationLaws</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">sbtab_to_vfgen</a></span><span class="op">(</span><span class="va">SBtab</span><span class="op">)</span></span></code></pre></div>
-<p>which writes three main files:</p>
-<ol style="list-style-type: decimal">
-<li>DemoModel.vf - a vfgen vector field file (custom xml content).</li>
-<li>DemoModel.mod - NEURON mod file, for simulations with the NEURON
-software.</li>
-<li>DemoModel.xml - an SBML file for simulations in COPASI and others.
-This will only be done if the <code>sbml</code> package is available
-(the R package).</li>
-</ol>
-<p>The script also writes its findings in a fairly <em>format-free</em>
-way, as text files (they can be interpreted as an ODE without any target
-software in mind). <code><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">SBtabVFGEN::sbtab_to_vfgen()</a></code> also
-attempts to zip those <code>.txt</code> files.</p>
-<div class="section level3">
-<h3 id="automated-procedure">Automated Procedure<a class="anchor" aria-label="anchor" href="#automated-procedure"></a>
-</h3>
-<p>The github repository of <a href="https://www.github.com/icpm-kth/SBtabVFGEN" class="external-link">SBtabVFGEN</a>
-(systems biology table vector field generator) also includes an RScript
-called <code>sbtab_to_vfgen</code>, it begins with:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#!/usr/bin/env Rscript</span></span>
-<span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span></span>
-<span><span class="va">args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/commandArgs.html" class="external-link">commandArgs</a></span><span class="op">(</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p>So, it can be called directly from the command line, like this:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="ex">$</span> ./sbtab_to_vfgen <span class="pp">*</span>.tsv        <span class="co"># no   conservation law analysis</span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="ex">$</span> ./sbtab_to_vfgen <span class="at">--cla</span> <span class="pp">*</span>.tsv  <span class="co"># with conservation law analysis</span></span></code></pre></div>
-<p>which will just create the <code>.vf</code>, <code>.xml</code>, and
-<code>.MOD</code> files, as well as <code>ConservationLaws.h5</code> (an
-hdf5 file) and an <code>.RData</code> file with the conservation
-laws.</p>
-<p><em>NOTE</em>: If you wish to turn <em>conservation law analysis</em>
-off, don’t supply the comamnd line option <code>--cla</code>. The other
-file formats should also work if you have the R packages to read them
-(<code>.ods</code>, <code>.xlsx</code>).</p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
-</h2>
-<p>The data component of the SBtab is extracted using</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">SBtab</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_ods.html" class="external-link">sbtab_from_ods</a></span><span class="op">(</span><span class="st">"myModel.ods"</span><span class="op">)</span></span>
-<span><span class="va">experiments</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">SBtab</span>,<span class="va">conservationLaws</span><span class="op">)</span></span>
-<span><span class="va">experiments</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span></span></code></pre></div>
-<p>which returns a list with one element per entry in the
-<code>Experiments</code> table (<code>SBtab$Experiments</code> in R).
-Each list item contains the data set (as two data frames, the second for
-measurement error estimates), but also inputs for the model that are
-meant to fit the data, and initial values for all state variables. These
-simulation instructions always accompany the data, and can include
-scheduled events (sudden changes in the system).</p>
-</div>
-<div class="section level2">
-<h2 id="the-ode-must-be-converted-to-code">The ODE must be converted to code<a class="anchor" aria-label="anchor" href="#the-ode-must-be-converted-to-code"></a>
-</h2>
-<p>The <code>vf</code> file, or SBML, or even the text output we created
-are not yet code that can be simulated. An ODE solver needs a
-right-hand-side function, in the programming language the solver runs
-in.</p>
-<p>In some software, this code generation happens invisibly in the
-background, or the model is kept in the high level language (which makes
-simulations slow).</p>
-<p>We prefer to be able to see the generated code, to check for errors,
-or to change the code by hand (if necessary).</p>
-<p>The ODE model source-code can also be written by hand in th efirst
-place. In that case none of the above is needed; so, we could have
-started here. But this is <em>difficult</em> and gets more difficult for
-<em>bigger models</em>.</p>
-<p>Fast, advanced (more accurate) solvers require additional functions,
-at least the jacobian of the ODE system:</p>
-<p><span class="math display">\[ J(t,x;p)_{ij} = \frac{d
-f_i(t,x;p)}{dx_j}\,,\]</span></p>
-<p>where <span class="math inline">\(p\)</span> are the parameters of
-the ODE model.</p>
-<p>We generate this code automatically using our own package: <a href="https://www.github.com/icpm-kth/RPN-derivative" class="external-link">RPN-derivative</a>.</p>
-<p>It is not an R package (it’s partially written in C), but can be run
-on the command line in a POSIX compliant shell
-(<code>zsh</code>,<code>bash</code>,<code>dash</code>, etc.). It uses
-both <code>sed</code> and <code>awk</code> as well, which are always
-present on a unix derived system (but annoyingly, with different
-capabilities).</p>
-<p>The package repository contains a shell script called
-<code>ode.sh</code>, which can use one of three backends for derivative
-calculations: internal, maxima, or yacas. It is just a file, not
-installed anywhere, the package contains some helper programs (to
-calculate derivatives), which can be installed
-(<code>make &amp;&amp; make install</code>). But you can entirely omit
-the <code>make</code> step if you plan on using the maxima or yacas
-backend. It is probably good to alias the ode shell script:
-<code>alias ode='$HOME/RPN-derivative/sh/ode.sh'</code> (or wherever you
-put that file).</p>
-<p>Or, alternatively, put it somewhere that is in your
-<code>$PATH</code>.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="ex">ode</span> <span class="at">--maxima</span> <span class="at">-C</span> DemoModel.vf <span class="op">&gt;</span> DemoModel_gvf.c</span></code></pre></div>
-<p>Or, more generically:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="ex">ode</span> [--yacas<span class="kw">|</span><span class="ex">--maxima]</span> <span class="at">-R</span> DemoModel.<span class="dt">{zip</span><span class="op">,</span><span class="dt">vf</span><span class="op">,</span><span class="dt">tar.gz}</span> <span class="op">&gt;</span> DemoModel.R</span></code></pre></div>
-<p>These files only need to be re-created if you change the model
-structurally. A change in initial conditions, or parameter values will
-result in largely the same code, except for the function that returns
-the default initial conditions and default parameter values.</p>
-<p>The R code is usually not used for simulations (not by us), but can
-be useful to call any of the model functions within R (e.g. after
-simulation), to build sampling algorithms, or to make a user-supplied
-objective function that internally uses the deSolve package for
-simulations. The functions in <code>DemoModel.R</code> are compatible
-with <code>deSolve</code>.</p>
-<p>Once you have <code>DemoModel_gvf.c</code> you can either convert it
-to a shared library yourself, or use the <code>checkModel</code>
-function included in <code>uqsa</code>:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">gcc</span> <span class="at">-shared</span> <span class="at">-fPIC</span> <span class="at">-O2</span> <span class="at">-o</span> DemoModel.so DemoModel_gvf.c</span></code></pre></div>
-<p>or</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="st">"DemoModel"</span>, <span class="st">"./DemoModel_gvf.c"</span><span class="op">)</span></span>
-<span>                             <span class="co"># model-name,      file-name</span></span>
-<span><span class="co">## comment(modelName) == "DemoModel.so"</span></span></code></pre></div>
-<p>This shared object file can be used for simulations.</p>
-</div>
-<div class="section level2">
-<h2 id="simulations">Simulations<a class="anchor" aria-label="anchor" href="#simulations"></a>
-</h2>
-<p>The previously created <code>modelName</code> variable has a comment
-attribute (that you can also set yourself, there is no magic there).
-This comment indicates the shared object file to simulate with. In R,
-using <code>uqsa</code> we first create a closure:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">experiments</span>, <span class="va">modelName</span><span class="op">)</span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">sim</span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></code></pre></div>
-<p>now, <code>sim</code> is a function that implicitly depends on the
-simulation instructions in the list of <code>experiments</code>, and
-explicitly on the supplied parameters <code>p</code> (a numeric vector,
-or matrix). The return value <code>y</code> is also a list with one
-result per experiment: <code>length(y)==length(experiments)</code>.</p>
-<p>The result contains two components per list item: the state
-variables, and the output values</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">y</span><span class="op">[[</span><span class="va">l</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span>,<span class="va">k</span><span class="op">]</span> <span class="co"># a number</span></span></code></pre></div>
-<p>which corresponds to experiment <code>l</code>, output function
-<code>i</code>, time-point <code>j</code>, and parameter column
-<code>k</code> (if <code>p</code> was a matrix). When <code>p</code> is
-a vector, then <code>k</code> can only be <code>1</code>. Similarly, for
-state variables:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">y</span><span class="op">[[</span><span class="va">l</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">state</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span>,<span class="va">k</span><span class="op">]</span> <span class="co"># a number</span></span></code></pre></div>
-<p>corresponds to experiment <code>l</code>, state variable
-<code>i</code>, time-point <code>j</code>, and parameter column
-<code>k</code> (again, relevant when <code>p</code> is a matrix).</p>
-<p>The results can be visualized by plotting against the experiment’s
-output time values:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># plot output function 1, for experiment 2</span></span>
-<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="va">model</span><span class="op">$</span><span class="fu">par</span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">sim</span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span>, <span class="va">y</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<p>(in this case <code>p</code> is a vector).</p>
 <div class="section level4">
 <h4 id="parameters">Parameters<a class="anchor" aria-label="anchor" href="#parameters"></a>
 </h4>
-<p>Observe that model$par() returns the ODE model parameters, which can
-be more than the biological parameters, the components are:</p>
+<p>The R code generated by <code>ode.sh</code> includes a list with the
+same functions, but with generic function names:</p>
+<ul>
+<li>
+<code>model$vf()</code> vector field</li>
+<li>
+<code>model$jac()</code> Jacobian</li>
+<li>
+<code>model$init()</code> initial values</li>
+<li>
+<code>model$par()</code> default parameters in linear scale
+<ul>
+<li>regardless of what the scale was in the SBtab file</li>
+<li>this function returns the long parameter vector (Parameter and
+Input)</li>
+</ul>
+</li>
+</ul>
+<p>Observe that <code>model$par()</code> returns the ODE model
+parameters, which can be more than the biological parameters, the
+components are:</p>
 <ul>
 <li>biological parameters (<code>SBtab$Parameter</code>)</li>
 <li>origignal input parameters (<code>SBtab$Input</code>)</li>
-<li>derived input parameter, from conservationlaws (conserved
+<li>derived input parameters, from conservationlaws (conserved
 constants)</li>
 </ul>
 <p>The inputs are allowed to be different for each experiment (by
@@ -387,59 +426,10 @@ definition), the biological parameters are the same for all experiments
 simulated in one go. Therefore, we only supply the biological parameters
 (the first <code>n</code>) to the simultor and it retrieves the others
 from the <code>experiments</code> variable, by concatenation:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">p</span>,<span class="va">experiments</span><span class="op">[[</span><span class="va">l</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span><span class="op">)</span> <span class="co"># for each l</span></span></code></pre></div>
-<p>for experiment <code>l</code>, or
-<code>c(parMap(p),experiments[[l]]$input)</code>, if <code>parMap</code>
-is non-trivial.</p>
+<p>Usually, the number of leading parameters
+(sb$Parameter[[“!DefaultValue”]]) does not change. This is all the
+simulator needs as the inputs are already in <code>ex</code>.</p>
 </div>
-<div class="section level3">
-<h3 id="benefits-of-intermediates">Benefits of Intermediates<a class="anchor" aria-label="anchor" href="#benefits-of-intermediates"></a>
-</h3>
-<p>Every step above produces an output file that carries a meaning:</p>
-<ul>
-<li>the SBtab spreadsheet describes the biological model (so does SBML)
-<ul>
-<li>but with some consideration regarding systems (input/output
-model)</li>
-</ul>
-</li>
-<li>the <code>.vf</code> file represents the model as an ODE</li>
-<li>the <code>.c</code> file is the code representation of the ODE
-model, intended for a specific solver suite.</li>
-</ul>
-<p>Each of these files can be checked by the user, their internal
-formats are not hidden; this can help with checking for errors and
-testing, resability, and interoperability between different software
-packages.</p>
-<p>The vfgen software can also create model files for both R and C, but
-the functions are slightly different from ours. We decided to write our
-own converter for several reasons:</p>
-<ul>
-<li>vfgen creates one function per output, with the output name in the
-function name, e.g.: <code>int DemoModel_ABCoverSUM(...)</code>
-<ul>
-<li>our script creates one output function that returns a vector (one
-item per output line in SBtab) – vector valued output</li>
-</ul>
-</li>
-<li>vfgen does not write a <em>default initial conditions</em> or
-<em>default parameter</em> function
-<ul>
-<li>these should be functions, because they can depend on the constants
-in the model, on previous parameters, and even on the initial time t₀,
-e.g.: <code>double par12 = t&gt;0 ? par3*par5 : par5;</code>
-</li>
-</ul>
-</li>
-<li>the vfgen functions do not return an error code for
-<code>NULL</code> in-out-buffers (which is fine)
-<ul>
-<li>we use these error codes to probe the dimensionality of the model,
-without writing extra data structures</li>
-</ul>
-</li>
-</ul>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

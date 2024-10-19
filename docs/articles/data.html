@@ -42,6 +42,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
     <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
+    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="active nav-item dropdown">
@@ -59,7 +60,6 @@
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
-    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC Sampling</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Sensitivity Analysis</h6>
     <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
@@ -108,22 +108,144 @@
 
     
     
-<p>There are applications that would require the data to be separate
-from the model. This is the case where several competing models exist
-for the same set of data. Our focus is on the case where we are
-developing a singular model for a given data-set. For this reason, we
-store them together. Having two models would require us to copy the same
-data-set into the directories of all competing models. On a system where
-<a href="https://en.wikipedia.org/wiki/Symbolic_link" class="external-link">symbolic links</a>
-are possible (or hard links) they can be used to conserve disk-space for
-large data-sets.</p>
+<p>The data is part of the SBtab document, but it can also be seen as
+separate from the model, so it’s imported with a different function.
+This function also loads the inputs and initial values for the model.
+When determining the inputs, the function takes conservation laws into
+account and calculates input values for conserved quantities, based on
+the stated initial values. The imported object <code>ex</code> is a list
+of simulation instructions:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">'AKAR4cl'</span><span class="op">)</span>                         <span class="co"># file names</span></span>
+<span><span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span>                  <span class="co"># a list of data.frames</span></span>
+<span><span class="co">#&gt; [tsv] file[1] «100nM.tsv» belongs to Document «AKAR4cl»</span></span>
+<span><span class="co">#&gt;  I'll take this as the Model Name.</span></span>
+<span><span class="co">#&gt; 100nM.tsv  25nM.tsv  400nM.tsv  Compound.tsv  Experiments.tsv  Output.tsv  Parameter.tsv  Reaction.tsv</span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">'AKAR4cl'</span>,f<span class="op">=</span><span class="st">"RDS"</span><span class="op">)</span><span class="op">)</span>       <span class="co"># previously saved laws</span></span>
+<span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">sb</span>,<span class="va">cl</span><span class="op">)</span>                  <span class="co"># includes the data</span></span>
+<span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span></span>
+<span><span class="co">#&gt; AKAR4_C_ConservedConst   AKAR4_ConservedConst </span></span>
+<span><span class="co">#&gt;                    0.4                   -0.2</span></span>
+<span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">initialState</span></span>
+<span><span class="co">#&gt; AKAR4p      C </span></span>
+<span><span class="co">#&gt;    0.0    0.4</span></span></code></pre></div>
 <p>The data-sets themselves can be stored in a normal SBtab table, using
 any valid <code>TableName</code>. How many data sets there are and their
 type are listed in the <em>table of experiments</em>:
-<code>Experiments.tsv</code></p>
-<p>Each experiment can be a time series experiment, or a dose response
-curve (where each line is a separate time series with a single
-measurement time-point, a <em>final state</em> that counts).</p>
+<code>Experiments.tsv</code>. Data not listed in the table of
+experiments is not loaded with the <code>sbtab.data</code> function:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sb</span><span class="op">$</span><span class="va">Experiments</span></span>
+<span><span class="co">#&gt;                   !Name    &gt;C</span></span>
+<span><span class="co">#&gt; AKAR4_400nM AKAR4_400nM 0.400</span></span>
+<span><span class="co">#&gt; AKAR4_100nM AKAR4_100nM 0.100</span></span>
+<span><span class="co">#&gt; AKAR4_25nM   AKAR4_25nM 0.025</span></span>
+<span><span class="co">#&gt;                                                                                     !Comment</span></span>
+<span><span class="co">#&gt; AKAR4_400nM  Figure 3—figure supplement 1 in https://doi.org/10.7554/eLife.68164 (dark blue)</span></span>
+<span><span class="co">#&gt; AKAR4_100nM       Figure 3—figure supplement 1 in https://doi.org/10.7554/eLife.68164 (gray)</span></span>
+<span><span class="co">#&gt; AKAR4_25nM  Figure 3—figure supplement 1 in https://doi.org/10.7554/eLife.68164 (light blue)</span></span>
+<span><span class="co"># The first one has this data-set</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ex</span><span class="op">$</span><span class="va">AKAR4_400nM</span><span class="op">$</span><span class="va">outputValues</span><span class="op">)</span></span>
+<span><span class="co">#&gt;          AKAR4pOUT</span></span>
+<span><span class="co">#&gt; E400T001    108.60</span></span>
+<span><span class="co">#&gt; E400T002    111.35</span></span>
+<span><span class="co">#&gt; E400T003    108.75</span></span>
+<span><span class="co">#&gt; E400T004    111.40</span></span>
+<span><span class="co">#&gt; E400T005    111.70</span></span>
+<span><span class="co">#&gt; E400T006    113.25</span></span></code></pre></div>
+<p>The values in <code>ex</code> are simulation instructions for all
+experiments.</p>
+<table class="table">
+<colgroup>
+<col width="13%">
+<col width="15%">
+<col width="71%">
+</colgroup>
+<thead><tr class="header">
+<th align="right">item</th>
+<th align="center">type</th>
+<th align="left">meaning</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">input</td>
+<td align="center">numeric vector</td>
+<td align="left">known input parameters</td>
+</tr>
+<tr class="even">
+<td align="right">initialTime</td>
+<td align="center">numeric vector</td>
+<td align="left">a scalar time <span class="math inline">\(t_0\)</span>
+</td>
+</tr>
+<tr class="odd">
+<td align="right">initialState</td>
+<td align="center">numeric vector</td>
+<td align="left">initial state <span class="math inline">\(x_0\)</span>
+of the ode <span class="math inline">\(\dot x =
+f(x(t),t,p=c(k,u))\)</span>, <span class="math inline">\(x(t_0)=x_0\)</span>
+</td>
+</tr>
+<tr class="even">
+<td align="right">outputTimes</td>
+<td align="center">numeric vector</td>
+<td align="left">a time vector that corresponds to when measurements
+were taken</td>
+</tr>
+<tr class="odd">
+<td align="right"></td>
+<td align="center"></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="right">outputValues</td>
+<td align="center">data.frame</td>
+<td align="left">the values of the data at the above outputTimes</td>
+</tr>
+<tr class="odd">
+<td align="right">errorValues</td>
+<td align="center">data.frame</td>
+<td align="left">an indication of the measurement error/noise (standard
+error)</td>
+</tr>
+<tr class="even">
+<td align="right">events</td>
+<td align="center">list</td>
+<td align="left">a sudden transformation event</td>
+</tr>
+</tbody>
+</table>
+<p>But, any data sets not present in Experiments, are still
+accessible:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">AKAR4_400nM</span><span class="op">)</span></span>
+<span><span class="co">#&gt;          !Time &gt;AKAR4pOUT ~AKAR4pOUT</span></span>
+<span><span class="co">#&gt; E400T001   -15     108.60    14.7950</span></span>
+<span><span class="co">#&gt; E400T002   -10     111.35    14.9325</span></span>
+<span><span class="co">#&gt; E400T003    -5     108.75    14.8025</span></span>
+<span><span class="co">#&gt; E400T004     0     111.40    14.9350</span></span>
+<span><span class="co">#&gt; E400T005     5     111.70    14.9500</span></span>
+<span><span class="co">#&gt; E400T006    10     113.25    15.0275</span></span></code></pre></div>
+<p>This works for any data set that has a TSV file - or a sheet in any
+other valid format (ods, xlsx). This table is just not a simulation
+instruction:</p>
+<ul>
+<li>
+<code>sb</code> has the values of all tsv files/sheets</li>
+<li>
+<code>ex</code> has data and simulation instructions for the rgsl
+package</li>
+</ul>
+<p>Each experiment is a time series experiment, after the import (dose
+response sets are converted to one time series experiment per
+point).</p>
+<p>More about this topic can be found in the <a href="SBtab.html">SBtab</a> section.</p>
+<p>The rest of this page explains SBtab features that are related to
+data-sets and experiment descriptions.</p>
+<hr>
 <div class="section level3">
 <h3 id="time-series">Time Series<a class="anchor" aria-label="anchor" href="#time-series"></a>
 </h3>
@@ -139,9 +261,9 @@ followed by the measured quantities labelled as
 <col width="65%">
 </colgroup>
 <thead><tr class="header">
-<th align="right">label</th>
-<th align="center">example</th>
-<th align="left">meaning</th>
+<th align="right">Label</th>
+<th align="center">Example</th>
+<th align="left">Meaning</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
@@ -162,11 +284,6 @@ called <code>Calcium_Out</code>
 </td>
 </tr>
 <tr class="even">
-<td align="right"></td>
-<td align="center"></td>
-<td align="left"></td>
-</tr>
-<tr class="odd">
 <td align="right">~outputFunctionID</td>
 <td align="center"><code>~Calcium_Out</code></td>
 <td align="left">error estimated for the values in
@@ -180,43 +297,11 @@ called <code>Calcium_Out</code>
 <div class="section level4">
 <h4 id="example-time-series">Example Time Series<a class="anchor" aria-label="anchor" href="#example-time-series"></a>
 </h4>
-<pre><code>!!SBtab Document='myModel' TableType='QuantityMatrix' TableName='AutorYEARfigureS1a' TableTitle='Data originally published in CITATION'</code></pre>
-<table class="table">
-<thead><tr class="header">
-<th align="right">!TimePoint</th>
-<th align="right">!Time</th>
-<th align="right"><code>&gt;A_out</code></th>
-<th align="left"><code>~A_out</code></th>
-<th align="right"><code>&gt;totalB</code></th>
-<th align="left"><code>~totalB</code></th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="right">E0T0</td>
-<td align="right">-1.0</td>
-<td align="right">1.20</td>
-<td align="left">0.012</td>
-<td align="right">201.1</td>
-<td align="left">12</td>
-</tr>
-<tr class="even">
-<td align="right">E0T1</td>
-<td align="right">+0.0</td>
-<td align="right">11.8</td>
-<td align="left">0.12</td>
-<td align="right">203.2</td>
-<td align="left">11</td>
-</tr>
-<tr class="odd">
-<td align="right">E0T2</td>
-<td align="right">+1.0</td>
-<td align="right">31.7</td>
-<td align="left">0.19</td>
-<td align="right">198.7</td>
-<td align="left">13</td>
-</tr>
-</tbody>
-</table>
+<pre><code>!!SBtab Document='myModel' TableName='DataSetBeta'
+ !TimePoint  !Time    &gt;A_out  ~A_out      &gt;totalB  ~totalB 
+       E0T0   -1.0      1.20  0.012         201.1  12
+       E0T1   +0.0      11.8  0.12          203.2  11
+       E0T2   +1.0      31.7  0.19          198.7  13</code></pre>
 </div>
 </div>
 <div class="section level3">
@@ -275,46 +360,17 @@ reproduce.</p>
 <div class="section level4">
 <h4 id="example-dose-response-curve">Example Dose Response Curve<a class="anchor" aria-label="anchor" href="#example-dose-response-curve"></a>
 </h4>
-<pre><code>!!SBtab Document='myModel' TableType='QuantityMatrix' TableName='AutorYEARfigureS1b' TableTitle='Data originally published in CITATION'</code></pre>
-<table class="table">
-<colgroup>
-<col width="9%">
-<col width="26%">
-<col width="32%">
-<col width="15%">
-<col width="15%">
-</colgroup>
-<thead><tr class="header">
-<th align="right">!ID</th>
-<th align="center"><code>&gt;treatment_dose</code></th>
-<th align="center"><code>&gt;treatment_duration</code></th>
-<th align="right"><code>&gt;A_final</code></th>
-<th align="left"><code>~A_final</code></th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="right">E0D0</td>
-<td align="center">200</td>
-<td align="center">50</td>
-<td align="right">50.1</td>
-<td align="left">1.2</td>
-</tr>
-<tr class="even">
-<td align="right">E0D1</td>
-<td align="center">1000</td>
-<td align="center">50</td>
-<td align="right">83.2</td>
-<td align="left">0.9</td>
-</tr>
-<tr class="odd">
-<td align="right">E0D2</td>
-<td align="center">7000</td>
-<td align="center">25</td>
-<td align="right">74.7</td>
-<td align="left">1.8</td>
-</tr>
-</tbody>
-</table>
+<p>This curve has two inputs and one output (<code>A_final</code>), each
+line is a separate time series with one (final) <em>measurement time
+point</em>.</p>
+<pre><code>!!SBtab Document='myModel' TableName='DataSetGamma'
+  !ID  &gt;treatment_dose  &gt;treatment_duration  &gt;A_final  ~A_final 
+ E0D0  200                50                     50.1  1.2
+ E0D1  1000               50                     83.2  0.9
+ E0D2  7000               25                     74.7  1.8</code></pre>
+<p>Anything more complex has to be expressed as a
+<code>Time series</code> with an event schedule. The measurement time is
+taken from the <code>Experiments</code> table (Experiments.tsv).</p>
 </div>
 </div>
 <div class="section level2">
@@ -335,220 +391,61 @@ the system is subject to.</p>
 apply.</p>
 <p>The transformation function (C code), is auto-generated by <a href="icpm-kth/RPN-derivative">RPN-derivative/sh/ode.sh</a>.</p>
 <p>An example of a Transformation table:</p>
-<pre><code>!!SBtab  Document='myModel'  TableName='Transformation' </code></pre>
-<table style="width:100%;" class="table">
-<colgroup>
-<col width="11%">
-<col width="14%">
-<col width="14%">
-<col width="17%">
-<col width="17%">
-<col width="24%">
-</colgroup>
-<thead><tr class="header">
-<th align="right"><code>!ID</code></th>
-<th align="left"><code>&gt;Cag</code></th>
-<th align="left"><code>&gt;Cal</code></th>
-<th align="left"><code>&gt;Vph</code></th>
-<th align="left"><code>&gt;Vpl</code></th>
-<th align="left"><code>&gt;Nu</code></th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="right"><code>APCa</code></td>
-<td align="left"><code>Cag+dCag</code></td>
-<td align="left"><code>Cal+dCal</code></td>
-<td align="left"><code>Vph</code></td>
-<td align="left"><code>Vpl</code></td>
-<td align="left"><code>Nu</code></td>
-</tr>
-<tr class="even">
-<td align="right"><code>APV</code></td>
-<td align="left"><code>Cag</code></td>
-<td align="left"><code>Cal</code></td>
-<td align="left"><code>Vph-ph*Vph</code></td>
-<td align="left"><code>Vpl-pl*Vpl</code></td>
-<td align="left"><code>Nu+ph*Vph+pl*Vpl</code></td>
-</tr>
-<tr class="odd">
-<td align="right"><code>Tsucr</code></td>
-<td align="left"><code>Cag</code></td>
-<td align="left"><code>Cal</code></td>
-<td align="left"><code>0</code></td>
-<td align="left"><code>0</code></td>
-<td align="left"><code>Nu+Vph+Vpl</code></td>
-</tr>
-</tbody>
-</table>
-<p>Note: Our code ignores most of the <code>!!SBtab</code> header
-attributes in TSV files, except the two given above. For excel and ods
-files, we ignore all <code>!!SBtab</code> attributes and skip the entire
-first line, instead we use the Sheet name as TableName and file name as
-Document name.</p>
+<pre><code>!!SBtab  Document='myModel'  TableName='Transformation' 
+   !ID  &gt;Cag      &gt;Cal      &gt;Vph        &gt;Vpl        &gt;Nu
+  APCa  Cag+dCag  Cal+dCal  Vph         Vpl         Nu
+   APV  Cag       Cal       Vphph*Vph   Vplpl*Vpl   Nu+ph*Vph+pl*Vpl 
+ Tsucr  Cag       Cal       0           0           Nu+Vph+Vpl</code></pre>
 <p>These transformations apply at times given in an event schedule:</p>
-<pre><code>!!SBtab  Document='myModel'  TableName='OneAP'</code></pre>
-<table class="table">
-<thead><tr class="header">
-<th align="right"><code>!ID</code></th>
-<th align="center"><code>!Time</code></th>
-<th align="left"><code>!Transformation</code></th>
-<th align="center"><code>!Dose</code></th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="right"><code>AP0</code></td>
-<td align="center"><code>0</code></td>
-<td align="left"><code>APCa</code></td>
-<td align="center"><code>0</code></td>
-</tr>
-<tr class="even">
-<td align="right"><code>AP1</code></td>
-<td align="center"><code>1E-06</code></td>
-<td align="left"><code>APV</code></td>
-<td align="center"><code>0</code></td>
-</tr>
-</tbody>
-</table>
+<pre><code>!!SBtab  Document='myModel'  TableName='OneAP'
+ !ID  !Time  !Transformation  !Dose 
+ AP0  0      APCa             0
+ AP1  1E06   APV              0</code></pre>
 <p>And this schedule is applied to an experiment by listing it in the
 Experiment table:</p>
-<pre><code> !!SBtab  Document='myModel'  TableName='Experiment' </code></pre>
-<table class="table">
-<thead><tr class="header">
-<th align="right"><code>!ID</code></th>
-<th align="center"><code>!Event</code></th>
-<th align="center"><code>!T0</code></th>
-<th align="center"><code>&gt;A</code></th>
-<th align="center"><code>&gt;B</code></th>
-<th align="center"><code>&gt;C</code></th>
-</tr></thead>
-<tbody><tr class="odd">
-<td align="right"><code>PvR</code></td>
-<td align="center">&gt;&gt;&gt; <code>OneAP</code> &lt;&lt;&lt;</td>
-<td align="center"><code>-200</code></td>
-<td align="center"><code>0</code></td>
-<td align="center"><code>0</code></td>
-<td align="center"></td>
-</tr></tbody>
-</table>
+<pre><code>!!SBtab  Document='myModel'  TableName='Experiment' 
+    !ID  !Event  !T0   &gt;A  &gt;B
+    PvR  OneAP    200  0   0</code></pre>
 <p>The <code>!Event</code> column specifies the event schedule for this
 experiment (each experiment is one row).</p>
 <p>This setup will create this C function:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a></span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">/* Scheduled Event function,</span></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">   EventLabel specifies which of the possible transformations to apply,</span></span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">   dose can specify a scalar intensity for this transformation. */</span></span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="dt">int</span> myModel_event<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">double</span> y_<span class="op">[],</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">,</span> <span class="dt">int</span> EventLabel<span class="op">,</span> <span class="dt">double</span> dose<span class="op">)</span></span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_ <span class="op">||</span> <span class="op">!</span>par <span class="op">||</span> EventLabel<span class="op">&lt;</span><span class="dv">0</span><span class="op">)</span> <span class="cf">return</span> <span class="dv">3</span><span class="op">;</span></span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>    <span class="kw">enum</span> eventLabel <span class="op">{</span> APCa<span class="op">,</span>APV<span class="op">,</span>Tsucr<span class="op">,</span> numEvents <span class="op">};</span> <span class="co">/* event name indexes */</span></span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>    <span class="kw">enum</span> stateVariable <span class="op">{</span> var_Cag<span class="op">,</span>var_Cal<span class="op">,</span>var_Vdh<span class="op">,</span>var_Vdl<span class="op">,</span>var_Vph<span class="op">,</span>var_Vpl<span class="op">,</span>var_Np<span class="op">,</span>var_Nu<span class="op">,</span> numStateVar <span class="op">};</span> <span class="co">/* state variable indexes  */</span></span>
-<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>    <span class="kw">enum</span> param <span class="op">{</span> par_k1f<span class="op">,</span>par_k1b<span class="op">,</span>par_k2f<span class="op">,</span>par_k2b<span class="op">,</span>par_k3f<span class="op">,</span>par_k4f<span class="op">,</span>par_k5f<span class="op">,</span>par_taug<span class="op">,</span>par_taul<span class="op">,</span>par_dCagDef<span class="op">,</span>par_dCalDef<span class="op">,</span>par_Kh<span class="op">,</span>par_c<span class="op">,</span>par_p3Def<span class="op">,</span>par_p4<span class="op">,</span>par_Ntot<span class="op">,</span>par_cMutE<span class="op">,</span>par_BasuE<span class="op">,</span>par_cMutB<span class="op">,</span>par_BasuB<span class="op">,</span>par_BasuKIB<span class="op">,</span>par_Cag0Def<span class="op">,</span>par_Cal0Def<span class="op">,</span> numParam <span class="op">};</span> <span class="co">/* parameter indexes  */</span></span>
-<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>    </span>
-<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>    <span class="co">/* model specific code that defines the local variables, but isn't important: */</span></span>
-<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>    <span class="co">/* ... */</span></span>
-<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>    <span class="dt">double</span> k1f<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span> <span class="co">// etc.</span></span>
-<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>    <span class="co">/* ... */</span></span>
-<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>    <span class="dt">double</span> Cag<span class="op">=</span>y_<span class="op">[</span><span class="dv">0</span><span class="op">];</span> <span class="co">// etc.</span></span>
-<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>    <span class="co">/* ... */</span></span>
-<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a></span>
-<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>    <span class="cf">switch</span><span class="op">(</span>EventLabel<span class="op">){</span></span>
-<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>    <span class="cf">case</span> APCa<span class="op">:</span></span>
-<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>        y_<span class="op">[</span>var_Cag<span class="op">]</span> <span class="op">=</span> Cag<span class="op">+</span>dCag<span class="op">;</span></span>
-<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>        y_<span class="op">[</span>var_Cal<span class="op">]</span> <span class="op">=</span> Cal<span class="op">+</span>dCal<span class="op">;</span></span>
-<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>    <span class="cf">break</span><span class="op">;</span></span>
-<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>    <span class="cf">case</span> APV<span class="op">:</span></span>
-<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a>        y_<span class="op">[</span>var_Vph<span class="op">]</span> <span class="op">=</span> Vph<span class="op">-</span>ph<span class="op">*</span>Vph<span class="op">;</span></span>
-<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a>        y_<span class="op">[</span>var_Vpl<span class="op">]</span> <span class="op">=</span> Vpl<span class="op">-</span>pl<span class="op">*</span>Vpl<span class="op">;</span></span>
-<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a>        y_<span class="op">[</span>var_Nu<span class="op">]</span> <span class="op">=</span> Nu<span class="op">+</span>ph<span class="op">*</span>Vph<span class="op">+</span>pl<span class="op">*</span>Vpl<span class="op">;</span></span>
-<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a>    <span class="cf">break</span><span class="op">;</span></span>
-<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a>    <span class="cf">case</span> Tsucr<span class="op">:</span></span>
-<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a>        y_<span class="op">[</span>var_Vph<span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a>        y_<span class="op">[</span>var_Vpl<span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a>        y_<span class="op">[</span>var_Nu<span class="op">]</span> <span class="op">=</span> Nu<span class="op">+</span>Vph<span class="op">+</span>Vpl<span class="op">;</span></span>
-<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a>    <span class="cf">break</span><span class="op">;</span></span>
-<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
-<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="r-functions">R-functions<a class="anchor" aria-label="anchor" href="#r-functions"></a>
-</h2>
-<p>The <a href="github.com/icpm-kth/SBtabVFGEN">icpm-kth/SBtabVFGEN</a>
-package has functions to import a model with the data into R data
-structures. If you did not install this already:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/SBtabVFGEN"</span><span class="op">)</span> <span class="co"># if you didn't do that yet</span></span></code></pre></div>
-<p>and once it is installed:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">model.tsv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span>pattern<span class="op">=</span><span class="st">"[.]tsv$"</span>,full.names<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="co"># a vector of file paths to TSV files</span></span>
-<span>    <span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">model.tsv</span><span class="op">)</span>         <span class="co"># a list of data.frames</span></span>
-<span>    <span class="va">experiments</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>           <span class="co"># a list of simulation experiments with data</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<p>The <code>experiments</code> variable is a list, each member (itself
-a list), describes a simulation experiment. Each experiment may result
-in one or more calls to the simulator (in C this amounts to resetting
-the driver of the chosen solver). An experiment has the properties:</p>
-<table class="table">
-<colgroup>
-<col width="13%">
-<col width="15%">
-<col width="71%">
-</colgroup>
-<thead><tr class="header">
-<th align="right">item</th>
-<th align="center">type</th>
-<th align="left">meaning</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="right">input</td>
-<td align="center">numeric vector</td>
-<td align="left">known input parameters</td>
-</tr>
-<tr class="even">
-<td align="right">initialTime</td>
-<td align="center">numeric vector</td>
-<td align="left">a scalar time <span class="math inline">\(t_0\)</span>
-</td>
-</tr>
-<tr class="odd">
-<td align="right">initialState</td>
-<td align="center">numeric vector</td>
-<td align="left">initial state <span class="math inline">\(x_0\)</span>
-of the ode <span class="math inline">\(\dot x =
-f(x(t),t,p=c(k,u))\)</span>, <span class="math inline">\(x(t_0)=x_0\)</span>
-</td>
-</tr>
-<tr class="even">
-<td align="right">outputTimes</td>
-<td align="center">numeric vector</td>
-<td align="left">a time vector that corresponds to when measurements
-were taken</td>
-</tr>
-<tr class="odd">
-<td align="right"></td>
-<td align="center"></td>
-<td align="left"></td>
-</tr>
-<tr class="even">
-<td align="right">outputValues</td>
-<td align="center">data.frame</td>
-<td align="left">the values of the data at the above outputTimes</td>
-</tr>
-<tr class="odd">
-<td align="right">errorValues</td>
-<td align="center">data.frame</td>
-<td align="left">an indication of the measurement error/noise</td>
-</tr>
-<tr class="even">
-<td align="right">events</td>
-<td align="center">list</td>
-<td align="left">a sudden transformation event</td>
-</tr>
-</tbody>
-</table>
+<div class="sourceCode" id="cb9"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="co">/* Scheduled Event function,</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="co">   EventLabel specifies which of the possible transformations to apply,</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co">   dose can specify a scalar intensity for this transformation. */</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="dt">int</span> myModel_event<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">double</span> y_<span class="op">[],</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">,</span> <span class="dt">int</span> EventLabel<span class="op">,</span> <span class="dt">double</span> dose<span class="op">)</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_ <span class="op">||</span> <span class="op">!</span>par <span class="op">||</span> EventLabel<span class="op">&lt;</span><span class="dv">0</span><span class="op">)</span> <span class="cf">return</span> <span class="dv">3</span><span class="op">;</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>    <span class="kw">enum</span> eventLabel <span class="op">{</span> APCa<span class="op">,</span>APV<span class="op">,</span>Tsucr<span class="op">,</span> numEvents <span class="op">};</span> <span class="co">/* event name indexes */</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>    <span class="kw">enum</span> stateVariable <span class="op">{</span> var_Cag<span class="op">,</span>var_Cal<span class="op">,</span>var_Vdh<span class="op">,</span>var_Vdl<span class="op">,</span>var_Vph<span class="op">,</span>var_Vpl<span class="op">,</span>var_Np<span class="op">,</span>var_Nu<span class="op">,</span> numStateVar <span class="op">};</span> <span class="co">/* state variable indexes  */</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>    <span class="kw">enum</span> param <span class="op">{</span> par_k1f<span class="op">,</span>par_k1b<span class="op">,</span>par_k2f<span class="op">,</span>par_k2b<span class="op">,</span>par_k3f<span class="op">,</span>par_k4f<span class="op">,</span>par_k5f<span class="op">,</span>par_taug<span class="op">,</span>par_taul<span class="op">,</span>par_dCagDef<span class="op">,</span>par_dCalDef<span class="op">,</span>par_Kh<span class="op">,</span>par_c<span class="op">,</span>par_p3Def<span class="op">,</span>par_p4<span class="op">,</span>par_Ntot<span class="op">,</span>par_cMutE<span class="op">,</span>par_BasuE<span class="op">,</span>par_cMutB<span class="op">,</span>par_BasuB<span class="op">,</span>par_BasuKIB<span class="op">,</span>par_Cag0Def<span class="op">,</span>par_Cal0Def<span class="op">,</span> numParam <span class="op">};</span> <span class="co">/* parameter indexes  */</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>    </span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>    <span class="co">/* model specific code that defines the local variables, but isn't important: */</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>    <span class="co">/* ... */</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>    <span class="dt">double</span> k1f<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span> <span class="co">// etc.</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a>    <span class="co">/* ... */</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a>    <span class="dt">double</span> Cag<span class="op">=</span>y_<span class="op">[</span><span class="dv">0</span><span class="op">];</span> <span class="co">// etc.</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a>    <span class="co">/* ... */</span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a>    <span class="cf">switch</span><span class="op">(</span>EventLabel<span class="op">){</span></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a>    <span class="cf">case</span> APCa<span class="op">:</span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a>        y_<span class="op">[</span>var_Cag<span class="op">]</span> <span class="op">=</span> Cag<span class="op">+</span>dCag<span class="op">;</span></span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a>        y_<span class="op">[</span>var_Cal<span class="op">]</span> <span class="op">=</span> Cal<span class="op">+</span>dCal<span class="op">;</span></span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a>    <span class="cf">break</span><span class="op">;</span></span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a>    <span class="cf">case</span> APV<span class="op">:</span></span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a>        y_<span class="op">[</span>var_Vph<span class="op">]</span> <span class="op">=</span> Vph<span class="op">-</span>ph<span class="op">*</span>Vph<span class="op">;</span></span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a>        y_<span class="op">[</span>var_Vpl<span class="op">]</span> <span class="op">=</span> Vpl<span class="op">-</span>pl<span class="op">*</span>Vpl<span class="op">;</span></span>
+<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a>        y_<span class="op">[</span>var_Nu<span class="op">]</span> <span class="op">=</span> Nu<span class="op">+</span>ph<span class="op">*</span>Vph<span class="op">+</span>pl<span class="op">*</span>Vpl<span class="op">;</span></span>
+<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a>    <span class="cf">break</span><span class="op">;</span></span>
+<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a>    <span class="cf">case</span> Tsucr<span class="op">:</span></span>
+<span id="cb9-31"><a href="#cb9-31" tabindex="-1"></a>        y_<span class="op">[</span>var_Vph<span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb9-32"><a href="#cb9-32" tabindex="-1"></a>        y_<span class="op">[</span>var_Vpl<span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb9-33"><a href="#cb9-33" tabindex="-1"></a>        y_<span class="op">[</span>var_Nu<span class="op">]</span> <span class="op">=</span> Nu<span class="op">+</span>Vph<span class="op">+</span>Vpl<span class="op">;</span></span>
+<span id="cb9-34"><a href="#cb9-34" tabindex="-1"></a>    <span class="cf">break</span><span class="op">;</span></span>
+<span id="cb9-35"><a href="#cb9-35" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb9-36"><a href="#cb9-36" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
+<span id="cb9-37"><a href="#cb9-37" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="gaussian-measurement-errors">Gaussian Measurement errors<a class="anchor" aria-label="anchor" href="#gaussian-measurement-errors"></a>

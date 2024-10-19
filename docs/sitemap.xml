@@ -22,6 +22,9 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/GSA.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/GenerateCodeInSHELL.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/SBtab.html</loc>
   </url>
   <url>
@@ -62,15 +65,6 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/models.html</loc>
-  </url>
-  <url>
-    <loc>https://icpm-kth.github.io/uqsa/articles/articles/models_BACKUP_13759.html</loc>
-  </url>
-  <url>
-    <loc>https://icpm-kth.github.io/uqsa/articles/articles/models_BASE_13759.html</loc>
-  </url>
-  <url>
-    <loc>https://icpm-kth.github.io/uqsa/articles/articles/models_LOCAL_13759.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/mpi.html</loc>
@@ -124,22 +118,19 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/installation.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/intermediateFiles.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/literature_references.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/models.html</loc>
   </url>
   <url>
-    <loc>https://icpm-kth.github.io/uqsa/articles/models_BACKUP_13759.html</loc>
-  </url>
-  <url>
-    <loc>https://icpm-kth.github.io/uqsa/articles/models_BASE_13759.html</loc>
-  </url>
-  <url>
-    <loc>https://icpm-kth.github.io/uqsa/articles/models_LOCAL_13759.html</loc>
-  </url>
-  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/mpi.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/path.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/sa.html</loc>

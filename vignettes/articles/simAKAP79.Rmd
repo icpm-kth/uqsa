@@ -3,7 +3,7 @@ title: "Example Simulation"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
+knitr::opts_chunk$set(cache = TRUE, eval=TRUE,
   collapse = TRUE,
   comment = "#>"
 )

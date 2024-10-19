@@ -3,7 +3,7 @@ title: "Importing Models into R"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
+knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -15,16 +15,68 @@ outputs, then the most straightforward way to define it is through
 
 For completely different models (or solvers), the user must either write their own
 likelihood function (cost-function/objective-function) or write a vf
-file manually to generate C code from.
+file manually, to generate C code from.
 
 It is also possible to directly write the model functions in C (for `gsl_odeiv2`).
 
-```R
+The SBtab path uses these functions:
+
+```{r, eval=FALSE}
 f <- dir(pattern="[.]tsv$",full.names=TRUE)          # file names
 sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
 cl <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # conservation laws, if any
-ex <- SBtabVFGEN::sbtab.data(sb,cl)
+ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # includes the data
 ```
+
+The SBtab model has now been loaded into R as `data.frames`, and also converted into an
+ODE. The data has been loaded as well. 
+
+The rest of this page describes the variables we just created, as well as the written files.
+
+---
+
+# Real Example
+
+```{r, eval=TRUE}
+library(uqsa)
+library(SBtabVFGEN)
+
+f <- uqsa_example('AKAR4')                           # file names
+print(f[1])
+sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
+cl <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # conservation laws, if any
+ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # includes the data
+```
+
+The `ex` variable holds simulation instructions as a plain R list:
+inputs, initial values, measurement times, etc. -- but also the actual data.
+
+
+SBtab content:
+
+```{r, eval=TRUE}
+## Reactions, as an example of SBtab in R:
+print(sb$Reaction)
+## Conservation Laws, as text, and its attributes:
+cl$Text
+## data:
+head(ex[[1]]$outputValues)
+head(ex[[1]]$errorValues)
+```
+
+Data as a plot:
+
+```{r, eval=TRUE}
+i <- seq(70)
+t <- ex[[1]]$outputTimes[i]
+y <- ex[[1]]$outputValues[[1]][i]
+dy <- ex[[1]]$errorValues[[1]][i]
+plot(t,y,bty='n',ylim=c(100,200))
+arrows(t,y,t,y+dy,angle=90, length=0.01)
+arrows(t,y,t,y-dy,angle=90, length=0.01)
+```
+
+# Files
 
 The function `sbtab_to_vfgen` will produce several files, using the
 model's name (`Document='model_name'` attribute of SBtab):
@@ -32,9 +84,30 @@ model's name (`Document='model_name'` attribute of SBtab):
 - `model_name.vf`, a vfgen compatible file
 - `model_name.mod`, a NEURON mod file
 - (optional) `model_name.xml`, an SBML file, if you have the R bindings to libsbml installed in R and libsbml in your system
-- `*.txt`, the math for the ODE system, not tied to any specification (human readable math text files)
-- `model.tar.gz`, the same text files, bundled as a zip
-- `model.zip`, the same as `tar.gz` but for people who only know `zip`, for compatibility
+- `model_name.tar.gz`, compressed archive of a text representation of all ODE elements, no specific format
+- `model_name.zip`, the same as `tar.gz`, but as a zip archive
+
+Let's look at the state variables of the ode:
+
+```{sh, label='show the ODE right hand side',eval=TRUE}
+grep '<StateVariable' AKAR4.vf
+```
+
+Two State variables have been commented out. These two have been replaced by vfgen expressions:
+
+```{sh, label='show Expressions',eval=TRUE}
+grep '<Expression' AKAR4.vf
+```
+
+Finally, we clean up the generated files:
+
+```{sh, eval=TRUE}
+for t in vf tar.gz zip ; do rm ./AKAR4.$t ; done
+[ -f AKAR4.xml ] && rm AKAR4.xml # since that one is optional
+echo $?
+```
+
+## The Vector Field file
 
 The vf file is compatible with the
 [vfgen](https://warrenweckesser.github.io/vfgen/) tool, which creates
@@ -45,11 +118,7 @@ missing here (e.g. scheduled events). The vfgen tool uses the
 [ginac](https://www.ginac.de/) library to calculate Jacobians.  Ginac
 cannot parse vf files with inequality expressions in them (e.g. `a < b`).
 
-
-The `ex` variable will hold simulation instructions as a plain R list:
-inputs, initial values, measurement times, etc.
-
-## Converting the ODE to code
+### Converting the ODE to code
 
 We use our tool, [RPN-derivative](github.com/icpm-kth/RPN-derivative),
 which reads the same file (or one of the archive files:
@@ -70,11 +139,11 @@ derivatives for the Jacobians:
 2. [yacas](https://yacas.readthedocs.io/en/latest/),
 3. the `bin/derivative` binary that RPN-derivative contains (after `make && make install`)
 
-
 Assuming that you followed all [installation instructions](articles/installation.html):
 
 ```{sh, eval=FALSE}
 ode -R --maxima ./myModel.vf > ./myModel.R 
+##     both     ./myModel.{zip,tar.gz}     also work here
 ```
 
 ```{sh, eval=FALSE}

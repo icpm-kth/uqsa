@@ -1,5 +1,5 @@
 !!SBtab	Document='AKAR4cl' SBtabVersion='1.0'	TableName='Parameter' TableTitle='Parameters in AKAR4 Model'  TableType='Quantity'				
 !ID	!Name	!DefaultValue	!Std	!PriorDistribution	!Scale	!Unit
-kf_C_AKAR4	kf_C_AKAR4	0.018		Uniform distribution	linear	1/(micromolarity*second)
-kb_C_AKAR4	kb_C_AKAR4	0.106		Uniform distribution	linear	1/second
-kcat_AKARp	kcat_AKARp	10.2		Uniform distribution	linear	1/second
+kf_C_AKAR4	kf_C_AKAR4	0.018	0.001	Uniform distribution	linear	1/(micromolarity*second)
+kb_C_AKAR4	kb_C_AKAR4	0.106	0.02	Uniform distribution	linear	1/second
+kcat_AKARp	kcat_AKARp	10.2	2	Uniform distribution	linear	1/second

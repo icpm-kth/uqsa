@@ -33,12 +33,14 @@ navbar:
         href: articles/data.html
       - text: Build your own Model
         href: articles/user_model.html
+      - text: Generate C Code Outside of R
+        href: articles/GenerateCodeInSHELL.html
+      - text: Advantages of Intermediates
+        href: articles/intermediateFiles.html
       - text: -------
       - text: Paremeter estimation and uncertainty quantification
       - text: Simulating a Model
         href: articles/simulate.html
-      - text: ABC Sampling
-        href: articles/ABC_sampling.html
       - text: -------
       - text: Sensitivity Analysis
       - text: Global Sensitivity Analysis

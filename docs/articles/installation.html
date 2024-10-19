@@ -42,6 +42,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
     <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
+    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -59,7 +60,6 @@
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
-    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC Sampling</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Sensitivity Analysis</h6>
     <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
@@ -143,20 +143,26 @@ itself has code to perform derivatives (needs
 <div class="section level3">
 <h3 id="analytical-derivatives-and-model-code-generation">Analytical derivatives and Model Code Generation<a class="anchor" aria-label="anchor" href="#analytical-derivatives-and-model-code-generation"></a>
 </h3>
-<p>You may have to adjust this to fit your specific setup (do you use
-<code>zsh</code>? Does it parse <code>.profile</code>)</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">git</span> pull https://github.com/icpm-kth/RPN-derivative.git</span>
+<p>You may have to adjust this to fit your specific circumstances (do
+you use <code>zsh</code>? Does it parse <code>.profile</code>?)</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/icpm-kth/RPN-derivative.git</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="bu">cd</span> RPN-derivative</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">make</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># these commands (or similar) make the ode script available from any location</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-d</span> <span class="st">"</span><span class="va">$HOME</span><span class="st">/.local/bin"</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="fu">ln</span> <span class="at">-s</span> <span class="st">"</span><span class="kw">`</span><span class="bu">pwd</span><span class="kw">`</span><span class="st">/sh/ode.sh"</span> <span class="st">"</span><span class="va">$HOME</span><span class="st">/.local/bin/ode"</span></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-L</span> <span class="st">"</span><span class="va">$HOME</span><span class="st">/.local/bin/ode"</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">"export PATH=</span><span class="dt">\"</span><span class="va">$HOME</span><span class="st">/.local/bin:</span><span class="va">$PATH</span><span class="dt">\"</span><span class="st">"</span> <span class="op">&gt;&gt;</span> <span class="va">$HOME</span>/.profile</span></code></pre></div>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="va">dir</span><span class="op">=</span><span class="kw">`</span><span class="bu">pwd</span><span class="kw">`</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> ~/.local/bin <span class="kw">&amp;&amp;</span> <span class="fu">ln</span> <span class="at">-s</span> <span class="st">"</span><span class="va">$dir</span><span class="st">/sh/ode.sh"</span> <span class="st">"</span><span class="va">$HOME</span><span class="st">/.local/bin/ode"</span></span></code></pre></div>
+<p>RPN-derivative contains a c program that can calculate simple
+derivatives, it can be installed like this:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># this installs the derivative program in RPN-derivative</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">sudo</span> make install</span></code></pre></div>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">make</span> <span class="kw">&amp;&amp;</span> <span class="fu">make</span> test</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">sudo</span> make install</span></code></pre></div>
+<p>The <code>ode.sh</code> script will work regardless of whether you
+run <code>make</code>, but without the above block the
+<code>--maxima</code> or <code>--yacas</code> backend options are
+mandatory.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+<h2 id="installation-of-the-r-packages">Installation of the R packages<a class="anchor" aria-label="anchor" href="#installation-of-the-r-packages"></a>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># requires the 'remotes' package</span></span>
@@ -164,6 +170,16 @@ itself has code to perform derivatives (needs
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/SBtabVFGEN"</span>,dependencies<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/rgsl"</span>,dependencies<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/uqsa"</span>,dependencies<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="mpi">MPI<a class="anchor" aria-label="anchor" href="#mpi"></a>
+</h2>
+<p>If you want to run on several nodes of a cluster via MPI
+(debian/ubuntu):</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">sudo</span> apt install libopenmpi-dev</span></code></pre></div>
+<p>and in R:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"pbdMPI"</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
