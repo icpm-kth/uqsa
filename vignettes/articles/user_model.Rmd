@@ -20,7 +20,22 @@ google spreadsheet, an open document spreadsheet (`ods`), MS Excel
 file, a file for the `numbers` application on an Apple device or a
 `.gnumeric` file.
 
-Once you have the TSV files...
+There are three steps we need to make:
+
+|   | Steps                             | file (out) | tl;dr                |
+|--:|:----------------------------------|:----------:|:--------------------:|
+| 1 | convert SBtab to ODE              | .vf        | biology => math      |
+| 2 | convert the ODE to sources        | .c         | math => code         |
+| 3 | convert sources to shared library | .so        | code => machine code |
+
+---
+
+[RPN-derivative](https://github.com/icpm-kth/RPN-derivative)
+calculates derivatives or offloads that work on maxima or yacas,
+install them if you want to use the `--maxima` or `--yacas` options.
+
+
+# Load the TSV files Convert and Compile the Model
 
 ```{r, eval=FALSE}
 library(uqsa)

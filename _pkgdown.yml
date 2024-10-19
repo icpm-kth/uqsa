@@ -56,8 +56,6 @@ navbar:
           href: articles/AKAP79.html
         - text: Sample AKAR4
           href: articles/AKAR4.html
-        - text: Build a Model
-          href: articles/shortMakeSharedLibrary.html
         - text: Multiple chains via MPI
           href: articles/mpi.html
     reference:
