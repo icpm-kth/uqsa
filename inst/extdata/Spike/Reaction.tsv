@@ -1,0 +1,4 @@
+!!SBtab	Document='Spike' TableName='Reaction'					
+!ID	!KineticLaw	!IsReversible	!ReactionFormula
+rf1	Buffer	FALSE	NULL <=> Ca
+rf2	-k1*k2*Ca-(k1+k2)*Buffer	FALSE	NULL <=> Buffer

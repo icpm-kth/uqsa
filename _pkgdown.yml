@@ -39,6 +39,8 @@ navbar:
         href: articles/GenerateCodeInSHELL.html
       - text: Advantages of Intermediates
         href: articles/intermediateFiles.html
+      - text: ODE Model
+        href: articles/ODE-Model.html
       - text: -------
       - text: Paremeter estimation and uncertainty quantification
       - text: Simulating a Model

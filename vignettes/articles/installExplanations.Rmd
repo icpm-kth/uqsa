@@ -60,12 +60,12 @@ command to install it.
 
 # System Prerequisites
 
-If you are using an apple device for modelling work (may the
-science-gods have mercy), then you need a package manager that
+If you are using an apple device, then you need a package manager that
 macbooks don't come pre-configured with. One such package-manager is
 [homebrew](https://brew.sh/) (this is unofficial work funded by
 donations) - install it using the command pasted on the homebrew
-homepage.
+homepage. You are probably already using it or something very similar,
+but if not then please do.
 
 WARNING: macOS will definitely mention xcode at some point, apple is
 really keen on this. We have absolutely nothing to do with xcode,

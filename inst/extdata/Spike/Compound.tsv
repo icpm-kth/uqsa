@@ -1,0 +1,4 @@
+!!SBtab	Document='Spike' TableName='Compound'				
+!ID	!InitialValue	!Unit
+Ca	0.0	µM
+Buffer	0.0	1
