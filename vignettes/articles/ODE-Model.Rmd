@@ -14,9 +14,31 @@ and we don't want to first think of it as a reaction network.
 
 In such cases, these approaches are equally good/plausible:
 
-- write the model's C source code directly using a computer algebra system like maxima (or mathematica, etc.)
-- write the model in vfgen's `vf` format, but avoid line-breaks
+- write the model in vfgen's `vf` format
+    + avoid line-breaks in self-closed tags: `<SomeElement attr="value"/>` (always one line)
+    + [`ode.sh`](icpm-kth/RPN-erivative) does not use an xml parser since there is no mathml
+	+ The attribute values are extracted using regular expressions and POSIX tools
+	+ standard _regular expressions_ usually don't deal well with
+      content that is spread across lines (Rob Pike
+      [wrote](https://doc.cat-v.org/bell_labs/structural_regexps/se.pdf)
+      about this a long time ago)
+- use the `ode` format of `xpp` and `xppaut`
+    + there is limited support for this format as `xpp` has a huge list of capabilities
+	+ differentiation has to be `var' = formula`, with a `'` (prime)
+	+ no delay equations
+	+ no DAE
+	+ no `bdry`, `global`, `wiener`, `table`, and other special functions
 - convert the model into the text form used by `RPN-derivative/sh/ode.sh`, by imitating the examples
+    + `ode.sh` has an `--inspect` option that leaves the created temporary files intact for inspection
+	+ this can be used for debugging as well
+	+ whichever format `ode.sh` receives, it will convert everything into `txt` files that end up in the _temp_ folder
+	+ on GNU/Linux the temp folder is `/dev/shm/ode_gen/` (it doesn't survive reboots)
+- write the model's C source code directly using a computer algebra system
+    + maxima and yacas are good
+	+ this is not automated at all
+    + feasible if you have experience with these tools
+
+On this page, we will use the `.ode` method.
 
 # Simple Example
 
@@ -67,9 +89,9 @@ EOF
 ) > pendulum.ode
 ```
 
-We will use this model, but there is no parser for it, so we will convert it to teh text format using standard command line tools:
+We will use this model, and convert it to the text format that `ode.sh` can read using standard command line tools:
 
-```{sh}
+```{sh, eval=FALSE}
 f="pendulum.ode"
 echo "$f"
 egrep '^par' "$f" | tr '=' '\t' | sed 's/^par //' > Parameters.txt
@@ -78,6 +100,17 @@ egrep "'" "$f" | sed -E "s/([^=]*)'=/\1\t/;" > ODE.txt
 egrep '^aux' "$f" | tr '=' '\t' | sed 's/^aux[ ]*//' > OutputFunctions.txt
 tar czf pendulum.tar.gz Parameters.txt StateVariables.txt ODE.txt OutputFunctions.txt
 [ -f pendulum.tar.gz ] && ode -C --maxima pendulum.tar.gz > pendulum_gvf.c
+```
+
+At this stage, we could add transformations (manually), if we wanted.
+
+---
+
+But, actually, there is a limited parser for `ode` files that does something like the above.
+It runs if the model file ends in ode:
+
+```{sh}
+ode -C --maxima pendulum.ode > pendulum_gvf.c
 ```
 
 The resulting code can be found at the bottom of this page.
@@ -114,6 +147,10 @@ plot(ex[[1]]$outputTimes,y[[1]]$state[1,,1],xlab='t',ylab='theta',bty='n',type='
 #include <gsl/gsl_odeiv2.h>
 #include <gsl/gsl_math.h>
 
+enum stateVariable { _theta,_v, numStateVar }; /* state variable indexes  */
+enum param { _g,_b,_L,_m, numParam }; /* parameter indexes  */
+enum func { _energy, numFunc }; /* parameter indexes  */
+
 /* The error code indicates how to pre-allocate memory
  * for output values such as `f_`. The _vf function returns
  * the number of state variables, if any of the args are `NULL`.
@@ -132,8 +169,8 @@ int pendulum_vf(double t, const double y_[], double f_[], void *par)
 	double m=p_[3];
 	double theta=y_[0];
 	double v=y_[1];
-	f_[0] = v; /* theta */
-	f_[1] = -v*pow(m,-1)*b*pow(L,-2)-g*sin(theta)*pow(L,-1); /* v */
+	f_[_theta] = v; /* theta */
+	f_[_v] = -v*pow(m,-1)*b*pow(L,-2)-g*sin(theta)*pow(L,-1); /* v */
 	return GSL_SUCCESS;
 }
 /* ode Jacobian df(t,y;p)/dy */
@@ -191,7 +228,7 @@ int pendulum_func(double t, const double y_[], double *func_, void *par)
 	double m=p_[3];
 	double theta=y_[0];
 	double v=y_[1];
-	func_[0] = -m*g*cos(theta)*L+0.5*gsl_pow_2(v)*m*gsl_pow_2(L); /* energy */
+	func_[_energy] = -m*g*cos(theta)*L+0.5*gsl_pow_2(v)*m*gsl_pow_2(L); /* energy */
 	return GSL_SUCCESS;
 }
 /* Function Jacobian dF(t,y;p)/dy */
@@ -226,6 +263,10 @@ int pendulum_funcJacp(double t, const double y_[], double *funcJacp_, void *par)
 	funcJacp_[0] = -L*m*cos(theta); /* [0, 0] */
 /* column 2 (dF/dp_1) */
 	funcJacp_[1] = 0; /* [0, 1] */
+/* column 3 (dF/dp_2) */
+	funcJacp_[2] = 1.0*L*m*gsl_pow_2(v)-g*m*cos(theta); /* [0, 2] */
+/* column 4 (dF/dp_3) */
+	funcJacp_[3] = 0.5*gsl_pow_2(L)*gsl_pow_2(v)-L*g*cos(theta); /* [0, 3] */
 	return GSL_SUCCESS;
 }
 /* ode default parameters */
@@ -233,10 +274,10 @@ int pendulum_default(double t, void *par)
 {
 	double *p_=par;
 	if (!p_) return 4;
-	p_[0] = 9.81;
-	p_[1] = 0.0;
-	p_[2] = 1.0;
-	p_[3] = 1.0;
+	p_[_g] = 9.81;
+	p_[_b] = 0.0;
+	p_[_L] = 1.0;
+	p_[_m] = 1.0;
 	return GSL_SUCCESS;
 }
 /* ode initial values */
@@ -249,8 +290,8 @@ int pendulum_init(double t, double *y_, void *par)
 	double L=p_[2];
 	double m=p_[3];
 	/* the initial value of y may depend on the parameters. */
-	y_[0] = 3.13159;
-	y_[1] = 0.0;
+	y_[_theta] = 3.13159;
+	y_[_v] = 0.0;
 	return GSL_SUCCESS;
 }
 ```

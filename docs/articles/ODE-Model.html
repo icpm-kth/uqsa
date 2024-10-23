@@ -116,13 +116,57 @@ Equation, and we don’t want to first think of it as a reaction
 network.</p>
 <p>In such cases, these approaches are equally good/plausible:</p>
 <ul>
-<li>write the model’s C source code directly using a computer algebra
-system like maxima (or mathematica, etc.)</li>
-<li>write the model in vfgen’s <code>vf</code> format, but avoid
-line-breaks</li>
-<li>convert the model into the text form used by
-<code>RPN-derivative/sh/ode.sh</code>, by imitating the examples</li>
+<li>write the model in vfgen’s <code>vf</code> format
+<ul>
+<li>avoid line-breaks in self-closed tags:
+<code>&lt;SomeElement attr="value"/&gt;</code> (always one line)</li>
+<li>
+<a href="icpm-kth/RPN-erivative"><code>ode.sh</code></a> does not
+use an xml parser since there is no mathml</li>
+<li>The attribute values are extracted using regular expressions and
+POSIX tools</li>
+<li>standard <em>regular expressions</em> usually don’t deal well with
+content that is spread across lines (Rob Pike <a href="https://doc.cat-v.org/bell_labs/structural_regexps/se.pdf" class="external-link">wrote</a>
+about this a long time ago)</li>
 </ul>
+</li>
+<li>use the <code>ode</code> format of <code>xpp</code> and
+<code>xppaut</code>
+<ul>
+<li>there is limited support for this format as <code>xpp</code> has a
+huge list of capabilities</li>
+<li>differentiation has to be <code>var' = formula</code>, with a
+<code>'</code> (prime)</li>
+<li>no delay equations</li>
+<li>no DAE</li>
+<li>no <code>bdry</code>, <code>global</code>, <code>wiener</code>,
+<code>table</code>, and other special functions</li>
+</ul>
+</li>
+<li>convert the model into the text form used by
+<code>RPN-derivative/sh/ode.sh</code>, by imitating the examples
+<ul>
+<li>
+<code>ode.sh</code> has an <code>--inspect</code> option that leaves
+the created temporary files intact for inspection</li>
+<li>this can be used for debugging as well</li>
+<li>whichever format <code>ode.sh</code> receives, it will convert
+everything into <code>txt</code> files that end up in the <em>temp</em>
+folder</li>
+<li>on GNU/Linux the temp folder is <code>/dev/shm/ode_gen/</code> (it
+doesn’t survive reboots)</li>
+</ul>
+</li>
+<li>write the model’s C source code directly using a computer algebra
+system
+<ul>
+<li>maxima and yacas are good</li>
+<li>this is not automated at all</li>
+<li>feasible if you have experience with these tools</li>
+</ul>
+</li>
+</ul>
+<p>On this page, we will use the <code>.ode</code> method.</p>
 <div class="section level2">
 <h2 id="simple-example">Simple Example<a class="anchor" aria-label="anchor" href="#simple-example"></a>
 </h2>
@@ -145,8 +189,8 @@ is very compact and beautiful:</p>
 <span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>aux energy<span class="op">=-</span>m<span class="op">*</span>g<span class="op">*</span>cos<span class="op">(</span>theta<span class="op">)*</span>L<span class="op">+</span><span class="dv">0</span><span class="er">.5</span><span class="op">*</span>v<span class="op">^</span><span class="dv">2</span><span class="op">*</span>m<span class="op">*</span>L<span class="op">^</span><span class="dv">2</span></span>
 <span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="er">#</span></span>
 <span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>done</span></code></pre></div>
-<p>We will use this model, but there is no parser for it, so we will
-convert it to teh text format using standard command line tools:</p>
+<p>We will use this model, and convert it to the text format that
+<code>ode.sh</code> can read using standard command line tools:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="va">f</span><span class="op">=</span><span class="st">"pendulum.ode"</span></span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"</span><span class="va">$f</span><span class="st">"</span></span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">egrep</span> <span class="st">'^par'</span> <span class="st">"</span><span class="va">$f</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">tr</span> <span class="st">'='</span> <span class="st">'\t'</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">'s/^par //'</span> <span class="op">&gt;</span> Parameters.txt</span>
@@ -154,28 +198,29 @@ convert it to teh text format using standard command line tools:</p>
 <span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="fu">egrep</span> <span class="st">"'"</span> <span class="st">"</span><span class="va">$f</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="at">-E</span> <span class="st">"s/([^=]*)'=/\1\t/;"</span> <span class="op">&gt;</span> ODE.txt</span>
 <span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="fu">egrep</span> <span class="st">'^aux'</span> <span class="st">"</span><span class="va">$f</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">tr</span> <span class="st">'='</span> <span class="st">'\t'</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">'s/^aux[ ]*//'</span> <span class="op">&gt;</span> OutputFunctions.txt</span>
 <span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="fu">tar</span> czf pendulum.tar.gz Parameters.txt StateVariables.txt ODE.txt OutputFunctions.txt</span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-f</span> pendulum.tar.gz <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="ex">ode</span> <span class="at">-C</span> <span class="at">--maxima</span> pendulum.tar.gz <span class="op">&gt;</span> pendulum_gvf.c</span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; pendulum.ode</span></span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co">#&gt; -C --maxima pendulum.tar.gz</span></span>
-<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co">#&gt; Parameters.txt</span></span>
-<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt; StateVariables.txt</span></span>
-<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co">#&gt; ODE.txt</span></span>
-<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co">#&gt; OutputFunctions.txt</span></span>
-<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#&gt; tar xzf -C /dev/shm/ode_gen pendulum.tar.gz</span></span>
-<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt; Operating on these files:</span></span>
-<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt; CON «»</span></span>
-<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt; PAR «/dev/shm/ode_gen/Parameters.txt»</span></span>
-<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt; VAR «/dev/shm/ode_gen/StateVariables.txt»</span></span>
-<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt; EXP «»</span></span>
-<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="co">#&gt; FUN «/dev/shm/ode_gen/OutputFunctions.txt»</span></span>
-<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="co">#&gt; ODE «/dev/shm/ode_gen/ODE.txt»</span></span>
-<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="co">#&gt; EVT «»</span></span>
-<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="co">#&gt; 2 state variables, 4 parameters, 0 expressions, 1 functions</span></span>
-<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="co">#&gt; y-jacobian df[i]/dy[j] has size 4 (2×2)</span></span>
-<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co">#&gt; p-jacobian df[i]/dp[j] has size 8 (2×4)</span></span></code></pre></div>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-f</span> pendulum.tar.gz <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="ex">ode</span> <span class="at">-C</span> <span class="at">--maxima</span> pendulum.tar.gz <span class="op">&gt;</span> pendulum_gvf.c</span></code></pre></div>
+<p>At this stage, we could add transformations (manually), if we
+wanted.</p>
+<hr>
+<p>But, actually, there is a limited parser for <code>ode</code> files
+that does something like the above. It runs if the model file ends in
+ode:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">ode</span> <span class="at">-C</span> <span class="at">--maxima</span> pendulum.ode <span class="op">&gt;</span> pendulum_gvf.c</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; -C --maxima pendulum.ode</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; Operating on these files:</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; CON «/dev/shm/ode_gen/Constants.txt»</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; PAR «/dev/shm/ode_gen/Parameters.txt»</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; VAR «/dev/shm/ode_gen/StateVariables.txt»</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; EXP «/dev/shm/ode_gen/Expressions.txt»</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; FUN «/dev/shm/ode_gen/OutputFunctions.txt»</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; ODE «/dev/shm/ode_gen/ODE.txt»</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; EVT «/dev/shm/ode_gen/Transformations.txt»</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; 2 state variables, 4 parameters, 0 expressions, 1 functions</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; y-jacobian df[i]/dy[j] has size 4 (2×2)</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; p-jacobian df[i]/dp[j] has size 8 (2×4)</span></span></code></pre></div>
 <p>The resulting code can be found at the bottom of this page.</p>
 <p>In R, we can use this code directly:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">rgsl</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span>
 <span></span>
@@ -198,155 +243,163 @@ convert it to teh text format using standard command line tools:</p>
 <span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">SIM</span><span class="op">(</span><span class="va">par</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span>,<span class="va">y</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">state</span><span class="op">[</span><span class="fl">1</span>,,<span class="fl">1</span><span class="op">]</span>,xlab<span class="op">=</span><span class="st">'t'</span>,ylab<span class="op">=</span><span class="st">'theta'</span>,bty<span class="op">=</span><span class="st">'n'</span>,type<span class="op">=</span><span class="st">'l'</span><span class="op">)</span></span></code></pre></div>
-<p><img src="ODE-Model_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
+<p><img src="ODE-Model_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 <div class="section level3">
 <h3 id="generated-c-code">Generated C Code<a class="anchor" aria-label="anchor" href="#generated-c-code"></a>
 </h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdlib.h&gt;</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;math.h&gt;</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;gsl/gsl_errno.h&gt;</span></span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;gsl/gsl_odeiv2.h&gt;</span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;gsl/gsl_math.h&gt;</span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">/* The error code indicates how to pre-allocate memory</span></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co"> * for output values such as `f_`. The _vf function returns</span></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co"> * the number of state variables, if any of the args are `NULL`.</span></span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co"> * evaluation errors can be indicated by negative return values.</span></span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co"> * GSL_SUCCESS (0) is returned when no error occurred.</span></span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co"> */</span></span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">/* ode vector field: y'=f(t,y;p) */</span></span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="dt">int</span> pendulum_vf<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">const</span> <span class="dt">double</span> y_<span class="op">[],</span> <span class="dt">double</span> f_<span class="op">[],</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
-<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_ <span class="op">||</span> <span class="op">!</span>f_<span class="op">)</span> <span class="cf">return</span> <span class="dv">2</span><span class="op">;</span></span>
-<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>    <span class="dt">double</span> g<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
-<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>    <span class="dt">double</span> b<span class="op">=</span>p_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>    <span class="dt">double</span> L<span class="op">=</span>p_<span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
-<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>    <span class="dt">double</span> m<span class="op">=</span>p_<span class="op">[</span><span class="dv">3</span><span class="op">];</span></span>
-<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a>    <span class="dt">double</span> theta<span class="op">=</span>y_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
-<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>    <span class="dt">double</span> v<span class="op">=</span>y_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
-<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a>    f_<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> v<span class="op">;</span> <span class="co">/* theta */</span></span>
-<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a>    f_<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>v<span class="op">*</span>pow<span class="op">(</span>m<span class="op">,-</span><span class="dv">1</span><span class="op">)*</span>b<span class="op">*</span>pow<span class="op">(</span>L<span class="op">,-</span><span class="dv">2</span><span class="op">)-</span>g<span class="op">*</span>sin<span class="op">(</span>theta<span class="op">)*</span>pow<span class="op">(</span>L<span class="op">,-</span><span class="dv">1</span><span class="op">);</span> <span class="co">/* v */</span></span>
-<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
-<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">/* ode Jacobian df(t,y;p)/dy */</span></span>
-<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="dt">int</span> pendulum_jac<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">const</span> <span class="dt">double</span> y_<span class="op">[],</span> <span class="dt">double</span> <span class="op">*</span>jac_<span class="op">,</span> <span class="dt">double</span> <span class="op">*</span>dfdt_<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
-<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
-<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_ <span class="op">||</span> <span class="op">!</span>jac_<span class="op">)</span> <span class="cf">return</span> <span class="dv">2</span><span class="op">*</span><span class="dv">2</span><span class="op">;</span></span>
-<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a>    <span class="dt">double</span> g<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
-<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a>    <span class="dt">double</span> b<span class="op">=</span>p_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
-<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a>    <span class="dt">double</span> L<span class="op">=</span>p_<span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
-<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a>    <span class="dt">double</span> m<span class="op">=</span>p_<span class="op">[</span><span class="dv">3</span><span class="op">];</span></span>
-<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a>    <span class="dt">double</span> theta<span class="op">=</span>y_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
-<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a>    <span class="dt">double</span> v<span class="op">=</span>y_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
-<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a><span class="co">/* column 1 (df/dy_0) */</span></span>
-<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a>    jac_<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="co">/* [0, 0] */</span></span>
-<span id="cb4-42"><a href="#cb4-42" tabindex="-1"></a>    jac_<span class="op">[</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="op">-(</span>g<span class="op">*</span>cos<span class="op">(</span>theta<span class="op">))/</span>L<span class="op">;</span> <span class="co">/* [1, 0] */</span></span>
-<span id="cb4-43"><a href="#cb4-43" tabindex="-1"></a><span class="co">/* column 2 (df/dy_1) */</span></span>
-<span id="cb4-44"><a href="#cb4-44" tabindex="-1"></a>    jac_<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> <span class="co">/* [0, 1] */</span></span>
-<span id="cb4-45"><a href="#cb4-45" tabindex="-1"></a>    jac_<span class="op">[</span><span class="dv">3</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>b<span class="op">/(</span>gsl_pow_2<span class="op">(</span>L<span class="op">)*</span>m<span class="op">);</span> <span class="co">/* [1, 1] */</span></span>
-<span id="cb4-46"><a href="#cb4-46" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
-<span id="cb4-47"><a href="#cb4-47" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb4-48"><a href="#cb4-48" tabindex="-1"></a><span class="co">/* ode parameter Jacobian df(t,y;p)/dp */</span></span>
-<span id="cb4-49"><a href="#cb4-49" tabindex="-1"></a><span class="dt">int</span> pendulum_jacp<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">const</span> <span class="dt">double</span> y_<span class="op">[],</span> <span class="dt">double</span> <span class="op">*</span>jacp_<span class="op">,</span> <span class="dt">double</span> <span class="op">*</span>dfdt_<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
-<span id="cb4-50"><a href="#cb4-50" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-51"><a href="#cb4-51" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
-<span id="cb4-52"><a href="#cb4-52" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_ <span class="op">||</span> <span class="op">!</span>jacp_<span class="op">)</span> <span class="cf">return</span> <span class="dv">2</span><span class="op">*</span><span class="dv">4</span><span class="op">;</span></span>
-<span id="cb4-53"><a href="#cb4-53" tabindex="-1"></a>    <span class="dt">double</span> g<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
-<span id="cb4-54"><a href="#cb4-54" tabindex="-1"></a>    <span class="dt">double</span> b<span class="op">=</span>p_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
-<span id="cb4-55"><a href="#cb4-55" tabindex="-1"></a>    <span class="dt">double</span> L<span class="op">=</span>p_<span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
-<span id="cb4-56"><a href="#cb4-56" tabindex="-1"></a>    <span class="dt">double</span> m<span class="op">=</span>p_<span class="op">[</span><span class="dv">3</span><span class="op">];</span></span>
-<span id="cb4-57"><a href="#cb4-57" tabindex="-1"></a>    <span class="dt">double</span> theta<span class="op">=</span>y_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
-<span id="cb4-58"><a href="#cb4-58" tabindex="-1"></a>    <span class="dt">double</span> v<span class="op">=</span>y_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
-<span id="cb4-59"><a href="#cb4-59" tabindex="-1"></a><span class="co">/* column 1 (df/dp_0) */</span></span>
-<span id="cb4-60"><a href="#cb4-60" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="co">/* [0, 0] */</span></span>
-<span id="cb4-61"><a href="#cb4-61" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">4</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>sin<span class="op">(</span>theta<span class="op">)/</span>L<span class="op">;</span> <span class="co">/* [1, 0] */</span></span>
-<span id="cb4-62"><a href="#cb4-62" tabindex="-1"></a><span class="co">/* column 2 (df/dp_1) */</span></span>
-<span id="cb4-63"><a href="#cb4-63" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="co">/* [0, 1] */</span></span>
-<span id="cb4-64"><a href="#cb4-64" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">5</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>v<span class="op">/(</span>gsl_pow_2<span class="op">(</span>L<span class="op">)*</span>m<span class="op">);</span> <span class="co">/* [1, 1] */</span></span>
-<span id="cb4-65"><a href="#cb4-65" tabindex="-1"></a><span class="co">/* column 3 (df/dp_2) */</span></span>
-<span id="cb4-66"><a href="#cb4-66" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="co">/* [0, 2] */</span></span>
-<span id="cb4-67"><a href="#cb4-67" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">6</span><span class="op">]</span> <span class="op">=</span> <span class="op">(</span><span class="dv">2</span><span class="op">*</span>b<span class="op">*</span>v<span class="op">)/(</span>gsl_pow_3<span class="op">(</span>L<span class="op">)*</span>m<span class="op">)+(</span>g<span class="op">*</span>sin<span class="op">(</span>theta<span class="op">))/</span>gsl_pow_2<span class="op">(</span>L<span class="op">);</span> <span class="co">/* [1, 2] */</span></span>
-<span id="cb4-68"><a href="#cb4-68" tabindex="-1"></a><span class="co">/* column 4 (df/dp_3) */</span></span>
-<span id="cb4-69"><a href="#cb4-69" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">3</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="co">/* [0, 3] */</span></span>
-<span id="cb4-70"><a href="#cb4-70" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">7</span><span class="op">]</span> <span class="op">=</span> <span class="op">(</span>b<span class="op">*</span>v<span class="op">)/(</span>gsl_pow_2<span class="op">(</span>L<span class="op">)*</span>gsl_pow_2<span class="op">(</span>m<span class="op">));</span> <span class="co">/* [1, 3] */</span></span>
-<span id="cb4-71"><a href="#cb4-71" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
-<span id="cb4-72"><a href="#cb4-72" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb4-73"><a href="#cb4-73" tabindex="-1"></a><span class="co">/* ode Functions F(t,y;p) */</span></span>
-<span id="cb4-74"><a href="#cb4-74" tabindex="-1"></a><span class="dt">int</span> pendulum_func<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">const</span> <span class="dt">double</span> y_<span class="op">[],</span> <span class="dt">double</span> <span class="op">*</span>func_<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
-<span id="cb4-75"><a href="#cb4-75" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-76"><a href="#cb4-76" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
-<span id="cb4-77"><a href="#cb4-77" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_ <span class="op">||</span> <span class="op">!</span>func_<span class="op">)</span> <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
-<span id="cb4-78"><a href="#cb4-78" tabindex="-1"></a>    <span class="dt">double</span> g<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
-<span id="cb4-79"><a href="#cb4-79" tabindex="-1"></a>    <span class="dt">double</span> b<span class="op">=</span>p_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
-<span id="cb4-80"><a href="#cb4-80" tabindex="-1"></a>    <span class="dt">double</span> L<span class="op">=</span>p_<span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
-<span id="cb4-81"><a href="#cb4-81" tabindex="-1"></a>    <span class="dt">double</span> m<span class="op">=</span>p_<span class="op">[</span><span class="dv">3</span><span class="op">];</span></span>
-<span id="cb4-82"><a href="#cb4-82" tabindex="-1"></a>    <span class="dt">double</span> theta<span class="op">=</span>y_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
-<span id="cb4-83"><a href="#cb4-83" tabindex="-1"></a>    <span class="dt">double</span> v<span class="op">=</span>y_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
-<span id="cb4-84"><a href="#cb4-84" tabindex="-1"></a>    func_<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>m<span class="op">*</span>g<span class="op">*</span>cos<span class="op">(</span>theta<span class="op">)*</span>L<span class="op">+</span><span class="dv">0</span><span class="er">.5</span><span class="op">*</span>gsl_pow_2<span class="op">(</span>v<span class="op">)*</span>m<span class="op">*</span>gsl_pow_2<span class="op">(</span>L<span class="op">);</span> <span class="co">/* energy */</span></span>
-<span id="cb4-85"><a href="#cb4-85" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
-<span id="cb4-86"><a href="#cb4-86" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb4-87"><a href="#cb4-87" tabindex="-1"></a><span class="co">/* Function Jacobian dF(t,y;p)/dy */</span></span>
-<span id="cb4-88"><a href="#cb4-88" tabindex="-1"></a><span class="dt">int</span> pendulum_funcJac<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">const</span> <span class="dt">double</span> y_<span class="op">[],</span> <span class="dt">double</span> <span class="op">*</span>funcJac_<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
-<span id="cb4-89"><a href="#cb4-89" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-90"><a href="#cb4-90" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
-<span id="cb4-91"><a href="#cb4-91" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_ <span class="op">||</span> <span class="op">!</span>funcJac_<span class="op">)</span> <span class="cf">return</span> <span class="dv">2</span><span class="op">;</span></span>
-<span id="cb4-92"><a href="#cb4-92" tabindex="-1"></a>    <span class="dt">double</span> g<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
-<span id="cb4-93"><a href="#cb4-93" tabindex="-1"></a>    <span class="dt">double</span> b<span class="op">=</span>p_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
-<span id="cb4-94"><a href="#cb4-94" tabindex="-1"></a>    <span class="dt">double</span> L<span class="op">=</span>p_<span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
-<span id="cb4-95"><a href="#cb4-95" tabindex="-1"></a>    <span class="dt">double</span> m<span class="op">=</span>p_<span class="op">[</span><span class="dv">3</span><span class="op">];</span></span>
-<span id="cb4-96"><a href="#cb4-96" tabindex="-1"></a>    <span class="dt">double</span> theta<span class="op">=</span>y_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
-<span id="cb4-97"><a href="#cb4-97" tabindex="-1"></a>    <span class="dt">double</span> v<span class="op">=</span>y_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
-<span id="cb4-98"><a href="#cb4-98" tabindex="-1"></a><span class="co">/* column 1 (dF/dy_0) */</span></span>
-<span id="cb4-99"><a href="#cb4-99" tabindex="-1"></a>    funcJac_<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> L<span class="op">*</span>g<span class="op">*</span>m<span class="op">*</span>sin<span class="op">(</span>theta<span class="op">);</span> <span class="co">/* [0, 0] */</span></span>
-<span id="cb4-100"><a href="#cb4-100" tabindex="-1"></a><span class="co">/* column 2 (dF/dy_1) */</span></span>
-<span id="cb4-101"><a href="#cb4-101" tabindex="-1"></a>    funcJac_<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="fl">1.0</span><span class="op">*</span>gsl_pow_2<span class="op">(</span>L<span class="op">)*</span>m<span class="op">*</span>v<span class="op">;</span> <span class="co">/* [0, 1] */</span></span>
-<span id="cb4-102"><a href="#cb4-102" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
-<span id="cb4-103"><a href="#cb4-103" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb4-104"><a href="#cb4-104" tabindex="-1"></a><span class="co">/* Function parameter Jacobian dF(t,y;p)/dp */</span></span>
-<span id="cb4-105"><a href="#cb4-105" tabindex="-1"></a><span class="dt">int</span> pendulum_funcJacp<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">const</span> <span class="dt">double</span> y_<span class="op">[],</span> <span class="dt">double</span> <span class="op">*</span>funcJacp_<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
-<span id="cb4-106"><a href="#cb4-106" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-107"><a href="#cb4-107" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
-<span id="cb4-108"><a href="#cb4-108" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_ <span class="op">||</span> <span class="op">!</span>funcJacp_<span class="op">)</span> <span class="cf">return</span> <span class="dv">4</span><span class="op">;</span></span>
-<span id="cb4-109"><a href="#cb4-109" tabindex="-1"></a>    <span class="dt">double</span> g<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
-<span id="cb4-110"><a href="#cb4-110" tabindex="-1"></a>    <span class="dt">double</span> b<span class="op">=</span>p_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
-<span id="cb4-111"><a href="#cb4-111" tabindex="-1"></a>    <span class="dt">double</span> L<span class="op">=</span>p_<span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
-<span id="cb4-112"><a href="#cb4-112" tabindex="-1"></a>    <span class="dt">double</span> m<span class="op">=</span>p_<span class="op">[</span><span class="dv">3</span><span class="op">];</span></span>
-<span id="cb4-113"><a href="#cb4-113" tabindex="-1"></a>    <span class="dt">double</span> theta<span class="op">=</span>y_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
-<span id="cb4-114"><a href="#cb4-114" tabindex="-1"></a>    <span class="dt">double</span> v<span class="op">=</span>y_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
-<span id="cb4-115"><a href="#cb4-115" tabindex="-1"></a><span class="co">/* column 1 (dF/dp_0) */</span></span>
-<span id="cb4-116"><a href="#cb4-116" tabindex="-1"></a>    funcJacp_<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>L<span class="op">*</span>m<span class="op">*</span>cos<span class="op">(</span>theta<span class="op">);</span> <span class="co">/* [0, 0] */</span></span>
-<span id="cb4-117"><a href="#cb4-117" tabindex="-1"></a><span class="co">/* column 2 (dF/dp_1) */</span></span>
-<span id="cb4-118"><a href="#cb4-118" tabindex="-1"></a>    funcJacp_<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="co">/* [0, 1] */</span></span>
-<span id="cb4-119"><a href="#cb4-119" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
-<span id="cb4-120"><a href="#cb4-120" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb4-121"><a href="#cb4-121" tabindex="-1"></a><span class="co">/* ode default parameters */</span></span>
-<span id="cb4-122"><a href="#cb4-122" tabindex="-1"></a><span class="dt">int</span> pendulum_default<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
-<span id="cb4-123"><a href="#cb4-123" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-124"><a href="#cb4-124" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
-<span id="cb4-125"><a href="#cb4-125" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>p_<span class="op">)</span> <span class="cf">return</span> <span class="dv">4</span><span class="op">;</span></span>
-<span id="cb4-126"><a href="#cb4-126" tabindex="-1"></a>    p_<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> <span class="fl">9.81</span><span class="op">;</span></span>
-<span id="cb4-127"><a href="#cb4-127" tabindex="-1"></a>    p_<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="er">.0</span><span class="op">;</span></span>
-<span id="cb4-128"><a href="#cb4-128" tabindex="-1"></a>    p_<span class="op">[</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="fl">1.0</span><span class="op">;</span></span>
-<span id="cb4-129"><a href="#cb4-129" tabindex="-1"></a>    p_<span class="op">[</span><span class="dv">3</span><span class="op">]</span> <span class="op">=</span> <span class="fl">1.0</span><span class="op">;</span></span>
-<span id="cb4-130"><a href="#cb4-130" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
-<span id="cb4-131"><a href="#cb4-131" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb4-132"><a href="#cb4-132" tabindex="-1"></a><span class="co">/* ode initial values */</span></span>
-<span id="cb4-133"><a href="#cb4-133" tabindex="-1"></a><span class="dt">int</span> pendulum_init<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">double</span> <span class="op">*</span>y_<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
-<span id="cb4-134"><a href="#cb4-134" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-135"><a href="#cb4-135" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
-<span id="cb4-136"><a href="#cb4-136" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_<span class="op">)</span> <span class="cf">return</span> <span class="dv">2</span><span class="op">;</span></span>
-<span id="cb4-137"><a href="#cb4-137" tabindex="-1"></a>    <span class="dt">double</span> g<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
-<span id="cb4-138"><a href="#cb4-138" tabindex="-1"></a>    <span class="dt">double</span> b<span class="op">=</span>p_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
-<span id="cb4-139"><a href="#cb4-139" tabindex="-1"></a>    <span class="dt">double</span> L<span class="op">=</span>p_<span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
-<span id="cb4-140"><a href="#cb4-140" tabindex="-1"></a>    <span class="dt">double</span> m<span class="op">=</span>p_<span class="op">[</span><span class="dv">3</span><span class="op">];</span></span>
-<span id="cb4-141"><a href="#cb4-141" tabindex="-1"></a>    <span class="co">/* the initial value of y may depend on the parameters. */</span></span>
-<span id="cb4-142"><a href="#cb4-142" tabindex="-1"></a>    y_<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> <span class="fl">3.13159</span><span class="op">;</span></span>
-<span id="cb4-143"><a href="#cb4-143" tabindex="-1"></a>    y_<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="er">.0</span><span class="op">;</span></span>
-<span id="cb4-144"><a href="#cb4-144" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
-<span id="cb4-145"><a href="#cb4-145" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdlib.h&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;math.h&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;gsl/gsl_errno.h&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;gsl/gsl_odeiv2.h&gt;</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;gsl/gsl_math.h&gt;</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="kw">enum</span> stateVariable <span class="op">{</span> _theta<span class="op">,</span>_v<span class="op">,</span> numStateVar <span class="op">};</span> <span class="co">/* state variable indexes  */</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="kw">enum</span> param <span class="op">{</span> _g<span class="op">,</span>_b<span class="op">,</span>_L<span class="op">,</span>_m<span class="op">,</span> numParam <span class="op">};</span> <span class="co">/* parameter indexes  */</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="kw">enum</span> func <span class="op">{</span> _energy<span class="op">,</span> numFunc <span class="op">};</span> <span class="co">/* parameter indexes  */</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">/* The error code indicates how to pre-allocate memory</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co"> * for output values such as `f_`. The _vf function returns</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co"> * the number of state variables, if any of the args are `NULL`.</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co"> * evaluation errors can be indicated by negative return values.</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co"> * GSL_SUCCESS (0) is returned when no error occurred.</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co">/* ode vector field: y'=f(t,y;p) */</span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="dt">int</span> pendulum_vf<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">const</span> <span class="dt">double</span> y_<span class="op">[],</span> <span class="dt">double</span> f_<span class="op">[],</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_ <span class="op">||</span> <span class="op">!</span>f_<span class="op">)</span> <span class="cf">return</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a>    <span class="dt">double</span> g<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a>    <span class="dt">double</span> b<span class="op">=</span>p_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a>    <span class="dt">double</span> L<span class="op">=</span>p_<span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a>    <span class="dt">double</span> m<span class="op">=</span>p_<span class="op">[</span><span class="dv">3</span><span class="op">];</span></span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a>    <span class="dt">double</span> theta<span class="op">=</span>y_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a>    <span class="dt">double</span> v<span class="op">=</span>y_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a>    f_<span class="op">[</span>_theta<span class="op">]</span> <span class="op">=</span> v<span class="op">;</span> <span class="co">/* theta */</span></span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a>    f_<span class="op">[</span>_v<span class="op">]</span> <span class="op">=</span> <span class="op">-</span>v<span class="op">*</span>pow<span class="op">(</span>m<span class="op">,-</span><span class="dv">1</span><span class="op">)*</span>b<span class="op">*</span>pow<span class="op">(</span>L<span class="op">,-</span><span class="dv">2</span><span class="op">)-</span>g<span class="op">*</span>sin<span class="op">(</span>theta<span class="op">)*</span>pow<span class="op">(</span>L<span class="op">,-</span><span class="dv">1</span><span class="op">);</span> <span class="co">/* v */</span></span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a><span class="co">/* ode Jacobian df(t,y;p)/dy */</span></span>
+<span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a><span class="dt">int</span> pendulum_jac<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">const</span> <span class="dt">double</span> y_<span class="op">[],</span> <span class="dt">double</span> <span class="op">*</span>jac_<span class="op">,</span> <span class="dt">double</span> <span class="op">*</span>dfdt_<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
+<span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-36"><a href="#cb5-36" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
+<span id="cb5-37"><a href="#cb5-37" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_ <span class="op">||</span> <span class="op">!</span>jac_<span class="op">)</span> <span class="cf">return</span> <span class="dv">2</span><span class="op">*</span><span class="dv">2</span><span class="op">;</span></span>
+<span id="cb5-38"><a href="#cb5-38" tabindex="-1"></a>    <span class="dt">double</span> g<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb5-39"><a href="#cb5-39" tabindex="-1"></a>    <span class="dt">double</span> b<span class="op">=</span>p_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb5-40"><a href="#cb5-40" tabindex="-1"></a>    <span class="dt">double</span> L<span class="op">=</span>p_<span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
+<span id="cb5-41"><a href="#cb5-41" tabindex="-1"></a>    <span class="dt">double</span> m<span class="op">=</span>p_<span class="op">[</span><span class="dv">3</span><span class="op">];</span></span>
+<span id="cb5-42"><a href="#cb5-42" tabindex="-1"></a>    <span class="dt">double</span> theta<span class="op">=</span>y_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb5-43"><a href="#cb5-43" tabindex="-1"></a>    <span class="dt">double</span> v<span class="op">=</span>y_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb5-44"><a href="#cb5-44" tabindex="-1"></a><span class="co">/* column 1 (df/dy_0) */</span></span>
+<span id="cb5-45"><a href="#cb5-45" tabindex="-1"></a>    jac_<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="co">/* [0, 0] */</span></span>
+<span id="cb5-46"><a href="#cb5-46" tabindex="-1"></a>    jac_<span class="op">[</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="op">-(</span>g<span class="op">*</span>cos<span class="op">(</span>theta<span class="op">))/</span>L<span class="op">;</span> <span class="co">/* [1, 0] */</span></span>
+<span id="cb5-47"><a href="#cb5-47" tabindex="-1"></a><span class="co">/* column 2 (df/dy_1) */</span></span>
+<span id="cb5-48"><a href="#cb5-48" tabindex="-1"></a>    jac_<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> <span class="co">/* [0, 1] */</span></span>
+<span id="cb5-49"><a href="#cb5-49" tabindex="-1"></a>    jac_<span class="op">[</span><span class="dv">3</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>b<span class="op">/(</span>gsl_pow_2<span class="op">(</span>L<span class="op">)*</span>m<span class="op">);</span> <span class="co">/* [1, 1] */</span></span>
+<span id="cb5-50"><a href="#cb5-50" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
+<span id="cb5-51"><a href="#cb5-51" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb5-52"><a href="#cb5-52" tabindex="-1"></a><span class="co">/* ode parameter Jacobian df(t,y;p)/dp */</span></span>
+<span id="cb5-53"><a href="#cb5-53" tabindex="-1"></a><span class="dt">int</span> pendulum_jacp<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">const</span> <span class="dt">double</span> y_<span class="op">[],</span> <span class="dt">double</span> <span class="op">*</span>jacp_<span class="op">,</span> <span class="dt">double</span> <span class="op">*</span>dfdt_<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
+<span id="cb5-54"><a href="#cb5-54" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-55"><a href="#cb5-55" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
+<span id="cb5-56"><a href="#cb5-56" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_ <span class="op">||</span> <span class="op">!</span>jacp_<span class="op">)</span> <span class="cf">return</span> <span class="dv">2</span><span class="op">*</span><span class="dv">4</span><span class="op">;</span></span>
+<span id="cb5-57"><a href="#cb5-57" tabindex="-1"></a>    <span class="dt">double</span> g<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb5-58"><a href="#cb5-58" tabindex="-1"></a>    <span class="dt">double</span> b<span class="op">=</span>p_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb5-59"><a href="#cb5-59" tabindex="-1"></a>    <span class="dt">double</span> L<span class="op">=</span>p_<span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
+<span id="cb5-60"><a href="#cb5-60" tabindex="-1"></a>    <span class="dt">double</span> m<span class="op">=</span>p_<span class="op">[</span><span class="dv">3</span><span class="op">];</span></span>
+<span id="cb5-61"><a href="#cb5-61" tabindex="-1"></a>    <span class="dt">double</span> theta<span class="op">=</span>y_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb5-62"><a href="#cb5-62" tabindex="-1"></a>    <span class="dt">double</span> v<span class="op">=</span>y_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb5-63"><a href="#cb5-63" tabindex="-1"></a><span class="co">/* column 1 (df/dp_0) */</span></span>
+<span id="cb5-64"><a href="#cb5-64" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="co">/* [0, 0] */</span></span>
+<span id="cb5-65"><a href="#cb5-65" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">4</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>sin<span class="op">(</span>theta<span class="op">)/</span>L<span class="op">;</span> <span class="co">/* [1, 0] */</span></span>
+<span id="cb5-66"><a href="#cb5-66" tabindex="-1"></a><span class="co">/* column 2 (df/dp_1) */</span></span>
+<span id="cb5-67"><a href="#cb5-67" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="co">/* [0, 1] */</span></span>
+<span id="cb5-68"><a href="#cb5-68" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">5</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>v<span class="op">/(</span>gsl_pow_2<span class="op">(</span>L<span class="op">)*</span>m<span class="op">);</span> <span class="co">/* [1, 1] */</span></span>
+<span id="cb5-69"><a href="#cb5-69" tabindex="-1"></a><span class="co">/* column 3 (df/dp_2) */</span></span>
+<span id="cb5-70"><a href="#cb5-70" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="co">/* [0, 2] */</span></span>
+<span id="cb5-71"><a href="#cb5-71" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">6</span><span class="op">]</span> <span class="op">=</span> <span class="op">(</span><span class="dv">2</span><span class="op">*</span>b<span class="op">*</span>v<span class="op">)/(</span>gsl_pow_3<span class="op">(</span>L<span class="op">)*</span>m<span class="op">)+(</span>g<span class="op">*</span>sin<span class="op">(</span>theta<span class="op">))/</span>gsl_pow_2<span class="op">(</span>L<span class="op">);</span> <span class="co">/* [1, 2] */</span></span>
+<span id="cb5-72"><a href="#cb5-72" tabindex="-1"></a><span class="co">/* column 4 (df/dp_3) */</span></span>
+<span id="cb5-73"><a href="#cb5-73" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">3</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="co">/* [0, 3] */</span></span>
+<span id="cb5-74"><a href="#cb5-74" tabindex="-1"></a>    jacp_<span class="op">[</span><span class="dv">7</span><span class="op">]</span> <span class="op">=</span> <span class="op">(</span>b<span class="op">*</span>v<span class="op">)/(</span>gsl_pow_2<span class="op">(</span>L<span class="op">)*</span>gsl_pow_2<span class="op">(</span>m<span class="op">));</span> <span class="co">/* [1, 3] */</span></span>
+<span id="cb5-75"><a href="#cb5-75" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
+<span id="cb5-76"><a href="#cb5-76" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb5-77"><a href="#cb5-77" tabindex="-1"></a><span class="co">/* ode Functions F(t,y;p) */</span></span>
+<span id="cb5-78"><a href="#cb5-78" tabindex="-1"></a><span class="dt">int</span> pendulum_func<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">const</span> <span class="dt">double</span> y_<span class="op">[],</span> <span class="dt">double</span> <span class="op">*</span>func_<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
+<span id="cb5-79"><a href="#cb5-79" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-80"><a href="#cb5-80" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
+<span id="cb5-81"><a href="#cb5-81" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_ <span class="op">||</span> <span class="op">!</span>func_<span class="op">)</span> <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb5-82"><a href="#cb5-82" tabindex="-1"></a>    <span class="dt">double</span> g<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb5-83"><a href="#cb5-83" tabindex="-1"></a>    <span class="dt">double</span> b<span class="op">=</span>p_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb5-84"><a href="#cb5-84" tabindex="-1"></a>    <span class="dt">double</span> L<span class="op">=</span>p_<span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
+<span id="cb5-85"><a href="#cb5-85" tabindex="-1"></a>    <span class="dt">double</span> m<span class="op">=</span>p_<span class="op">[</span><span class="dv">3</span><span class="op">];</span></span>
+<span id="cb5-86"><a href="#cb5-86" tabindex="-1"></a>    <span class="dt">double</span> theta<span class="op">=</span>y_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb5-87"><a href="#cb5-87" tabindex="-1"></a>    <span class="dt">double</span> v<span class="op">=</span>y_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb5-88"><a href="#cb5-88" tabindex="-1"></a>    func_<span class="op">[</span>_energy<span class="op">]</span> <span class="op">=</span> <span class="op">-</span>m<span class="op">*</span>g<span class="op">*</span>cos<span class="op">(</span>theta<span class="op">)*</span>L<span class="op">+</span><span class="dv">0</span><span class="er">.5</span><span class="op">*</span>gsl_pow_2<span class="op">(</span>v<span class="op">)*</span>m<span class="op">*</span>gsl_pow_2<span class="op">(</span>L<span class="op">);</span> <span class="co">/* energy */</span></span>
+<span id="cb5-89"><a href="#cb5-89" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
+<span id="cb5-90"><a href="#cb5-90" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb5-91"><a href="#cb5-91" tabindex="-1"></a><span class="co">/* Function Jacobian dF(t,y;p)/dy */</span></span>
+<span id="cb5-92"><a href="#cb5-92" tabindex="-1"></a><span class="dt">int</span> pendulum_funcJac<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">const</span> <span class="dt">double</span> y_<span class="op">[],</span> <span class="dt">double</span> <span class="op">*</span>funcJac_<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
+<span id="cb5-93"><a href="#cb5-93" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-94"><a href="#cb5-94" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
+<span id="cb5-95"><a href="#cb5-95" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_ <span class="op">||</span> <span class="op">!</span>funcJac_<span class="op">)</span> <span class="cf">return</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb5-96"><a href="#cb5-96" tabindex="-1"></a>    <span class="dt">double</span> g<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb5-97"><a href="#cb5-97" tabindex="-1"></a>    <span class="dt">double</span> b<span class="op">=</span>p_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb5-98"><a href="#cb5-98" tabindex="-1"></a>    <span class="dt">double</span> L<span class="op">=</span>p_<span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
+<span id="cb5-99"><a href="#cb5-99" tabindex="-1"></a>    <span class="dt">double</span> m<span class="op">=</span>p_<span class="op">[</span><span class="dv">3</span><span class="op">];</span></span>
+<span id="cb5-100"><a href="#cb5-100" tabindex="-1"></a>    <span class="dt">double</span> theta<span class="op">=</span>y_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb5-101"><a href="#cb5-101" tabindex="-1"></a>    <span class="dt">double</span> v<span class="op">=</span>y_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb5-102"><a href="#cb5-102" tabindex="-1"></a><span class="co">/* column 1 (dF/dy_0) */</span></span>
+<span id="cb5-103"><a href="#cb5-103" tabindex="-1"></a>    funcJac_<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> L<span class="op">*</span>g<span class="op">*</span>m<span class="op">*</span>sin<span class="op">(</span>theta<span class="op">);</span> <span class="co">/* [0, 0] */</span></span>
+<span id="cb5-104"><a href="#cb5-104" tabindex="-1"></a><span class="co">/* column 2 (dF/dy_1) */</span></span>
+<span id="cb5-105"><a href="#cb5-105" tabindex="-1"></a>    funcJac_<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="fl">1.0</span><span class="op">*</span>gsl_pow_2<span class="op">(</span>L<span class="op">)*</span>m<span class="op">*</span>v<span class="op">;</span> <span class="co">/* [0, 1] */</span></span>
+<span id="cb5-106"><a href="#cb5-106" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
+<span id="cb5-107"><a href="#cb5-107" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb5-108"><a href="#cb5-108" tabindex="-1"></a><span class="co">/* Function parameter Jacobian dF(t,y;p)/dp */</span></span>
+<span id="cb5-109"><a href="#cb5-109" tabindex="-1"></a><span class="dt">int</span> pendulum_funcJacp<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">const</span> <span class="dt">double</span> y_<span class="op">[],</span> <span class="dt">double</span> <span class="op">*</span>funcJacp_<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
+<span id="cb5-110"><a href="#cb5-110" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-111"><a href="#cb5-111" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
+<span id="cb5-112"><a href="#cb5-112" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_ <span class="op">||</span> <span class="op">!</span>funcJacp_<span class="op">)</span> <span class="cf">return</span> <span class="dv">4</span><span class="op">;</span></span>
+<span id="cb5-113"><a href="#cb5-113" tabindex="-1"></a>    <span class="dt">double</span> g<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb5-114"><a href="#cb5-114" tabindex="-1"></a>    <span class="dt">double</span> b<span class="op">=</span>p_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb5-115"><a href="#cb5-115" tabindex="-1"></a>    <span class="dt">double</span> L<span class="op">=</span>p_<span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
+<span id="cb5-116"><a href="#cb5-116" tabindex="-1"></a>    <span class="dt">double</span> m<span class="op">=</span>p_<span class="op">[</span><span class="dv">3</span><span class="op">];</span></span>
+<span id="cb5-117"><a href="#cb5-117" tabindex="-1"></a>    <span class="dt">double</span> theta<span class="op">=</span>y_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb5-118"><a href="#cb5-118" tabindex="-1"></a>    <span class="dt">double</span> v<span class="op">=</span>y_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb5-119"><a href="#cb5-119" tabindex="-1"></a><span class="co">/* column 1 (dF/dp_0) */</span></span>
+<span id="cb5-120"><a href="#cb5-120" tabindex="-1"></a>    funcJacp_<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> <span class="op">-</span>L<span class="op">*</span>m<span class="op">*</span>cos<span class="op">(</span>theta<span class="op">);</span> <span class="co">/* [0, 0] */</span></span>
+<span id="cb5-121"><a href="#cb5-121" tabindex="-1"></a><span class="co">/* column 2 (dF/dp_1) */</span></span>
+<span id="cb5-122"><a href="#cb5-122" tabindex="-1"></a>    funcJacp_<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> <span class="co">/* [0, 1] */</span></span>
+<span id="cb5-123"><a href="#cb5-123" tabindex="-1"></a><span class="co">/* column 3 (dF/dp_2) */</span></span>
+<span id="cb5-124"><a href="#cb5-124" tabindex="-1"></a>    funcJacp_<span class="op">[</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="fl">1.0</span><span class="op">*</span>L<span class="op">*</span>m<span class="op">*</span>gsl_pow_2<span class="op">(</span>v<span class="op">)-</span>g<span class="op">*</span>m<span class="op">*</span>cos<span class="op">(</span>theta<span class="op">);</span> <span class="co">/* [0, 2] */</span></span>
+<span id="cb5-125"><a href="#cb5-125" tabindex="-1"></a><span class="co">/* column 4 (dF/dp_3) */</span></span>
+<span id="cb5-126"><a href="#cb5-126" tabindex="-1"></a>    funcJacp_<span class="op">[</span><span class="dv">3</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="er">.5</span><span class="op">*</span>gsl_pow_2<span class="op">(</span>L<span class="op">)*</span>gsl_pow_2<span class="op">(</span>v<span class="op">)-</span>L<span class="op">*</span>g<span class="op">*</span>cos<span class="op">(</span>theta<span class="op">);</span> <span class="co">/* [0, 3] */</span></span>
+<span id="cb5-127"><a href="#cb5-127" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
+<span id="cb5-128"><a href="#cb5-128" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb5-129"><a href="#cb5-129" tabindex="-1"></a><span class="co">/* ode default parameters */</span></span>
+<span id="cb5-130"><a href="#cb5-130" tabindex="-1"></a><span class="dt">int</span> pendulum_default<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
+<span id="cb5-131"><a href="#cb5-131" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-132"><a href="#cb5-132" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
+<span id="cb5-133"><a href="#cb5-133" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>p_<span class="op">)</span> <span class="cf">return</span> <span class="dv">4</span><span class="op">;</span></span>
+<span id="cb5-134"><a href="#cb5-134" tabindex="-1"></a>    p_<span class="op">[</span>_g<span class="op">]</span> <span class="op">=</span> <span class="fl">9.81</span><span class="op">;</span></span>
+<span id="cb5-135"><a href="#cb5-135" tabindex="-1"></a>    p_<span class="op">[</span>_b<span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="er">.0</span><span class="op">;</span></span>
+<span id="cb5-136"><a href="#cb5-136" tabindex="-1"></a>    p_<span class="op">[</span>_L<span class="op">]</span> <span class="op">=</span> <span class="fl">1.0</span><span class="op">;</span></span>
+<span id="cb5-137"><a href="#cb5-137" tabindex="-1"></a>    p_<span class="op">[</span>_m<span class="op">]</span> <span class="op">=</span> <span class="fl">1.0</span><span class="op">;</span></span>
+<span id="cb5-138"><a href="#cb5-138" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
+<span id="cb5-139"><a href="#cb5-139" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb5-140"><a href="#cb5-140" tabindex="-1"></a><span class="co">/* ode initial values */</span></span>
+<span id="cb5-141"><a href="#cb5-141" tabindex="-1"></a><span class="dt">int</span> pendulum_init<span class="op">(</span><span class="dt">double</span> t<span class="op">,</span> <span class="dt">double</span> <span class="op">*</span>y_<span class="op">,</span> <span class="dt">void</span> <span class="op">*</span>par<span class="op">)</span></span>
+<span id="cb5-142"><a href="#cb5-142" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-143"><a href="#cb5-143" tabindex="-1"></a>    <span class="dt">double</span> <span class="op">*</span>p_<span class="op">=</span>par<span class="op">;</span></span>
+<span id="cb5-144"><a href="#cb5-144" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>y_<span class="op">)</span> <span class="cf">return</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb5-145"><a href="#cb5-145" tabindex="-1"></a>    <span class="dt">double</span> g<span class="op">=</span>p_<span class="op">[</span><span class="dv">0</span><span class="op">];</span></span>
+<span id="cb5-146"><a href="#cb5-146" tabindex="-1"></a>    <span class="dt">double</span> b<span class="op">=</span>p_<span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb5-147"><a href="#cb5-147" tabindex="-1"></a>    <span class="dt">double</span> L<span class="op">=</span>p_<span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
+<span id="cb5-148"><a href="#cb5-148" tabindex="-1"></a>    <span class="dt">double</span> m<span class="op">=</span>p_<span class="op">[</span><span class="dv">3</span><span class="op">];</span></span>
+<span id="cb5-149"><a href="#cb5-149" tabindex="-1"></a>    <span class="co">/* the initial value of y may depend on the parameters. */</span></span>
+<span id="cb5-150"><a href="#cb5-150" tabindex="-1"></a>    y_<span class="op">[</span>_theta<span class="op">]</span> <span class="op">=</span> <span class="fl">3.13159</span><span class="op">;</span></span>
+<span id="cb5-151"><a href="#cb5-151" tabindex="-1"></a>    y_<span class="op">[</span>_v<span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="er">.0</span><span class="op">;</span></span>
+<span id="cb5-152"><a href="#cb5-152" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
+<span id="cb5-153"><a href="#cb5-153" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
