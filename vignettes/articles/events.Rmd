@@ -1,0 +1,79 @@
+---
+title: "Transformation Events"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(SBtabVFGEN)
+library(rgsl)
+library(uqsa)
+```
+
+The solver we use in most of our examples is
+`rgsl::r_gsl_odeiv2_outer` which has the built-in ability to perform
+sudden interventions. Here we show an example of how this can be used to trigger sudden spikes (action potentials)
+
+```{r load model}
+f <- uqsa_example('Spike')
+sb <- sbtab_from_tsv(f)
+ex <- sbtab.data(sb)
+```
+
+The transformations are still present in `sb`:
+
+```{r}
+sb$Transformation
+```
+
+But, also built into the model and simulation instructions `ex`
+
+```{r}
+ex[[1]]$events
+```
+
+
+# Simulation
+
+```{r more-time-points}
+cfile <- uqsa_example("Spike",pat='_gvf[.]c$')
+modelName <- checkModel("Spike",cfile)
+t <- seq(-4,1000)
+
+ex[[1]]$outputTimes <- t
+SIM <- simcf(ex,modelName)
+file.exists(comment(modelName))
+par <- sb$Parameter[["!DefaultValue"]]
+print(par)
+res <- SIM(par)
+y <- as.numeric(res[[1]]$func)
+
+plot(t,y,bty="n",type='l',xlab="t",ylab="Ca")
+```
+
+
+Maybe, we should also simulate how one Ca spike would look like, and also try reducing the dose a bit:
+
+```{r just-one-spike}
+ex[[1]]$event$time <- 0.0
+ex[[1]]$event$label <- 0
+ex[[1]]$event$dose <- 1.0
+
+ex[[2]] <- ex[[1]]
+ex[[2]]$event$dose <- 0.6 
+
+SIM <- simcf(ex,modelName)
+par <- sb$Parameter[["!DefaultValue"]]
+print(par)
+res <- SIM(par)
+y1 <- as.numeric(res[[1]]$func)
+y2 <- as.numeric(res[[2]]$func)
+
+plot(t,y1,bty="n",type='l',xlab="t",ylab="Ca")
+lines(t,y2,lty=2)
+```

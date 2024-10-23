@@ -9,6 +9,7 @@ articles:
   SBtab: SBtab.html
   cite: cite.html
   data: data.html
+  events: events.html
   examples_overview: examples_overview.html
   installExplanations: installExplanations.html
   installation: installation.html
@@ -18,14 +19,13 @@ articles:
   mpi: mpi.html
   path: path.html
   sa: sa.html
-  shortMakeSharedLibrary: shortMakeSharedLibrary.html
   simAKAP79: simAKAP79.html
   simulate: simulate.html
   tsv: tsv.html
   uq: uq.html
   uqsa: uqsa.html
   user_model: user_model.html
-last_built: 2024-10-18T22:19Z
+last_built: 2024-10-23T12:54Z
 urls:
   reference: https://icpm-kth.github.io/uqsa/reference
   article: https://icpm-kth.github.io/uqsa/articles

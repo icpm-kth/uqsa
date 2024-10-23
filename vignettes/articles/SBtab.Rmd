@@ -10,6 +10,8 @@ knitr::opts_chunk$set(cache = TRUE,
 ```
 
 ```{r setup}
+library(SBtabVFGEN)
+library(rgsl)
 library(uqsa)
 ```
 
@@ -129,23 +131,32 @@ The second line/row contains the table column names, which often start
 with an exclamation point, or another special character to signify a
 special meaning. 
 
-### Special Column Symbols
+### Special Column Symbols (Prefixes)
 
-- `!abc` means that this column has a special meaning, defined in the SBtab standard
-- `>xyz` means that this column specifies a value for variable `xyz`,
+- In `!abc`, ! means that this column has a special meaning, defined in the SBtab standard
+- In `>xyz`, > means that this column specifies a value for variable `xyz`,
   it has an entry in some other table 
     + there must be a table where `xyz` appears in the `!ID` column,
-- `~xyz` this is our extension, we don't know how to express this in plain SBtab
+- In `~xyz`, ~ means _standard error_ -- this is our extension.  
+  We don't know how to express this in plain SBtab
     + this column specifies the standard error for `>xyz`
+	+ ultimately, the meaning of the values of this column are up to
+      the objective-function or likelihood-function. A _user supplied_
+      function can interpret this value in any way the user wishes.
+	+ If this value is NA or Inf, then the `>xyz` values are removed
+      from the default likelihood functions as well. 
+	+ An unknown standard error, `x ± NA`, or `x ± Inf` are the same
+      as _value unknown_; we discount both cases.
 - any column that doesn't start with one of `!>~` isn't special and
   isn't interpreted by us.
 
 The first column can be called either `!ID` or `!Name` (it is harmless
-to have both, but only the first one counts). If the first column is
-not called that, the scripts will carry on regardless, assuming that
-it is some kind of name (so `!Id`, `!id`, or `ID?` will also work for
-us -- not for other software). All other columns are found by name,
-exactly, and can appear in any order.
+to have both). If the first column is not called that, the scripts
+will carry on regardless, assuming that it is some kind of name. So,
+`!Id`, `!id`, or `ID?` will also work for us -- not for other
+software. All other columns are found by name (case sensitive), they
+can appear in any order. Variables in reaction rates and formulae are
+all _first column IDs_ (regardless of column label).
 
 ### Examples
 
@@ -176,6 +187,10 @@ reaction_2   kcat_AKARp*AKAR4_C                                                 
 The same file can look like this in spreadsheet software, e.g.[gnumeric](http://www.gnumeric.org/):
 ![AKAP79 Reaction Table](AKAP79-Reaction.png)
 
+Each variable mentioned here, e.g. `cAMP` is an ID of some row in
+another table, `cAMP` is a compound and can be found in
+`Compound.tsv`, named like that in the first column.
+
 Note 1
 : our code ignores almost everything in the first line, except `TableName`
 
@@ -190,9 +205,17 @@ All of the following examples are tab separated (originally) but
 printed using automatic vertical alignment, starting with the second
 line. You cannot copy paste them into new files, there must be tabs.
 
+Here is a code snippet that displays an SBtab on screen (in the
+terminal) with column alignment (but losing the tabstops):
+
+```{sh aligned-SBtab, eval=FALSE}
+head -n 1 Reaction.tsv
+tail -n +2 Reaction.tsv | column -t -s '	'
+```
+
 ### Constant
 
-A list of constants, values that never change for this model, e.g. Avogadro's number.
+A list of constants. These are values that never change for _this_ model, e.g. Avogadro's number:
 
 ```{sh, eval=FALSE}
  !!SBtab  TableName='Constant'  Document='myModel' 
@@ -203,19 +226,29 @@ A list of constants, values that never change for this model, e.g. Avogadro's nu
 The number of items in the first line is usually different from the
 rest, as this is a header, so they don't always form a neat table.
 
+This also breaks the smart display of these files as tables on github.
+
 ### Input
 
 Known paramters of the model, can vary between experiments.
 
 ```{sh, eval=FALSE}
 !!SBtab TableName='Input' Document='myModel'
-              !ID  !DefaultValue  !Unit 
- CalciumBaseLevel  2000.0         nM
-              ...  ...            ...
+ !ID  !DefaultValue  !Unit   !Comment
+ CaB  2000.0         nM      Calcium-Base-Level
+ ...  ...            ...     ...
 ```
 
 Inputs are what distinguishes experiments alongside initial values,
-and event schedules (interventions).
+and event schedules (interventions). These are default values. Other
+values can be set in the line of each experiment in the experiment
+table, e.g.:
+
+```
+!!SBtab TableName='Experiment' Document='myModel'
+!ID !Type        !Time  >CaB    >...
+E1  Time Series  100    1700.0  ...
+```
 
 ### Parameter
 
@@ -266,6 +299,8 @@ framework.
 
 ### Reaction
 
+The Table of Reactions can be seen as the main piece of information for the model. 
+
 ```{sh, eval=FALSE}
 !!SBtab TableName='Reaction' TableType='Reaction' Document='myModel'
        !ID  !KineticLaw    !IsReversible   !ReactionFormula 
@@ -273,8 +308,16 @@ framework.
        ...  ...            ...             ...
 ```
 
+Both `KineticLaw` and `Formula` are required, even though a kinetic
+law could be determined from the formula in a pinch (mass action). We
+don't infer kinetic laws in our code. The reversibility of reactions
+is set via `!IsReversible` and can be expressed via `TRUE`/`FALSE` or
+`1`/`0`; this has no effect on the arrow in the formula (as intended
+in the official SBtab documentation), there is no one sided arrow.
 
 ### Output
+
+Outputs are Observables. A function that can be related to measured data.
 
 ```{sh, eval=FALSE}
 !!SBtab TableName='Output' Document='myModel'
@@ -283,19 +326,40 @@ framework.
       ...  ...    ...
 ```
 
+A unit of `1` means the same as `'dimensionless'` in SBML. 
 
-A unit of `1` means the same as `'dimensionless'` in SBML.
+A function can be an inequality. If the experimental data has an
+_allowed range_ (min and max), rather than a standard error, then this
+Output could be useful:
+
+```{sh, eval=FALSE}
+!!SBtab TableName='Output' Document='myModel'
+  !ID  !Unit  !Formula
+    A  1      Ca/CaB
+Bound  1      (A<5000) && (A>1000)
+```
+
+And the data table could be:
+
+```{sh, eval=FALSE}
+!!SBtab [...]
+!TimePoint !Time    >A  ~A  >Bound  ~Bound
+        T1     0  1500  150   TRUE  0.1
+```
+
+Data can be Boolean/`logical` (it's alsways treated as `1` or
+`0`). See also the last Section on this page.
 
 ### Transformation
 
 A table of all possible transformations (maps) that are part of any
-experiments described procedure. An event can trigger any of these
+experiment's described procedure. An event can trigger any of these
 transformation at specific event-times.
 
 ```{sh, eval=FALSE}
 !!SBtab TableName='Transformation' Document='MyModel'
  !ID  >A     >B     >C
- TF1  AB     B      C
+ TF1  A-B    B      C
  TF2  A      B/2    C
  TF3  A*0.1  B*0.1  C*0.1 
 ```
@@ -304,10 +368,16 @@ Here we see one transformation per line that affects the variables listed in the
 
 ```{r, eval=FALSE}
 A <- A-B  # TF1
+...
 B <- B/2  # TF2
+...
+A <- A*0.1 # TF3
+B <- B*0.1 # TF3
+C <- C*0.1 # TF3
+...
 ```
 
-This is what would conceptually happen in the generated code.
+This is what would conceptually happen in the generated code (not literally, as it actually happens in the C code).
 
 ### Event
 
@@ -333,17 +403,21 @@ transformation the solver is re-initialized to continue from there.
                ...  ...            ...    ...     ...                ...
 ```
 
-Author-Year citation keys make good ID values for data sets.
+_AuthorYear_ citation keys make good ID values for data sets.
 
-`!Type` is one of: `Time Series`, or `Dose Response` for our
-purposes. The initial time for the ODE $t_0$ corresponds to the
-beginning of the experiment setup: `!T0` (the time value). The plain
-`!Time` is the default time of measurements; for dose response
-experiments, this is the only place to specify the measurement
-time. `!Event` names the table that contains instructions for
-scheduled events (see above). The `!Citation` column is entirely
-optional.
+`!Type` is one of: `Time Series`, or `Dose Response` for our purposes
+(possibly more types in the future). All types are convenience
+features, Time Series is the basic type thta can do anything.
 
+
+The initial time for the ODE, $t_0$, corresponds to the beginning of
+the experiment setup: `!T0` (the time value). The value of `!Time` is
+the default time of measurements if none is given in the data table.
+For dose response experiments, this is the only place to specify the
+measurement time. `!Event` names the table that contains the event
+schedule (a time sequence of named transformations). 
+
+The `!Citation` column is entirely optional.
 
 ### Data
 
@@ -357,7 +431,7 @@ Data is stored in TSV files as well, but isn't used when building the ODE code. 
 E0301T001   -15    99.4136     0.711886579917949
 E0301T002   -10    100.617     0.401234567901235
 E0301T003   -5     101.944     0.927467851933129
-E0301T004   0      NA
+E0301T004   0      NA          NA
 E0301T005   5      101.204     0.28287504289851
 E0301T006   10     102.037     0.565750085797018
 E0301T007   15     102.346     0.432098765432101
@@ -369,16 +443,16 @@ E0301T012   40     110.988     1.31417708987925
 E0301T013   45     112.438     1.60137305815714
 ```
 
-`TimePoint` is a kind of `ID`, our scripts do not check what the first
+`!TimePoint` is a kind of `!ID`, our scripts do not check what the first
 column is called, the contents are always used as `rownames` in R
-data-frames.
+data-frames. These ID's are not used for anything, currently.
 
 In this particular Table, we find a missing value (was not measured).
 
 #### Dose Response
 
 In dose response experiments, the system reacts to an input dose
-repeatedly. Each row is simulated as a time series by itself.  
+repeatedly. Each row is simulated as a time series by itself.
 
 The table works the same way, but rather than `Time` we have an input
 column:
@@ -409,8 +483,12 @@ E1D19  34101    3.996      0.3985
 ```
 
 Here `Ca_set` is an input value, and `CaPerCam` is an output
-value. This cannot be determined from the Table itself, only from the
-rest of the Document.
+value. Which is Input or Output cannot be determined from the Table
+itself, only from the rest of the Document. Each row can be considered
+a mini time series, with one measurement time each. At which time the
+measurement shall occur is written in the table of experiments, column
+`!Time` (the default measurement time). A different time for each row
+is not possible (currently).
 
 # A Note on Units
 
@@ -419,7 +497,7 @@ a human readable conventional form (we don't insist on it being
 correct). It is mostly intended for human readers, but we do parse it
 and use the information for SBML export.
 
-You can test the unit parse like this:
+You can test the unit parser like this:
 
 ```{r, units, eval=TRUE}
 prettyPrint <- function(units){
@@ -433,7 +511,7 @@ prettyPrint <- function(units){
 prettyPrint(c("cm","uM","MM","1","μM","nanomolarity","s^-1"))
 ```
 
-Units are not optional.
+**Units are not optional**
 
 Dimensionless quantities are ok, e.g. Hill-exponents, the unit is just
 `1` in such cases.
@@ -445,9 +523,12 @@ same as `kb*b`. It is of course legal (in general) to calculate `1 m +
 1 cm`, but we don't do this unit-conversion automatically (maybe never
 will).
 
-Although SBML has units as well the sotware support for units on the
+Although SBML has units as well the software support for units on the
 SBML side is also not feature-complete in all cases. Other software
-may have its own restrictions on possible units.
+may have its own restrictions on possible units (or unit combinations).
+
+COPASI wants all species to have the same unit of measurement. We
+don't make such restrictions.
 
 # Issues to be aware of with any File format
 

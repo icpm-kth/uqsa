@@ -1,5 +1,5 @@
 ---
-title: "Example-AKAP79"
+title: "Sample AKAP79"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Example-AKAP79}
@@ -14,59 +14,45 @@ knitr::opts_chunk$set(cache = TRUE,
 )
 ```
 
-This example covers the AKAP79 example model and `rgsl` as solver
-backend, alternatively, it is possible to use `deSolve` instead (but
-not covered here).
-
 We use `icpm-kth/SBtabVFGEN` to read the model files and `icpm-kth/rgsl` as an
 interface to `gsl_odeiv2` solvers (for initial value problems) to simulate the model:
 
 ```{r setup}
-library(uqsa)
 require(SBtabVFGEN)
 require(rgsl)
+library(uqsa)
 require(parallel)
 ```
 
 Next, we import the model's data tables from the SBtab files:
 
 ```{r read-model, eval=FALSE}
-modelName <- checkModel("AKAP79",uqsa_example("AKAP79",pat="gvf[.]c$"))
+modelName <- checkModel("AKAP79",uqsa_example("AKAP79",pat="_gvf[.]c$"))
 modelFiles <- uqsa_example(modelName,pat="[.]tsv$")
 SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
 experiments <- SBtabVFGEN::sbtab.data(SBtab)
 ```
 
 The function `checkModel` checks that the model files exist and
-compiles the model to a shared library using a c compiler, the gsl
-library needs to be installed on the system for this to work (file
-ending in `.so`). On windows, it is easier to use the `deSolve`
-solvers.
-
-The `model` variable contains the tabulated properties of the model as
-a `list` of `data.frames`. The source files of the model `AKAP79.R`,
-`AKAP79.vf`, and `AKAP79_gvf.c` were all created automatically from
-the tables. Because they are tables, we can retrieve default values
-from them.
+compiles the model to a shared library using a c compiler, if the
+second argument is a c file.
 
 ```{r defaults, eval=FALSE}
 parVal <- SBtab$Parameter[["!DefaultValue"]]
 ```
 
 We have also defined a function that will transform the sampling
-variables `parABC` used by the ABC method into something that the model will accept as parameters. The plan
-is to sample in logarithmic space: the ABC algorithm will sample the
-logarithms of the model parameters. We limit the sampling to ranges,
-as appropriate for each parameter:
+variables `parABC` used by the ABC method into something that the
+model will accept as parameters. The plan is to sample in logarithmic
+space: the ABC algorithm will sample the logarithms of the model
+parameters. We limit the sampling to ranges, as appropriate for each
+parameter:
 
 ```{r bounds, eval=FALSE}
 defRange <- c(rep(1000,19),1.9,1000,1.25,1.25,1.25,1.5,1.5,2)
 
-# Define Lower and Upper Limits for logUniform prior distribution for the parameters
-
-ll <- parVal/defRange
-
-ul <- parVal*defRange
+ll <- parVal/defRange # lower limit
+ul <- parVal*defRange # upper limit
 
 ll = log10(ll) # log10-scale
 ul = log10(ul) # log10-scale
@@ -108,7 +94,7 @@ set.seed(7619201)
 
 distanceMeasure <- function(funcSim, dataExpr=Inf, dataErr=Inf){
   if (all(is.finite(funcSim))){
-    distance <- mean((1/71.67*(funcSim-as.matrix(dataExpr))/as.matrix(dataErr))^2, na.rm=TRUE)
+    distance <- mean(((funcSim-as.matrix(dataExpr))/as.matrix(dataErr))^2, na.rm=TRUE)
   } else {
     distance <- Inf
   }
@@ -136,7 +122,6 @@ Build a random number generator, and density function for the intial prior:
 ```{r initial-prior, eval=FALSE}
 rprior <- rUniformPrior(ll, ul)
 dprior <- dUniformPrior(ll, ul)
-
 ```
 
 The sampling loop:
@@ -168,8 +153,8 @@ for (i in 1:length(experimentsIndices)){
 
 	  objectiveFunction <- makeObjective(experiments[unlist(experimentsIndices[1:(i-1)])], modelName, distanceMeasure, log10ParMap)
 	  # We relax the delta from 0.01 to 0.05
-	  ABCMCMCoutput$drawsAfterCheckFit <- checkFitWithPreviousExperiments(ABCMCMCoutput$draws,objectiveFunction,delta = 0.05)
-	C <- fitCopula(ABCMCMCoutput$drawsAfterCheckFit, nCoresPerChain)
+	  ABCMCMCoutput$drawsAfterCheckFit <- checkFitWithPreviousExperiments(ABCMCMCoutput$draws,objectiveFunction,delta = delta*5)
+	  C <- fitCopula(ABCMCMCoutput$drawsAfterCheckFit, nCoresPerChain)
 
 	}
 
@@ -192,14 +177,3 @@ The sampling loop ran for ~24.5 minutes on a machine with the following specs:
 |Memory: |16 GB|
 
 The result is a collection of intermediate samples (2 files) and a final posterior sample (1 file).
-
-Here we plot data from experimental time series with simulations from a subsample of the draws from the posterior distribution.
-
-```{r plot, eval=FALSE}
-draws <- ABCMCMCoutput$drawsAfterCheckFit
-
-simulate <- simulator.c(experiments[unlist(experimentsIndices)],modelName,log10ParMap, noise = TRUE)
-output_yy <- simulate(t(draws[sample(1:dim(draws)[1],min(100,dim(draws)[1])),]))
-p<-plotTimeSeries(output_yy,experiments[unlist(experimentsIndices)])
-
-```

@@ -31,6 +31,8 @@ navbar:
         href: articles/models.html
       - text: Importing Data
         href: articles/data.html
+      - text: Transformation Events
+        href: articles/events.html
       - text: Build your own Model
         href: articles/user_model.html
       - text: Generate C Code Outside of R

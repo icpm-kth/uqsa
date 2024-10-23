@@ -59,55 +59,70 @@ Instead we launch an Rscript via `mpirun` (and the `send` and
 `recv` functions on `MPI_COMM_WORLD`, which corresponds to `comm=0` in
 pbdMPI). 
 
-This is different from the `parLapply` paradigm, where work is
-dispatched to worker threads (or processes).
-
-The only difference between the workers is the `rank`. The rank will
-determine the value of $\beta$ and thus the kind of sample the worker
-obtains.
+The only difference between the workers is the `rank` and possibly the
+random number seed. The rank will determine the value of $\beta$ and
+thus the kind of sample the worker obtains.
 
 
-Locally you can test the MPI script using the `mpirun` command:
+Locally (on your machine) you can test the MPI script using the
+`mpirun` command, if you have some mpi library installed:
 
 ```{sh, eval=FALSE, label="mpirun"}
-mpirun -H localhost:16 -N 8 ./AKAP79.R 5000
+# find number of cores on GNU/linux
+N = $(( `grep -c processor /proc/cpuinfo` )) # or just type the right number
+mpirun -H localhost:$N -N $N ./AKAP79.R 5000
 ```
 
-For this to work, `AKAP79.R` has to start with the line:
+For this to work, `AKAP79.R` starts with the line:
 
 ```{sh, eval=FALSE}
 #!/usr/bin/env Rscript
+## ^^^^^^^^^^^^^^^^^^^ 
+## The above has to be the first line.
+## Nothing may be written before that.
 [...]
-# R code follows here ...
+
+R code follows below
 ```
 
-If you want to call Rscript explicitly, then:
+So, Rscript will be found and used to process the rest.
+
+If you want to call `Rscript` explicitly, then:
 
 ```{sh, eval=FALSE, label="Rscript"}
-mpirun -H localhost:16 -N 8 Rscript ./AKAP79.R 5000
+mpirun -H localhost:$N -N $N Rscript ./AKAP79.R 5000
 ```
 
 On the cluster the `-H` option is not necessary, because a queue
 system like slurm will determine which machines to use.
 
-For this particular script the argument `5000` is the sample size and
-`-N 8` means that we launch 8 MPI workers per node (node means the
-same as machine or host). We have one node (localhost), with 16 slots
-to run workers in (because we assume 16 cores).
+The argument `5000` (the sample size) is passed to
+the R program `AKAP79.R`, it's not an `mpirun` option.
 
-On a cluster, we can have many more chains.
+`-N ...` means that we launch this many MPI workers per node (node
+means the same as machine or host). We have one node (localhost), the
+`-H localhost:$SLOTS` option determines the maximum number of jobs per
+node.
 
+If you have 16 cores:
+
+```
+mpirun -H localhost:$16 -N 16 Rscript ./AKAP79.R 5000
+```
+
+In this example, we use the MPI chains for parallel chains on
+different temperatures. But, this is not mandatory. It is possible to
+run `$N` chains on the same temperature, or split the work in some other
+way.
 
 # MPI Script Template
 
 This is an example that will sample a model using the Metropolis
-algorithm, using `pbdMPI` and the parallel tempering technique.
+algorithm, using [`pbdMPI`](https://cran.r-project.org/package=pbdMPI)
+and the parallel tempering technique.
 
 ```{r, eval=FALSE, label="mpi-pt-sampling.R"}
 #!/usr/bin/env Rscript
-
-## ^^^ the above has to be on line 1, 
-## nothing may be written before that .
 
 library(rgsl)
 library(SBtabVFGEN)
@@ -115,7 +130,7 @@ library(uqsa)
 library(parallel)
 library(pbdMPI)
 
-start_time <- Sys.time()                         # measure sampling time
+start_time <- Sys.time()
 comm  <- 0
 pbdMPI::init()
 r <- pbdMPI::comm.rank(comm=comm)
@@ -123,7 +138,7 @@ cs <- pbdMPI::comm.size(comm=comm)
 
 attr(comm,"rank") <- r
 attr(comm,"size") <- cs
-N <- 10000                 # sample size
+N <- 10000                 # default sample size
 h <- 1e-2                  # step size
 
 beta <- (1.0 - (r/cs))^2   # PT: inverse temperature
@@ -136,11 +151,8 @@ sb <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
 modelName <- checkModel(comment(sb),sprintf("./%s_gvc.c",comment(sb)))
 
 ## ----ConservationLaws----------------------------------------------------------
-if (file.exists("../ConservationLaws.RData")){
-	load("../ConservationLaws.RData")
-	if (any(is.na(ConLaw))) {
-	  ConLaw <- NULL
-	}
+if (file.exists("../ConservationLaws.RDS")){
+	ConLaw <- readRDS("../ConservationLaws.RData")
 } else {
 	ConLaw <- NULL
 }
@@ -148,7 +160,6 @@ experiments <- sbtab.data(sb,ConLaw)
 
 ## ----default------------------------------------------------------------------
 n <- length(experiments[[1]]$input)
-
 if (n>0){
 	parMCMC <- log10(head(model$par(),-n))
 } else {
@@ -156,7 +167,10 @@ if (n>0){
 }
 
 ## ----range--------------------------------------------------------------------
-stdv <- head(sb$Parameter[["!Std"]],length(parMCMC))              # this as well
+stdv <- head(sb$Parameter[["!Std"]],length(parMCMC))
+if (is.null(stdv) || any(is.na(stdv))){ # some alternative default value
+	stdv <- parMCMC*0.05 + max(parMCMC)*0.05 + 1e-2 
+}
 dprior <- dNormalPrior(mean=parMCMC,sd=stdv)
 rprior <- rNormalPrior(mean=parMCMC,sd=stdv)
 
@@ -195,11 +209,13 @@ x <- mcmcInit(
 	dprior)
 s <- ptMetropolis(x,N,h) # the main amount of work is done here
 saveRDS(s,file=sprintf("sample-rank-%i.RDS",r))
+
 # ---- when all are done, we load the sampled points from the files but only for the right temperature:
 pbdMPI::barrier()
 f <- dir(pattern=sprintf('sample-rank-.*RDS$'))
 stopifnot(length(f) == cs)                                          # MPI comm size
 X <- uqsa::gatherSample(f,beta,size=N/2)
+
 Copula <- fitCopula(X)
 dprior <- dCopulaPrior(Copula)
 rprior <- rCopulaPrior(Copula)
@@ -207,8 +223,8 @@ parMCMC <- as.numeric(tail(X,1))
 attr(Copula,"beta") <- beta
 attr(X,"beta") <- beta
 
-saveRDS(Copula,file=sprintf("Copula-for-beta-%i-%g.RDS",r,-100*log10(beta)))
-saveRDS(X,file="parameter-sample-for-beta-%i-%g.RDS",r,-100*log10(beta))
+saveRDS(Copula,file=sprintf("Copula-for-beta-%i-l10b-%i.RDS",r,round(100*log10(beta))))
+saveRDS(X,file="parameter-sample-for-beta-%i-l10b-%i.RDS",r,round(100*log10(beta)))
 
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)

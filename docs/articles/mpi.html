@@ -56,7 +56,10 @@
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
+    <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <a class="dropdown-item" href="../articles/GenerateCodeInSHELL.html">Generate C Code Outside of R</a>
+    <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
@@ -72,7 +75,6 @@
     <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
     <a class="dropdown-item" href="../articles/AKAP79.html">Sample AKAP79</a>
     <a class="dropdown-item" href="../articles/AKAR4.html">Sample AKAR4</a>
-    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Build a Model</a>
     <a class="dropdown-item" href="../articles/mpi.html">Multiple chains via MPI</a>
   </div>
 </li>
@@ -153,41 +155,50 @@ use this here.</p>
 <code>send</code> and <code>recv</code> functions on
 <code>MPI_COMM_WORLD</code>, which corresponds to <code>comm=0</code> in
 pbdMPI).</p>
-<p>This is different from the <code>parLapply</code> paradigm, where
-work is dispatched to worker threads (or processes).</p>
-<p>The only difference between the workers is the <code>rank</code>. The
-rank will determine the value of <span class="math inline">\(\beta\)</span> and thus the kind of sample the
-worker obtains.</p>
-<p>Locally you can test the MPI script using the <code>mpirun</code>
-command:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="ex">mpirun</span> <span class="at">-H</span> localhost:16 <span class="at">-N</span> 8 ./AKAP79.R 5000</span></code></pre></div>
-<p>For this to work, <code>AKAP79.R</code> has to start with the
-line:</p>
+<p>The only difference between the workers is the <code>rank</code> and
+possibly the random number seed. The rank will determine the value of
+<span class="math inline">\(\beta\)</span> and thus the kind of sample
+the worker obtains.</p>
+<p>Locally (on your machine) you can test the MPI script using the
+<code>mpirun</code> command, if you have some mpi library installed:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># find number of cores on GNU/linux</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="ex">N</span> = <span class="va">$((</span> <span class="kw">`</span><span class="fu">grep</span> <span class="at">-c</span> processor /proc/cpuinfo<span class="kw">`</span> <span class="va">))</span> <span class="co"># or just type the right number</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="ex">mpirun</span> <span class="at">-H</span> localhost:<span class="va">$N</span> <span class="at">-N</span> <span class="va">$N</span> ./AKAP79.R 5000</span></code></pre></div>
+<p>For this to work, <code>AKAP79.R</code> starts with the line:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co">#!/usr/bin/env Rscript</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="ex">[...]</span></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co"># R code follows here ...</span></span></code></pre></div>
-<p>If you want to call Rscript explicitly, then:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">mpirun</span> <span class="at">-H</span> localhost:16 <span class="at">-N</span> 8 Rscript ./AKAP79.R 5000</span></code></pre></div>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">## ^^^^^^^^^^^^^^^^^^^ </span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">## The above has to be the first line.</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">## Nothing may be written before that.</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="ex">[...]</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="ex">R</span> code follows below</span></code></pre></div>
+<p>So, Rscript will be found and used to process the rest.</p>
+<p>If you want to call <code>Rscript</code> explicitly, then:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">mpirun</span> <span class="at">-H</span> localhost:<span class="va">$N</span> <span class="at">-N</span> <span class="va">$N</span> Rscript ./AKAP79.R 5000</span></code></pre></div>
 <p>On the cluster the <code>-H</code> option is not necessary, because a
 queue system like slurm will determine which machines to use.</p>
-<p>For this particular script the argument <code>5000</code> is the
-sample size and <code>-N 8</code> means that we launch 8 MPI workers per
+<p>The argument <code>5000</code> (the sample size) is passed to the R
+program <code>AKAP79.R</code>, it’s not an <code>mpirun</code>
+option.</p>
+<p><code>-N ...</code> means that we launch this many MPI workers per
 node (node means the same as machine or host). We have one node
-(localhost), with 16 slots to run workers in (because we assume 16
-cores).</p>
-<p>On a cluster, we can have many more chains.</p>
+(localhost), the <code>-H localhost:$SLOTS</code> option determines the
+maximum number of jobs per node.</p>
+<p>If you have 16 cores:</p>
+<pre><code>mpirun -H localhost:$16 -N 16 Rscript ./AKAP79.R 5000</code></pre>
+<p>In this example, we use the MPI chains for parallel chains on
+different temperatures. But, this is not mandatory. It is possible to
+run <code>$N</code> chains on the same temperature, or split the work in
+some other way.</p>
 </div>
 <div class="section level2">
 <h2 id="mpi-script-template">MPI Script Template<a class="anchor" aria-label="anchor" href="#mpi-script-template"></a>
 </h2>
 <p>This is an example that will sample a model using the Metropolis
-algorithm, using <code>pbdMPI</code> and the parallel tempering
-technique.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+algorithm, using <a href="https://cran.r-project.org/package=pbdMPI" class="external-link"><code>pbdMPI</code></a>
+and the parallel tempering technique.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#!/usr/bin/env Rscript</span></span>
-<span></span>
-<span><span class="co">## ^^^ the above has to be on line 1, </span></span>
-<span><span class="co">## nothing may be written before that .</span></span>
 <span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">rgsl</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span></span>
@@ -195,7 +206,7 @@ technique.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">parallel</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pbdr.org/" class="external-link">pbdMPI</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">start_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span>                         <span class="co"># measure sampling time</span></span>
+<span><span class="va">start_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">comm</span>  <span class="op">&lt;-</span> <span class="fl">0</span></span>
 <span><span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">init</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">comm.rank</a></span><span class="op">(</span>comm<span class="op">=</span><span class="va">comm</span><span class="op">)</span></span>
@@ -203,7 +214,7 @@ technique.</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">comm</span>,<span class="st">"rank"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">r</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">comm</span>,<span class="st">"size"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">cs</span></span>
-<span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">10000</span>                 <span class="co"># sample size</span></span>
+<span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">10000</span>                 <span class="co"># default sample size</span></span>
 <span><span class="va">h</span> <span class="op">&lt;-</span> <span class="fl">1e-2</span>                  <span class="co"># step size</span></span>
 <span></span>
 <span><span class="va">beta</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1.0</span> <span class="op">-</span> <span class="op">(</span><span class="va">r</span><span class="op">/</span><span class="va">cs</span><span class="op">)</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span>   <span class="co"># PT: inverse temperature</span></span>
@@ -216,11 +227,8 @@ technique.</p>
 <span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"./%s_gvc.c"</span>,<span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## ----ConservationLaws----------------------------------------------------------</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="st">"../ConservationLaws.RData"</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="st">"../ConservationLaws.RData"</span><span class="op">)</span></span>
-<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">ConLaw</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="va">ConLaw</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
-<span>    <span class="op">}</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="st">"../ConservationLaws.RDS"</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">ConLaw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"../ConservationLaws.RData"</span><span class="op">)</span></span>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
 <span>    <span class="va">ConLaw</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
 <span><span class="op">}</span></span>
@@ -228,7 +236,6 @@ technique.</p>
 <span></span>
 <span><span class="co">## ----default------------------------------------------------------------------</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span><span class="op">)</span></span>
-<span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="va">n</span><span class="op">&gt;</span><span class="fl">0</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="va">parMCMC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">model</span><span class="op">$</span><span class="fu">par</span><span class="op">(</span><span class="op">)</span>,<span class="op">-</span><span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
@@ -236,7 +243,10 @@ technique.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="co">## ----range--------------------------------------------------------------------</span></span>
-<span><span class="va">stdv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!Std"</span><span class="op">]</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span><span class="op">)</span>              <span class="co"># this as well</span></span>
+<span><span class="va">stdv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!Std"</span><span class="op">]</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">stdv</span><span class="op">)</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">stdv</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">{</span> <span class="co"># some alternative default value</span></span>
+<span>    <span class="va">stdv</span> <span class="op">&lt;-</span> <span class="va">parMCMC</span><span class="op">*</span><span class="fl">0.05</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span><span class="op">*</span><span class="fl">0.05</span> <span class="op">+</span> <span class="fl">1e-2</span> </span>
+<span><span class="op">}</span></span>
 <span><span class="va">dprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dNormalPrior.html">dNormalPrior</a></span><span class="op">(</span>mean<span class="op">=</span><span class="va">parMCMC</span>,sd<span class="op">=</span><span class="va">stdv</span><span class="op">)</span></span>
 <span><span class="va">rprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rNormalPrior.html">rNormalPrior</a></span><span class="op">(</span>mean<span class="op">=</span><span class="va">parMCMC</span>,sd<span class="op">=</span><span class="va">stdv</span><span class="op">)</span></span>
 <span></span>
@@ -275,11 +285,13 @@ technique.</p>
 <span>    <span class="va">dprior</span><span class="op">)</span></span>
 <span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu">ptMetropolis</span><span class="op">(</span><span class="va">x</span>,<span class="va">N</span>,<span class="va">h</span><span class="op">)</span> <span class="co"># the main amount of work is done here</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">s</span>,file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"sample-rank-%i.RDS"</span>,<span class="va">r</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
 <span><span class="co"># ---- when all are done, we load the sampled points from the files but only for the right temperature:</span></span>
 <span><span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">barrier</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span>pattern<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'sample-rank-.*RDS$'</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span> <span class="op">==</span> <span class="va">cs</span><span class="op">)</span>                                          <span class="co"># MPI comm size</span></span>
 <span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/gatherSample.html">gatherSample</a></span><span class="op">(</span><span class="va">f</span>,<span class="va">beta</span>,size<span class="op">=</span><span class="va">N</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">Copula</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitCopula.html">fitCopula</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span></span>
 <span><span class="va">dprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dCopulaPrior.html">dCopulaPrior</a></span><span class="op">(</span><span class="va">Copula</span><span class="op">)</span></span>
 <span><span class="va">rprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rCopulaPrior.html">rCopulaPrior</a></span><span class="op">(</span><span class="va">Copula</span><span class="op">)</span></span>
@@ -287,8 +299,8 @@ technique.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">Copula</span>,<span class="st">"beta"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">beta</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">X</span>,<span class="st">"beta"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">beta</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">Copula</span>,file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Copula-for-beta-%i-%g.RDS"</span>,<span class="va">r</span>,<span class="op">-</span><span class="fl">100</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">beta</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">X</span>,file<span class="op">=</span><span class="st">"parameter-sample-for-beta-%i-%g.RDS"</span>,<span class="va">r</span>,<span class="op">-</span><span class="fl">100</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">beta</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">Copula</span>,file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Copula-for-beta-%i-l10b-%i.RDS"</span>,<span class="va">r</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">beta</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">X</span>,file<span class="op">=</span><span class="st">"parameter-sample-for-beta-%i-l10b-%i.RDS"</span>,<span class="va">r</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">beta</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">time_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/difftime.html" class="external-link">difftime</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span>,<span class="va">start_time</span>,units<span class="op">=</span><span class="st">"min"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">time_</span><span class="op">)</span></span>

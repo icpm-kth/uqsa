@@ -56,7 +56,10 @@
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
+    <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <a class="dropdown-item" href="../articles/GenerateCodeInSHELL.html">Generate C Code Outside of R</a>
+    <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
@@ -72,7 +75,6 @@
     <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
     <a class="dropdown-item" href="../articles/AKAP79.html">Sample AKAP79</a>
     <a class="dropdown-item" href="../articles/AKAR4.html">Sample AKAR4</a>
-    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Build a Model</a>
     <a class="dropdown-item" href="../articles/mpi.html">Multiple chains via MPI</a>
   </div>
 </li>
@@ -113,7 +115,49 @@ work on and that you have written the model in SBtab form. It may be a
 google spreadsheet, an open document spreadsheet (<code>ods</code>), MS
 Excel file, a file for the <code>numbers</code> application on an Apple
 device or a <code>.gnumeric</code> file.</p>
-<p>Once you have the TSV files…</p>
+<p>There are three steps we need to make:</p>
+<table class="table">
+<colgroup>
+<col width="4%">
+<col width="48%">
+<col width="16%">
+<col width="30%">
+</colgroup>
+<thead><tr class="header">
+<th align="right"></th>
+<th align="left">Steps</th>
+<th align="center">file (out)</th>
+<th align="center">tl;dr</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">convert SBtab to ODE</td>
+<td align="center">.vf</td>
+<td align="center">biology =&gt; math</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">convert the ODE to sources</td>
+<td align="center">.c</td>
+<td align="center">math =&gt; code</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">convert sources to shared library</td>
+<td align="center">.so</td>
+<td align="center">code =&gt; machine code</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/icpm-kth/RPN-derivative" class="external-link">RPN-derivative</a>
+calculates derivatives or offloads that work on maxima or yacas, install
+them if you want to use the <code>--maxima</code> or
+<code>--yacas</code> options.</p>
+<div class="section level2">
+<h2 id="load-the-tsv-files-convert-and-compile-the-model">Load the TSV files Convert and Compile the Model<a class="anchor" aria-label="anchor" href="#load-the-tsv-files-convert-and-compile-the-model"></a>
+</h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span></span>
@@ -243,6 +287,7 @@ device or a <code>.gnumeric</code> file.</p>
 <span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; int AKAR4cl_funcJacp(double t, const double y_[], double *funcJacp_, void *par)</span></span>
 <span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; int AKAR4cl_default(double t, void *par)</span></span>
 <span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; int AKAR4cl_init(double t, double *y_, void *par)</span></span></code></pre></div>
+</div>
 <div class="section level2">
 <h2 id="simulate">Simulate<a class="anchor" aria-label="anchor" href="#simulate"></a>
 </h2>

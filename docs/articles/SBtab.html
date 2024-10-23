@@ -56,7 +56,10 @@
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
+    <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <a class="dropdown-item" href="../articles/GenerateCodeInSHELL.html">Generate C Code Outside of R</a>
+    <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
@@ -72,7 +75,6 @@
     <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
     <a class="dropdown-item" href="../articles/AKAP79.html">Sample AKAP79</a>
     <a class="dropdown-item" href="../articles/AKAR4.html">Sample AKAR4</a>
-    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Build a Model</a>
     <a class="dropdown-item" href="../articles/mpi.html">Multiple chains via MPI</a>
   </div>
 </li>
@@ -109,7 +111,9 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">rgsl</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span></code></pre></div>
 <p>The R package <code>uqsa</code>, typically imports systems biology
 models and corresponding data stored in <a href="https://www.sbtab.net" class="external-link">SBtab</a> files. SBtab is a table format
 for system biology. The use of SBtab is optional, but very practical.
@@ -242,39 +246,46 @@ ignored
 start with an exclamation point, or another special character to signify
 a special meaning.</p>
 <div class="section level4">
-<h4 id="special-column-symbols">Special Column Symbols<a class="anchor" aria-label="anchor" href="#special-column-symbols"></a>
+<h4 id="special-column-symbols-prefixes">Special Column Symbols (Prefixes)<a class="anchor" aria-label="anchor" href="#special-column-symbols-prefixes"></a>
 </h4>
 <ul>
-<li>
-<code>!abc</code> means that this column has a special meaning,
-defined in the SBtab standard</li>
-<li>
-<code>&gt;xyz</code> means that this column specifies a value for
-variable <code>xyz</code>, it has an entry in some other table
+<li>In <code>!abc</code>, ! means that this column has a special
+meaning, defined in the SBtab standard</li>
+<li>In <code>&gt;xyz</code>, &gt; means that this column specifies a
+value for variable <code>xyz</code>, it has an entry in some other table
 <ul>
 <li>there must be a table where <code>xyz</code> appears in the
 <code>!ID</code> column,</li>
 </ul>
 </li>
-<li>
-<code>~xyz</code> this is our extension, we don’t know how to
-express this in plain SBtab
+<li>In <code>~xyz</code>, ~ means <em>standard error</em> – this is our
+extension.<br>
+We don’t know how to express this in plain SBtab
 <ul>
 <li>this column specifies the standard error for
 <code>&gt;xyz</code>
 </li>
+<li>ultimately, the meaning of the values of this column are up to the
+objective-function or likelihood-function. A <em>user supplied</em>
+function can interpret this value in any way the user wishes.</li>
+<li>If this value is NA or Inf, then the <code>&gt;xyz</code> values are
+removed from the default likelihood functions as well.</li>
+<li>An unknown standard error, <code>x ± NA</code>, or
+<code>x ± Inf</code> are the same as <em>value unknown</em>; we discount
+both cases.</li>
 </ul>
 </li>
 <li>any column that doesn’t start with one of <code>!&gt;~</code> isn’t
 special and isn’t interpreted by us.</li>
 </ul>
 <p>The first column can be called either <code>!ID</code> or
-<code>!Name</code> (it is harmless to have both, but only the first one
-counts). If the first column is not called that, the scripts will carry
-on regardless, assuming that it is some kind of name (so
-<code>!Id</code>, <code>!id</code>, or <code>ID?</code> will also work
-for us – not for other software). All other columns are found by name,
-exactly, and can appear in any order.</p>
+<code>!Name</code> (it is harmless to have both). If the first column is
+not called that, the scripts will carry on regardless, assuming that it
+is some kind of name. So, <code>!Id</code>, <code>!id</code>, or
+<code>ID?</code> will also work for us – not for other software. All
+other columns are found by name (case sensitive), they can appear in any
+order. Variables in reaction rates and formulae are all <em>first column
+IDs</em> (regardless of column label).</p>
 </div>
 <div class="section level4">
 <h4 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
@@ -300,6 +311,9 @@ Sections. An example of an SBtab file, in general, with header:</p>
 <span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="ex">reaction_1</span>   kf_C_AKAR4<span class="pp">*</span>C<span class="pp">*</span>AKAR4 <span class="at">-</span> kb_C_AKAR4<span class="pp">*</span>AKAR4_C                                                        C + AKAR4 <span class="op">&lt;</span>=<span class="op">&gt;</span> AKAR4_C              1</span>
 <span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="ex">reaction_2</span>   kcat_AKARp<span class="pp">*</span>AKAR4_C                                                                             AKAR4_C <span class="op">&lt;</span>=<span class="op">&gt;</span> AKAR4p + C             0</span></code></pre></div>
 <p>The same file can look like this in spreadsheet software, e.g.<a href="http://www.gnumeric.org/" class="external-link">gnumeric</a>: <img src="AKAP79-Reaction.png" alt="AKAP79 Reaction Table"></p>
+<p>Each variable mentioned here, e.g. <code>cAMP</code> is an ID of some
+row in another table, <code>cAMP</code> is a compound and can be found
+in <code>Compound.tsv</code>, named like that in the first column.</p>
 <dl>
 <dt>Note 1</dt>
 <dd>
@@ -319,28 +333,39 @@ last Section on this page about this topic.
 <p>All of the following examples are tab separated (originally) but
 printed using automatic vertical alignment, starting with the second
 line. You cannot copy paste them into new files, there must be tabs.</p>
+<p>Here is a code snippet that displays an SBtab on screen (in the
+terminal) with column alignment (but losing the tabstops):</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">head</span> <span class="at">-n</span> 1 Reaction.tsv</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">tail</span> <span class="at">-n</span> +2 Reaction.tsv <span class="kw">|</span> <span class="ex">column</span> <span class="at">-t</span> <span class="at">-s</span> <span class="st">'    '</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="constant">Constant<a class="anchor" aria-label="anchor" href="#constant"></a>
 </h4>
-<p>A list of constants, values that never change for this model,
-e.g. Avogadro’s number.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a> <span class="ex">!!SBtab</span>  TableName=<span class="st">'Constant'</span>  Document=<span class="st">'myModel'</span> </span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>     <span class="ex">!ID</span>  !Unit                 !Value</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>       <span class="ex">L</span>  1                     6.02214076E+23</span></code></pre></div>
+<p>A list of constants. These are values that never change for
+<em>this</em> model, e.g. Avogadro’s number:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a> <span class="ex">!!SBtab</span>  TableName=<span class="st">'Constant'</span>  Document=<span class="st">'myModel'</span> </span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>     <span class="ex">!ID</span>  !Unit                 !Value</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>       <span class="ex">L</span>  1                     6.02214076E+23</span></code></pre></div>
 <p>The number of items in the first line is usually different from the
 rest, as this is a header, so they don’t always form a neat table.</p>
+<p>This also breaks the smart display of these files as tables on
+github.</p>
 </div>
 <div class="section level4">
 <h4 id="input">Input<a class="anchor" aria-label="anchor" href="#input"></a>
 </h4>
 <p>Known paramters of the model, can vary between experiments.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Input'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>              <span class="ex">!ID</span>  !DefaultValue  !Unit </span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a> <span class="ex">CalciumBaseLevel</span>  2000.0         nM</span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>              <span class="ex">...</span>  ...            ...</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Input'</span> Document=<span class="st">'myModel'</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a> <span class="ex">!ID</span>  !DefaultValue  !Unit   !Comment</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a> <span class="ex">CaB</span>  2000.0         nM      Calcium-Base-Level</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a> <span class="ex">...</span>  ...            ...     ...</span></code></pre></div>
 <p>Inputs are what distinguishes experiments alongside initial values,
-and event schedules (interventions).</p>
+and event schedules (interventions). These are default values. Other
+values can be set in the line of each experiment in the experiment
+table, e.g.:</p>
+<pre><code>!!SBtab TableName='Experiment' Document='myModel'
+!ID !Type        !Time  &gt;CaB    &gt;...
+E1  Time Series  100    1700.0  ...</code></pre>
 </div>
 <div class="section level4">
 <h4 id="parameter">Parameter<a class="anchor" aria-label="anchor" href="#parameter"></a>
@@ -348,10 +373,10 @@ and event schedules (interventions).</p>
 <p>Possibly unknown parameters of the model, these parameters typically
 refer to internal properties of the model itself rather than something
 we did to the model during an experiment.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Parameter'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a> <span class="ex">!ID</span>  !DefaultValue  !Std  !Unit     !Scale</span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a> <span class="ex">kf1</span>            1.8   0.1  s^<span class="er">(</span><span class="ex">1</span><span class="kw">)</span>     <span class="ex">natural</span> logarithm </span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a> <span class="ex">...</span>            ...  ...   ...       ...</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Parameter'</span> Document=<span class="st">'myModel'</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a> <span class="ex">!ID</span>  !DefaultValue  !Std  !Unit     !Scale</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a> <span class="ex">kf1</span>            1.8   0.1  s^<span class="er">(</span><span class="ex">1</span><span class="kw">)</span>     <span class="ex">natural</span> logarithm </span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a> <span class="ex">...</span>            ...  ...   ...       ...</span></code></pre></div>
 <p>Here the <code>!Scale</code> column is optional, but often useful;
 several values are possible:
 <code>log10</code>,<code>log</code>,<code>linear</code> (in various
@@ -364,19 +389,19 @@ spellings). If missing, <code>linear</code> is assumed.</p>
 be used to encode thermodynamic relationships between parameters, model
 an input signal. This is used to assign a name to an algebraic
 expression.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Expression'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="ex">!ID</span>  !Unit  !Formula</span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a> <span class="ex">KD_1</span>  nM     <span class="er">(</span><span class="ex">KD_3*KD_4</span><span class="kw">)</span><span class="ex">/KD_2</span></span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="ex">...</span>  ...    ...</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Expression'</span> Document=<span class="st">'myModel'</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  <span class="ex">!ID</span>  !Unit  !Formula</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a> <span class="ex">KD_1</span>  nM     <span class="er">(</span><span class="ex">KD_3*KD_4</span><span class="kw">)</span><span class="ex">/KD_2</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="ex">...</span>  ...    ...</span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="compound">Compound<a class="anchor" aria-label="anchor" href="#compound"></a>
 </h4>
 <p>In SBML parlance, these are <em>species</em>.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Compound'</span> TableType=<span class="st">'Compound'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>      <span class="ex">!ID</span>  !Unit  !InitialValue </span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a> <span class="ex">PP2B_CaM</span>  μM     0.0</span>
-<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>      <span class="ex">...</span>  ...    ...</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Compound'</span> TableType=<span class="st">'Compound'</span> Document=<span class="st">'myModel'</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>      <span class="ex">!ID</span>  !Unit  !InitialValue </span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a> <span class="ex">PP2B_CaM</span>  μM     0.0</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>      <span class="ex">...</span>  ...    ...</span></code></pre></div>
 <p>There are several optional columns, e.g. <code>!IsConstant</code> and
 <code>!Type</code>. These variables are usually used as state variables
 in an ODE framework.</p>
@@ -384,38 +409,71 @@ in an ODE framework.</p>
 <div class="section level4">
 <h4 id="reaction">Reaction<a class="anchor" aria-label="anchor" href="#reaction"></a>
 </h4>
-<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Reaction'</span> TableType=<span class="st">'Reaction'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>       <span class="ex">!ID</span>  !KineticLaw    !IsReversible   !ReactionFormula </span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a> <span class="ex">Reaction1</span>  kf<span class="pp">*</span>A<span class="pp">*</span>B <span class="at">-</span> kb<span class="pp">*</span>C  TRUE            A + B <span class="op">&lt;</span>=<span class="op">&gt;</span> C</span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>       <span class="ex">...</span>  ...            ...             ...</span></code></pre></div>
+<p>The Table of Reactions can be seen as the main piece of information
+for the model.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Reaction'</span> TableType=<span class="st">'Reaction'</span> Document=<span class="st">'myModel'</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>       <span class="ex">!ID</span>  !KineticLaw    !IsReversible   !ReactionFormula </span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a> <span class="ex">Reaction1</span>  kf<span class="pp">*</span>A<span class="pp">*</span>B <span class="at">-</span> kb<span class="pp">*</span>C  TRUE            A + B <span class="op">&lt;</span>=<span class="op">&gt;</span> C</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>       <span class="ex">...</span>  ...            ...             ...</span></code></pre></div>
+<p>Both <code>KineticLaw</code> and <code>Formula</code> are required,
+even though a kinetic law could be determined from the formula in a
+pinch (mass action). We don’t infer kinetic laws in our code. The
+reversibility of reactions is set via <code>!IsReversible</code> and can
+be expressed via <code>TRUE</code>/<code>FALSE</code> or
+<code>1</code>/<code>0</code>; this has no effect on the arrow in the
+formula (as intended in the official SBtab documentation), there is no
+one sided arrow.</p>
 </div>
 <div class="section level4">
 <h4 id="output">Output<a class="anchor" aria-label="anchor" href="#output"></a>
 </h4>
-<div class="sourceCode" id="cb11"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Output'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>      <span class="ex">!ID</span>  !Unit  !Formula</span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a> <span class="ex">CaPerCaM</span>  1      totalCa/totalCaM</span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>      <span class="ex">...</span>  ...    ...</span></code></pre></div>
+<p>Outputs are Observables. A function that can be related to measured
+data.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Output'</span> Document=<span class="st">'myModel'</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>      <span class="ex">!ID</span>  !Unit  !Formula</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a> <span class="ex">CaPerCaM</span>  1      totalCa/totalCaM</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>      <span class="ex">...</span>  ...    ...</span></code></pre></div>
 <p>A unit of <code>1</code> means the same as
 <code>'dimensionless'</code> in SBML.</p>
+<p>A function can be an inequality. If the experimental data has an
+<em>allowed range</em> (min and max), rather than a standard error, then
+this Output could be useful:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Output'</span> Document=<span class="st">'myModel'</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>  <span class="ex">!ID</span>  !Unit  !Formula</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>    <span class="ex">A</span>  1      Ca/CaB</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="ex">Bound</span>  1      <span class="er">(</span><span class="ex">A</span><span class="op">&lt;</span>5000<span class="kw">)</span> <span class="kw">&amp;&amp;</span> <span class="kw">(</span><span class="ex">A</span><span class="op">&gt;</span>1000<span class="kw">)</span></span></code></pre></div>
+<p>And the data table could be:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="ex">!!SBtab</span> <span class="pp">[</span><span class="ss">...</span><span class="pp">]</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="ex">!TimePoint</span> !Time    <span class="op">&gt;</span>A  ~A  <span class="op">&gt;</span>Bound  ~Bound</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>        <span class="ex">T1</span>     0  1500  150   TRUE  0.1</span></code></pre></div>
+<p>Data can be Boolean/<code>logical</code> (it’s alsways treated as
+<code>1</code> or <code>0</code>). See also the last Section on this
+page.</p>
 </div>
 <div class="section level4">
 <h4 id="transformation">Transformation<a class="anchor" aria-label="anchor" href="#transformation"></a>
 </h4>
 <p>A table of all possible transformations (maps) that are part of any
-experiments described procedure. An event can trigger any of these
+experiment’s described procedure. An event can trigger any of these
 transformation at specific event-times.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Transformation'</span> Document=<span class="st">'MyModel'</span></span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a> <span class="ex">!ID</span>  <span class="op">&gt;</span>A     <span class="op">&gt;</span>B     <span class="op">&gt;</span>C</span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a> <span class="ex">TF1</span>  AB     B      C</span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a> <span class="ex">TF2</span>  A      B/2    C</span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a> <span class="ex">TF3</span>  A<span class="pp">*</span>0.1  B<span class="pp">*</span>0.1  C<span class="pp">*</span>0.1 </span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Transformation'</span> Document=<span class="st">'MyModel'</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a> <span class="ex">!ID</span>  <span class="op">&gt;</span>A     <span class="op">&gt;</span>B     <span class="op">&gt;</span>C</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a> <span class="ex">TF1</span>  A-B    B      C</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a> <span class="ex">TF2</span>  A      B/2    C</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a> <span class="ex">TF3</span>  A<span class="pp">*</span>0.1  B<span class="pp">*</span>0.1  C<span class="pp">*</span>0.1 </span></code></pre></div>
 <p>Here we see one transformation per line that affects the variables
 listed in the column names <code>&gt;Var</code>, i.e.:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="va">A</span><span class="op">-</span><span class="va">B</span>  <span class="co"># TF1</span></span>
-<span><span class="va">B</span> <span class="op">&lt;-</span> <span class="va">B</span><span class="op">/</span><span class="fl">2</span>  <span class="co"># TF2</span></span></code></pre></div>
-<p>This is what would conceptually happen in the generated code.</p>
+<span><span class="va">...</span></span>
+<span><span class="va">B</span> <span class="op">&lt;-</span> <span class="va">B</span><span class="op">/</span><span class="fl">2</span>  <span class="co"># TF2</span></span>
+<span><span class="va">...</span></span>
+<span><span class="va">A</span> <span class="op">&lt;-</span> <span class="va">A</span><span class="op">*</span><span class="fl">0.1</span> <span class="co"># TF3</span></span>
+<span><span class="va">B</span> <span class="op">&lt;-</span> <span class="va">B</span><span class="op">*</span><span class="fl">0.1</span> <span class="co"># TF3</span></span>
+<span><span class="va">C</span> <span class="op">&lt;-</span> <span class="va">C</span><span class="op">*</span><span class="fl">0.1</span> <span class="co"># TF3</span></span>
+<span><span class="va">...</span></span></code></pre></div>
+<p>This is what would conceptually happen in the generated code (not
+literally, as it actually happens in the C code).</p>
 </div>
 <div class="section level4">
 <h4 id="event">Event<a class="anchor" aria-label="anchor" href="#event"></a>
@@ -424,29 +482,33 @@ listed in the column names <code>&gt;Var</code>, i.e.:</p>
 solvers), change the values of input parameters, or state variables
 according to the available named tranformations (see above). After the
 transformation the solver is re-initialized to continue from there.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'EventScheduleAlpha'</span> Document=<span class="st">'myModel'</span> </span>
-<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>  <span class="ex">!TimePoint</span>  !Time  !Tranformation </span>
-<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a> <span class="ex">Event0Time0</span>  10.0   TF1</span>
-<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a> <span class="ex">Event0Time0</span>  11.0   TF2</span>
-<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>         <span class="ex">...</span>  ...    ...</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'EventScheduleAlpha'</span> Document=<span class="st">'myModel'</span> </span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>  <span class="ex">!TimePoint</span>  !Time  !Tranformation </span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a> <span class="ex">Event0Time0</span>  10.0   TF1</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a> <span class="ex">Event0Time0</span>  11.0   TF2</span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>         <span class="ex">...</span>  ...    ...</span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="experiments">Experiments<a class="anchor" aria-label="anchor" href="#experiments"></a>
 </h4>
-<div class="sourceCode" id="cb15"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Experiments'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>               <span class="ex">!ID</span>  !Type          !Time  !T0    !Event              !Citation</span>
-<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>    <span class="ex">Smith2019Fig2E</span>  Time Series    600.0  <span class="at">-100.0</span>  EventScheduleAlpha  https//doi.org/10.<span class="pp">[</span><span class="ss">...</span><span class="pp">]</span> </span>
-<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>               <span class="ex">...</span>  ...            ...    ...     ...                ...</span></code></pre></div>
-<p>Author-Year citation keys make good ID values for data sets.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Experiments'</span> Document=<span class="st">'myModel'</span></span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>               <span class="ex">!ID</span>  !Type          !Time  !T0    !Event              !Citation</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>    <span class="ex">Smith2019Fig2E</span>  Time Series    600.0  <span class="at">-100.0</span>  EventScheduleAlpha  https//doi.org/10.<span class="pp">[</span><span class="ss">...</span><span class="pp">]</span> </span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>               <span class="ex">...</span>  ...            ...    ...     ...                ...</span></code></pre></div>
+<p><em>AuthorYear</em> citation keys make good ID values for data
+sets.</p>
 <p><code>!Type</code> is one of: <code>Time Series</code>, or
-<code>Dose Response</code> for our purposes. The initial time for the
-ODE <span class="math inline">\(t_0\)</span> corresponds to the
-beginning of the experiment setup: <code>!T0</code> (the time value).
-The plain <code>!Time</code> is the default time of measurements; for
-dose response experiments, this is the only place to specify the
-measurement time. <code>!Event</code> names the table that contains
-instructions for scheduled events (see above). The
-<code>!Citation</code> column is entirely optional.</p>
+<code>Dose Response</code> for our purposes (possibly more types in the
+future). All types are convenience features, Time Series is the basic
+type thta can do anything.</p>
+<p>The initial time for the ODE, <span class="math inline">\(t_0\)</span>, corresponds to the beginning of the
+experiment setup: <code>!T0</code> (the time value). The value of
+<code>!Time</code> is the default time of measurements if none is given
+in the data table. For dose response experiments, this is the only place
+to specify the measurement time. <code>!Event</code> names the table
+that contains the event schedule (a time sequence of named
+transformations).</p>
+<p>The <code>!Citation</code> column is entirely optional.</p>
 </div>
 <div class="section level4">
 <h4 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
@@ -456,24 +518,25 @@ ODE code. It is used in parameter estimation.</p>
 <div class="section level5">
 <h5 id="time-series">Time Series<a class="anchor" aria-label="anchor" href="#time-series"></a>
 </h5>
-<div class="sourceCode" id="cb16"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="ex">!!SBtab</span> Document=<span class="st">'myModel'</span> Version=<span class="st">'1.0'</span> TableName=<span class="st">'Smith2019Fig2E'</span> TableType=<span class="st">'QuantityMatrix'</span>          </span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="ex">!TimePoint</span>  !Time  <span class="op">&gt;</span>AKAR4pOUT  ~AKAR4pOUT</span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="ex">E0301T001</span>   <span class="at">-15</span>    99.4136     0.711886579917949</span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="ex">E0301T002</span>   <span class="at">-10</span>    100.617     0.401234567901235</span>
-<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="ex">E0301T003</span>   <span class="at">-5</span>     101.944     0.927467851933129</span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="ex">E0301T004</span>   0      NA</span>
-<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="ex">E0301T005</span>   5      101.204     0.28287504289851</span>
-<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="ex">E0301T006</span>   10     102.037     0.565750085797018</span>
-<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="ex">E0301T007</span>   15     102.346     0.432098765432101</span>
-<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a><span class="ex">E0301T008</span>   20     103.765     0.40478015582111</span>
-<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="ex">E0301T009</span>   25     105.463     1.14280917170207</span>
-<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a><span class="ex">E0301T010</span>   30     106.204     1.07316905251319</span>
-<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="ex">E0301T011</span>   35     110.648     0.509960235859822</span>
-<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a><span class="ex">E0301T012</span>   40     110.988     1.31417708987925</span>
-<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a><span class="ex">E0301T013</span>   45     112.438     1.60137305815714</span></code></pre></div>
-<p><code>TimePoint</code> is a kind of <code>ID</code>, our scripts do
+<div class="sourceCode" id="cb20"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="ex">!!SBtab</span> Document=<span class="st">'myModel'</span> Version=<span class="st">'1.0'</span> TableName=<span class="st">'Smith2019Fig2E'</span> TableType=<span class="st">'QuantityMatrix'</span>          </span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="ex">!TimePoint</span>  !Time  <span class="op">&gt;</span>AKAR4pOUT  ~AKAR4pOUT</span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="ex">E0301T001</span>   <span class="at">-15</span>    99.4136     0.711886579917949</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="ex">E0301T002</span>   <span class="at">-10</span>    100.617     0.401234567901235</span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="ex">E0301T003</span>   <span class="at">-5</span>     101.944     0.927467851933129</span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a><span class="ex">E0301T004</span>   0      NA          NA</span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a><span class="ex">E0301T005</span>   5      101.204     0.28287504289851</span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="ex">E0301T006</span>   10     102.037     0.565750085797018</span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a><span class="ex">E0301T007</span>   15     102.346     0.432098765432101</span>
+<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a><span class="ex">E0301T008</span>   20     103.765     0.40478015582111</span>
+<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a><span class="ex">E0301T009</span>   25     105.463     1.14280917170207</span>
+<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a><span class="ex">E0301T010</span>   30     106.204     1.07316905251319</span>
+<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a><span class="ex">E0301T011</span>   35     110.648     0.509960235859822</span>
+<span id="cb20-14"><a href="#cb20-14" tabindex="-1"></a><span class="ex">E0301T012</span>   40     110.988     1.31417708987925</span>
+<span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a><span class="ex">E0301T013</span>   45     112.438     1.60137305815714</span></code></pre></div>
+<p><code>!TimePoint</code> is a kind of <code>!ID</code>, our scripts do
 not check what the first column is called, the contents are always used
-as <code>rownames</code> in R data-frames.</p>
+as <code>rownames</code> in R data-frames. These ID’s are not used for
+anything, currently.</p>
 <p>In this particular Table, we find a missing value (was not
 measured).</p>
 </div>
@@ -484,31 +547,35 @@ measured).</p>
 repeatedly. Each row is simulated as a time series by itself.</p>
 <p>The table works the same way, but rather than <code>Time</code> we
 have an input column:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="ex">!!SBtab</span> SBtabVersion=<span class="st">'1.0'</span> Document=<span class="st">'CaMKIIs'</span> TableName=<span class="st">'Shifman2006Fig1Bsq'</span> TableType=<span class="st">'QuantityMatrix'</span> </span>
-<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="ex">!ID</span>    <span class="op">&gt;</span>Ca_set  <span class="op">&gt;</span>CaPerCaM  ~CaPerCaM</span>
-<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="ex">E1D0</span>   364      0.011      0.3985</span>
-<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="ex">E1D1</span>   2305     1.196      0.3985</span>
-<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="ex">E1D2</span>   2548     1.464      0.3985</span>
-<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="ex">E1D3</span>   2912     1.743      0.3985</span>
-<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="ex">E1D4</span>   3640     1.956      0.3985</span>
-<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a><span class="ex">E1D5</span>   4126     2.09       0.3985</span>
-<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="ex">E1D6</span>   3762     2.291      0.3985</span>
-<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a><span class="ex">E1D7</span>   4611     2.38       0.3985</span>
-<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="ex">E1D8</span>   4247     2.559      0.3985</span>
-<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="ex">E1D9</span>   5461     2.604      0.3985</span>
-<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="ex">E1D10</span>  4611     2.85       0.3985</span>
-<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a><span class="ex">E1D11</span>  6067     2.917      0.3985</span>
-<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a><span class="ex">E1D12</span>  5339     3.04       0.3985</span>
-<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a><span class="ex">E1D13</span>  6796     3.163      0.3985</span>
-<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a><span class="ex">E1D14</span>  6067     3.23       0.3985</span>
-<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a><span class="ex">E1D15</span>  7281     3.465      0.3985</span>
-<span id="cb17-19"><a href="#cb17-19" tabindex="-1"></a><span class="ex">E1D16</span>  8495     3.61       0.3985</span>
-<span id="cb17-20"><a href="#cb17-20" tabindex="-1"></a><span class="ex">E1D17</span>  9344     3.856      0.3985</span>
-<span id="cb17-21"><a href="#cb17-21" tabindex="-1"></a><span class="ex">E1D18</span>  24393    3.994      0.3985</span>
-<span id="cb17-22"><a href="#cb17-22" tabindex="-1"></a><span class="ex">E1D19</span>  34101    3.996      0.3985</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="ex">!!SBtab</span> SBtabVersion=<span class="st">'1.0'</span> Document=<span class="st">'CaMKIIs'</span> TableName=<span class="st">'Shifman2006Fig1Bsq'</span> TableType=<span class="st">'QuantityMatrix'</span> </span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a><span class="ex">!ID</span>    <span class="op">&gt;</span>Ca_set  <span class="op">&gt;</span>CaPerCaM  ~CaPerCaM</span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="ex">E1D0</span>   364      0.011      0.3985</span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="ex">E1D1</span>   2305     1.196      0.3985</span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a><span class="ex">E1D2</span>   2548     1.464      0.3985</span>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a><span class="ex">E1D3</span>   2912     1.743      0.3985</span>
+<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a><span class="ex">E1D4</span>   3640     1.956      0.3985</span>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a><span class="ex">E1D5</span>   4126     2.09       0.3985</span>
+<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a><span class="ex">E1D6</span>   3762     2.291      0.3985</span>
+<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a><span class="ex">E1D7</span>   4611     2.38       0.3985</span>
+<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a><span class="ex">E1D8</span>   4247     2.559      0.3985</span>
+<span id="cb21-12"><a href="#cb21-12" tabindex="-1"></a><span class="ex">E1D9</span>   5461     2.604      0.3985</span>
+<span id="cb21-13"><a href="#cb21-13" tabindex="-1"></a><span class="ex">E1D10</span>  4611     2.85       0.3985</span>
+<span id="cb21-14"><a href="#cb21-14" tabindex="-1"></a><span class="ex">E1D11</span>  6067     2.917      0.3985</span>
+<span id="cb21-15"><a href="#cb21-15" tabindex="-1"></a><span class="ex">E1D12</span>  5339     3.04       0.3985</span>
+<span id="cb21-16"><a href="#cb21-16" tabindex="-1"></a><span class="ex">E1D13</span>  6796     3.163      0.3985</span>
+<span id="cb21-17"><a href="#cb21-17" tabindex="-1"></a><span class="ex">E1D14</span>  6067     3.23       0.3985</span>
+<span id="cb21-18"><a href="#cb21-18" tabindex="-1"></a><span class="ex">E1D15</span>  7281     3.465      0.3985</span>
+<span id="cb21-19"><a href="#cb21-19" tabindex="-1"></a><span class="ex">E1D16</span>  8495     3.61       0.3985</span>
+<span id="cb21-20"><a href="#cb21-20" tabindex="-1"></a><span class="ex">E1D17</span>  9344     3.856      0.3985</span>
+<span id="cb21-21"><a href="#cb21-21" tabindex="-1"></a><span class="ex">E1D18</span>  24393    3.994      0.3985</span>
+<span id="cb21-22"><a href="#cb21-22" tabindex="-1"></a><span class="ex">E1D19</span>  34101    3.996      0.3985</span></code></pre></div>
 <p>Here <code>Ca_set</code> is an input value, and <code>CaPerCam</code>
-is an output value. This cannot be determined from the Table itself,
-only from the rest of the Document.</p>
+is an output value. Which is Input or Output cannot be determined from
+the Table itself, only from the rest of the Document. Each row can be
+considered a mini time series, with one measurement time each. At which
+time the measurement shall occur is written in the table of experiments,
+column <code>!Time</code> (the default measurement time). A different
+time for each row is not possible (currently).</p>
 </div>
 </div>
 </div>
@@ -520,8 +587,8 @@ only from the rest of the Document.</p>
 a human readable conventional form (we don’t insist on it being
 correct). It is mostly intended for human readers, but we do parse it
 and use the information for SBML export.</p>
-<p>You can test the unit parse like this:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<p>You can test the unit parser like this:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">prettyPrint</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">units</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="va">L</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"-"</span>,<span class="fl">12</span><span class="op">)</span>,collapse<span class="op">=</span><span class="st">""</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">u</span> <span class="kw">in</span> <span class="va">units</span><span class="op">)</span><span class="op">{</span></span>
@@ -562,7 +629,7 @@ and use the information for SBML export.</p>
 <span><span class="co">#&gt; ------------[        s^-1]------------</span></span>
 <span><span class="co">#&gt;   scale multiplier exponent   kind</span></span>
 <span><span class="co">#&gt; 1     0          1       -1 second</span></span></code></pre></div>
-<p>Units are not optional.</p>
+<p><strong>Units are not optional</strong></p>
 <p>Dimensionless quantities are ok, e.g. Hill-exponents, the unit is
 just <code>1</code> in such cases.</p>
 <p>But, even though we do parse them, we currently don’t auto-convert
@@ -572,9 +639,11 @@ have to be compatible, such that the unit of <code>kf*a</code> is the
 same as <code>kb*b</code>. It is of course legal (in general) to
 calculate <code>1 m + 1 cm</code>, but we don’t do this unit-conversion
 automatically (maybe never will).</p>
-<p>Although SBML has units as well the sotware support for units on the
+<p>Although SBML has units as well the software support for units on the
 SBML side is also not feature-complete in all cases. Other software may
-have its own restrictions on possible units.</p>
+have its own restrictions on possible units (or unit combinations).</p>
+<p>COPASI wants all species to have the same unit of measurement. We
+don’t make such restrictions.</p>
 </div>
 <div class="section level2">
 <h2 id="issues-to-be-aware-of-with-any-file-format">Issues to be aware of with any File format<a class="anchor" aria-label="anchor" href="#issues-to-be-aware-of-with-any-file-format"></a>
@@ -649,22 +718,22 @@ what this function does to calculate it is up to every user.</p>
 values. This is useful, because the data in the tables can refer to
 inequality constraints.</p>
 <p>Consider this:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Output'</span></span>
-<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="ex">!ID</span>      !Formula</span>
-<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="ex">a_lt_b</span>   a <span class="op">&lt;</span> b</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Output'</span></span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a><span class="ex">!ID</span>      !Formula</span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a><span class="ex">a_lt_b</span>   a <span class="op">&lt;</span> b</span></code></pre></div>
 <p>with an Experiment that checks this condition:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Experiments'</span></span>
-<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>              <span class="ex">!ID</span>  !T0  <span class="op">&gt;</span>A  <span class="op">&gt;</span>B  <span class="pp">[</span><span class="ss">...</span><span class="pp">]</span> % input settings, initial values</span>
-<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="ex">CheckInequalities</span>  <span class="at">-1.0</span>  12  13</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Experiments'</span></span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>              <span class="ex">!ID</span>  !T0  <span class="op">&gt;</span>A  <span class="op">&gt;</span>B  <span class="pp">[</span><span class="ss">...</span><span class="pp">]</span> % input settings, initial values</span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a><span class="ex">CheckInequalities</span>  <span class="at">-1.0</span>  12  13</span></code></pre></div>
 <p>and this data table:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'CheckInequalities'</span>,</span>
-<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a><span class="ex">!TimePoint</span>  !Time   <span class="op">&gt;</span>a_lt_b,</span>
-<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a>        <span class="ex">T1</span>  0.00    TRUE</span>
-<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a>        <span class="ex">T2</span>  0.01    TRUE</span>
-<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>        <span class="ex">T3</span>  0.03    FALSE</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'CheckInequalities'</span>,</span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a><span class="ex">!TimePoint</span>  !Time   <span class="op">&gt;</span>a_lt_b,</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>        <span class="ex">T1</span>  0.00    TRUE</span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>        <span class="ex">T2</span>  0.01    TRUE</span>
+<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a>        <span class="ex">T3</span>  0.03    FALSE</span></code></pre></div>
 <p>This is perfectly fine.</p>
 <p>Tests in R, to verify:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># create a dummy file:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"!!SBtab TableName='CheckInequalities'"</span>,</span>
 <span><span class="st">"!TimePoint\t!Time\t&gt;a_lt_b"</span>,</span>
@@ -704,7 +773,7 @@ numeric).</p>
 <code>FALSE</code> values in some way, e.g. as switches between several
 distinct behaviours, then these Booleans should be written numerically
 as <code>0</code> and <code>1</code>. Consider this:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># make a similar dummy file, but this time it's an input</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"!!SBtab TableName='Input'"</span>,</span>
 <span><span class="st">"!ID\t!Value\t!Comment"</span>,</span>
@@ -745,28 +814,28 @@ as <code>0</code> and <code>1</code>. Consider this:</p>
 explicitly.</p>
 <p>However, even in the C code it can be made to work, even if you have
 explicit TRUE/FALSE values in the actual reactions:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="kw">(</span></span>
-<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a><span class="fu">cat</span><span class="op">&lt;&lt;EOF</span></span>
-<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a><span class="st">#!/usr/bin/tcc -run</span></span>
-<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a><span class="st">#include &lt;stdlib.h&gt;</span></span>
-<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a><span class="st">#include &lt;stdio.h&gt;</span></span>
-<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a></span>
-<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a><span class="st">enum logical {FALSE, TRUE};</span></span>
-<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a></span>
-<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a><span class="st">enum logical as_logical(int value){</span></span>
-<span id="cb24-10"><a href="#cb24-10" tabindex="-1"></a><span class="st">    return !!value;</span></span>
-<span id="cb24-11"><a href="#cb24-11" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb24-12"><a href="#cb24-12" tabindex="-1"></a></span>
-<span id="cb24-13"><a href="#cb24-13" tabindex="-1"></a><span class="st">int main(int argc, char *argv[]){</span></span>
-<span id="cb24-14"><a href="#cb24-14" tabindex="-1"></a><span class="st">    printf("TRUE=%i , FALSE=%i (both as integer), as_logical(2)=%i</span><span class="dt">\n</span><span class="st">",TRUE, FALSE, as_logical(2));</span></span>
-<span id="cb24-15"><a href="#cb24-15" tabindex="-1"></a><span class="st">    return EXIT_SUCCESS;</span></span>
-<span id="cb24-16"><a href="#cb24-16" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb24-17"><a href="#cb24-17" tabindex="-1"></a><span class="op">EOF</span></span>
-<span id="cb24-18"><a href="#cb24-18" tabindex="-1"></a><span class="kw">)</span> <span class="op">&gt;</span> a.c</span>
-<span id="cb24-19"><a href="#cb24-19" tabindex="-1"></a><span class="fu">chmod</span> 744 a.c</span>
-<span id="cb24-20"><a href="#cb24-20" tabindex="-1"></a><span class="ex">./a.c</span></span>
-<span id="cb24-21"><a href="#cb24-21" tabindex="-1"></a><span class="fu">rm</span> a.c</span>
-<span id="cb24-22"><a href="#cb24-22" tabindex="-1"></a><span class="co">#&gt; TRUE=1 , FALSE=0 (both as integer), as_logical(2)=1</span></span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="kw">(</span></span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a><span class="fu">cat</span><span class="op">&lt;&lt;EOF</span></span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a><span class="st">#!/usr/bin/tcc -run</span></span>
+<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a><span class="st">#include &lt;stdlib.h&gt;</span></span>
+<span id="cb28-5"><a href="#cb28-5" tabindex="-1"></a><span class="st">#include &lt;stdio.h&gt;</span></span>
+<span id="cb28-6"><a href="#cb28-6" tabindex="-1"></a></span>
+<span id="cb28-7"><a href="#cb28-7" tabindex="-1"></a><span class="st">enum logical {FALSE, TRUE};</span></span>
+<span id="cb28-8"><a href="#cb28-8" tabindex="-1"></a></span>
+<span id="cb28-9"><a href="#cb28-9" tabindex="-1"></a><span class="st">enum logical as_logical(int value){</span></span>
+<span id="cb28-10"><a href="#cb28-10" tabindex="-1"></a><span class="st">    return !!value;</span></span>
+<span id="cb28-11"><a href="#cb28-11" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb28-12"><a href="#cb28-12" tabindex="-1"></a></span>
+<span id="cb28-13"><a href="#cb28-13" tabindex="-1"></a><span class="st">int main(int argc, char *argv[]){</span></span>
+<span id="cb28-14"><a href="#cb28-14" tabindex="-1"></a><span class="st">    printf("TRUE=%i , FALSE=%i (both as integer), as_logical(2)=%i</span><span class="dt">\n</span><span class="st">",TRUE, FALSE, as_logical(2));</span></span>
+<span id="cb28-15"><a href="#cb28-15" tabindex="-1"></a><span class="st">    return EXIT_SUCCESS;</span></span>
+<span id="cb28-16"><a href="#cb28-16" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb28-17"><a href="#cb28-17" tabindex="-1"></a><span class="op">EOF</span></span>
+<span id="cb28-18"><a href="#cb28-18" tabindex="-1"></a><span class="kw">)</span> <span class="op">&gt;</span> a.c</span>
+<span id="cb28-19"><a href="#cb28-19" tabindex="-1"></a><span class="fu">chmod</span> 744 a.c</span>
+<span id="cb28-20"><a href="#cb28-20" tabindex="-1"></a><span class="ex">./a.c</span></span>
+<span id="cb28-21"><a href="#cb28-21" tabindex="-1"></a><span class="fu">rm</span> a.c</span>
+<span id="cb28-22"><a href="#cb28-22" tabindex="-1"></a><span class="co">#&gt; TRUE=1 , FALSE=0 (both as integer), as_logical(2)=1</span></span></code></pre></div>
 <p>But, this is unlikely to be useful. But inequality statements are
 allowed in the ODE itself (for switches).</p>
 </div>
