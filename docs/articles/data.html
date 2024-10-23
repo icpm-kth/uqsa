@@ -396,7 +396,7 @@ apply.</p>
 model:</p>
 <pre><code>!!SBtab Document='Spike' TableName='Transformation'                 
 !ID   &gt;Ca  &gt;Buffer
-APCa  Ca   A*(k1-k2)</code></pre>
+APCa  Ca   A*(k2-k1)*dose</code></pre>
 <p>These transformations apply at times given in an event schedule (Dose
 not used):</p>
 <pre><code>!!SBtab Document='Spike' TableName='AP20Hz'     
@@ -435,14 +435,16 @@ experiment (each experiment is one row).</p>
 <span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>    <span class="dt">double</span> rf2<span class="op">=-</span>k1<span class="op">*</span>k2<span class="op">*</span>Ca<span class="op">-(</span>k1<span class="op">+</span>k2<span class="op">)*</span>Buffer<span class="op">;</span></span>
 <span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a>    <span class="cf">switch</span><span class="op">(</span>EventLabel<span class="op">){</span></span>
 <span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a>    <span class="cf">case</span> APCa<span class="op">:</span></span>
-<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a>        y_<span class="op">[</span>var_Buffer<span class="op">]</span> <span class="op">=</span> A<span class="op">*(</span>k1<span class="op">-</span>k2<span class="op">);</span> <span class="co">/* state variable transformation */</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a>        y_<span class="op">[</span>var_Buffer<span class="op">]</span> <span class="op">=</span> A<span class="op">*(</span>k2<span class="op">-</span>k1<span class="op">)*</span>dose<span class="op">;</span> <span class="co">/* state variable transformation */</span></span>
 <span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a>    <span class="cf">break</span><span class="op">;</span></span>
 <span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a>    <span class="op">}</span></span>
 <span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a>    <span class="cf">return</span> GSL_SUCCESS<span class="op">;</span></span>
 <span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>with several possible transformations, the <code>switch</code>
-statement will select the correct one to perform. In this case, there is
-only one transformation.</p>
+<p>Any number of transformations can be added to the table. The
+<code>switch</code> statement will select the correct one to perform,
+based on the label (integer/enum). In this case, there is only one
+transformation. See <a href="events.html">Transformation Events</a> for
+more information.</p>
 </div>
 <div class="section level2">
 <h2 id="gaussian-measurement-errors">Gaussian Measurement errors<a class="anchor" aria-label="anchor" href="#gaussian-measurement-errors"></a>
