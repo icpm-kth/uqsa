@@ -1,5 +1,5 @@
 ---
-title: "Examples overview"
+title: "Examples Overview"
 ---
 
 ```{r, include = FALSE}
@@ -27,7 +27,7 @@ A few larger (computationally expensive) examples: *AKAP79*, *CaMKII*, and the s
 * [AKAR4 stochastic model](https://github.com/icpm-kth/uqsa/blob/master/inst/extdata/AKAR4/runABCMCMC_AKAR4_withStochasticStimulation.R)
 
 
-For the ODE models we added measurement noise or used a acceptance probability in order to allow the use of ABC ([Alahmadi et al 2020](http://dx.doi.org/10.1098/rsos.191315)).
+For the ODE models we added measurement noise or used an acceptance probability in order to allow the use of ABC ([Alahmadi et al 2020](http://dx.doi.org/10.1098/rsos.191315)).
 The demo R scrips can be found in the folder [`inst/extdata`](https://github.com/icpm-kth/uqsa/tree/master/inst/extdata).
 
-The `uqsa::uqsa_example` function can locate the example folders after package installation.
+The `?uqsa::uqsa_example` function can locate the example folders after package installation.
