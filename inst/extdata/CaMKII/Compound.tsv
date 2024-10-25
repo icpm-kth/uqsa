@@ -1,25 +1,25 @@
-!!SBtab	TableName='Compound' TableType='Compound' TableTitle='CaMKIIs Compounds' SBtabVersion='1.0' Document='CaMKIIs'  Document='CaMKIIs'					
-!ID	!Name	!Unit	!InitialValue	!IsConstant	!Type	!Location
-CaM_Ca1	CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
-CaM_Ca2	CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse
-CaM_Ca3	CaM_Ca3	micromole/litre	0	FALSE	kinetic	synapse
-CaM_Ca4	CaM_Ca4	micromole/litre	0	FALSE	kinetic	synapse
-PP2B_CaM	PP2B_CaM	micromole/litre	0	FALSE	kinetic	synapse
-PP2B_CaM_Ca1	PP2B_CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
-PP2B_CaM_Ca2	PP2B_CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse
-PP2B_CaM_Ca3	PP2B_CaM_Ca3	micromole/litre	0	FALSE	kinetic	synapse
-PP2B_CaM_Ca4	PP2B_CaM_Ca4	micromole/litre	0	FALSE	kinetic	synapse
-CaMKII_CaM	CaMKII_CaM	micromole/litre	0	FALSE	kinetic	synapse
-CaMKII_CaM_Ca1	CaMKII_CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
-CaMKII_CaM_Ca2	CaMKII_CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse
-CaMKII_CaM_Ca3	CaMKII_CaM_Ca3	micromole/litre	0	FALSE	kinetic	synapse
-CaMKII_CaM_Ca4	CaMKII_CaM_Ca4	micromole/litre	0	FALSE	kinetic	synapse
-pCaMKII_CaM_Ca4	pCaMKII_CaM_Ca4	micromole/litre	0	FALSE	kinetic	synapse
-pCaMKIIa	pCaMKIIa	micromole/litre	0	FALSE	kinetic	synapse
-pCaMKII_CaM_Ca3	pCaMKII_CaM_Ca3	micromole/litre	0	FALSE	kinetic	synapse
-pCaMKII_CaM_Ca2	pCaMKII_CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse
-pCaMKII_CaM_Ca1	pCaMKII_CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
-pCaMKII_CaM	pCaMKII_CaM	micromole/litre	0	FALSE	kinetic	synapse
-PP1__pCaMKIIa	PP1__pCaMKIIa	micromole/litre	0	FALSE	kinetic	synapse
-caa	caa	micromole/litre	0	FALSE	kinetic	synapse
-cab	cab	micromole/litre	5.658469984	FALSE	kinetic	synapse
+!!SBtab	TableName='Compound' TableType='Compound' TableTitle='CaMKIIs Compounds' SBtabVersion='1.0' Document='CaMKIIs'  Document='CaMKIIs'				
+!ID	!Unit	!InitialValue	!IsConstant	!Type	!Location
+CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
+CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse
+CaM_Ca3	micromole/litre	0	FALSE	kinetic	synapse
+CaM_Ca4	micromole/litre	0	FALSE	kinetic	synapse
+PP2B_CaM	micromole/litre	0	FALSE	kinetic	synapse
+PP2B_CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
+PP2B_CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse
+PP2B_CaM_Ca3	micromole/litre	0	FALSE	kinetic	synapse
+PP2B_CaM_Ca4	micromole/litre	0	FALSE	kinetic	synapse
+CaMKII_CaM	micromole/litre	0	FALSE	kinetic	synapse
+CaMKII_CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
+CaMKII_CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse
+CaMKII_CaM_Ca3	micromole/litre	0	FALSE	kinetic	synapse
+CaMKII_CaM_Ca4	micromole/litre	0	FALSE	kinetic	synapse
+pCaMKII_CaM_Ca4	micromole/litre	0	FALSE	kinetic	synapse
+pCaMKIIa	micromole/litre	0	FALSE	kinetic	synapse
+pCaMKII_CaM_Ca3	micromole/litre	0	FALSE	kinetic	synapse
+pCaMKII_CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse
+pCaMKII_CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
+pCaMKII_CaM	micromole/litre	0	FALSE	kinetic	synapse
+PP1__pCaMKIIa	micromole/litre	0	FALSE	kinetic	synapse
+caa	micromole/litre	0	FALSE	kinetic	synapse
+cab	micromole/litre	0	FALSE	kinetic	synapse
