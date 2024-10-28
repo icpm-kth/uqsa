@@ -67,7 +67,10 @@ ggplotTimeSeries <- function(simulations, experiments, nrow=NULL, ncol=NULL, plo
 #' @param yl.func y-axis-limits of function plots, can be a list of
 #'     ggplot2::ylim() objects, with NULL elements for automatic mode
 #'     (the neutral element), NA elements will trigger tight bounds
-#'     based on quantile-0.1-0.9.
+#'     based on the maximum likelihood estimate and data. a simple
+#'     numeric vector will be interpreted as quantiles for the
+#'     quantiles function, the first and last quantile of the
+#'     simulations will be used as ylim()
 #' @param yl.state y-axis-limits for state variable plots, with
 #'     similar rules as for yl.func
 #' @return list of plots with simulations and experimental data
@@ -87,7 +90,7 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 	            axis.text=element_text(size=rel(1.5)),
 	            axis.title=element_text(size=rel(1.6)))
 	if (type == "boxes") {
-		g <- ggplot2::geom_boxplot(ggplot2::aes(x=t,y=y,group=t),outliers=FALSE) #outlier.size=0.3,outlier.color="green")
+		g <- ggplot2::geom_boxplot(ggplot2::aes(x=t,y=y,group=t),outlier.shape=NA) #outlier.size=0.3,outlier.color="green")
 	} else {
 		g <- ggplot2::geom_line(ggplot2::aes(x=t, y=y, group=sim),color="blue", alpha = 0.07, linewidth=1)
 	}
@@ -111,27 +114,30 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 				t_ <- ttf(experiments[[i]][["outputTimes"]])
 			}
 			df.experiments <- data.frame(t=t_, y=z, upper=z+dz, lower=z-dz)
-			f <- as.numeric(simulations[[i]]$func[j,,])
-			if (is.null(yl.func)){
-				YLIMIT <- NULL
-			} else if (is.logical(yl.func[[j]]) && is.na(yl.func[[j]])){
-				R <- range(c(z+dz,z-dz))
-				Q <- quantile(f,probs=c(0.1,0.5,0.9),na.rm=TRUE)
-				YLIMIT <- ggplot2::ylim(min(Q[1],R[1]),max(Q[3],R[2]))
-			} else if (is.numeric(yl.func[[j]]) && length(yl.func[[j]])==2){
-				YLIMIT <- ggplot2::ylim(yl.func[[j]][1],yl.func[[j]][2])
-			} else {
-				YLIMIT <- yl.func[[j]]
-			}
 			tf <- ttf(experiments[[i]][["outputTimes"]])
-			#cat(sprintf("[experiment %i, output function %i] N = %i; length(tf): %i, length(f): %i; tf; f\n",i,j,N,length(tf), length(f)))
-			#print(tf)
-			#print(f)
+			f <- as.numeric(simulations[[i]]$func[j,,])
 			if (length(tf)==1){
 				mle <- ggplot2::geom_point(data=data.frame(t=tf,y=simulations[[i]]$func[j,,MLE]), aes(x=t,y=y), color="magenta", size=2, inherit.aes=FALSE)
 			} else {
 				mle <- ggplot2::geom_line(data=data.frame(t=tf,y=simulations[[i]]$func[j,,MLE]), aes(x=t,y=y), color="magenta", linewidth=2, inherit.aes=FALSE)
 			}
+			if (is.null(yl.func)){
+				YLIMIT <- NULL
+			} else if (is.logical(yl.func[[j]]) && is.na(yl.func[[j]])){
+				## the is.logical is important: is.numeric(NA) is FALSE, is.logical(NA) is TRUE. is.na(ylim()) leads to an error
+				R <- range(c(z+dz,z-dz,simulations[[i]]$func[j,,MLE]),na.rm=TRUE); print(R)
+				YLIMIT <- ggplot2::ylim(ifelse(diff(R)<1e-6,0.0,R[1]),R[2])
+			} else if (is.numeric(yl.func[[j]])){
+				Q <- quantile(f,probs=yl.func[[j]],na.rm=TRUE)
+				print(Q)
+				YLIMIT <- ggplot2::ylim(head(Q,1),tail(Q,1))
+			} else {
+				YLIMIT <- yl.func[[j]]
+			}
+
+			#cat(sprintf("[experiment %i, output function %i] N = %i; length(tf): %i, length(f): %i; tf; f\n",i,j,N,length(tf), length(f)))
+			#print(tf)
+			#print(f)
 			df.simulations <- data.frame(t=rep(tf,N), y=f, sim=rep(seq(N),each=length(tf)))
 			p[[(i-1)*M+j]] <- ggplot2::ggplot(df.simulations)+g+
 				ggplot2::geom_errorbar(data=df.experiments, ggplot2::aes(x=t, y=y, ymin = lower, ymax = upper), color="red", inherit.aes=FALSE)+
@@ -141,21 +147,22 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 		if (plot.states){
 			for(j in seq(num.of.vars)){
 				y <- as.numeric(simulations[[i]]$state[j,,])
-				if (is.null(yl.state)){
-					YLIMIT <- NULL
-				} else if (is.logical(yl.state[[j]]) && is.na(yl.state[[j]])){
-					Q <- quantile(y,probs=c(0.1,0.5,0.9),na.rm=TRUE)
-					YLIMIT <- ggplot2::ylim(Q[1],Q[3])
-				} else if (is.numeric(yl.state[[j]]) && length(yl.state[[j]])==2){
-					YLIMIT <- ggplot2::ylim(yl.state[[j]][1],yl.state[[j]][2])
-				} else {
-					YLIMIT <- yl.state[[j]]
-				}
 				ty <- ttf(experiments[[i]][["outputTimes"]])
 				if (length(ty)==1){
 					mle <- ggplot2::geom_point(data=data.frame(t=ty,y=simulations[[i]]$state[j,,MLE]), aes(x=t,y=y), color="blue", size=2, inherit.aes=FALSE)
 				} else {
 					mle <- ggplot2::geom_line(data=data.frame(t=ty,y=simulations[[i]]$state[j,,MLE]), aes(x=t,y=y), color="blue", linewidth=2, inherit.aes=FALSE)
+				}
+				if (is.null(yl.state)){
+					YLIMIT <- NULL
+				} else if (is.logical(yl.state[[j]]) && is.na(yl.state[[j]])){
+					R <- range(simulations[[i]]$state[j,,MLE],na.rm=TRUE)
+					YLIMIT <- ggplot2::ylim(ifelse(diff(R)<1e-6,0.0,R[1]),R[2])
+				} else if (is.numeric(yl.state[[j]]) && length(yl.state[[j]])==2){
+					Q <- quantile(y,probs=yl.state[[j]],na.rm=TRUE)
+					YLIMIT <- ggplot2::ylim(head(Q,1),tail(Q,1))
+				} else {
+					YLIMIT <- yl.state[[j]]
 				}
 				df.simulations <- data.frame(t=rep(ty,N), y=y, sim=rep(seq(N), each=length(ty)))
 				p[[(i-1)*M+j+num.of.funcs]] <- ggplot2::ggplot(df.simulations,ggplot2::aes(x=t, y=y, group=sim))+g+
