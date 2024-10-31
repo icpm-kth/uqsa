@@ -1,71 +1,160 @@
 ---
-title: "Importing Models"
+title: "Importing Models into R"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
+knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
+If the model can be described in terms of reactions, inputs, and
+outputs, then the most straightforward way to define it is through
+[SBtab tables](./SBtab.html). 
 
-If you need the model as an ordinary differential equation (compatible with deSolve):
+For completely different models (or solvers), the user must either write their own
+likelihood function (cost-function/objective-function) or write a vf
+file manually, to generate C code from.
 
-```R
-model.tsv <- dir(pattern="[.]tsv$")
-model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
-SBtabVFGEN::sbtab_to_vfgen(model.tab,cla=FALSE)
+It is also possible to directly write the model functions in C (for `gsl_odeiv2`).
+
+The SBtab path uses these functions:
+
+```{r, eval=FALSE}
+f <- dir(pattern="[.]tsv$",full.names=TRUE)          # file names
+sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
+cl <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # conservation laws, if any
+ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # includes the data
 ```
 
-this will write a file called MODEL.vf (where MODEL is whatever you
-chose as the model name); MODEL.vf encodes the model as an ODE. This
-file is compatible with the
-[vfgen](https://warrenweckesser.github.io/vfgen/) tool; it creates
-code in many languages from this `vf` file.
+The SBtab model has now been loaded into R as `data.frames`, and also converted into an
+ODE. The data has been loaded as well. 
 
-Alternatively, you can use our tool:
-[icpm-kth/RPN-derivative](icpm-kth/RPN-derivative), which contains a
-shell script [ode.sh](icpm-kth/RPN/derivative/sh/ode.sh); this script
-uses either the derivative binary from RPN-derivative,
-[maxima](https://maxima.sourceforge.io/), or
-[yacas](https://yacas.readthedocs.io/en/latest/) to calculate
-analytical derivative functions for the jacobian (vfgen uses the
-[ginac](https://www.ginac.de/) library). Our own tool also accepts the
-`.zip` file or `.tar.gz` file that `sbtab_to_vfgen()` creates.
+The rest of this page describes the variables we just created, as well as the written files.
 
-```sh
-$ git clone https://github.com/icpm-kth/RPN-derivative.git
-$ cd RPN-derivative
-$ sh/ode.sh -R --maxima ${MODEL:-myModel}.vf
+---
+
+# Real Example
+
+```{r, eval=TRUE}
+library(uqsa)
+library(SBtabVFGEN)
+
+f <- uqsa_example('AKAR4')                           # file names
+print(f[1])
+sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
+cl <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # conservation laws, if any
+ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # includes the data
+```
+
+The `ex` variable holds simulation instructions as a plain R list:
+inputs, initial values, measurement times, etc. -- but also the actual data.
+
+
+SBtab content:
+
+```{r, eval=TRUE}
+## Reactions, as an example of SBtab in R:
+print(sb$Reaction)
+## Conservation Laws, as text, and its attributes:
+cl$Text
+## data:
+head(ex[[1]]$outputValues)
+head(ex[[1]]$errorValues)
+```
+
+Data as a plot:
+
+```{r, eval=TRUE}
+i <- seq(70)
+t <- ex[[1]]$outputTimes[i]
+y <- ex[[1]]$outputValues[[1]][i]
+dy <- ex[[1]]$errorValues[[1]][i]
+plot(t,y,bty='n',ylim=c(100,200))
+arrows(t,y,t,y+dy,angle=90, length=0.01)
+arrows(t,y,t,y-dy,angle=90, length=0.01)
+```
+
+# Files
+
+The function `sbtab_to_vfgen` will produce several files, using the
+model's name (`Document='model_name'` attribute of SBtab):
+
+- `model_name.vf`, a vfgen compatible file
+- `model_name.mod`, a NEURON mod file
+- (optional) `model_name.xml`, an SBML file, if you have the R bindings to libsbml installed in R and libsbml in your system
+- `model_name.tar.gz`, compressed archive of a text representation of all ODE elements, no specific format
+- `model_name.zip`, the same as `tar.gz`, but as a zip archive
+
+Let's look at the state variables of the ode:
+
+```{sh, label='show the ODE right hand side',eval=TRUE}
+grep '<StateVariable' AKAR4.vf
+```
+
+Two State variables have been commented out. These two have been replaced by vfgen expressions:
+
+```{sh, label='show Expressions',eval=TRUE}
+grep '<Expression' AKAR4.vf
+```
+
+Finally, we clean up the generated files:
+
+```{sh, eval=TRUE}
+for t in vf tar.gz zip ; do rm ./AKAR4.$t ; done
+[ -f AKAR4.xml ] && rm AKAR4.xml # since that one is optional
+echo $?
+```
+
+## The Vector Field file
+
+The vf file is compatible with the
+[vfgen](https://warrenweckesser.github.io/vfgen/) tool, which creates
+code in many languages from this `vf` file (matlab, cvode, octave,
+python, xppaut). Use this tool if you want to use the created source
+code for other programming languages. Some SBtab content will be
+missing here (e.g. scheduled events). The vfgen tool uses the
+[ginac](https://www.ginac.de/) library to calculate Jacobians.  Ginac
+cannot parse vf files with inequality expressions in them (e.g. `a < b`).
+
+### Converting the ODE to code
+
+We use our tool, [RPN-derivative](github.com/icpm-kth/RPN-derivative),
+which reads the same file (or one of the archive files:
+`zip`/`tar.gz`) to create slightly different C code. The main
+advantages are:
+
+- a vector valued output function with a predictable name: `int MODEL_func()`
+- the error code of each function is the length of the output buffers that need to be allocated
+- more functions are created:
+    + initial conditions: `int MODEL_init()`
+	+ default parameter values: `int MODEL_default()`
+
+The repository of this tool, [icpm-kth/RPN-derivative](icpm-kth/RPN-derivative),
+contains a shell script [ode.sh](icpm-kth/RPN/derivative/sh/ode.sh);
+this script uses one of three methods to calculate analytical
+derivatives for the Jacobians:
+1. [maxima](https://maxima.sourceforge.io/),
+2. [yacas](https://yacas.readthedocs.io/en/latest/),
+3. the `bin/derivative` binary that RPN-derivative contains (after `make && make install`)
+
+Assuming that you followed all [installation instructions](articles/installation.html):
+
+```{sh, eval=FALSE}
+ode -R --maxima ./myModel.vf > ./myModel.R 
+##     both     ./myModel.{zip,tar.gz}     also work here
+```
+
+```{sh, eval=FALSE}
+ode -C --maxima ./myModel.tar.gz > ./myModel_gvf.c
 ```
 
 Note: `ode.sh` is compatible with the same vf files from SBtabVFGEN,
-but doesn't support all of the outputs VFGEN can do, and does nothing
-related to delays.
+but doesn't support all of the output formats that VFGEN can do, and
+does nothing related to delays.
 
-Maxima needs to be installed for this backend to work. Same with
-Yacas, if you prefer.
-
-Alternatively:
-
-```sh
-$ git clone https://github.com/icpm-kth/RPN-derivative.git
-$ cd RPN-derivative
-$ make && sudo make install
-$ sh/ode.sh -R MODEL.vf
-```
-
-which by default will use the `derivative` binary the third line has
-installed, hopefully. The R script created this way contains the
-functions that `deSolve` would need to simulate the model, but also
-functions that return default initial values, default parameters, the
-parameter jacobian, and the output functions (a model of the
-measurements available for the system). In the same file, there is a
-`model` variable (named *model*) which contains the same functions but
-with anonymous names, e.g.: `model$jac()` is the jacobian function.
-
-# Parameters
+# Background on Parameters vs Inputs
 
 Our goal is to perform *parameter estimation*. A *systems biology*
 model typically has parameters that are either reaction rate
@@ -89,12 +178,15 @@ explicit algebraic functions) have to become part of the model. These
 input parameters can be different between experiments, but the
 intrinsic parameters are always the same.
 
-The ordinary differential equation on the other hand does not need to know the distinction between known or unknown parameters. For these reasons:
+The ordinary differential equation on the other hand does not need to
+know the distinction between known or unknown parameters. For these
+reasons:
 
 ```R
-k = [...] # some parameter set
-u = experiments[[i]]$input
-p = c(k,u)
+parMCMC <- [...]             # some sampling variable
+k <- parMap(parMCMC)         # a model compatible parameter vector
+u <- experiments[[i]]$input  # a valid model input vector
+p <- c(k,u)
 # solve ODE using p
 ```
 
@@ -102,9 +194,18 @@ where `k` are intrinsic, unknown parameters (subject to sampling), and
 `u` are the known input parameters that are encoded in the `input`
 field of an experiment.
 
-If input parameters exist, then they are always concatenated in that
-order and passed to the model, the model's C code only sees `p`. The
-wrapper functions in the `rgsl` package do this concatenation when the
-solver is called. We sample `k` usually in logarithmic space, but the
-solver gets the proposed `k` and appends the right `u` for each
-experiment, both in linear space.
+If input parameters `u` exist, then they are always concatenated (`p <-c(k,u)`) 
+in that order and passed to the model, the model's C code
+only sees `p`. The wrapper functions in the `rgsl` package do this
+concatenation when the solver is called. We sample in
+logarithmic space, but the solver gets `k` and appends
+the right `u` for each experiment, both in linear space.
+
+So, if `parMCMC` is in log10-space, then `parMap` is the
+transformation to linear-space for the solver to work in:
+
+```
+parMap <- function(par) {
+    return(10^(par))
+}
+```

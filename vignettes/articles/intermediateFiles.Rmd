@@ -1,0 +1,65 @@
+---
+title: "Benefits of Intermediates"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(eval=FALSE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+It may appear inconvenient to go through so many steps 
+
+	SBtab -> .vf -> .c -> .so,
+
+but something like this happens in most simulators
+anyway. Here it happens more explicitlty and we purposefully draw the
+users attention to these files. Each is an opportunity to verify
+correctness, add functionality, or modify.
+
+Every step produces an output file that carries a distinct meaning:
+
+- the SBtab spreadsheet describes the biological model (so does SBML)
+    + but with some consideration regarding systems (input/output model)
+- the `.vf` file represents the model as an ODE
+    + it doesn't have "reactions" anymore
+- the `.c` file is the code representation of the ODE model, intended
+  for a specific solver suite.
+    + it is not a general ODE anymore and can have C specific syntax (`pow`, `?:`)
+
+Each of these files can be checked by the user, their internal formats
+are not hidden; this can help with checking for errors and testing,
+resability, and interoperability between different software packages.
+
+## Note on VFGEN
+
+The vfgen software can also create model files for both R and C and
+even two different solver libraries in C: cvode and GSL; but this is
+not all, vfgen can create models for many other langueges. It is really good!
+
+The functions it creates are slightly different from ours. 
+
+We decided to write our own converter to better suit our needs, for several reasons:
+
+- vfgen creates one C function per vf-Function (xml-element), with the
+  output's name (the `Name` in .vf), e.g.: 
+    + `double  myModel_ABCoverSUM(double t, double y_[], void *par) {` 
+- ode.sh creates one output function that returns a vector
+    + `int myModel_func(double t, doubel y_[], double *func_, void *par){`
+    + i.e. vector valued output, like all the other functions
+- vfgen does not write a *default initial conditions* or *default
+  parameter* function -- these should be functions, because they can depend on 
+	+ the constants in the model, 
+	+ the previous parameters, 
+	+ and even on the initial time $t_0$, e.g.: 
+	  `double par12 = t>0 ? par3*par5 : par5;`
+- the vfgen functions do not return an error code for `NULL`
+  in-out-buffers (which is fine)
+    + we use these error codes to probe the dimensionality of the
+      model, without writing extra data structures
+	+ `AKAR4cl_vf(0,NULL,NULL,NULL)` returns `2`, because `AKAR4cl`
+      has two state variables; but `0` on success.
+     
+We can easily add more functionality to ode.sh because it is a stupid
+shell script, but not to vfgen (c++ is hard).

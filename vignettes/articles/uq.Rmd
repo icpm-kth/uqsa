@@ -28,9 +28,9 @@ data, while unlikely parameters require the random noise to have had
 uncharacteristically large values for the given measurements
 
 This package aims to characterize the posterior probability
-distribution $p(\theta|D)$, where $\theta$ is a vector that directly
+distribution \(p(\theta|D)\), where $\theta$ is a vector that directly
 maps to the model parameters and is used as a Markov chain variable,
-e.g.: $\rho = exp(\theta)$, where $\rho$ are the real model
+e.g.: $\rho = \exp(\theta)$, where $\rho$ are the real model
 parameters.
 
 This target distribution quantifies the amount of knowledge we have

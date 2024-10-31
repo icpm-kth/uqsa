@@ -7,14 +7,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="description" content="uqsa">
 <title>Simulate • uqsa</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<script src="../deps/jquery-3.6.1/jquery-3.6.1.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Simulate">
 <meta property="og:description" content="uqsa">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+<!-- mathjax --><script src="file:///usr/share/javascript/mathjax/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
@@ -26,7 +25,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,8 +40,9 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-installation">Installation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
-    <a class="dropdown-item" href="../articles/install.html">Full Installation Instructions</a>
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
+    <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
+    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="active nav-item dropdown">
@@ -50,20 +50,23 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
     <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
     <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
-    <a class="dropdown-item" href="../articles/sa.html">Sensiticity Analysis</a>
+    <a class="dropdown-item" href="../articles/sa.html">Sensitivity Analysis</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
-    <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
-    <a class="dropdown-item" href="../articles/data.html">Importing data</a>
-    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
+    <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
+    <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <a class="dropdown-item" href="../articles/GenerateCodeInSHELL.html">Generate C Code Outside of R</a>
+    <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
+    <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
-    <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
-    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
+    <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
     <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Sensitivity analysis</h6>
-    <a class="dropdown-item" href="../articles/GSA.html">GSA following UQ</a>
+    <h6 class="dropdown-header" data-toc-skip>Sensitivity Analysis</h6>
+    <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -71,10 +74,9 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4 with ABC</a>
-    <a class="dropdown-item" href="../articles/AKAR4cl.html">sample AKAR4 with MCMC</a>
-    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Build a Model</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">Sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">Sample AKAR4</a>
+    <a class="dropdown-item" href="../articles/mpi.html">Multiple chains via MPI</a>
   </div>
 </li>
 <li class="nav-item">
@@ -97,7 +99,8 @@
 
 
 
-<script src="simulate_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+
+<div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Simulate</h1>
             
@@ -108,80 +111,89 @@
 
     
     
-<p>A fundamental task performed in our tool set is simulating the model (whether it is imported from an SBtab document or not). Typically, the solution to an <em>initial value problem</em> depends on the choices of initial states, parameter values and inputs (also parameters). But only the parameters will vary often, during ABC or MCMC in general as that is a parameter estimation task. For this reason we provide two closure generating functions:</p>
-<ul>
-<li><code>simulate &lt;- simulator.c(experiments, modelName, parMap = identity)</code></li>
-<li><code>simulate &lt;- simulator.R(experiments, model, parMap = identity)</code></li>
-</ul>
-<p>Both return a function with the interface: <code>simulate(k)</code>, where <code>k</code> is a parameter matrix of intrinsic parameters (each column is one parameter vector, without inputs). The experiments to simulate (with their inputs), the model to use and how to transform the parameter vectors before passing them to the model are all implicit in <code>simulate</code>. The function <code>parMap</code> can be used to sample <code>k</code> in logarithmic space. So, k can be some logarithmic vector and <code>parMap = exp</code> will transform them to linear space. But it can also re-order or reshape them in some way (or change type to something the model expects).</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="st">"muModel"</span>,<span class="st">"myModel_gvf.c"</span><span class="op">)</span> <span class="co"># will compile if necessary</span></span>
-<span><span class="va">simulate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">experiments</span>, <span class="va">modelName</span>, parMap <span class="op">=</span> <span class="va">exp</span><span class="op">)</span></span>
-<span><span class="va">par</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>,<span class="fl">3</span>,<span class="fl">5</span><span class="op">)</span></span>
-<span><span class="va">yf</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate</a></span><span class="op">(</span><span class="va">par</span><span class="op">)</span></span></code></pre></div>
-<p>will return a list <code>yf</code> of the same length as <code>experiments</code>, with solutions at the <code>outputTimes</code> indicated in the <code>experiments</code>, for state variables and output functions:</p>
+<p>The main method for model simulation is:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>simulate <span class="ot">&lt;-</span> <span class="fu">simulator.c</span>(experiments, modelName, <span class="at">parMap =</span> identity)<span class="st">`</span></span></code></pre></div>
+<p>This has created a closure (<code>simulate</code>), with a single
+argument <code>par</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">yf</span><span class="op">[[</span><span class="va">l</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span>,<span class="va">k</span><span class="op">]</span></span></code></pre></div>
-<p>This is the value of the output function <code>i</code> for experiment <code>l</code>, at <code>outputTimes[j]</code>, for parameter set <code>par[,k]</code>.</p>
-<div class="section level2">
-<h2 id="r-functions">R-functions<a class="anchor" aria-label="anchor" href="#r-functions"></a>
-</h2>
-<div class="section level3">
-<h3 id="runmodel">runModel<a class="anchor" aria-label="anchor" href="#runmodel"></a>
-</h3>
-<p>Simulate an Experiment using an ODE Model, without using the closures from the previous sections.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">runModel</span><span class="op">(</span><span class="va">experiments</span>, <span class="va">modelName</span>,  <span class="va">parABC</span>, parMap<span class="op">=</span><span class="va">identity</span><span class="op">)</span></span></code></pre></div>
-<p>This function uses the GSL solvers, or the R solver <code>deSolve</code> [default] to simulate the ODE model with the initial states and input characteristic of the experiments provided in input.</p>
-<p>If the model name has a comment that indicates a model file ending in <code>.so</code>, then this function will use the shared library and the GSL solvers.</p>
-<p><strong>Input arguments</strong></p>
+<code class="sourceCode R"><span><span class="va">sr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate</a></span><span class="op">(</span><span class="va">par</span><span class="op">)</span>  <span class="co"># simulation results</span></span></code></pre></div>
+<p>The <code>simulate</code> function remembers the experiments that it
+was created with and produces results of the same length as
+<code>experiments</code>.</p>
+<p>It is often convenient to modify the parameters before passing them
+to the model. Here are possible reasons:</p>
+<ol style="list-style-type: decimal">
+<li>the uncertainty is log normal
 <ul>
-<li>
-<code>experiments</code> (list) - experiments to simulate. Each experiment variable is an element of the variable <code>experiments</code> that is imported via function <code>import_experiments</code>
-</li>
-<li>
-<code>modelName</code>(character) - used to find model files and functions within the file (a prefix), and optionally a comment indicating a file</li>
-<li>
-<code>parABC</code> (numeric) - a matrix of column vectors; each column contains a vector of both normal parameters (e.g. kinetic parameters like kf and kr) and input_parameters (concatenated in that order, i.e. first parameters, then inputs). If the number of columns is N, N simulations will be performed.</li>
-<li>
-<code>parMap</code> (function) - re-mapping function to apply to parameters (e.g. to switch from a linear to a logarithmic scale)</li>
+<li>you want to pass <code>exp(log(p) + rnorm(...))</code> to the model
+rather than <code>p</code> itself</li>
 </ul>
-<p><strong>Output</strong> (list)</p>
-<p>List <code>out</code> whose elements correspond to a simulation for each experiment provided in the input argument <code>experiments</code>. Each element is in turn a list, with elements: - <code>state</code> (numeric) - value of the approximated solution of the ODE system at each time point as the experimental measurements - <code>func</code> (numeric) - value of the output at each time point as the experimental measurements</p>
-</div>
-<div class="section level3">
-<h3 id="checkmodel">checkModel<a class="anchor" aria-label="anchor" href="#checkmodel"></a>
-</h3>
-<p>Assign a simulation file for a given model, and compile the model if necessary, check for existence:</p>
+</li>
+<li>the Markov chain is in log-space
+<ul>
+<li>the sampler uses <code>p</code>, but the model needs
+<code>10^p</code>
+</li>
+</ul>
+</li>
+<li>the model parameters are linearly dependent
+<ul>
+<li>we to reliably pass <code>c(p[1]+p[2], p[2]+p[3], p[3]-p[1])</code>
+to the model, every time</li>
+</ul>
+</li>
+</ol>
+<p>In such cases, you can write a mapping function, and use the
+<code>parMap</code> argument-slot of <code>simulator.c</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4cl"</span><span class="op">)</span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4cl"</span>,f<span class="op">=</span><span class="st">"RDS"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span>                  <span class="co"># a list of data.frames</span></span>
+<span><span class="co">#&gt; [tsv] file[1] «100nM.tsv» belongs to Document «AKAR4cl»</span></span>
+<span><span class="co">#&gt;  I'll take this as the Model Name.</span></span>
+<span><span class="co">#&gt; 100nM.tsv  25nM.tsv  400nM.tsv  Compound.tsv  Experiments.tsv  Output.tsv  Parameter.tsv  Reaction.tsv</span></span>
+<span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">sb</span>,<span class="va">cl</span><span class="op">)</span>                  <span class="co"># includes the data</span></span>
+<span></span>
+<span><span class="va">parMap</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">p</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,<span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4cl"</span>,pat<span class="op">=</span><span class="st">"_gvf.c$"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).</span></span>
+<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './AKAR4cl.so' '/home/andreikr/.local/R/library/uqsa/extdata/AKAR4cl/AKAR4cl_gvf.c' `pkg-config --libs gsl`</span></span>
+<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">ex</span>,<span class="va">modelName</span>,<span class="va">parMap</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required package: rgsl</span></span></code></pre></div>
+<p>For the first use-case listed in the motivation:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">model.sbtab</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">model.tsv</span><span class="op">)</span></span>
-<span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">model.sbtab</span><span class="op">)</span>,modelFile<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
-<p>An SBtab document contains a model name, <code><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">SBtabVFGEN::sbtab_from_tsv</a></code> includes this information as a comment to the return value.</p>
-<p>checkModel returns this model name as supplied in the first slot, with some additional comments about the file. The user can of course pick a different model name at this point. Or circumvent this function.</p>
-<p>As an alternative to this function, it is sufficient to write</p>
+<code class="sourceCode R"><span><span class="va">t</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span><span class="op">)</span></span>
+<span><span class="va">par</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!DefaultValue"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">np</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">par</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">stdv</span> <span class="op">&lt;-</span> <span class="fl">0.2</span></span>
+<span><span class="va">REPS</span> <span class="op">&lt;-</span> <span class="fl">50</span></span>
+<span><span class="va">P</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">np</span><span class="op">*</span><span class="va">REPS</span>,mean<span class="op">=</span><span class="va">par</span>,sd<span class="op">=</span><span class="va">stdv</span><span class="op">)</span>,<span class="va">np</span>,<span class="va">REPS</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">P</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1]  3 50</span></span>
+<span></span>
+<span><span class="va">stm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">sr</span> <span class="op">&lt;-</span> <span class="fu">sim</span><span class="op">(</span><span class="va">P</span><span class="op">)</span></span>
+<span><span class="va">etm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/difftime.html" class="external-link">difftime</a></span><span class="op">(</span><span class="va">etm</span>,<span class="va">stm</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Time difference of 0.2811196 secs</span></span></code></pre></div>
+<p>All trajectories, randomly sampled from log-space:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="st">"test_ode_model"</span>             <span class="co"># or some other model name</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">modelName</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"test_ode_model.so"</span> <span class="co"># e.g.: manually compiled</span></span></code></pre></div>
-<p>This function will not attempt to find a model file, other than in the current directory. But, checkModel will compile a GSL compatible C source file into a shared object <em>if</em> <code>modelFile</code> ends with <code>.c</code> and stop if that doesn’t work.</p>
-<p>In any case, this function stops execution if the model file doesn’t exist.</p>
-<p><strong>Input arguments</strong> * <code>modelName</code> (character) * <code>modelFile</code> (character) - a string, if the model file is different from “modelName.R”. If the file name ends in <code>.c</code>, the c source will be compiled to a shared library.</p>
-<p><strong>Output</strong> (character) The returned value is “modelName” with an additional comment about which file to use for simulations.</p>
-</div>
-<div class="section level3">
-<h3 id="makeobjective">
-<code>makeObjective</code><a class="anchor" aria-label="anchor" href="#makeobjective"></a>
-</h3>
-<p>Creates Objective functions from ingredients (as closures)</p>
+<code class="sourceCode R"><span><span class="cn">T</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">t</span>,<span class="cn">NA</span><span class="op">)</span>,<span class="va">REPS</span><span class="op">)</span>                                  <span class="co"># the NA value will break the line</span></span>
+<span><span class="va">Z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">sr</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">t</span><span class="op">)</span>,<span class="cn">NA</span><span class="op">)</span>,<span class="op">]</span><span class="op">)</span>    <span class="co"># at the end, so it doesn't loop</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="cn">T</span>,<span class="va">Z</span>,type<span class="op">=</span><span class="st">'l'</span>,bty<span class="op">=</span><span class="st">'n'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<p><img src="simulate_files/figure-html/log-normal-sample-1.png" width="700"></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/makeObjective.html">makeObjective</a></span><span class="op">(</span><span class="va">experiments</span>,<span class="va">modelName</span>,<span class="va">distance</span>,parMap<span class="op">=</span><span class="va">identity</span><span class="op">)</span></span></code></pre></div>
-<p>This function creates a function <code>obj</code> (closure), that is used in the ABCMCMC parameter estimation. The created function accepts only one argument in input: a vectorial parameter or a matrix of parameters, with each column corresponding to a parameter vector.</p>
-<p>The function <code>obj(par)</code> will: 1. apply the transformation <code>parMap</code> to each column of <code>par</code>: 1. for each experiment, append the input parameters (<code>experiments[[i]]$input</code>) 2. simulate all experiments, with inputs, events, and initial values from <code>experiments</code> 3. calculate the model’s output functions 4. use the distance measure function to obtain the distance between simulation and experimental data (<code>experiments[[i]]$outputValues</code>) 2. save all distances as a matrix: distance[i,j] is the distance between the data and model functions in experiment <code>i</code> and parameter set <code>j</code></p>
-<p><strong>Input arguements</strong> * <code>experiments</code> (list) - simulation experiments * <code>modelName</code> (character) - model name as a string, and model storage file as comment to this variable * <code>distance</code> (function) - function that calculates ABC scores, i.e. distance between experimental and simulated data * <code>parMap</code> (function) - a function that transforms ABC variables into acceptable model parameters (e.g. allowing to switch from linear to logarithmic scale)</p>
-<p><strong>Output</strong> (function) The output is a function that accepts one parameter matrix <code>par</code> and calculates the distance between experimental data and data simulated from the model using <code>par</code>.</p>
-</div>
-</div>
-  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
-    </nav></aside>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.remove</a></span><span class="op">(</span><span class="st">"AKAR4cl.so"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+  </main>
 </div>
 
 

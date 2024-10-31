@@ -6,15 +6,14 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="description" content="uqsa">
-<title>Build C and R source for a model • uqsa</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<title>Build a Shared Library • uqsa</title>
+<script src="../deps/jquery-3.6.1/jquery-3.6.1.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Build C and R source for a model">
+<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Build a Shared Library">
 <meta property="og:description" content="uqsa">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+<!-- mathjax --><script src="file:///usr/share/javascript/mathjax/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
@@ -26,7 +25,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,8 +40,9 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-installation">Installation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
-    <a class="dropdown-item" href="../articles/install.html">Full Installation Instructions</a>
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
+    <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
+    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -50,20 +50,19 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
     <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
     <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
-    <a class="dropdown-item" href="../articles/sa.html">Sensiticity Analysis</a>
+    <a class="dropdown-item" href="../articles/sa.html">Sensitivity Analysis</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
-    <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
-    <a class="dropdown-item" href="../articles/data.html">Importing data</a>
-    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
+    <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
-    <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
-    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
+    <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
     <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Sensitivity analysis</h6>
-    <a class="dropdown-item" href="../articles/GSA.html">GSA following UQ</a>
+    <h6 class="dropdown-header" data-toc-skip>Sensitivity Analysis</h6>
+    <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
   </div>
 </li>
 <li class="active nav-item dropdown">
@@ -71,10 +70,10 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4 with ABC</a>
-    <a class="dropdown-item" href="../articles/AKAR4cl.html">sample AKAR4 with MCMC</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">Sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">Sample AKAR4</a>
     <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Build a Model</a>
+    <a class="dropdown-item" href="../articles/mpi.html">Multiple chains via MPI</a>
   </div>
 </li>
 <li class="nav-item">
@@ -97,9 +96,10 @@
 
 
 
-<script src="shortMakeSharedLibrary_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+
+<div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="" class="logo" alt=""><h1>Build C and R source for a model</h1>
+      <img src="" class="logo" alt=""><h1>Build a Shared Library</h1>
             
       
       
@@ -110,7 +110,8 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span></code></pre></div>
-<p>This is a short summary of how to make models for the simulator in the <a href="https://github.com/icpm-kth/rgsl" class="external-link">rgsl</a> package:</p>
+<p>This is a short summary of how to make a loadable shared library file
+for a model intended for use with the simulators in the <a href="https://github.com/icpm-kth/rgsl" class="external-link">rgsl</a> package:</p>
 <table class="table">
 <thead><tr class="header">
 <th align="right"></th>
@@ -136,84 +137,168 @@
 </tr>
 </tbody>
 </table>
-<p>The GSL solvers that rgsl uses will load this <code>.so</code> file (<code>myModel.so</code>).</p>
-<p><a href="https://github.com/icpm-kth/RPN-derivative" class="external-link">RPN-derivative</a> calculates derivatives or offloads that work on maxima or yacas, install them if you want to use the <code>--maxima</code> or <code>--yacas</code> options.</p>
-<p><strong>Note</strong>: SBtab is a kind of <em>content</em>, but several <em>file-types</em> can store it (see Summary section below).</p>
-<p>If you are on MAC, please install the <a href="https://brew.sh/" class="external-link">homebrew</a> package manager to install essential software that everyone should have (a C compiler, pkg-config, etc.). We recommend that you do not use official apple software like xcode.</p>
+<p>The GSL solvers that rgsl uses will load this <code>.so</code> file
+(<code>myModel.so</code>).</p>
+<p><a href="https://github.com/icpm-kth/RPN-derivative" class="external-link">RPN-derivative</a>
+calculates derivatives or offloads that work on maxima or yacas, install
+them if you want to use the <code>--maxima</code> or
+<code>--yacas</code> options.</p>
 <div class="section level2">
 <h2 id="create-a-vector-field-for-ode-solvers">Create a Vector Field for ODE solvers<a class="anchor" aria-label="anchor" href="#create-a-vector-field-for-ode-solvers"></a>
 </h2>
-<p>Here we assume that you wrote your own model in SBtab. For testing you can also download one of our example models. All code here is meant to be run in a terminal with a POSIX shell (bash, zsh, dash, ash) should all work (this is not usually pre-installed on windows).</p>
-<p>Please be aware that some of the scripts use <code>awk</code> and <code>sed</code>, which may differ on different platforms (there is <em>one true awk</em>, GNU <code>gawk</code>, <code>mawk</code>, etc.). They differ in options they accept and regular expressions they understand.</p>
-<p>We further assume that the format is a collection of tsv files.</p>
-<p>The SBtabVFGEN package contains a file called <code>sbtab_to_vfgen</code> (it is a script, an RScript, R needed). Copy it into the directory of the model (or alias itm or symlink it, whatever you prefer)</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="ex">./sbtab_to_vfgen</span> *.tsv</span></code></pre></div>
-<p>Afterwards, the directory should also contain a <code>.vf</code> file as well as an sbml <code>.xml</code> file and a zip file (with essentially the same content as the vf file).</p>
+<p>Here we assume that you wrote your own model in SBtab (here we use
+TSV files). For testing you can also download one of our example models.
+The SBtabVFGEN package contains a file called
+<code>sbtab_to_vfgen</code> (it runs via <code>Rscript</code>, R is
+needed). This has been made only for convenience:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">./sbtab_to_vfgen</span> <span class="pp">*</span>.tsv</span></code></pre></div>
+<p>This script loads the SBtabVFGEN package and executes all commands
+needed to process an SBtab model into an ODE.</p>
+<p>Afterwards, the directory should also contain a <code>.vf</code> file
+as well as an sbml <code>.xml</code> file and a zip file (with
+essentially the same content as the vf file).</p>
+<div class="section level3">
+<h3 id="the-same-thing-in-r">The same thing in R<a class="anchor" aria-label="anchor" href="#the-same-thing-in-r"></a>
+</h3>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># be in the right folder, where your tsv files are</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span>pattern<span class="op">=</span><span class="st">'[.]tsv$'</span><span class="op">)</span> <span class="co"># everything that ends in .tsv</span></span>
+<span><span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span>     <span class="co"># a list of data.frames</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.valid.html" class="external-link">sbtab.valid</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">sbtab_to_vfgen</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span> <span class="co"># these are conservation laws found by sbtab_to_vfgen</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>The above code will create a <code>vf</code> file as well as a
+<code>tar.gz</code> file and a <code>zip</code> file. Dependeing on what
+you wrote in the SBtab file, these three may contain mathematically
+valid content that can be processed further.</p>
+<p>The <code>vf</code> file can be read and used by the
+<code>vfgen</code> tool (but we don’t use that).</p>
+</div>
 <div class="section level3">
 <h3 id="make-source-code-for-your-model">Make Source Code for your Model<a class="anchor" aria-label="anchor" href="#make-source-code-for-your-model"></a>
 </h3>
-<p>To convert the ordinary differential equations into code for solvers, we need to calculate the appropriate expressions for the jacobian. To do these calculations you should either download the contents of the <code>sh</code> directory in the <a href="https://github.com/icpm-kth/RPN-derivative" class="external-link">icpm-kth/RPN-derivative</a>, or clone the entire repository (and optionally <code>make install</code>).</p>
-<p>If you want to run the conversion from ODE to code from any directory, the easiest way is to set an alias: so, here we <code>alias</code> the <code>ode.sh</code> script. An alternative is to write out the path to it every time, or set a variable with the full path (the script loads other files so doesn’t work if copied without the others). Here we assume that the repository clone lies in your <code>$HOME</code> directory.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="bu">alias</span> ode.sh=<span class="st">'~/RPN-derivative/sh/ode.sh'</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a><span class="ex">ode.sh</span> -C --maxima myModel.vf <span class="op">&gt;</span> myModel_gvf.c</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a><span class="bu">[</span> <span class="ot">-f</span> myModel_gvf.c<span class="bu"> ]</span> <span class="kw">&amp;&amp;</span> <span class="fu">gcc</span> -shared -fPIC -O2 -o myModel.so myModel_gvf.c</span></code></pre></div>
-<p>Now you have a <code>.c</code> source file and a shared library <code>.so</code> file (unless the model has errors, or the model is too complex for this translation).</p>
+<p>To convert the ordinary differential equations into code for solvers,
+we need to calculate the appropriate expressions for the jacobian. To do
+these calculations you should either download the contents of the
+<code>sh</code> directory in the <a href="https://github.com/icpm-kth/RPN-derivative" class="external-link">icpm-kth/RPN-derivative</a>,
+or clone the entire repository (and optionally
+<code>make install</code>) as covered in the <a href="articles/installation.html">installation instructions</a>. The
+short version:</p>
+<p>Assuming that <code>.local/bin</code> is in your PATH, this will make
+a symbolic link to the <code>ode.sh</code> script.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/icpm-kth/RPN-derivative <span class="kw">&amp;&amp;</span> <span class="bu">cd</span> RPN-derivative/sh</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="bu">pushd</span> <span class="at">-n</span> <span class="kw">`</span><span class="bu">pwd</span><span class="kw">`</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> <span class="st">"</span><span class="va">$HOME</span><span class="st">/.local/bin"</span> <span class="kw">&amp;&amp;</span> <span class="bu">cd</span> <span class="st">"</span><span class="va">$HOME</span><span class="st">/.local/bin"</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="fu">ln</span> <span class="at">-s</span> <span class="st">"</span><span class="kw">`</span><span class="bu">dirs</span> <span class="at">-0</span><span class="kw">`</span><span class="st">/ode.sh"</span> ode</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="bu">popd</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="bu">[</span> <span class="kw">`</span><span class="bu">echo</span> <span class="st">"</span><span class="va">$PATH</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="st">"</span><span class="va">$HOME</span><span class="st">/[.]local/bin"</span><span class="kw">`</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">"OK"</span> <span class="kw">||</span> <span class="bu">echo</span> <span class="st">"put ~/.local/bin in your PATH"</span></span></code></pre></div>
+<p>If you only want to try out the script, as a temporary measure, make
+an alias instead:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/icpm-kth/RPN-derivative <span class="kw">&amp;&amp;</span> <span class="bu">cd</span> RPN-derivative/sh</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="bu">alias</span> ode=<span class="st">"</span><span class="kw">`</span><span class="bu">pwd</span><span class="kw">`</span><span class="st">/sh/ode.sh"</span></span></code></pre></div>
+<p>If you did one of those things and have maxima installed:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="va">MODEL</span><span class="op">=</span><span class="st">"</span><span class="kw">`</span><span class="fu">ls</span> <span class="at">-1</span> <span class="pp">*</span>.vf <span class="kw">|</span> <span class="fu">head</span> <span class="at">-n</span> 1<span class="kw">`</span><span class="st">"</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="va">MODELC</span><span class="op">=</span><span class="st">"</span><span class="kw">`</span><span class="fu">basename</span> <span class="va">$MODEL</span> .vf<span class="kw">`</span><span class="st">_gvf.c"</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="va">MODELSO</span><span class="op">=</span><span class="st">"</span><span class="kw">`</span><span class="fu">basename</span> <span class="va">$MODEL</span> .vf<span class="kw">`</span><span class="st">.so"</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"we are trying to turn '</span><span class="va">$MODEL</span><span class="st">' into '</span><span class="va">$MODELSO</span><span class="st">'"</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-f</span> <span class="st">"</span><span class="va">$MODEL</span><span class="st">"</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="ex">ode</span> <span class="at">-C</span> <span class="at">--maxima</span> <span class="st">"</span><span class="va">$MODEL</span><span class="st">"</span> <span class="op">&gt;</span> <span class="st">"</span><span class="va">$MODELC</span><span class="st">"</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-f</span> <span class="st">"</span><span class="va">$MODELC</span><span class="st">"</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="fu">gcc</span> <span class="at">-shared</span> <span class="at">-fPIC</span> <span class="at">-O2</span> <span class="at">-o</span> <span class="st">"</span><span class="va">$MODELSO</span><span class="st">"</span> <span class="st">"</span><span class="va">$MODELC</span><span class="st">"</span></span></code></pre></div>
+<p>Now you have a <code>_gvf.c</code> source file and a shared library
+<code>.so</code> (unless an error occurred). The shared library is what
+the ODE solver actually loads to simulate the model. You can read the C
+source, check that it looks correct and even change what the model does
+if SBtab was not expressive enough.</p>
+<div class="section level4">
+<h4 id="note-on-sh-code">Note on sh code<a class="anchor" aria-label="anchor" href="#note-on-sh-code"></a>
+</h4>
+<p>All code in this section is meant to be run in a terminal (emulator)
+with a POSIX compliant shell (bash, zsh, dash, ash) should all work.</p>
+<p>Please be aware that some of the scripts use <code>awk</code>,
+<code>sed</code> and <code>perl -p</code> (i.e. perl in sed mode), which
+may differ on different platforms (there is <em>one true awk</em>, GNU
+<code>gawk</code>, <code>mawk</code>, etc. – there is no consensus on
+how any of them should behave exactly).</p>
+<p>They differ in options they accept and regular expressions they
+understand. One example is that BSD sed uses <code>[:&lt;:]</code> to
+mean <em>left word boundary</em> and gawk uses <code>\&lt;</code> for
+the same thing. In such cases we use <code>perl -p</code>.</p>
+</div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="summary">Summary<a class="anchor" aria-label="anchor" href="#summary"></a>
 </h2>
-<p>Here you can find code blocks for each storage format.</p>
+<p>Here you can find code blocks for each storage format. With
+simplified assumptions on where you downloaded the git repositories.</p>
 <div class="section level3">
 <h3 id="sbtab-as-tsv">SBtab as TSV<a class="anchor" aria-label="anchor" href="#sbtab-as-tsv"></a>
 </h3>
 <p>This is a summary of the code in the previous section:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="bu">alias</span> sbtab_to_vfgen=<span class="st">'~/SBtabVFGEN/sbtab_to_vfgen'</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="bu">alias</span> ode.sh=<span class="st">'~/RPN-derivative/sh/ode.sh'</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="ex">./sbtab_to_vfgen</span> *.tsv</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a><span class="ex">ode.sh</span> -C myModel.vf <span class="op">&gt;</span> myModel_gvf.c</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a><span class="ex">ode.sh</span> -R myModel.vf <span class="op">&gt;</span> myModel.R</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a><span class="bu">[</span> <span class="ot">-f</span> myModel_gvf.c<span class="bu"> ]</span> <span class="kw">&amp;&amp;</span> <span class="fu">gcc</span> -shared -fPIC -O2 -o myModel.so myModel_gvf.c</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="bu">alias</span> sbtab_to_vfgen=<span class="st">'~/SBtabVFGEN/sbtab_to_vfgen'</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="bu">alias</span> ode=<span class="st">'~/RPN-derivative/sh/ode.sh'</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="ex">sbtab_to_vfgen</span> <span class="pp">*</span>.tsv</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="ex">ode</span> <span class="at">-C</span> myModel.vf <span class="op">&gt;</span> myModel_gvf.c</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="ex">ode</span> <span class="at">-R</span> myModel.vf <span class="op">&gt;</span> myModel.R</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-f</span> myModel_gvf.c <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="fu">gcc</span> <span class="at">-shared</span> <span class="at">-fPIC</span> <span class="at">-O2</span> <span class="at">-o</span> myModel.so myModel_gvf.c</span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="sbtab-as-xlsx">SBtab as XLSX<a class="anchor" aria-label="anchor" href="#sbtab-as-xlsx"></a>
 </h3>
-<p>Here the same procedure applies, but we alias <code>sbtab_to_vfgen</code> rather than copying it this time. Also, this time we use yacas to calculate the derivatives, rather than maxima. We create both C code and R code this time.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="bu">alias</span> sbtab_to_vfgen=<span class="st">'~/SBtabVFGEN/sbtab_to_vfgen'</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="bu">alias</span> ode.sh=<span class="st">'~/RPN-derivative/sh/ode.sh'</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a><span class="ex">./sbtab_to_vfgen</span> myModel.xlsx</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a><span class="ex">ode.sh</span> -C --yacas myModel.vf <span class="op">&gt;</span> myModel_gvf.c</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a><span class="ex">ode.sh</span> -R --yacas myModel.vf <span class="op">&gt;</span> myModel.R</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a><span class="bu">[</span> <span class="ot">-f</span> myModel_gvf.c<span class="bu"> ]</span> <span class="kw">&amp;&amp;</span> <span class="fu">gcc</span> -shared -fPIC -O2 -o myModel.so myModel_gvf.c</span></code></pre></div>
+<p>Here the same procedure applies, but we alias
+<code>sbtab_to_vfgen</code> rather than copying it this time. Also, this
+time we use yacas to calculate the derivatives, rather than maxima. We
+create both C code and R code this time.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="bu">alias</span> sbtab_to_vfgen=<span class="st">'~/SBtabVFGEN/sbtab_to_vfgen'</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="bu">alias</span> ode=<span class="st">'~/RPN-derivative/sh/ode.sh'</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="ex">sbtab_to_vfgen</span> myModel.xlsx</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="ex">ode</span> <span class="at">-C</span> <span class="at">--yacas</span> myModel.vf <span class="op">&gt;</span> myModel_gvf.c</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="ex">ode</span> <span class="at">-R</span> <span class="at">--yacas</span> myModel.vf <span class="op">&gt;</span> myModel.R</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-f</span> myModel_gvf.c <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="fu">gcc</span> <span class="at">-shared</span> <span class="at">-fPIC</span> <span class="at">-O2</span> <span class="at">-o</span> myModel.so myModel_gvf.c</span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="sbtab-as-ods">SBtab as ODS<a class="anchor" aria-label="anchor" href="#sbtab-as-ods"></a>
 </h3>
-<p>We repeat the same procedure as with XLSX, but the model name is a variable, and the C compiler is whatever target <code>cc</code> links to:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="va">modelName=</span><span class="st">'myModel'</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="bu">alias</span> sbtab_to_vfgen=<span class="st">'~/SBtabVFGEN/sbtab_to_vfgen'</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a><span class="bu">alias</span> ode.sh=<span class="st">'~/RPN-derivative/sh/ode.sh'</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a><span class="ex">./sbtab_to_vfgen</span> <span class="va">${modelName}</span>.ods</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a><span class="ex">ode.sh</span> -C --yacas <span class="va">${modelName}</span>.vf <span class="op">&gt;</span> <span class="va">${modelName}</span>_gvf.c</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a><span class="ex">ode.sh</span> -R --yacas <span class="va">${modelName}</span>.vf <span class="op">&gt;</span> <span class="va">${modelName}</span>.R</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a><span class="bu">[</span> <span class="ot">-f</span> <span class="va">${modelName}</span>_gvf.c<span class="bu"> ]</span> <span class="kw">&amp;&amp;</span> <span class="fu">cc</span> -shared -fPIC -O2 -o <span class="va">${modelName}</span>.so <span class="va">${modelName}</span>_gvf.c</span></code></pre></div>
+<p>We repeat the same procedure as with XLSX, but the model name is a
+variable, and the C compiler is whatever target <code>cc</code> links
+to:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="va">modelName</span><span class="op">=</span><span class="st">'myModel'</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="bu">alias</span> sbtab_to_vfgen=<span class="st">'~/SBtabVFGEN/sbtab_to_vfgen'</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="bu">alias</span> ode=<span class="st">'~/RPN-derivative/sh/ode.sh'</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="ex">sbtab_to_vfgen</span> <span class="va">${modelName}</span>.ods</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="ex">ode</span> <span class="at">-C</span> <span class="at">--yacas</span> <span class="va">${modelName}</span>.vf <span class="op">&gt;</span> <span class="va">${modelName}</span>_gvf.c</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="ex">ode</span> <span class="at">-R</span> <span class="at">--yacas</span> <span class="va">${modelName}</span>.vf <span class="op">&gt;</span> <span class="va">${modelName}</span>.R</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-f</span> <span class="va">${modelName}</span>_gvf.c <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="fu">cc</span> <span class="at">-shared</span> <span class="at">-fPIC</span> <span class="at">-O2</span> <span class="at">-o</span> <span class="va">${modelName}</span>.so <span class="va">${modelName}</span>_gvf.c</span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="comments">Comments<a class="anchor" aria-label="anchor" href="#comments"></a>
 </h2>
-<p>Now you should have C sources and a shared library, or error messages about the SBtab content (if the files contain errors).</p>
-<p>The simulator can use the shared library directly. But take into account that <code>${modelName}.so</code> is machine specific and will not work if you copy it onto a completely different kind of machine (it may work if the two are similar enough).</p>
-<p>Please take time to open and inspect the C sources and try to spot obvious mistakes.</p>
+<p>Now you should have C sources and a shared library, or error messages
+about the SBtab content (if the files contain errors).</p>
+<p>The simulator can use the shared library directly. But take into
+account that <code>${modelName}.so</code> is machine specific and will
+not work if you copy it onto a completely different kind of machine (it
+may work if the two are similar enough).</p>
+<p>Please take time to open and inspect the C sources and try to spot
+obvious mistakes.</p>
 </div>
 <div class="section level2">
 <h2 id="rpn-derivative">RPN-derivative<a class="anchor" aria-label="anchor" href="#rpn-derivative"></a>
 </h2>
-<p>The RPN-derivative package can also work without maxima or yacas, but needs to be compiled for this to work. Do this in the RPN-derivative’s root directory:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="fu">make</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a><span class="fu">make</span> test</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a><span class="fu">sudo</span> make install</span></code></pre></div>
-<p>If you get error messages about <code>pkg-config</code> not being found, install it (you are probably on MAC: <code>brew install pkg-config</code>). If you get error messages about missing directories, make them (<code>mkdir /path/to/missing/directory</code>).</p>
+<p>The RPN-derivative package can also work without maxima or yacas, but
+needs to be compiled for this to work. Do this in the RPN-derivative’s
+root directory:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">make</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">make</span> test</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="fu">sudo</span> make install</span></code></pre></div>
+<p>If you get error messages about <code>pkg-config</code> not being
+found, install it (you are probably on MAC:
+<code>brew install pkg-config</code>). If you get error messages about
+missing directories, make them
+(<code>mkdir /path/to/missing/directory</code>).</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

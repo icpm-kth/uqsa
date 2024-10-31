@@ -13,7 +13,8 @@ ggplotTimeSeriesStates(
   ttf = identity,
   xl = "t",
   yl.func = NULL,
-  yl.state = NULL
+  yl.state = NULL,
+  MLE = 1
 )
 }
 \arguments{
@@ -38,7 +39,10 @@ other modification only when plotting, e.g. \code{seq_along}.}
 \item{yl.func}{y-axis-limits of function plots, can be a list of
 ggplot2::ylim() objects, with NULL elements for automatic mode
 (the neutral element), NA elements will trigger tight bounds
-based on quantile-0.1-0.9.}
+based on the maximum likelihood estimate and data. a simple
+numeric vector will be interpreted as quantiles for the
+quantiles function, the first and last quantile of the
+simulations will be used as ylim()}
 
 \item{yl.state}{y-axis-limits for state variable plots, with
 similar rules as for yl.func}

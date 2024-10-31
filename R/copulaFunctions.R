@@ -21,11 +21,10 @@
 #' @importFrom ks kde kcde
 #' @export
 #' @param X sample that characterizes the traget distribution (rows)
-#' @param nCores passed to parallel::mclapply()
 #' @return as list: vineCop, U, Z, and Y where U are marginal
 #'     probability samples, Z are cummulative density values for U,
 #'     and Y are the probability density values of U.
-fitCopula <- function(X,nCores=detectCores()){
+fitCopula <- function(X){
   stopifnot(is.matrix(X))
   ncx <- ncol(X)
   ns <- nrow(X)
@@ -58,7 +57,7 @@ fitCopula <- function(X,nCores=detectCores()){
   }
 
   # fit copula
-  vineCop <- RVineStructureSelect(Z,indeptest = T, cores = nCores)
+  vineCop <- RVineStructureSelect(Z,indeptest = T)
   return(list(copula=vineCop, U=U, Z=Z, Y=Y))
 }
 
@@ -85,4 +84,29 @@ makeIndepCopula <- function(ll, ul){
   }
   vineCop <- RVineStructureSelect(Z, family=0)
   return(list(copula=vineCop, U=U, Z=Z, Y=Y))
+}
+
+#' (for testing) A non-Copula sampling function as fallback
+#'
+#' If the sample is not suited to infer a Copula (fitCopula fails),
+#' this fuction uses much simpler rules to re-draw a new sample from
+#' an older sample with some added noise.
+#'
+#' This can be used during testing, in cases where the acceptance was
+#' very low and we have to deal with a very low quality sample This
+#' function should work like `base::sample`, but adds small
+#' noise. Missing values are always removed.
+#'
+#' @export
+#' @param X an N×M matrix (N is the sample size), M is the number of variables (MCMC or ABC vars)
+#' @param sdf factor to increase or decrease the standard deviation of the added noise
+#' @param size size of returned sample (passed to `sample.int()`)
+#' @param ... passed to `base::sample.int()`
+#' @return a matrix with `size` rows and `nrow(X)` columns.
+sampleWithNoise <- function(X,sdf=1e-2,...){
+	i <- sample.int(NROW(X),...)
+	m <- colMeans(X,na.rm=TRUE)
+	C <- var(X,na.rm=TRUE)
+	Y <- matrix(rnorm(length(i)*NCOL(X),mean=as.numeric(X[i,]),sd=(abs(m)+sqrt(diag(C))+1.0)*sdf),length(i),NCOL(X))
+	return(Y)
 }

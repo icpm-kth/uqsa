@@ -1,6 +1,6 @@
 !!SBtab	SBtabVersion='1.0'  Document='CaMKIIs' TableType='Quantity'  TableName='Spikes' TableTitle='sets the state variable caa to the right value to make a nice spike'	
-!TimePoint	!Time	>SET:cab
-SpikeT0	0	5.658469984
-SpikeT1	200	5.658469984
-SpikeT2	400	5.658469984
-SpikeT3	600	5.658469984
+!TimePoint	!Time	>Transformation
+SpikeTrigger0	0	CaSpike
+SpikeTrigger1	200	CaSpike
+SpikeTrigger2	400	CaSpike
+SpikeTrigger3	600	CaSpike

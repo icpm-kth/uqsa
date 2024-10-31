@@ -17,6 +17,6 @@ The functions used to estimate the sensitivity of a function with
 respect to the variations within a sample:
 
 ```{r, eval=FALSE}
-uqsa::sensitivity
-uqsa::sensitivity.graph
+?uqsa::globalSensitivity
+?uqsa::sensitivity.graph
 ```

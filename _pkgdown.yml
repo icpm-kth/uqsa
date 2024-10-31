@@ -9,37 +9,45 @@ navbar:
     installation:
       text: Installation
       menu:
-      - text: Full Installation Instructions
-        href: articles/install.html
       - text: Short Instructions
         href: articles/installation.html
+      - text: Explanation for System Prerequisites
+        href: articles/installExplanations.html
+      - text: The PATH variable
+        href: articles/path.html
     articles:
       text: Documentation
       menu:
       - text: Introduction
       - text: Uncertainty Quantification
         href: articles/uq.html
-      - text: Sensiticity Analysis
+      - text: Sensitivity Analysis
         href: articles/sa.html
+      - text: -------	
       - text: Model and data management
       - text: SBtab
         href: articles/SBtab.html
-      - text: Importing a model
+      - text: Importing Models
         href: articles/models.html
-      - text: Importing data
+      - text: Importing Data
         href: articles/data.html
-      - text: -------
+      - text: Transformation Events
+        href: articles/events.html
       - text: Build your own Model
         href: articles/user_model.html
+      - text: Generate C Code Outside of R
+        href: articles/GenerateCodeInSHELL.html
+      - text: Advantages of Intermediates
+        href: articles/intermediateFiles.html
+      - text: ODE Model
+        href: articles/ODE-Model.html
       - text: -------
       - text: Paremeter estimation and uncertainty quantification
-      - text: Simulating a model
+      - text: Simulating a Model
         href: articles/simulate.html
-      - text: ABC sampling
-        href: articles/ABC_sampling.html
       - text: -------
-      - text: Sensitivity analysis
-      - text: GSA following UQ
+      - text: Sensitivity Analysis
+      - text: Global Sensitivity Analysis
         href: articles/GSA.html
     tutorials:
         text: Examples
@@ -48,14 +56,10 @@ navbar:
           href: articles/examples_overview.html
         - text: Simulate AKAP79
           href: articles/simAKAP79.html
-        - text: sample AKAP79
+        - text: Sample AKAP79
           href: articles/AKAP79.html
-        - text: sample AKAR4 with ABC
+        - text: Sample AKAR4
           href: articles/AKAR4.html
-        - text: sample AKAR4 with MCMC
-          href: articles/AKAR4cl.html
-        - text: Build a Model
-          href: articles/shortMakeSharedLibrary.html
         - text: Multiple chains via MPI
           href: articles/mpi.html
     reference:
@@ -73,14 +77,10 @@ reference:
   - dUniformPrior
   - defaultAcceptance
   - defaultDistance
-  - fisherInformationFromGSA
-  - fisherInformation
   - fitCopula
   - getMCMCPar
   - globalSensitivity
-  - gradLogLikelihood
   - importReactionsSSA
-  - logLikelihood
   - log10ParMap
   - log10ParMapJac
   - makeGillespieModel
@@ -97,13 +97,11 @@ reference:
   - rNormalPrior
   - rUniformPrior
   - sensitivity.graph
-  - sensitivityEquilibriumApproximation
   - simulator.c
   - uqsa_example
   - "%otherwise%"
   - smmala_move
   - smmala_move_density
-  - swap_points
   - ggplotTimeSeries
   - ggplotTimeSeriesStates
   - change_temperature
@@ -126,3 +124,17 @@ reference:
   - getDose
   - plotDoseResponse
   - plotTimeSeries
+  - Rmpi_swap_temperatures
+  - fisherInformationFromGSA
+  - fisherInformationFunc
+  - gatherSample
+  - gradLogLikelihoodFunc
+  - gradLog_NormalPrior
+  - "%has%"
+  - loadSubSample_mpi
+  - logLikelihoodFunc
+  - pbdMPI_bcast_reduce_temperatures
+  - pbdMPI_swap_temperatures
+  - sampleWithNoise
+  - simcf
+  - swap_points_locally

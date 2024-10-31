@@ -1,77 +1,207 @@
 ---
-title: "Using your own model"
+title: "Build your own Model"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
+knitr::opts_chunk$set(eval=FALSE, cache=TRUE,
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
-```{r, setup, eval=FALSE}
+```{r, setup, eval=TRUE, include=FALSE}
 library(uqsa)
+Location <- dirname(uqsa_example('AKAR4cl')[1])
 ```
 
 In this article we will assume that you have a model that you want to
 work on and that you have written the model in SBtab form. It may be a
-google spreadsheet, and open document spreadsheet (`ods`), MS Excel
+google spreadsheet, an open document spreadsheet (`ods`), MS Excel
 file, a file for the `numbers` application on an Apple device or a
 `.gnumeric` file.
+
+There are three steps we need to make:
+
+|   | Steps                             | file (out) | tl;dr                |
+|--:|:----------------------------------|:----------:|:--------------------:|
+| 1 | convert SBtab to ODE              | .vf        | biology => math      |
+| 2 | convert the ODE to sources        | .c         | math => code         |
+| 3 | convert sources to shared library | .so        | code => machine code |
+
+---
+
+[RPN-derivative](https://github.com/icpm-kth/RPN-derivative)
+calculates derivatives or offloads that work on maxima or yacas,
+install them if you want to use the `--maxima` or `--yacas` options.
+
+
+# Load the TSV files Convert and Compile the Model
+
+```{r, eval=FALSE}
+library(uqsa)
+library(SBtabVFGEN)
+
+# find the tsv files with "?dir", in the directory of your model
+f <- dir(Location,pattern='tsv$',full.names=TRUE)
+# you don't need this 'Location' variable, just be in the directory where the TSV files are.
+sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
+cl <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # conservation laws, if any
+ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # includes the data
+
+print(names(sb))
+
+system2("ode", args=c("-C", "--maxima" ,"AKAR4cl.tar.gz"), stdout="AKAR4cl_gvf.c")
+stopifnot(file.exists("AKAR4cl_gvf.c"))
+modelName <- checkModel("AKAR4cl","AKAR4cl_gvf.c") # compiles the model if not yet compiled
+```
+
+This should produce this output:
+
+```{r, eval=TRUE}
+library(uqsa)
+library(SBtabVFGEN)
+
+# find the tsv files with "?dir", in the directory of your model
+f <- dir(Location,pattern='tsv$',full.names=TRUE)
+# you don't need this 'Location' variable, just be in the directory where the TSV files are.
+sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
+cl <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # conservation laws, if any
+ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # includes the data
+
+
+system2("ode", args=c("-C", "--maxima" ,"AKAR4cl.tar.gz"), stdout="AKAR4cl_gvf.c")
+stopifnot(file.exists("AKAR4cl_gvf.c"))
+modelName <- checkModel("AKAR4cl","AKAR4cl_gvf.c") # compiles the model if not yet compiled
+```
+
+---
+
+We have created the c source code, with these functions:
+
+```{sh, eval=TRUE}
+grep AKAR4cl_ ./AKAR4cl_gvf.c
+```
+
+# Simulate
+
+```{r, eval=TRUE}
+## we create a closure called "sim" a function that internally remembers the "experiments" (ex)
+sim <- simulator.c(ex,modelName)                   # ex holds the instructions for the solver
+par <- as.matrix(sb$Parameter[["!DefaultValue"]])  # one column - but can be several sets (as columns)
+
+## sim can be called with any parameter vector - or several and will always simulate the same set of experiments
+sr <- sim(par)                                     # simulation results (one per experiment)
+stopifnot(length(sr) == length(ex))
+
+i <- seq(70)
+t <- ex[[1]]$outputTimes[i]
+y <- ex[[1]]$outputValues[[1]][i]
+dy <- ex[[1]]$errorValues[[1]][i]
+
+z <- sr[[1]]$func[1,i,1]                           # third dimension is the par column (just one here)
+
+plot(t,z,bty='n',type='l', ylim=c(90,200))
+points(t,y)
+arrows(t,y,t,y+dy,angle=90, length=0.01)
+arrows(t,y,t,y-dy,angle=90, length=0.01)
+legend("bottomright",legend=c("simulation","data"), lty=c(1,1), pch=c(NA,1))
+```
+
+The simulation result `sr` is a list with several components, at least 2:
+- `state` state variable trajectories 
+- `func` outout functions 
+
+The output functions usually correspond to the data (in some way), but
+may need some sort of normalization. In this case the relationship
+is direct.
+
+Both `state` and `func` have three indexes: 
+
+```{r, state, eval=FALSE}
+sr[[l]]$state[i,j,k]        # is a number
+```
+
+This corresponds to experiment `l`, state variable `i`, time-point
+`j`, and parameter column `k` (again, relevant when `par` is a matrix
+with multiple columns).
+
+---
+
+The previously created `modelName` variable has a comment attribute
+(that you can also set yourself, there is no magic there), this
+attribute inidicates the location of the shared library used for
+simulations. You don't have to re-make it evry time - as long as the
+model doesn't change (`checkModel` does not need to be called):
+
+```{r, eval=FALSE}
+comment(modelName) <- "./AKAR4cl.so" # this is sufficient if the .so file already exists
+```
+
+# Simulations of Several Parameter Sets
+
+```{r, sim, eval=TRUE}
+t <- as.numeric(ex[[1]]$outputTimes)
+np <- NROW(par)
+REPS <- 50
+P <- matrix(runif(np*REPS,min=0,max=as.numeric(par)*2),np,REPS)
+dim(P)
+
+
+stm <- Sys.time()
+sr <- sim(P)
+etm <- Sys.time()
+difftime(etm,stm)
+```
+
+let's plot all trajectories in one picture:
+
+```{r Plots, eval=TRUE}
+T <- rep(c(t,NA),REPS)                                  # the NA value will break the line
+Z <- as.numeric(sr[[1]]$func[1,c(seq_along(t),NA),])    # at the end, so it doesn't loop
+plot(T,Z,type='l')
+```
+
+The new result is (just like the old one) an array with three indexes:
+
+```{r, func, eval=FALSE}
+sr[[l]]$func[i,j,k] # a number
+```
+
+- `i` output function
+- `j` time index
+- `k` selects the trajectories that belong to `P[,k]`
+
+---
+
+cleanup:
+
+```{r cleanup, eval=TRUE}
+gf <- sprintf("AKAR4cl%s",c(".vf",".tar.gz",".zip",".so"))
+print(gf)
+file.remove(gf)
+```
+
+# Other Formats
+
+The SBtab content can be a normal spreadsheet.
 
 If it is a google spreadsheet (which can be good for collaborative
 work), you should write it until failry satisfied with all components
 and then export it as an `.xlsx`, or `.ods` file. The gnumeric application can
 automatically convert both `.xlsx` and `.ods` to a set of `.tsv` files if
 you want the benefits of version control (which works on text
-files). But, `.ods` and `.xlsx` both work with `SBtabVFGEN`.
+files). But, `.ods` and `.xlsx` both work:
 
-In addition to how SBtab mdels are usually written, we require some
-mandatory components/tables (see SBtab topic). Our scripts find the
-tables by name convention, there is no manifest file. But the
-*Reaction* table can be seen as the main item of the model, while the
-*Experiments* table is the main file that relates experimental data to
-the model. All things mentioned in these two files need to be further
-explained in the other tables.
+- `SBtabVFGEN::sbtab_from_ods  ` for ODS files
+- `SBtabVFGEN::sbtab_from_excel` for XLSX files
 
-In summary: SBtab models contain a data portion, and a model portion;
-the SBtab tables also relate both to one another: the *Output* table
-describes what the model needs to calculate to allow direct comparison
-to the data (there are exceptions). The *Experiments* table specifies
-which inputs to apply, and initial conditions to set to replicate a
-data-set. It names each experiment, and the user must include a
-table/file that contains the data for each experiment, the file/table
-must be named like the identifier of the experiment (*leftmost column*
-stores the identifiers of each row).
+Our scripts find the tables by name:
 
-We'll assume that the model is called `DemoModel`, for all exaple lines.
+- TSV files: `TableName` attribute is the name of the table
+- ODS files: the Sheet's name is the name of the table, `TableName`
+  attribute is not parsed
+- Excel files: the Sheet's name (same as ODS)
 
-Create a fresh directory for your model:
-
-```{sh, mkdir, eval=FALSE}
-mkdir DemoModel
-```
-
-Copy the SBtab file(s) there (in any of the formats above). Launch R
-in that directory (use `getwd()` to check whether you are in the
-directory, if unsure). It can be RStudio, but we'll assume plain R
-here.
-
-# Loading the Model
-
-If the model is a collection of tsv files, you need to create an R
-list of the names; if it is just one file you only need to type out
-its name. In all cases, you need to load SBtabVFGEN.
-
-```{r, label="interpreting the model", eval=FALSE}
-library(SBtabVFGEN)
-```
-
-The instructions for `.ods` (readODS) and `.excel` (readxl) files will
-work as long as the packages we use to load them remain available. The
-`.tsv` format is the safest bet for reliability, because text files
-cannot object to being read very much (we read the `.tsv` files with
-`utils::read.delim`).
 
 ## Tab Separated Values
 
@@ -104,228 +234,24 @@ modelFiles <- "DemoModel.xlsx"
 SBtab <- sbtab_from_excel(modelFiles)
 ```
 
-# Converting to an Ordinary Differential Equation Model
-
-In R, the SBtab content is now a named list of data frames (with the
-`!ID` column serving as `row.names`):
-
-```{r, SBtab, eval=FALSE}
-SBtab$Reaction
-```
-
-This data frame corresponds to the sheet of the same name. The first column is
-always used to assign row names when creating the data frames. The
-next command produces a lot of output, with details how the script
-interprets the model. It will also do a conservation law analysis and
-automatically replace some of the state variables with algebraic
-assignments. The script picks the Compounds with the largest initial
-amount to be replaced. Normally, reacting compounds are represented by
-state variables, but the conserved quantities are interpreted as
-additional input parameters.
-
-```{r, vf, eval=FALSE}
-conservationLaws <- sbtab_to_vfgen(SBtab)
-```
-
-which writes three main files:
-
-1. DemoModel.vf - a vfgen vector field file (custom xml content).
-2. DemoModel.mod - NEURON mod file, for simulations with the NEURON
-   software.
-3. DemoModel.xml - an SBML file for simulations in COPASI and
-   others. This will only be done if the `sbml` package is available
-   (the R package).
-
-The script also writes its findings in a fairly *format-free* way, as
-text files (they can be interpreted as an ODE without any target
-software in mind). `SBtabVFGEN::sbtab_to_vfgen()` also attempts to zip
-those `.txt` files.
-
-## Automated Procedure
-
-The github repository of
-[SBtabVFGEN](https://www.github.com/icpm-kth/SBtabVFGEN) (systems
-biology table vector field generator) also includes an RScript called `sbtab_to_vfgen`, it begins with:
-
-```{r, sbtab_to_vfgen, eval=FALSE}
-#!/usr/bin/env Rscript
-
-library(SBtabVFGEN)
-args <- commandArgs(TRUE)
-```
-
-So, it can be called directly from the command line, like this:
-
-```{sh, label="calling sbtab_to_vfgen", eval=FALSE}
-$ ./sbtab_to_vfgen *.tsv        # no   conservation law analysis
-$ ./sbtab_to_vfgen --cla *.tsv  # with conservation law analysis
-```
-
-which will just create the `.vf`, `.xml`, and `.MOD` files, as well as
-`ConservationLaws.h5` (an hdf5 file) and an `.RData` file with the
-conservation laws.
-
-*NOTE*: If you wish to turn *conservation law analysis* off, don't
-supply the comamnd line option `--cla`. The other file formats should
-also work if you have the R packages to read them (`.ods`, `.xlsx`).
-
-# Data
-
-The data component of the SBtab is extracted using
-
-```{r, data, eval=FALSE}
-SBtab <- SBtabVFGEN::sbtab_from_ods("myModel.ods")
-experiments <- SBtabVFGEN::sbtab.data(SBtab,conservationLaws)
-experiments[[1]]$input
-```
-
-which returns a list with one element per entry in the `Experiments`
-table (`SBtab$Experiments` in R). Each list item contains the data set
-(as two data frames, the second for measurement error estimates), but
-also inputs for the model that are meant to fit the data, and initial
-values for all state variables. These simulation instructions always
-accompany the data, and can include scheduled events (sudden changes
-in the system).
-
-# The ODE must be converted to code
-
-The `vf` file, or SBML, or even the text output we created are not yet
-code that can be simulated. An ODE solver needs a right-hand-side
-function, in the programming language the solver runs in.
-
-In some software, this code generation happens invisibly in the
-background, or the model is kept in the high level language (which
-makes simulations slow).
-
-We prefer to be able to see the generated code, to check for errors,
-or to change the code by hand (if necessary).
-
-The ODE model source-code can also be written by hand in th efirst
-place. In that case none of the above is needed; so, we could have
-started here. But this is *difficult* and gets more difficult for
-*bigger models*.
-
-Fast, advanced (more accurate) solvers require additional functions,
-at least the jacobian of the ODE system:
-
-$$ J(t,x;p)_{ij} = \frac{d f_i(t,x;p)}{dx_j}\,,$$
-
-where $p$ are the parameters of the ODE model.
-
-We generate this code automatically using our own package:
-[RPN-derivative](https://www.github.com/icpm-kth/RPN-derivative).
-
-It is not an R package (it's partially written in C), but can be run
-on the command line in a POSIX compliant shell (`zsh`,`bash`,`dash`,
-etc.). It uses both `sed` and `awk` as well, which are always present
-on a unix derived system (but annoyingly, with different
-capabilities).
-
-The package repository contains a shell script called `ode.sh`,
-which can use one of three backends for derivative calculations:
-internal, maxima, or yacas. It is just a file, not installed anywhere,
-the package contains some helper programs (to calculate derivatives),
-which can be installed (`make && make install`). But you can entirely
-omit the `make` step if you plan on using the maxima or yacas
-backend. It is probably good to alias the ode shell script: `alias
-ode='$HOME/RPN-derivative/sh/ode.sh'` (or wherever you put that file).
-
-Or, alternatively, put it somewhere that is in your `$PATH`.
-
-```{sh, label="create c code", eval=FALSE}
-ode --maxima -C DemoModel.vf > DemoModel_gvf.c
-```
-
-Or, more generically:
-
-```{sh, label="create R code", eval=FALSE}
-ode [--yacas|--maxima] -R DemoModel.{zip,vf,tar.gz} > DemoModel.R
-```
-
-These files only need to be re-created if you change the model
-structurally. A change in initial conditions, or parameter values will
-result in largely the same code, except for the function that returns
-the default initial conditions and default parameter values.
-
-The R code is usually not used for simulations (not by us), but can be
-useful to call any of the model functions within R (e.g. after
-simulation), to build sampling algorithms, or to make a user-supplied
-objective function that internally uses the deSolve package for
-simulations. The functions in `DemoModel.R` are compatible with
-`deSolve`.
-
-Once you have `DemoModel_gvf.c` you can either convert it to a shared
-library yourself, or use the `checkModel` function included in `uqsa`:
-
-```{sh, label="shared-object, manually made", eval=FALSE}
-gcc -shared -fPIC -O2 -o DemoModel.so DemoModel_gvf.c
-```
-
-or
-
-```{r, label="shared-object, created by checkModel()", eval=FALSE}
-modelName <- uqsa::checkModel("DemoModel", "./DemoModel_gvf.c")
-                             # model-name,      file-name
-## comment(modelName) == "DemoModel.so"
-```
-
-This shared object file can be used for simulations.
-
-# Simulations
-
-The previously created `modelName` variable has a comment attribute
-(that you can also set yourself, there is no magic there). This
-comment indicates the shared object file to simulate with. In R, using
-`uqsa` we first create a closure:
-
-```{r, sim, eval=FALSE}
-sim <- simulator.c(experiments, modelName)
-y <- sim(p)
-```
-
-now, `sim` is a function that implicitly depends on the simulation
-instructions in the list of `experiments`, and explicitly on the
-supplied parameters `p` (a numeric vector, or matrix). The return value `y` is
-also a list with one result per experiment:
-`length(y)==length(experiments)`.
-
-The result contains two components per list item: the
-state variables, and the output values
-
-```{r, func, eval=FALSE}
-y[[l]]$func[i,j,k] # a number
-```
-
-which corresponds to experiment `l`, output function `i`, time-point
-`j`, and parameter column `k` (if `p` was a matrix). When `p` is a
-vector, then `k` can only be `1`. Similarly, for state variables:
-
-```{r, state, eval=FALSE}
-y[[l]]$state[i,j,k] # a number
-```
-
-corresponds to experiment `l`, state variable `i`, time-point `j`, and
-parameter column `k` (again, relevant when `p` is a matrix).
-
-The results can be visualized by plotting against the experiment's output time values:
-
-```{r, plot, eval=FALSE}
-# plot output function 1, for experiment 2
-p <- model$par()[seq(n)]
-y <- sim(p)
-plot(experiments[[2]]$outputTimes, y[[2]]$func[1,,])
-```
-
-(in this case `p` is a vector).
-
 ### Parameters
 
-Observe that model$par() returns the ODE model parameters, which can
+The R code generated by `ode.sh` includes a list with the same
+functions, but with generic function names:
+
+- `model$vf()` vector field
+- `model$jac()` Jacobian
+- `model$init()` initial values
+- `model$par()` default parameters in linear scale 
+    + regardless of what the scale was in the SBtab file
+	+ this function returns the long parameter vector (Parameter and Input)
+
+Observe that `model$par()` returns the ODE model parameters, which can
 be more than the biological parameters, the components are:
 
 - biological parameters (`SBtab$Parameter`)
 - origignal input parameters (`SBtab$Input`)
-- derived input parameter, from conservationlaws (conserved constants)
+- derived input parameters, from conservationlaws (conserved constants)
 
 The inputs are allowed to be different for each experiment (by
 definition), the biological parameters are the same for all
@@ -333,41 +259,7 @@ experiments simulated in one go. Therefore, we only supply the
 biological parameters (the first `n`) to the simultor and it retrieves
 the others from the `experiments` variable, by concatenation:
 
-```{r, eval=FALSE}
-c(p,experiments[[l]]$input) # for each l
-```
+Usually, the number of leading parameters
+(sb$Parameter[["!DefaultValue"]]) does not change. This is all the
+simulator needs as the inputs are already in `ex`.
 
-for experiment `l`, or `c(parMap(p),experiments[[l]]$input)`, if
-`parMap` is non-trivial.
-
-## Benefits of Intermediates
-
-Every step above produces an output file that carries a meaning:
-
-- the SBtab spreadsheet describes the biological model (so does SBML)
-    + but with some consideration regarding systems (input/output model)
-- the `.vf` file represents the model as an ODE
-- the `.c` file is the code representation of the ODE model, intended
-  for a specific solver suite.
-
-Each of these files can be checked by the user, their internal formats
-are not hidden; this can help with checking for errors and testing,
-resability, and interoperability between different software packages.
-
-The vfgen software can also create model files for both R and C, but
-the functions are slightly different from ours. We decided to write
-our own converter for several reasons:
-
-- vfgen creates one function per output, with the output name in the
-  function name, e.g.: `int DemoModel_ABCoverSUM(...)`
-    + our script creates one output function that returns a vector
-      (one item per output line in SBtab) -- vector valued output
-- vfgen does not write a *default initial conditions* or *default
-  parameter* function
-   + these should be functions, because they can depend on the
-     constants in the model, on previous parameters, and even on the
-     initial time t₀, e.g.: `double par12 = t>0 ? par3*par5 : par5;`
-- the vfgen functions do not return an error code for `NULL`
-  in-out-buffers (which is fine)
-    + we use these error codes to probe the dimensionality of the
-      model, without writing extra data structures

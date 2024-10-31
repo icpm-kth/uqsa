@@ -3,12 +3,11 @@
 same size as ll and ul from a uniform distribution within the
 limits defined by ul and ll. The random vectors are returned as n
 rows of a matrix, where n is the only argument of the returned
-function."><title>rUniformPrior returns a random vector generator — rUniformPrior • uqsa</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="rUniformPrior returns a random vector generator — rUniformPrior"><meta property="og:description" content="The return value is a function that generates random vectors of the
+function."><title>rUniformPrior returns a random vector generator — rUniformPrior • uqsa</title><script src="../deps/jquery-3.6.1/jquery-3.6.1.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="rUniformPrior returns a random vector generator — rUniformPrior"><meta property="og:description" content="The return value is a function that generates random vectors of the
 same size as ll and ul from a uniform distribution within the
 limits defined by ul and ll. The random vectors are returned as n
 rows of a matrix, where n is the only argument of the returned
-function."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+function."><!-- mathjax --><script src="file:///usr/share/javascript/mathjax/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -18,7 +17,7 @@ function."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
     
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,8 +31,9 @@ function."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-installation">Installation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
-    <a class="dropdown-item" href="../articles/install.html">Full Installation Instructions</a>
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
+    <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
+    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -41,20 +41,23 @@ function."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
     <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
     <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
-    <a class="dropdown-item" href="../articles/sa.html">Sensiticity Analysis</a>
+    <a class="dropdown-item" href="../articles/sa.html">Sensitivity Analysis</a>
+    <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
-    <a class="dropdown-item" href="../articles/models.html">Importing a model</a>
-    <a class="dropdown-item" href="../articles/data.html">Importing data</a>
-    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
+    <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
+    <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <a class="dropdown-item" href="../articles/GenerateCodeInSHELL.html">Generate C Code Outside of R</a>
+    <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
+    <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
-    <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
-    <a class="dropdown-item" href="../articles/ABC_sampling.html">ABC sampling</a>
+    <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
     <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Sensitivity analysis</h6>
-    <a class="dropdown-item" href="../articles/GSA.html">GSA following UQ</a>
+    <h6 class="dropdown-header" data-toc-skip>Sensitivity Analysis</h6>
+    <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -62,10 +65,9 @@ function."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
   <div class="dropdown-menu" aria-labelledby="dropdown-examples">
     <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/simAKAP79.html">Simulate AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAP79.html">sample AKAP79</a>
-    <a class="dropdown-item" href="../articles/AKAR4.html">sample AKAR4 with ABC</a>
-    <a class="dropdown-item" href="../articles/AKAR4cl.html">sample AKAR4 with MCMC</a>
-    <a class="dropdown-item" href="../articles/shortMakeSharedLibrary.html">Build a Model</a>
+    <a class="dropdown-item" href="../articles/AKAP79.html">Sample AKAP79</a>
+    <a class="dropdown-item" href="../articles/AKAR4.html">Sample AKAR4</a>
+    <a class="dropdown-item" href="../articles/mpi.html">Multiple chains via MPI</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -126,18 +128,18 @@ where n is the requested number of vectors (rows)</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">rup</span><span class="op">&lt;-</span><span class="fu">rUniformPrior</span><span class="op">(</span>ll<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,ul<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rup</span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]     [,2]     [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.18092093 1.089484 2.320017</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.28134955 1.104391 2.912636</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.98648336 1.691841 2.574422</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.42772780 1.565265 2.311657</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.13999132 1.217287 2.263848</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.29647767 1.521218 2.385844</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.91369766 1.178954 2.989183</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.07609304 1.040488 2.346374</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.76448891 1.617785 2.223710</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.18594355 1.643777 2.509850</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.88675221 1.268137 2.299295</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.58800781 1.798984 2.171567</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.25932808 1.047175 2.629340</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.15550981 1.568841 2.153067</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.44828171 1.073414 2.498014</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.64062725 1.258818 2.819371</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.08757525 1.117172 2.455283</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.64184006 1.288677 2.254539</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.31233041 1.921789 2.309833</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.33966315 1.732594 2.895244</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.34990912 1.096313 2.300678</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.86276669 1.206131 2.052044</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.58459793 1.763951 2.958937</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.55018345 1.253618 2.734066</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

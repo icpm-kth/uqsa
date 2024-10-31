@@ -299,7 +299,7 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 #' @param swapDelay swaps will be attempted every 2*swapDelay+1 iterations
 #' @return an mcmc closure m(parMCMC,N,eps) that implicitly uses the supplied update function
 #' @export
-mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=rmpi_swap_temperatures){
+mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures){
 	D <- max(2*swapDelay+1,1)
 	M <- function(parMCMC,N=1000,eps=1e-4){
 		r <- attr(comm,"rank") # 0..n-1
@@ -369,8 +369,15 @@ loadSample_mpi <- function(files){
 #'
 #' @export
 #' @param files the files where the individual samples are stored
+#' @param size sub sample size, if not set, the whole sample is
+#'     returned
+#' @param selection integer index vector or logical vector indicating
+#'     which temperatures to return: beta[selection] is returned, in
+#'     decreasing order of beta.
+#' @param mc.cores defaults to the total number of cores, but can be
+#'     reduced with this option.
 #' @return a list of matrices, by temperature, concatenated.
-loadSubSample_mpi <- function(files,size=NA,selection=NA){
+loadSubSample_mpi <- function(files,size=NA,selection=NA,mc.cores=parallel::detectCores()){
 	S <- parallel::mclapply(files,function(f){
 		s <- readRDS(f)
 		b <- attr(s,"beta")
@@ -382,16 +389,22 @@ loadSubSample_mpi <- function(files,size=NA,selection=NA){
 		}
 		attr(s,"beta") <- b
 		return (s)
-	},mc.cores=parallel::detectCores())
+	},mc.cores=mc.cores)
 	uB <- sort(unique(unlist(parallel::mclapply(S,function(s) {return(unique(attr(s,"beta")))}))),decreasing=TRUE)
 	cat("unique temperatures:",uB,"\n")
-	stopifnot(length(uB)==length(files))
+	if (length(uB)!=length(files)) {
+		warning(sprintf("number of temperatures (%i) not the same as number of files (%i).",length(uB),length(files)))
+	}
 	if (!any(is.na(selection))) uB <- uB[selection]
-	else selection <- seq_long(uB)
-	n <- NROW(S[[1]])
-	m <- NCOL(S[[1]])
-	l <- length(uB)
-
+	else selection <- seq_along(uB)
+	if (is.list(S) && length(S) == length(files) && is.numeric(S[[1]]) && is.matrix(S[[1]])){
+		n <- NROW(S[[1]])
+		m <- NCOL(S[[1]])
+		l <- length(uB)
+	} else {
+		print(S)
+		error("loading samples did not succeed")
+	}
 	x <- array(NA,dim=c(n,m,l))
 	dimnames(x) <- list(NULL,colnames(S[[1]]),sprintf("beta_%02i",selection))
 	for (i in seq_along(S)){
@@ -401,6 +414,44 @@ loadSubSample_mpi <- function(files,size=NA,selection=NA){
 		}
 	}
 	attr(x,"beta") <- uB
+	return(x)
+}
+
+#' gatherSample collects all sample points, from all files, with the
+#' given temperature
+#'
+#' This function assumes that each supplied RDS file contains a matrix
+#' of model MCMC parameters, with an attribute called "beta" that
+#' lists the temperature of each row.
+#'
+#' This function selects and collects all rows, from all files with
+#' the same (given) temperature.
+#' @export
+#' @param files a list of file names
+#' @param beta the inverse temperture to extract sample for
+#' @param size a size the is smaller than the actual sample size, if
+#'     left unchanged, all sampled points are returned
+#' @return a matrix of sampled points, all with the same temperature
+gatherSample <- function(files,beta=1.0,size=NA){
+	x <- numeric(0)
+	lL <- numeric(0)
+	for (f in files){
+		s <- readRDS(f)
+		b <- attr(s,"beta")
+		l <- attr(s,"logLikelihood")
+		i <- which(abs(b - beta) <= 1e-9*beta)
+		s <- s[i,,drop=FALSE]
+		l <- l[i]
+		x <- rbind(x,s)
+		lL <- c(lL,l)
+	}
+	if (!any(is.na(size)) && size <= NROW(x)){
+		j <- round(seq(1,NROW(x),length.out=size))
+		x <- x[j,,drop=FALSE]
+		lL<- lL[j]
+	}
+	attr(x,"beta") <- beta
+	attr(x,"logLikelihood") <- lL
 	return(x)
 }
 
@@ -414,8 +465,9 @@ dmvnorm <- function(x,mean,precision){
 	stopifnot(!is.null(x) && is.numeric(x) && is.numeric(mu) && length(x) == length(mu))
 	stopifnot(!is.null(precision) && is.matrix(precision))
 	k <- length(mu)
+	stopifnot(dim(precision) == c(k,k))
 	xm <- (x-mu)
-	xmPxm <- (x-mu) %*% precision %*% (x-mu)
+	xmPxm <- (x-mu) %*% (precision %*% (x-mu))
 	C <- (2*pi)^(-0.5*k) * sqrt(abs(det(precision))) * exp(-0.5 * xmPxm)
 	return(C)
 }
@@ -498,7 +550,7 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 		#Sigma <- solve(G0)
 	}
 	return(dmvnorm(as.numeric(parProposal),
-		mean=parGiven+0.5*eps*g,
+		mean=as.numeric(parGiven+0.5*eps*g),
 		precision=G/eps)
 	)
 }
@@ -517,7 +569,11 @@ metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior
 		stopifnot(is.numeric(parProposal) && all(is.finite(priorGiven)))
 		attr(parProposal,"simulations") <- simulate(parProposal)
 		llProposal <- logLikelihood(parProposal)
-		stopifnot(is.numeric(llProposal) && length(llProposal)==1 && is.finite(llProposal))
+		if (!is.numeric(llProposal) || length(llProposal)!=1 || !is.finite(llProposal)){
+			warning(sprintf("metropolis update encountered an invalid likelihood value: %f\n",llProposal[1]))
+			print(llProposal)
+			print(as.numeric(parGiven))
+		}
 		attr(parProposal,"logLikelihood") <- llProposal
 		priorProposal <- dprior(parProposal)
 		attr(parProposal,"prior") <- priorProposal
@@ -683,7 +739,7 @@ fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac
 	l10 <- log(10)
 	F <- function(parMCMC){
 		simulations <- attr(parMCMC,"simulations")
-		np <- length(parMCMC)
+		np <- NROW(parMCMC)
 		fi  <- matrix(0.0,np,np)
 		for (i in seq(length(experiments))){
 			errF <- t(experiments[[i]]$errorValues)
@@ -833,7 +889,7 @@ gradLogLikelihoodFunc <- function(model,experiments,parMap=identity,parMapJac=fu
 	nF <- length(model$func(0.0,model$init(),model$par()))
 	gradLL <- function(parMCMC){
 		simulations <- attr(parMCMC,"simulations")
-		np <- length(parMCMC) # the dimension of the MCMC variable (parMCMC)
+		np <- NROW(parMCMC) # the dimension of the MCMC variable (parMCMC)
 		z <- rep(0,np)
 		gL <- z
 		for (i in seq(N)){

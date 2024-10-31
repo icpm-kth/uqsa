@@ -1,3 +1,0 @@
-!!SBtab	Document='CaMKIIs' TableName='Suggested Output' TableTitle='Automatically determined conservation laws remove state variables, these outputs make them observable' TableType='Quantity'
-!ID	!Name	!Comment	!ErrorName	!ErrorType	!Unit	!ProbDist	!Formula
-YCL1	caa_mon	monitors implicit state	SD_YCL1	not applicable	nM	none	caa
