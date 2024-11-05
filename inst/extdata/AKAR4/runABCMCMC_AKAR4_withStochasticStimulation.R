@@ -15,7 +15,8 @@ options(mc.cores=4)
 model.tsv <- uqsa_example("AKAR4",full.names=TRUE) 
 source(uqsa_example("AKAR4",pat = "^AKAR4[.]R",full.names=TRUE)) # model is loaded
 model.tab <- SBtabVFGEN::sbtab_from_tsv(model.tsv)
-modelName <- checkModel(comment(model.tab),"./inst/extdata/AKAR4/AKAR4_gvf.c")
+#modelName <- checkModel(comment(model.tab),"./inst/extdata/AKAR4/AKAR4_gvf.c")
+modelName <- "AKAR4"
 
 parVal <- model.tab[["Parameter"]][["!DefaultValue"]]
 parNames <- model.tab[["Parameter"]][["!Name"]]
@@ -47,7 +48,7 @@ npc <- 100 # pre-calibration
 # Define ABC-MCMC Settings
 p <- 0.01		 # For the Pre-Calibration: Choose Top 1% Samples with Shortest Distance to the Experimental Values
 
-delta <- 0.01
+delta <- 0.001
 
 set.seed(2022)
 
@@ -161,7 +162,7 @@ i<-1
   timeStr <- gsub(":","_", timeStr)
   timeStr <- gsub(" ","_", timeStr)
   outFileR <- paste0("./PosteriorSamples/DrawsStochastic",modelName,"_",basename(comment(modelName)),"_ns",ns,"_npc",npc,"_",outFile,timeStr,".RData",collapse="_")
-  save(draws, parNames, file=outFileR)
+  save(ABCMCMCoutput, parNames, file=outFileR)
 #}
 end_time = Sys.time()
 time_ = end_time - start_time
@@ -205,12 +206,17 @@ simulateSSA <- function(e, param, nStochSim){
   return(avgOutput)
 }
 
+#load("/Users/fedmil/Documents/PDC_posteriors/AKAR4Posterior/DrawsStochasticAKAR4_ns1000_npc1e+05_2024-09-12_18_44_15.357274.RData")
+load("/Users/fedmil/Documents/PDC_posteriors/AKAR4Posterior/DrawsStochasticAKAR4_ns1000_npc1e+05_2024-09-12_18_44_15.357274.RData")
 
-exp.ind <- 2
+exp.ind <- 3
 par(mfrow=c(1,1))
 plot(experiments[[exp.ind]][["outputTimes"]],experiments[[exp.ind]][["outputValues"]][[1]],ylim=c(90,250))
+n_draws <- length(ABCMCMCoutput$scores)
+n_sub_samples <- 100
+idx <- sample(1:n_draws, n_sub_samples)
 for(i in 1:100){
-  param <- ABCMCMCoutput$draws[i,]
+  param <- ABCMCMCoutput$draws[idx[i],]
   #param <- pC$prePar[,i]
   names(param) <- parNames
   sim <- simulateSSA(experiments[[exp.ind]], param, nStochSim = 3)
@@ -221,7 +227,11 @@ points(experiments[[exp.ind]][["outputTimes"]],experiments[[exp.ind]][["outputVa
 
 
 library(plotly)
-df = as.data.frame(ABCMCMCoutput$draws)
+#df = as.data.frame(ABCMCMCoutput$draws)
+n_draws <- length(ABCMCMCoutput$scores)
+n_sub_samples <- 100000
+idx <- sample(1:n_draws, n_sub_samples)
+df <- as.data.frame(ABCMCMCoutput$draws[idx,])
 colnames(df) <- parNames
-plot_ly(dat = df, x = ~kf_C_AKAR4, y = ~kb_C_AKAR4, z = ~kcat_AKARp, type="scatter3d", mode="markers", marker=list(size = 1, color = "red"))
+plotly::plot_ly(dat = df, x = ~kf_C_AKAR4, y = ~kb_C_AKAR4, z = ~kcat_AKARp, type="scatter3d", mode="markers", marker=list(size = 1, color = "red"))
 
