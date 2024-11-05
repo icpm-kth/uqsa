@@ -1,7 +1,7 @@
 TITLE AKAP79
 COMMENT
 	automatically generated from an SBtab file
-	date: Thu Oct 17 09:59:26 2024
+	date: Tue Nov  5 11:47:22 2024
 ENDCOMMENT
 NEURON {
 	SUFFIX AKAP79 : OR perhaps POINT_PROCESS ?
@@ -63,11 +63,6 @@ PARAMETER {
 	kmON = 1 (micromolarity): a kinetic parameter
 	KD_T = 0.7 (micromolarity): a kinetic parameter
 	b_AKAP  = 0 (1) : an input
-	AKAR4_ConservedConst = 0.2 : the total amount of a conserved sub-set of states
-	CaN_ConservedConst = 1.5 : the total amount of a conserved sub-set of states
-	Rii_C_ConservedConst = 0.63 : the total amount of a conserved sub-set of states
-	cAMP_ConservedConst = 0 : the total amount of a conserved sub-set of states
-	Rii_ConservedConst = 6.3 : the total amount of a conserved sub-set of states
 }
 ASSIGNED {
 	time (millisecond) : alias for t
@@ -94,20 +89,10 @@ ASSIGNED {
 	reaction_37 : a flux, for use in DERIVATIVE mechanism
 	reaction_1 : a flux, for use in DERIVATIVE mechanism
 	reaction_2 : a flux, for use in DERIVATIVE mechanism
-	AKAR4 : computed from conservation law
-	CaN : computed from conservation law
-	Rii_C : computed from conservation law
-	cAMP : computed from conservation law
-	Rii : computed from conservation law
 	AKAR4pOUT : an observable
 }
 PROCEDURE assign_calculated_values() {
 	time = t : an alias for the time variable, if needed.
-	AKAR4 = AKAR4_ConservedConst - (AKAR4_C+AKAR4p) : conservation law
-	CaN = CaN_ConservedConst - (RiiP_CaN+RiiP_cAMP_CaN) : conservation law
-	Rii_C = Rii_C_ConservedConst - (RiiP_C+RiiP_C_cAMP+C+Rii_C_cAMP+AKAR4_C) : conservation law
-	cAMP = cAMP_ConservedConst - (RiiP_cAMP+RiiP_C_cAMP+Rii_cAMP+Rii_C_cAMP+RiiP_cAMP_CaN) : conservation law
-	Rii = Rii_ConservedConst - (RiiP+RiiP_cAMP+Rii_cAMP+RiiP_CaN+RiiP_cAMP_CaN-C-AKAR4_C) : conservation law
 	kf_RiiP_cAMP_CaN__CaNXRii_cAMP = b_AKAP * AKAPon_1 + (1 - b_AKAP) * AKAPoff_1 : assignment for expression kf_RiiP_cAMP_CaN__CaNXRii_cAMP
 	kb_RiiPxCaN__RiiP_CaN = b_AKAP*AKAPon_3  +  (1 - b_AKAP)* AKAPoff_3 : assignment for expression kb_RiiPxCaN__RiiP_CaN
 	kf_RiiP_CaN__RiixCaN = b_AKAP * AKAPon_1 + (1 - b_AKAP) * AKAPoff_1 : assignment for expression kf_RiiP_CaN__RiixCaN
@@ -133,38 +118,38 @@ PROCEDURE assign_calculated_values() {
 	reaction_2 = kcat_AKARp*AKAR4_C : flux expression reaction_2
 }
 STATE {
-	: Rii is calculated via Conservation Law
-	: cAMP is calculated via Conservation Law
+	Rii (micromole/liter) : a state variable
+	cAMP (micromole/liter) : a state variable
 	RiiP (micromole/liter) : a state variable
-	: Rii_C is calculated via Conservation Law
+	Rii_C (micromole/liter) : a state variable
 	RiiP_cAMP (micromole/liter) : a state variable
 	RiiP_C (micromole/liter) : a state variable
 	RiiP_C_cAMP (micromole/liter) : a state variable
 	C (micromole/liter) : a state variable
 	Rii_cAMP (micromole/liter) : a state variable
 	Rii_C_cAMP (micromole/liter) : a state variable
-	: CaN is calculated via Conservation Law
+	CaN (micromole/liter) : a state variable
 	RiiP_CaN (micromole/liter) : a state variable
 	RiiP_cAMP_CaN (micromole/liter) : a state variable
-	: AKAR4 is calculated via Conservation Law
+	AKAR4 (micromole/liter) : a state variable
 	AKAR4_C (micromole/liter) : a state variable
 	AKAR4p (micromole/liter) : a state variable
 }
 INITIAL {
-	: Rii cannot have initial values as it is determined by conservation law
-	: cAMP cannot have initial values as it is determined by conservation law
+	 Rii = 6.3 : initial condition
+	 cAMP = 0 : initial condition
 	 RiiP = 0 : initial condition
-	: Rii_C cannot have initial values as it is determined by conservation law
+	 Rii_C = 0.63 : initial condition
 	 RiiP_cAMP = 0 : initial condition
 	 RiiP_C = 0 : initial condition
 	 RiiP_C_cAMP = 0 : initial condition
 	 C = 0 : initial condition
 	 Rii_cAMP = 0 : initial condition
 	 Rii_C_cAMP = 0 : initial condition
-	: CaN cannot have initial values as it is determined by conservation law
+	 CaN = 1.5 : initial condition
 	 RiiP_CaN = 0 : initial condition
 	 RiiP_cAMP_CaN = 0 : initial condition
-	: AKAR4 cannot have initial values as it is determined by conservation law
+	 AKAR4 = 0.2 : initial condition
 	 AKAR4_C = 0 : initial condition
 	 AKAR4p = 0 : initial condition
 }
@@ -173,20 +158,20 @@ BREAKPOINT {
 	assign_calculated_values() : procedure
 }
 DERIVATIVE ode {
-	: Compound Rii with initial condition 6.3 had derivative -reaction_78-reaction_58+reaction_48, but is calculated by conservation law.
-	: Compound cAMP with initial condition 0 had derivative -reaction_12-reaction_43-reaction_78-reaction_56, but is calculated by conservation law.
+	Rii' = -reaction_78-reaction_58+reaction_48 : affects compound Rii
+	cAMP' = -reaction_12-reaction_43-reaction_78-reaction_56 : affects compound cAMP
 	RiiP' = -reaction_14-reaction_43-reaction_44 : affects compound RiiP
-	: Compound Rii_C with initial condition 0.63 had derivative -reaction_51-reaction_56+reaction_58, but is calculated by conservation law.
+	Rii_C' = -reaction_51-reaction_56+reaction_58 : affects compound Rii_C
 	RiiP_cAMP' = reaction_43-reaction_23-reaction_33 : affects compound RiiP_cAMP
 	RiiP_C' = reaction_51+reaction_14-reaction_12 : affects compound RiiP_C
 	RiiP_C_cAMP' = reaction_12+reaction_23+reaction_62 : affects compound RiiP_C_cAMP
 	C' = -reaction_14-reaction_23-reaction_76-reaction_58-reaction_1+reaction_2 : affects compound C
 	Rii_cAMP' = reaction_78-reaction_76+reaction_37 : affects compound Rii_cAMP
 	Rii_C_cAMP' = reaction_56+reaction_76-reaction_62 : affects compound Rii_C_cAMP
-	: Compound CaN with initial condition 1.5 had derivative -reaction_44-reaction_33+reaction_48+reaction_37, but is calculated by conservation law.
+	CaN' = -reaction_44-reaction_33+reaction_48+reaction_37 : affects compound CaN
 	RiiP_CaN' = reaction_44-reaction_48 : affects compound RiiP_CaN
 	RiiP_cAMP_CaN' = reaction_33-reaction_37 : affects compound RiiP_cAMP_CaN
-	: Compound AKAR4 with initial condition 0.2 had derivative -reaction_1, but is calculated by conservation law.
+	AKAR4' = -reaction_1 : affects compound AKAR4
 	AKAR4_C' = reaction_1-reaction_2 : affects compound AKAR4_C
 	AKAR4p' = reaction_2 : affects compound AKAR4p
 }
