@@ -192,12 +192,3 @@
  <Function Name="ActivePP2B" Description="output" Formula="100 * (PP2B_CaM_Ca4 / (s + PP2B + Total_PP2B_CaM_CaX))"/>
  <Function Name="Camonitor" Description="output" Formula="Ca"/>
 </VectorField>
-<!-- VFGEN doesn't have a Transformation mechanism, the following matter will not be parsed by the vfgen tool -->
-<Appendix>
- <Transformation Name="Activation">
-  <Assign Name="isOn" Type="par" Formula="1"/>
- </Transformation>
- <Transformation Name="CaSpike">
-  <Assign Name="cab" Type="var" Formula="5.658469984"/>
- </Transformation>
-</Appendix>
