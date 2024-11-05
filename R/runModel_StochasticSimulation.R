@@ -397,6 +397,7 @@ makeObjectiveSSA <- function(experiments, model, parNames, distance, parMap=iden
         output <- apply(out_ssa$state/Phi, 1, function(state) model$func(t=0,state=state,parameters=param))
         if(sum(!is.na(out_ssa$time)) > 2){
           interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
+          interpOutput$y[e[["outputTimes"]]<min(out_ssa$time)] <- output[which.min(out_ssa$time)]
           interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
           avgOutput <- avgOutput + interpOutput$y
         } else {
