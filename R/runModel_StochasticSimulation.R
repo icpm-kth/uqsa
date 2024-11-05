@@ -390,6 +390,7 @@ makeObjectiveSSA <- function(experiments, model, parNames, distance, parMap=iden
           log_propensity = TRUE,
           log_firings = TRUE,
           census_interval = 5,
+          max_walltime = 1,
           sim_name = modelName)
 
         # out$state is a matrix of dimension (time points)x(num compounds)
