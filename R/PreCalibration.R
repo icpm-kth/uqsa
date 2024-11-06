@@ -36,7 +36,7 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
 		options(mc.cores=nCores)
 	}
 	# make npc a multiple of cores
-	npc <- ceiling(npc/nCores)*nCores
+	npc <- (max(2,ceiling(npc/nCores)))*nCores
 	prePar <- t(rprior(npc))
 	n <- dim(prePar)
 	# split work
