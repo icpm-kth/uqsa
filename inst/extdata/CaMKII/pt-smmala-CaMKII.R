@@ -56,9 +56,10 @@ options(mc.cores = length(experiments))
 ## ----default------------------------------------------------------------------
 n <- length(experiments[[1]]$input)
 
-stopifnot(all(startsWith(trimws(sb$Parameter[["!Scale"]]),"log10")))
-parMCMC <- sb$Parameter[["!DefaultValue"]]  # this already is in log10-space
-stdv <- sb$Parameter[["!Std"]]              # this as well
+stopifnot(all(trimws(sb$Parameter[["!Scale"]])=="natural logarithm"))
+parMCMC <- sb$Parameter[["!DefaultValue"]]/log(10)  # this was in natural-log-space
+stdv <- sb$Parameter[["!Std"]]/log(10)              # this as well
+
 if (is.null(stdv) || !is.numeric(stdv) || any(is.na(stdv))) {
 	warning("no standard error («!Std» field) in 'SBtab$Parameter'")
 	stdv <- parMCMC*0.5 + 0.5 + 0.5*max(parMCMC)
@@ -68,12 +69,10 @@ rprior <- rNormalPrior(mean=parMCMC,sd=stdv)
 gprior <- gradLog_NormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
 
 ## ----simulate-----------------------------------------------------------------
-sim <- simc(experiments,modelName,log10ParMap)
+sim <- simulator.c(experiments,modelName,log10ParMap)
 
-y <- sim[[1]](parMCMC) ## little test
-stopifnot(is.list(y) && length(y)==length(SUB[[1]]))
+y <- sim(parMCMC) ## little test
 stopifnot(all(c("state","func") %in% names(y[[1]])))
-
 
 llf <- logLikelihoodFunc(experiments)
 gradLL <- gradLogLikelihoodFunc(model,experiments, parMap=log10ParMap, parMapJac=log10ParMapJac)
