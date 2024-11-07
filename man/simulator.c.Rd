@@ -41,5 +41,5 @@ parameters). The simulation will be done suing the rgsl backend.
 
  #  modelName <- checkModel("<insert_model_name>_gvf.c")
  #  simulate <- simulator.c(experiments, modelName,  parABC)
- #  yf <- sim(parABC)
+ #  yf <- simulate(parABC)
 }

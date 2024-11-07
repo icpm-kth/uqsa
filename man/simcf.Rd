@@ -45,6 +45,6 @@ perform sensitivty analysis.
  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 
  #  modelName <- checkModel("<insert_model_name>_gvf.c")
- #  simulate <- simulator.c(experiments, modelName,  parABC)
- #  yf <- sim(parABC)
+ #  simulate <- simcf(experiments, modelName,  parABC)
+ #  yf <- simulate(parABC)
 }

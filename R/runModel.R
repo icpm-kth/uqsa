@@ -30,7 +30,7 @@
 #'
 #'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
 #'  #  simulate <- simulator.c(experiments, modelName,  parABC)
-#'  #  yf <- sim(parABC)
+#'  #  yf <- simulate(parABC)
 simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE){
 	require(rgsl)
 	sim <- function(parABC){
@@ -97,8 +97,8 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE){
 #'  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 #'
 #'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
-#'  #  simulate <- simulator.c(experiments, modelName,  parABC)
-#'  #  yf <- sim(parABC)
+#'  #  simulate <- simc(experiments, modelName,  parABC)
+#'  #  yf <- simulate(parABC)
 simc <- function(experiments, modelName, parMap=identity){
 	N <- length(experiments)
 	sim <- function(parABC){
@@ -166,8 +166,8 @@ simc <- function(experiments, modelName, parMap=identity){
 #'  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 #'
 #'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
-#'  #  simulate <- simulator.c(experiments, modelName,  parABC)
-#'  #  yf <- sim(parABC)
+#'  #  simulate <- simcf(experiments, modelName,  parABC)
+#'  #  yf <- simulate(parABC)
 simcf <- function(experiments, modelName, parMap=identity){
 	N <- length(experiments)
 	sim <- function(parABC){

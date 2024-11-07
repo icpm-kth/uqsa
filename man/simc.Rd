@@ -46,6 +46,6 @@ all and cannot add noise to the simulations.
  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 
  #  modelName <- checkModel("<insert_model_name>_gvf.c")
- #  simulate <- simulator.c(experiments, modelName,  parABC)
- #  yf <- sim(parABC)
+ #  simulate <- simc(experiments, modelName,  parABC)
+ #  yf <- simulate(parABC)
 }
