@@ -47,7 +47,8 @@ if (N %% 4 != 0) N <- round(N/4) * 4
 
 message(sprintf("rank %i of %i will sample %i points.\n",r,cs,N))
 ## ----label="SBtab content"----------------------------------------------------
-modelFiles <- uqsa_example("CaMKII")
+#modelFiles <- uqsa_example("CaMKII")
+modelFiles <- dir(pattern="tsv$",full.names=TRUE)
 sb <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
 modelName <- checkModel(comment(sb),sprintf("./%s.so",comment(sb)))
 ex <- sbtab.data(sb)
@@ -66,7 +67,7 @@ if (is.null(stdv) || !is.numeric(stdv) || any(is.na(stdv))) {
 }
 dprior <- dNormalPrior(mean=parMCMC,sd=stdv)
 rprior <- rNormalPrior(mean=parMCMC,sd=stdv)
-gprior <- gradLog_NormalPrior(mean=parVal,sd=rep(defRange,length(parVal)))
+gprior <- gradLog_NormalPrior(mean=parMCMC,sd=stdv)
 
 ## ----simulate-----------------------------------------------------------------
 sim <- simulator.c(experiments,modelName,log10ParMap)
@@ -77,7 +78,7 @@ stopifnot(all(c("state","func") %in% names(y[[1]])))
 llf <- logLikelihoodFunc(experiments)
 gradLL <- gradLogLikelihoodFunc(model,experiments, parMap=log10ParMap, parMapJac=log10ParMapJac)
 fiIn <- fisherInformationFunc(model, experiments, parMap=log10ParMap, parMapJac=log10ParMapJac)
-fiPrior <- solve(diag(stdv, length(parVal)))
+fiPrior <- solve(diag(stdv, length(parMCMC)))
 
 X <- NULL
 
@@ -119,7 +120,7 @@ sampleSize <- round(exp(seq(log(100),log(N),length.out=cycl)))
 		rm(s)
 		gc()
 		pbdMPI::barrier()
-		f <- dir(pattern=sprintf('^%s-%s-Sample-.*RDS$',PREFIX,SET[j],i))
+		f <- dir(pattern=sprintf('^%s-%s-Sample-.*RDS$',PREFIX,SET[j]))
 		X <- uqsa::gatherSample(f,beta,size=min(sampleSize[i],40000))
 		attr(X,"beta") <- beta
 		parMCMC <- as.numeric(tail(X,1))

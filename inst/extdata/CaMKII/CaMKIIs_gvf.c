@@ -428,11 +428,11 @@ int CaMKIIs_event(double t, double y_[], void *par, int EventLabel, double dose)
 	double SpikeFlux1=cab;
 	double SpikeFlux2=0-(kca1*kca2*caa+(kca1+kca2)*cab);
 	switch(EventLabel){
-	case Activation:
-		p_[_isOn] = 1; /* parameter transformation */
-	break;
 	case CaSpike:
 		y_[_cab] = 5.658469984; /* state variable transformation */
+	break;
+	case Activation:
+		p_[_isOn] = 1; /* parameter transformation */
 	break;
 	}
 	return GSL_SUCCESS;
