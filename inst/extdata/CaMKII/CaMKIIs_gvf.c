@@ -8,7 +8,7 @@
 /* string.h for memset() */
 enum stateVariable { _CaM_Ca1,_CaM_Ca2,_CaM_Ca3,_CaM_Ca4,_PP2B_CaM,_PP2B_CaM_Ca1,_PP2B_CaM_Ca2,_PP2B_CaM_Ca3,_PP2B_CaM_Ca4,_CaMKII_CaM,_CaMKII_CaM_Ca1,_CaMKII_CaM_Ca2,_CaMKII_CaM_Ca3,_CaMKII_CaM_Ca4,_pCaMKII_CaM_Ca4,_pCaMKIIa,_pCaMKII_CaM_Ca3,_pCaMKII_CaM_Ca2,_pCaMKII_CaM_Ca1,_pCaMKII_CaM,_PP1__pCaMKIIa,_caa,_cab, numStateVar }; /* state variable indexes  */
 enum param { _kf__CaM__Ca,_kf__CaM_Ca1__Ca,_kf__CaM_Ca2__Ca,_kf__CaM_Ca3__Ca,_kf__CaM__PP2B,_kf__CaM_Ca1__PP2B,_kf__CaM_Ca2__PP2B,_kf__CaM_Ca3__PP2B,_kf__CaM_Ca4__PP2B,_kf__PP2B_CaM__Ca,_kf__PP2B_CaM_Ca1__Ca,_kf__PP2B_CaM_Ca2__Ca,_kf__PP2B_CaM_Ca3__Ca,_KD__CaM_Ca3__Ca,_KD__CaM_Ca2__Ca,_KD__CaM_Ca1__Ca,_KD__CaM__Ca,_KD__CaM_Ca4__PP2B,_KD__PP2B_CaM_Ca3__Ca,_KD__PP2B_CaM_Ca2__Ca,_KD__PP2B_CaM_Ca1__Ca,_KD__PP2B_CaM__Ca,_kf__CaM__CaMKII,_kf__CaMKII_CaM_Ca3__Ca,_kf__CaMKII_CaM_Ca2__Ca,_kf__CaMKII_CaM_Ca1__Ca,_kf__CaMKII_CaM__Ca,_kf__CaM_Ca1__CaMKII,_kf__CaM_Ca2__CaMKII,_kf__CaM_Ca3__CaMKII,_kf__CaM_Ca4__CaMKII,_KD__CaM_Ca4__CaMKII,_KD__CaMKII_CaM_Ca3__Ca,_KD__CaMKII_CaM_Ca2__Ca,_KD__CaMKII_CaM_Ca1__Ca,_KD__CaMKII_CaM__Ca,_kf__pCaMKII_CaM_Ca3__Ca,_kf__CaM__pCaMKIIa,_kf__CaM_Ca1__pCaMKIIa,_kf__CaM_Ca2__pCaMKIIa,_kf__CaM_Ca3__pCaMKIIa,_kf__pCaMKII_CaM_Ca2__Ca,_kf__pCaMKII_CaM_Ca1__Ca,_kf__CaM_Ca4__pCaMKIIa,_kf__pCaMKII_CaM__Ca,_KD__pCaMKII_CaM_Ca3__Ca,_KD__pCaMKII_CaM_Ca2__Ca,_KD__pCaMKII_CaM_Ca1__Ca,_KD__pCaMKII_CaM__Ca,_KD__CaM_Ca4__pCaMKIIa,_kautMax,_kf__PP1__pCaMKIIa,_kr__PP1__pCaMKIIa,_kcat__PP1__pCaMKIIa,_Ca_set,_PP1_0,_CaMKII_0,_CaM_0,_PP2B_0,_kca1,_kca2,_isOn, numParam }; /* parameter indexes  */
-enum eventLabel { CaSpike,Activation, numEvents }; /* event name indexes */
+enum eventLabel { Activation,CaSpike, numEvents }; /* event name indexes */
 enum func { _CaPerCaM,_AutoCaMKII,_CaMPerPP2B,_ActivePP2B,_Camonitor, numFunc }; /* parameter indexes  */
 
 /* The error code indicates how to pre-allocate memory
@@ -208,7 +208,7 @@ int CaMKIIs_vf(double t, const double y_[], double f_[], void *par)
 	double ReactionFlux33=(kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa);
 	double ReactionFlux34=(kcat__PP1__pCaMKIIa*PP1__pCaMKIIa);
 	double SpikeFlux1=cab;
-	double SpikeFlux2=0-(kca1*kca2*caa+(kca1+kca2)*cab);
+	double SpikeFlux2=0.0-(kca1*kca2*caa+(kca1+kca2)*cab);
 	f_[_CaM_Ca1] = +ReactionFlux1-ReactionFlux2-ReactionFlux6-ReactionFlux15-ReactionFlux26; /* CaM_Ca1 */
 	f_[_CaM_Ca2] = +ReactionFlux2-ReactionFlux3-ReactionFlux7-ReactionFlux16-ReactionFlux25; /* CaM_Ca2 */
 	f_[_CaM_Ca3] = +ReactionFlux3-ReactionFlux4-ReactionFlux8-ReactionFlux17-ReactionFlux24; /* CaM_Ca3 */
@@ -426,13 +426,14 @@ int CaMKIIs_event(double t, double y_[], void *par, int EventLabel, double dose)
 	double ReactionFlux33=(kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa);
 	double ReactionFlux34=(kcat__PP1__pCaMKIIa*PP1__pCaMKIIa);
 	double SpikeFlux1=cab;
-	double SpikeFlux2=0-(kca1*kca2*caa+(kca1+kca2)*cab);
+	double SpikeFlux2=0.0-(kca1*kca2*caa+(kca1+kca2)*cab);
 	switch(EventLabel){
-	case CaSpike:
-		y_[_cab] = 5.658469984; /* state variable transformation */
-	break;
 	case Activation:
 		p_[_isOn] = 1; /* parameter transformation */
+	break;
+	case CaSpike:
+		p_[_isOn] = 1; /* parameter transformation */
+		y_[_cab] = (kca2-kca1)*dose; /* state variable transformation */
 	break;
 	}
 	return GSL_SUCCESS;
@@ -628,7 +629,7 @@ int CaMKIIs_jac(double t, const double y_[], double *jac_, double *dfdt_, void *
 	double ReactionFlux33=(kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa);
 	double ReactionFlux34=(kcat__PP1__pCaMKIIa*PP1__pCaMKIIa);
 	double SpikeFlux1=cab;
-	double SpikeFlux2=0-(kca1*kca2*caa+(kca1+kca2)*cab);
+	double SpikeFlux2=0.0-(kca1*kca2*caa+(kca1+kca2)*cab);
 	memset(jac_,0,sizeof(double)*numStateVar*numStateVar); /* 529 */
 /* column 1 (df/dy_0) */
 	jac_[0] = (-kf__CaM_Ca1__pCaMKIIa*pCaMKIIa)-kr__CaM__Ca-PP2B*kf__CaM_Ca1__PP2B-CaMKII*kf__CaM_Ca1__CaMKII-Ca*kf__CaM_Ca1__Ca; /* [0, 0] */
@@ -944,7 +945,7 @@ int CaMKIIs_jacp(double t, const double y_[], double *jacp_, double *dfdt_, void
 	double ReactionFlux33=(kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa);
 	double ReactionFlux34=(kcat__PP1__pCaMKIIa*PP1__pCaMKIIa);
 	double SpikeFlux1=cab;
-	double SpikeFlux2=0-(kca1*kca2*caa+(kca1+kca2)*cab);
+	double SpikeFlux2=0.0-(kca1*kca2*caa+(kca1+kca2)*cab);
 	memset(jacp_,0,sizeof(double)*numStateVar*numParam); /* 1426 */
 /* column 1 (df/dp_0) */
 	jacp_[0] = Ca*CaM; /* [0, 0] */
@@ -1272,7 +1273,7 @@ int CaMKIIs_func(double t, const double y_[], double *func_, void *par)
 	double ReactionFlux33=(kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa);
 	double ReactionFlux34=(kcat__PP1__pCaMKIIa*PP1__pCaMKIIa);
 	double SpikeFlux1=cab;
-	double SpikeFlux2=0-(kca1*kca2*caa+(kca1+kca2)*cab);
+	double SpikeFlux2=0.0-(kca1*kca2*caa+(kca1+kca2)*cab);
 	func_[_CaPerCaM] = BoundCa / (s + Total_CaM); /* CaPerCaM */
 	func_[_AutoCaMKII] = 100*(Total_pCaMKII / (s + totalCaMKII)); /* AutoCaMKII */
 	func_[_CaMPerPP2B] = Total_PP2B_CaM_CaX / (s + PP2B + Total_PP2B_CaM_CaX); /* CaMPerPP2B */
@@ -1470,7 +1471,7 @@ int CaMKIIs_funcJac(double t, const double y_[], double *funcJac_, void *par)
 	double ReactionFlux33=(kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa);
 	double ReactionFlux34=(kcat__PP1__pCaMKIIa*PP1__pCaMKIIa);
 	double SpikeFlux1=cab;
-	double SpikeFlux2=0-(kca1*kca2*caa+(kca1+kca2)*cab);
+	double SpikeFlux2=0.0-(kca1*kca2*caa+(kca1+kca2)*cab);
 	memset(funcJac_,0,sizeof(double)*numFunc*numStateVar); /* 115 */
 /* column 1 (dF/dy_0) */
 /* column 2 (dF/dy_1) */
@@ -1705,7 +1706,7 @@ int CaMKIIs_funcJacp(double t, const double y_[], double *funcJacp_, void *par)
 	double ReactionFlux33=(kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa);
 	double ReactionFlux34=(kcat__PP1__pCaMKIIa*PP1__pCaMKIIa);
 	double SpikeFlux1=cab;
-	double SpikeFlux2=0-(kca1*kca2*caa+(kca1+kca2)*cab);
+	double SpikeFlux2=0.0-(kca1*kca2*caa+(kca1+kca2)*cab);
 	memset(funcJacp_,0,sizeof(double)*numFunc*numParam); /* 310 */
 /* column 1 (dF/dp_0) */
 /* column 2 (dF/dp_1) */

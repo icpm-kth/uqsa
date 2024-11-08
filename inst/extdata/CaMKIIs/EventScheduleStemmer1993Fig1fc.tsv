@@ -1,0 +1,10 @@
+!!SBtab	Document='CaMKIIs' TableName='EventScheduleStemmer1993Fig1fc'		
+!TimePoint	!Time	!Transformation	!Dose
+StF1fcTP01	0	CaSeq	446.7
+StF1fcTP02	10	CaSeq	676.1
+StF1fcTP01	20	CaSeq	1023.3
+StF1fcTP02	30	CaSeq	1479.1
+StF1fcTP01	40	CaSeq	2187.8
+StF1fcTP02	50	CaSeq	3090.3
+StF1fcTP01	60	CaSeq	5623.4
+StF1fcTP02	70	CaSeq	9772.4

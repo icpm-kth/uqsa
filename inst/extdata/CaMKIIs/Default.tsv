@@ -1,0 +1,7 @@
+!!SBtab	SBtabVersion='1.0' Document='AMPA' TableType='Quantity' TableName='Defaults' TableTitle='Default units'
+!ID	!Name	!Unit
+time	time	millisecond
+volume	volume	liter
+substance	substance	umol
+length	length	um
+area	area	um2

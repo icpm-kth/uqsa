@@ -1,4 +1,4 @@
 !!SBtab	Document='CaMKIIs' TableName='Transformation'
 !ID	>isOn	>cab
 Activation	1	cab
-CaSpike	isOn	5.658469984
+CaSpike	1	(kca2-kca1)*dose

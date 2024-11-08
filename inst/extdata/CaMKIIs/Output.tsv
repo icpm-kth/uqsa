@@ -1,0 +1,7 @@
+!!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableType='Quantity' TableName='Output' TableTitle='Model output functions'		
+!ID	!Name	!Unit	!Formula
+CaPerCaM	MolCaPerMolCaM	1	BoundCa / (s + Total_CaM)
+AutoCaMKII	AutoCamkiiPercentage	1	100*(Total_pCaMKII / (s + totalCaMKII))
+CaMPerPP2B	MolCaMPerMolPP2B	1	Total_PP2B_CaM_CaX / (s + PP2B + Total_PP2B_CaM_CaX)
+ActivePP2B	ActivePP2BPercentage	1	100 * (PP2B_CaM_Ca4 / (s + PP2B + Total_PP2B_CaM_CaX))
+Camonitor	Camonitor	uM/l	Ca
