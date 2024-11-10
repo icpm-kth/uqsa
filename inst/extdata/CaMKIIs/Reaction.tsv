@@ -34,5 +34,4 @@ ReactionFlux31	ReactionFlux31	(kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca3*Ca)-(kr__
 ReactionFlux32	ReactionFlux32	(kautMax*pairedCaMKIIc*CaMKII_CaM_Ca4)	TRUE	synapse	CaMKII_CaM_Ca4 <=> pCaMKII_CaM_Ca4
 ReactionFlux33	ReactionFlux33	(kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa)	TRUE	synapse	pCaMKIIa + PP1 <=> PP1__pCaMKIIa
 ReactionFlux34	ReactionFlux34	(kcat__PP1__pCaMKIIa*PP1__pCaMKIIa)	TRUE	synapse	PP1__pCaMKIIa <=> CaMKII + PP1
-SpikeFlux1	SpikeFLux1	cab	FALSE	synapse	Ø <=> caa
-SpikeFlux2	SpikeFlux2	0.0-(kca1*kca2*caa+(kca1+kca2)*cab)	FALSE	synapse	Ø <=> cab
+

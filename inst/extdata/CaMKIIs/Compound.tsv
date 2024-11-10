@@ -21,5 +21,4 @@ pCaMKII_CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse
 pCaMKII_CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
 pCaMKII_CaM	micromole/litre	0	FALSE	kinetic	synapse
 PP1__pCaMKIIa	micromole/litre	0	FALSE	kinetic	synapse
-caa	micromole/litre	0	FALSE	kinetic	synapse
-cab	micromole/litre	0	FALSE	kinetic	synapse
+
