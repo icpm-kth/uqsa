@@ -1,4 +1,4 @@
-!!SBtab	SBtabVersion='1.0'  Document='CaMKIIs' TableType='Quantity'  TableName='Spikes' TableTitle='sets the state variable caa to the right value to make a nice spike'	
+!!SBtab	SBtabVersion='1.0'  Document='CaMKII' TableType='Quantity'  TableName='Spikes' TableTitle='sets the state variable caa to the right value to make a nice spike'	
 !TimePoint	!Time	!Transformation	!Dose
 SpikeTrigger0	0	CaSpike	229.1270
 SpikeTrigger1	200.0	CaSpike	229.1270

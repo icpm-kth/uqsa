@@ -1,5 +1,6 @@
 !!SBtab	Document='CaMKIIs' TableName='EventScheduleShifman2006Fig1Bsq'		
 !TimePoint	!Time	!Transformation	!Dose
+ShTPinit	-400	Activation	0
 ShTP01	0	CaSeq	364
 ShTP02	10	CaSeq	2305
 ShTP03	20	CaSeq	2548
