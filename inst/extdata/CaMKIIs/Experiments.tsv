@@ -6,4 +6,4 @@ ODonnel2010Fig3Co	Time Series	0	0	0	100	0	-600	EventScheduleODonnel2010Fig3Co	Fi
 Stemmer1993Fig1tr	Time Series	0	0	300	3	0	-600	EventScheduleStemmer1993Fig1tr	Figure 1 triangles	https://doi.org/10.1021/bi00188a015
 Stemmer1993Fig1fc	Time Series	0	0	30	3	0	-600	EventScheduleStemmer1993Fig1fc	Figure 1 filled circle	https://doi.org/10.1021/bi00188a015
 Stemmer1993Fig2Afc	Time Series	0	0	25000	0	0	-600	EventScheduleStemmer1993Fig2Afc	Figure 2A filled circle	https://doi.org/10.1021/bi00188a015
-SpikeSeries	Time Series	0	0	25000	0	0	-600	Spikes	none	none
+

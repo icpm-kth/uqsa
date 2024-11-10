@@ -43,7 +43,7 @@ kr__CaM_Ca3__pCaMKIIa	micromole/litre	KD__CaM_Ca3__pCaMKIIa * kf__CaM_Ca3__pCaMK
 kr__CaM_Ca2__pCaMKIIa	micromole/litre	KD__CaM_Ca2__pCaMKIIa * kf__CaM_Ca2__pCaMKIIa	dependent parameter	synapse
 kr__CaM_Ca1__pCaMKIIa	micromole/litre	KD__CaM_Ca1__pCaMKIIa * kf__CaM_Ca1__pCaMKIIa	dependent parameter	synapse
 kr__CaM__pCaMKIIa	micromole/litre	KD__CaM__pCaMKIIa * kf__CaM__pCaMKIIa	dependent parameter	synapse
-Ca	micromole/litre	isOn*CaBase+caa	input dynamics	synapse
+Ca	micromole/litre	isOn*CaBase	input dynamics	synapse
 PP1	micromole/litre	PP1_0-PP1__pCaMKIIa	input dynamics	synapse
 CaMKII	micromole/litre	CaMKII_0 - PP1_0 - (CaMKII_CaM + CaMKII_CaM_Ca1 + CaMKII_CaM_Ca2 + CaMKII_CaM_Ca3 + CaMKII_CaM_Ca4 + pCaMKII_CaM_Ca4 + pCaMKIIa + pCaMKII_CaM_Ca3 + pCaMKII_CaM_Ca2 + pCaMKII_CaM_Ca1 + pCaMKII_CaM - PP1)	from conservation law	synapse
 CaM	micromole/litre	CaM_0 + PP1_0 - CaMKII_0 - (CaM_Ca1 + CaM_Ca2 + CaM_Ca3 + CaM_Ca4 + PP2B_CaM + PP2B_CaM_Ca1 + PP2B_CaM_Ca2 + PP2B_CaM_Ca3 + PP2B_CaM_Ca4 + PP1 - CaMKII - pCaMKIIa)	from conservation law	synapse
