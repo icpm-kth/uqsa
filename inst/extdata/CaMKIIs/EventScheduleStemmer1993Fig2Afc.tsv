@@ -1,5 +1,6 @@
-!!SBtab	Document='CaMKIIs' Tablename='EventSchuleStemmer1993Fig2Afc'		
+!!SBtab	Document='CaMKIIs' TableName='EventScheduleStemmer1993Fig2Afc'		
 !TimePoint	!Time	!Transformation	!Dose
+StF2AfcTPinit	-400	Activation	0
 StF2AfcTP001	0	CaSeq	457.088
 StF2AfcTP002	10	CaSeq	831.763
 StF2AfcTP003	20	CaSeq	1122.018

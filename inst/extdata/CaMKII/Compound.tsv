@@ -1,4 +1,4 @@
-!!SBtab	TableName='Compound' TableType='Compound' TableTitle='CaMKIIs Compounds' SBtabVersion='1.0' Document='CaMKIIs'  Document='CaMKIIs'				
+!!SBtab	TableName='Compound' TableType='Compound' TableTitle='CaMKIIs Compounds' SBtabVersion='1.0' Document='CaMKII'  Document='CaMKII'				
 !ID	!Unit	!InitialValue	!IsConstant	!Type	!Location
 CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
 CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse

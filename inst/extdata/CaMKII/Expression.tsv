@@ -1,4 +1,4 @@
-!!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableType='Quantity' TableName='Expression' TableTitle='CaMKIIs parameters that depend on others'				
+!!SBtab	SBtabVersion='1.0' Document='CaMKII' TableType='Quantity' TableName='Expression' TableTitle='CaMKIIs parameters that depend on others'				
 !ID	!Name	!Unit	!Formula	!Description	!Location
 KD__CaM_Ca3__PP2B	KD__CaM_Ca3__PP2B	micromole/litre	(KD__CaM_Ca3__Ca * KD__CaM_Ca4__PP2B) / KD__PP2B_CaM_Ca3__Ca	dependent parameter	synapse
 KD__CaM_Ca2__PP2B	KD__CaM_Ca2__PP2B	micromole/litre	(KD__CaM_Ca2__Ca * KD__CaM_Ca3__PP2B) / KD__PP2B_CaM_Ca2__Ca	dependent parameter	synapse

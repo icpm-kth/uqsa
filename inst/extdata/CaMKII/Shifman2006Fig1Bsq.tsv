@@ -1,4 +1,4 @@
-!!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableType='QuantityMatrix' TableName='Shifman2006Fig1Bsq' TableTitle='[Nair 2014 Figure 12.3D] CaN-CaM' 
+!!SBtab	SBtabVersion='1.0' Document='CaMKII' TableType='QuantityMatrix' TableName='Shifman2006Fig1Bsq' TableTitle='[Nair 2014 Figure 12.3D] CaN-CaM' 
 !ID	>Ca_set	>CaPerCaM	~CaPerCaM
 E1D0	364	0.011	0.3985
 E1D1	2305	1.196	0.3985

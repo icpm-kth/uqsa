@@ -1,4 +1,4 @@
-!!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableType='QuantityMatrix' TableName='ODonnel2010Fig3Co' TableTitle='[Nair 2014 Figure 12.3B] CaN activation by Ca 30nM CaM' 
+!!SBtab	SBtabVersion='1.0' Document='CaMKII' TableType='QuantityMatrix' TableName='ODonnel2010Fig3Co' TableTitle='[Nair 2014 Figure 12.3B] CaN activation by Ca 30nM CaM' 
 !ID	>CaM_0	>CaMPerPP2B	~CaMPerPP2B
 E2D0	1	0	0.0902
 E2D1	26.9	0	0.0902

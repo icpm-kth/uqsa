@@ -1,4 +1,4 @@
-!!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableType='QuantityMatrix' TableName='SpikeSeries' TableTitle='Calcium Spikes, created by caa and cab'		
+!!SBtab	SBtabVersion='1.0' Document='CaMKII' TableType='QuantityMatrix' TableName='SpikeSeries' TableTitle='Calcium Spikes, created by caa and cab'		
 !TimePoint	!Time	>Camonitor	~Camonitor
 SpikeSeriesT000	0	100	500
 SpikeSeriesT001	10	100	500
