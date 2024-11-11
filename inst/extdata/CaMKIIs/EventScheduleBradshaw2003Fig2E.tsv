@@ -1,6 +1,5 @@
 !!SBtab	Document='CaMKIIs' TableName='EventScheduleBradshaw2003Fig2E'		
 !TimePoint	!Time	!Transformation	!Dose
-BTinit	-400	Activation	0
 BT01	0	CaSeq	175.8
 BT02	10	CaSeq	236
 BT03	20	CaSeq	313.3
