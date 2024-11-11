@@ -1,5 +1,4 @@
 !!SBtab	Document='CaMKIIs' TableName='Transformation'			
-!ID	>isOn	>cab	>CaBase	>CaM_0
-Activation	1	cab	CaBase	CaM_0
-CaSeq	1	cab	dose	CaM_0
-CaMSeq	isOn	cab	CaBase	dose
+!ID	>CaBase	>CaM_0
+CaSeq	dose	CaM_0
+CaMSeq	CaBase	dose

@@ -1,4 +1,4 @@
-!!SBtab	TableName='Reaction' TableType='Reaction' TableTitle='CaMKIIs Reaction Fluxes' SBtabVersion='1.0' Document='CaMKIIs'  Document='CaMKIIs'				
+!!SBtab	TableName='Reaction' TableType='Reaction' TableTitle='CaMKIIs Reaction Fluxes' SBtabVersion='1.0' Document='CaMKIIs'			
 !ID	!Name	!KineticLaw	!IsReversible	!Location	!ReactionFormula
 ReactionFlux1	ReactionFlux1	(kf__CaM__Ca*Ca*CaM)-(kr__CaM__Ca*CaM_Ca1)	TRUE	synapse	Ca + CaM <=> CaM_Ca1
 ReactionFlux2	ReactionFlux2	(kf__CaM_Ca1__Ca*Ca*CaM_Ca1)-(kr__CaM_Ca1__Ca*CaM_Ca2)	TRUE	synapse	Ca + CaM_Ca1 <=> CaM_Ca2
