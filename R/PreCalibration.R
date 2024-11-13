@@ -36,7 +36,7 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
 		options(mc.cores=nCores)
 	}
 	# make npc a multiple of cores
-	npc <- ceiling(npc/nCores)*nCores
+	npc <- (max(2,ceiling(npc/nCores)))*nCores
 	prePar <- t(rprior(npc))
 	n <- dim(prePar)
 	# split work
@@ -82,7 +82,7 @@ getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1)
 
 	prePar <- prePar[,!is.na(preDelta)]
 	preDelta <- preDelta[!is.na(preDelta)]
-	nk <- ceiling(ncol(prePar)*p)
+	nk <- max(ceiling(ncol(prePar)*p), num)
 	pick1 <- which(preDelta <= delta)   # pick all pars that meet threshold
 	pick2 <- head(order(preDelta, decreasing = FALSE),nk) # pick top p percent
 	if(length(pick1)>length(pick2)){
