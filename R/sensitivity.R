@@ -133,3 +133,65 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 	legend(x="topright",fill=color[1:d[2]],legend=colnames(S),ncol=2)
 }
 
+
+#' Outpts the random sample on which to perform the Sobol-Homma-Saltelli global sensitivity 
+#' analysis
+#' 
+#' The sample consists of two random (nSamples x nPars) matrices M1, M2 and 
+#' a third (nSamples x nPars x nPars) array N. N consists of nPars 
+#' copies of M2, except that in each M2-matrix one column has been replaced by 
+#' the corresponding column of M1. M1 and M2 consists of random numbers from a 
+#' normal distribution
+#' (see e.g. Halnes, Geir, et al. J. comp. neuroscience 27.3 (2009): 471.) for 
+#' description.
+
+shs_prior <- function(nSamples,rprior){
+  nPars<-NCOL(rprior(1))
+  M1 <- rprior(nSamples)
+  M2 <- rprior(nSamples)
+  N <- array(NA, dim=c(nSamples,nPars,nPars))
+  for (i in 1:nPars){
+    # Replace the i:th column in M2 by the i:th column from M1 to obtain Ni
+    N[,,i] <- M2
+    N[,i,i] <- M1[,i]
+  }
+  return(list(M1=M1,M2=M2,N=N))
+}
+
+#'Outputs the global sensitivity score SI and SIT, calculated by the Sobol-Homma-Saltelli method
+#'
+#'fM1 (and fM2) is a (nSamples x nOuts) matrix that contains the outputs of the simulations described by 
+#'each parameter vector of M1 (and M2). fN is a (nSamples x nOuts x nPars) array that contains the outputs 
+#'of the simulations described by 'each parameter vector of N
+shs_gsa<- function(fM1,fM2,fN, subtractMean = TRUE){
+  #implementation partly by Geir Halnes et al. (Halnes, Geir, et al. J. comp. neuroscience 27.3 (2009): 471.) 
+  nSamples <- dim(fM1)[1]
+  nOuts <- dim(fM1)[2]
+  nPars <- dim(fN)[3]
+  
+  #subtractMean <- 0
+  #Makes the model more stable
+  if(subtractMean){
+    fM1 <- fM1 - matrix(colMeans(fM1), nrow=nSamples, ncol=nOuts, byrow=1)
+    fM2 <- fM2 - matrix(colMeans(fM2), nrow=nSamples, ncol=nOuts, byrow=1)
+    for (i in 1:nPars){
+      fN[,,i] <- fN[,,i] - matrix(colMeans(fN[,,i]), nrow=nSamples, ncol=nOuts, byrow=1)
+    }
+  } 
+  
+  EY2 <- colMeans(fM1*fM2) 
+  VY <- colSums(fM1*fM1)/(nSamples-1) - EY2
+  VYT <- colSums(fM2*fM2)/(nSamples-1) - EY2
+  
+  SI <- matrix(0, nrow=nOuts,ncol=nPars)
+  SIT <- matrix(0, nrow=nOuts,ncol=nPars)
+  for(i in 1:nPars){
+    SI[,i] <- (colSums(fM1*fN[,,i])/(nSamples-1) - EY2)/VY
+    SIT[,i] <- 1 - (colSums(fM2*fN[,,i])/(nSamples-1) - EY2)/VYT
+  }
+  
+  sensitivities <- list(SI,SIT)
+  names(sensitivities) <-c("SI", "SIT")
+  return(sensitivities)
+}
+
