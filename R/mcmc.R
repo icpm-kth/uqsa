@@ -16,7 +16,6 @@
 	}
 }
 
-
 #' checks whether a variable has the named attributes
 #'
 #' @param var a variable to check for attributes
@@ -580,7 +579,7 @@ metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior
 		L <- exp(beta*(llProposal - llGiven))
 		if (is.null(L)) cat("llProposal: ",llProposal," llGiven: ",llGiven," beta: ",beta," L:",L,"\n")
 		P <- priorProposal/priorGiven
-		if (!is.null(L) && is.finite(L) && runif(1) < L*P){
+		if (!is.null(L) && !is.null(P) && is.finite(L) && is.finite(P) && runif(1) < L*P){
 			attr(parProposal,"accepted") <- TRUE
 			return(parProposal)
 		} else {
@@ -625,9 +624,9 @@ smmalaUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gr
 		##cat("rank",r,"gradient-PR: ", attr(parProposal,"gradLogPrior"),"\n")
 		fwdDensity <- smmala_move_density(beta,parProposal,parGiven,fp,eps)
 		bwdDensity <- smmala_move_density(beta,parGiven,parProposal,fp,eps)
-		L <- exp(beta*(llProposal - llGiven))
-		P <- priorProposal/priorGiven
-		K <- bwdDensity/fwdDensity
+		L <- exp(beta*(llProposal - llGiven)) %otherwise% 0.0
+		P <- priorProposal/priorGiven %otherwise% 0.0
+		K <- bwdDensity/fwdDensity %otherwise% 0.0
 		##cat("rank: ",r,"; beta: ",beta, "; llProposal: ",llProposal,"; llGiven: ",llGiven,".\n")
 		##cat("rank: ",r,";L ",L,";P: ",P,";K: ",K,".\n")
 		flush.console()
