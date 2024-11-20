@@ -65,7 +65,8 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 				mclapply(
 					experiments,
 					function(EX) {
-						rgsl::r_gsl_odeiv2_outer_sens(modelName, list(EX), as.matrix(modelPar), method=method)
+						tryCatch(rgsl::r_gsl_odeiv2_outer_sens(modelName, list(EX), as.matrix(modelPar), method=method),
+							error = function(e) {prinmt(e); return(NA)})
 					}
 				), recursive=FALSE)
 			stopifnot(length(experiments)==length(yf))
@@ -78,7 +79,8 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 				mclapply(
 					experiments,
 					function(EX) {
-						rgsl::r_gsl_odeiv2_outer(modelName, list(EX), as.matrix(modelPar), method=method)
+						tryCatch(rgsl::r_gsl_odeiv2_outer(modelName, list(EX), as.matrix(modelPar), method=method),
+							error = function(e) {print(e); return(NA)})
 					}
 				), recursive=FALSE)
 			stopifnot(length(experiments)==length(yf))

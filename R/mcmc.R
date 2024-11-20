@@ -639,6 +639,12 @@ smmalaUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gr
 		flush.console()
 		attr(parProposal,"simulations") <- simulate(parProposal)
 		llProposal <- logLikelihood(parProposal)
+		if (!is.numeric(llProposal) || length(llProposal)!=1 || !is.finite(llProposal)){
+			warning(sprintf("smmala update encountered an invalid likelihood value: %f\n",llProposal[1]))
+			print(llProposal)
+			print(as.numeric(parGiven))
+		}
+
 		priorProposal <- dprior(parProposal)
 		attr(parProposal,"beta") <- beta
 		attr(parProposal,"logLikelihood") <- llProposal
@@ -830,8 +836,15 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	N <- length(experiments)
 	if (!is.null(simpleUserLLF)){
 		llf <- function(parMCMC){
-			simulations <- attr(parMCMC,"simulations")
+			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
+				return(0)
+			} else {
+				simulations <- attr(parMCMC,"simulations")
+			}
 			for (i in seq(N)){
+				if (!("func" %in% names(simulations[[i]])) || any(is.na(simulations[[i]]$func))){
+					return(0)
+				}
 				dimFunc <- dim(simulations[[i]]$func)
 				n <- dimFunc[3]
 				m <- head(dimFunc,2)
@@ -849,14 +862,27 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 		}
 	} else if (!is.null(perExpLLF)){
 		llf <- function(parMCMC){
+			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
+				return(0)
+			} else {
+				simulations <- attr(parMCMC,"simulations")
+			}
 			simulations <- attr(parMCMC,"simulations")
 			L <- perExpLLF(parMCMC,simulations,experiments)
 			return(L)
 		}
 	} else {
 		llf <- function(parMCMC){
+			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
+				return(0)
+			} else {
+				simulations <- attr(parMCMC,"simulations")
+			}
 			simulations <- attr(parMCMC,"simulations")
 			for (i in seq(N)){
+				if (!("func" %in% names(simulations[[i]])) || any(is.na(simulations[[i]]$func))){
+					return(0)
+				}
 				dimFunc <- dim(simulations[[i]]$func)
 				n <- dimFunc[3]
 				m <- head(dimFunc,2)

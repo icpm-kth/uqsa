@@ -42,7 +42,8 @@ if (!is.null(a) && length(a)>0 && length(a) %% 2 == 0){
 		)
 	}
 }
-beta <- (1.0 - (r/cs))^2
+R <- round(cs/2)
+beta <- (1.0 - (r<R)*(r/R))^2
 if (N %% 4 != 0) N <- round(N/4) * 4
 
 message(sprintf("rank %i of %i will sample %i points.\n",r,cs,N))
