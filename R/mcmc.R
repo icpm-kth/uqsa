@@ -16,6 +16,33 @@
 	}
 }
 
+#' Determine a prefix from a character vector str of similar contents
+#'
+#' The result is such that `all(startsWith(str,determinePrefix(str)))` is `TRUE`.
+#'
+#' By default, the strings are assumed to be '-' separated words, and
+#' a series of words is found to be thje prefix if all entries start
+#' with that set of words.
+#'
+#' The normal case is c("abc-1","abc-2b","abc-2a") maps to "abc"
+#' @export
+#' @param str a character vector
+#' @param split the token to use for strsplit instead of '-', this should be `character(0)` if you want to split letter by letter
+#' @return the prefix common to all entries of str.
+determinePrefix <- function(str,split="-",collapse="-"){
+return(paste(
+	Reduce(
+		function(a,b) {
+			m<-seq(min(length(a),length(b)));
+			a<-a[m]; b<-b[m];
+			i<-which(unlist(mapply(identical,a,b)));
+			return(a[i])
+		},
+		strsplit(str,split)),
+		collapse=collapse)
+	)
+}
+
 #' checks whether a variable has the named attributes
 #'
 #' @param var a variable to check for attributes
