@@ -134,64 +134,84 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 }
 
 
-#' Outpts the random sample on which to perform the Sobol-Homma-Saltelli global sensitivity 
+#' Outpts the random sample on which to perform the Sobol-Homma-Saltelli global sensitivity
 #' analysis
-#' 
-#' The sample consists of two random (nSamples x nPars) matrices M1, M2 and 
-#' a third (nSamples x nPars x nPars) array N. N consists of nPars 
-#' copies of M2, except that in each M2-matrix one column has been replaced by 
-#' the corresponding column of M1. M1 and M2 consists of random numbers from a 
-#' normal distribution
-#' (see e.g. Halnes, Geir, et al. J. comp. neuroscience 27.3 (2009): 471.) for 
-#' description.
-
+#'
+#' Each parameter vector has length nPars,
+#' The sample consists of two random (nSamples x nPars) matrices M1,
+#' M2 and a third (nSamples x nPars x nPars) array N. N consists of
+#' nPars copies of M2, except that in each M2-matrix one column has
+#' been replaced by the corresponding column of M1. M1 and M2 consists
+#' of random numbers from a normal distribution.
+#'
+#' These matrices provide prior distribution samples to be further
+#' processed by the simulator, similar to this:
+#'
+#' ```
+#' sim <- simulator.c(experiments,modelName)
+#' fM1 <- t(sim(t(M1))[[1]]$state[,ti,])       # or similar
+#' ```
+#'
+#' For details see: Halnes, Geir, et al. J. comp. neuroscience 27.3 (2009): 471.
+#'
+#' @export
+#' @param nSamples number of rows to return
+#' @param rprior a function that samples from the prior distribution
+#' @return a list with the components M1, M2 (both matrices) and N (a
+#'     3D-array).
 shs_prior <- function(nSamples,rprior){
-  nPars<-NCOL(rprior(1))
-  M1 <- rprior(nSamples)
-  M2 <- rprior(nSamples)
-  N <- array(NA, dim=c(nSamples,nPars,nPars))
-  for (i in 1:nPars){
-    # Replace the i:th column in M2 by the i:th column from M1 to obtain Ni
-    N[,,i] <- M2
-    N[,i,i] <- M1[,i]
-  }
-  return(list(M1=M1,M2=M2,N=N))
+	nPars<-NCOL(rprior(1))
+	M1 <- rprior(nSamples)
+	M2 <- rprior(nSamples)
+	N <- array(NA, dim=c(nSamples,nPars,nPars))
+	for (i in 1:nPars){
+		# Replace the i:th column in M2 by the i:th column from M1 to obtain Ni
+		N[,,i] <- M2
+		N[,i,i] <- M1[,i]
+	}
+	return(list(M1=M1,M2=M2,N=N))
 }
 
-#'Outputs the global sensitivity score SI and SIT, calculated by the Sobol-Homma-Saltelli method
+#' Outputs the global sensitivity scores SI and SIT, calculated by the Sobol-Homma-Saltelli method
 #'
-#'fM1 (and fM2) is a (nSamples x nOuts) matrix that contains the outputs of the simulations described by 
-#'each parameter vector of M1 (and M2). fN is a (nSamples x nOuts x nPars) array that contains the outputs 
-#'of the simulations described by 'each parameter vector of N
+#' M1, M2, and N are matrices prepared by `uqsa::shs_prior()`.  The
+#' parameters (rows) from these matrices need to be simulated (using
+#' any method), to obtain fM1, fM2 and fN.
+#'
+#' These matrices are shaped similarly to M1, M2 and N respectively,
+#' but now the parameters are replaced by the effects they have on a
+#' observable of interest (the output). It can be the vector
+#' valued output at a specific (single) time-point or a scalar output
+#' at different time-points.
+#'
+#' See Geir Halnes et al. (Halnes, Geir, et al. J. comp. neuroscience 27.3 (2009): 471.
+#'
+#' @param fM1 output (f)unction values for M1, nSamples × nOuts
+#' @param fM2 output (f)unction values for M2, nSamples × nOuts
+#' @param fN output (f)unction values for N, nSamples × nOuts × nPars
+#' @return a list with sensitivity indices $SI and total sensitivities $SIT
 shs_gsa<- function(fM1,fM2,fN, subtractMean = TRUE){
-  #implementation partly by Geir Halnes et al. (Halnes, Geir, et al. J. comp. neuroscience 27.3 (2009): 471.) 
-  nSamples <- dim(fM1)[1]
-  nOuts <- dim(fM1)[2]
-  nPars <- dim(fN)[3]
-  
-  #subtractMean <- 0
-  #Makes the model more stable
-  if(subtractMean){
-    fM1 <- fM1 - matrix(colMeans(fM1), nrow=nSamples, ncol=nOuts, byrow=1)
-    fM2 <- fM2 - matrix(colMeans(fM2), nrow=nSamples, ncol=nOuts, byrow=1)
-    for (i in 1:nPars){
-      fN[,,i] <- fN[,,i] - matrix(colMeans(fN[,,i]), nrow=nSamples, ncol=nOuts, byrow=1)
-    }
-  } 
-  
-  EY2 <- colMeans(fM1*fM2) 
-  VY <- colSums(fM1*fM1)/(nSamples-1) - EY2
-  VYT <- colSums(fM2*fM2)/(nSamples-1) - EY2
-  
-  SI <- matrix(0, nrow=nOuts,ncol=nPars)
-  SIT <- matrix(0, nrow=nOuts,ncol=nPars)
-  for(i in 1:nPars){
-    SI[,i] <- (colSums(fM1*fN[,,i])/(nSamples-1) - EY2)/VY
-    SIT[,i] <- 1 - (colSums(fM2*fN[,,i])/(nSamples-1) - EY2)/VYT
-  }
-  
-  sensitivities <- list(SI,SIT)
-  names(sensitivities) <-c("SI", "SIT")
-  return(sensitivities)
+	nSamples <- dim(fM1)[1]
+	nOuts <- dim(fM1)[2]
+	nPars <- dim(fN)[3]
+	if(subtractMean){
+		fM1 <- fM1 - matrix(colMeans(fM1), nrow=nSamples, ncol=nOuts, byrow=1)
+		fM2 <- fM2 - matrix(colMeans(fM2), nrow=nSamples, ncol=nOuts, byrow=1)
+		for (i in 1:nPars){
+			fN[,,i] <- fN[,,i] - matrix(colMeans(fN[,,i]), nrow=nSamples, ncol=nOuts, byrow=1)
+		}
+	}
+
+	EY2 <- colMeans(fM1*fM2)
+	VY <- colSums(fM1*fM1)/(nSamples-1) - EY2
+	VYT <- colSums(fM2*fM2)/(nSamples-1) - EY2
+
+	SI <- matrix(0, nrow=nOuts,ncol=nPars)
+	SIT <- matrix(0, nrow=nOuts,ncol=nPars)
+	for(i in 1:nPars){
+		SI[,i] <- (colSums(fM1*fN[,,i])/(nSamples-1) - EY2)/VY
+		SIT[,i] <- 1 - (colSums(fM2*fN[,,i])/(nSamples-1) - EY2)/VYT
+	}
+	return(list(SI=SI,SIT=SIT))
 }
 
