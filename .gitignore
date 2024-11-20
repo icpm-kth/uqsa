@@ -2,6 +2,7 @@
 *.h5
 *Suggested*.tsv
 *.mat
+*.RDS
 *.RData
 *.log
 *.txt
