@@ -19,7 +19,7 @@ enum func { _CaPerCaM,_AutoCaMKII,_CaMPerPP2B,_ActivePP2B,_Camonitor, numFunc };
  */
 
 /* ode vector field: y'=f(t,y;p) */
-int CaMKIIs_vf(double t, const double y_[], double f_[], void *par)
+int CaMKII_vf(double t, const double y_[], double f_[], void *par)
 {
 	double *p_=par;
 	if (!y_ || !f_) return 23;
@@ -237,7 +237,7 @@ int CaMKIIs_vf(double t, const double y_[], double f_[], void *par)
 /* Scheduled Event function,
    EventLabel specifies which of the possible transformations to apply,
    dose can specify a scalar intensity for this transformation. */
-int CaMKIIs_event(double t, double y_[], void *par, int EventLabel, double dose)
+int CaMKII_event(double t, double y_[], void *par, int EventLabel, double dose)
 {
 	double *p_=par;
 	if (!y_ || !par || EventLabel<0) return 2;
@@ -440,7 +440,7 @@ int CaMKIIs_event(double t, double y_[], void *par, int EventLabel, double dose)
 }
 
 /* ode Jacobian df(t,y;p)/dy */
-int CaMKIIs_jac(double t, const double y_[], double *jac_, double *dfdt_, void *par)
+int CaMKII_jac(double t, const double y_[], double *jac_, double *dfdt_, void *par)
 {
 	double *p_=par;
 	if (!y_ || !jac_) return 23*23;
@@ -756,7 +756,7 @@ int CaMKIIs_jac(double t, const double y_[], double *jac_, double *dfdt_, void *
 	return GSL_SUCCESS;
 }
 /* ode parameter Jacobian df(t,y;p)/dp */
-int CaMKIIs_jacp(double t, const double y_[], double *jacp_, double *dfdt_, void *par)
+int CaMKII_jacp(double t, const double y_[], double *jacp_, double *dfdt_, void *par)
 {
 	double *p_=par;
 	if (!y_ || !jacp_) return 23*62;
@@ -1084,7 +1084,7 @@ int CaMKIIs_jacp(double t, const double y_[], double *jacp_, double *dfdt_, void
 	return GSL_SUCCESS;
 }
 /* ode Functions F(t,y;p) */
-int CaMKIIs_func(double t, const double y_[], double *func_, void *par)
+int CaMKII_func(double t, const double y_[], double *func_, void *par)
 {
 	double *p_=par;
 	if (!y_ || !func_) return 5;
@@ -1282,7 +1282,7 @@ int CaMKIIs_func(double t, const double y_[], double *func_, void *par)
 	return GSL_SUCCESS;
 }
 /* Function Jacobian dF(t,y;p)/dy */
-int CaMKIIs_funcJac(double t, const double y_[], double *funcJac_, void *par)
+int CaMKII_funcJac(double t, const double y_[], double *funcJac_, void *par)
 {
 	double *p_=par;
 	if (!y_ || !funcJac_) return 115;
@@ -1517,7 +1517,7 @@ int CaMKIIs_funcJac(double t, const double y_[], double *funcJac_, void *par)
 	return GSL_SUCCESS;
 }
 /* Function parameter Jacobian dF(t,y;p)/dp */
-int CaMKIIs_funcJacp(double t, const double y_[], double *funcJacp_, void *par)
+int CaMKII_funcJacp(double t, const double y_[], double *funcJacp_, void *par)
 {
 	double *p_=par;
 	if (!y_ || !funcJacp_) return 310;
@@ -1777,7 +1777,7 @@ int CaMKIIs_funcJacp(double t, const double y_[], double *funcJacp_, void *par)
 	return GSL_SUCCESS;
 }
 /* ode default parameters */
-int CaMKIIs_default(double t, void *par)
+int CaMKII_default(double t, void *par)
 {
 	double *p_=par;
 	if (!p_) return 62;
@@ -1847,7 +1847,7 @@ int CaMKIIs_default(double t, void *par)
 	return GSL_SUCCESS;
 }
 /* ode initial values */
-int CaMKIIs_init(double t, double *y_, void *par)
+int CaMKII_init(double t, double *y_, void *par)
 {
 	double *p_=par;
 	if (!y_) return 23;

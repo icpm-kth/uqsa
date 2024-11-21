@@ -62,6 +62,8 @@ navbar:
           href: articles/AKAR4.html
         - text: Multiple chains via MPI
           href: articles/mpi.html
+        - text: SMMALA and CaMKII
+          href: articles/smmala.html
     reference:
         text: Function reference
         href: reference/index.html

@@ -1,7 +1,7 @@
 # require("deSolve")
 
 # ode vector field: y'=f(t,y;p)
-CaMKIIs_vf <- function(t, state, parameters)
+CaMKII_vf <- function(t, state, parameters)
 {
 	a <- 3.90264
 	b <- 2.86972
@@ -188,7 +188,7 @@ CaMKIIs_vf <- function(t, state, parameters)
 	ReactionFlux33 <- (kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa)
 	ReactionFlux34 <- (kcat__PP1__pCaMKIIa*PP1__pCaMKIIa)
 	SpikeFlux1 <- cab
-	SpikeFlux2 <- 0-(kca1*kca2*caa+(kca1+kca2)*cab)
+	SpikeFlux2 <- 0.0-(kca1*kca2*caa+(kca1+kca2)*cab)
 	f_<-vector(mode='numeric',len=23)
 	f_[1] <- +ReactionFlux1-ReactionFlux2-ReactionFlux6-ReactionFlux15-ReactionFlux26# CaM_Ca1
 	f_[2] <- +ReactionFlux2-ReactionFlux3-ReactionFlux7-ReactionFlux16-ReactionFlux25# CaM_Ca2
@@ -218,7 +218,7 @@ CaMKIIs_vf <- function(t, state, parameters)
 	return(list(f_))
 }
 # ode Jacobian df(t,y;p)/dy
-CaMKIIs_jac<-function(t, state, parameters)
+CaMKII_jac<-function(t, state, parameters)
 {
 	a <- 3.90264
 	b <- 2.86972
@@ -405,7 +405,7 @@ CaMKIIs_jac<-function(t, state, parameters)
 	ReactionFlux33 <- (kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa)
 	ReactionFlux34 <- (kcat__PP1__pCaMKIIa*PP1__pCaMKIIa)
 	SpikeFlux1 <- cab
-	SpikeFlux2 <- 0-(kca1*kca2*caa+(kca1+kca2)*cab)
+	SpikeFlux2 <- 0.0-(kca1*kca2*caa+(kca1+kca2)*cab)
 	jac_ <- matrix(0.0,23,23)
 # column 1
 	jac_[1,1] <- (-kf__CaM_Ca1__pCaMKIIa*pCaMKIIa)-kr__CaM__Ca-PP2B*kf__CaM_Ca1__PP2B-CaMKII*kf__CaM_Ca1__CaMKII-Ca*kf__CaM_Ca1__Ca
@@ -534,7 +534,7 @@ CaMKIIs_jac<-function(t, state, parameters)
 	return(jac_)
 }
 # ode parameter Jacobian df(t,y;p)/dp
-CaMKIIs_jacp<-function(t, state, parameters)
+CaMKII_jacp<-function(t, state, parameters)
 {
 	a <- 3.90264
 	b <- 2.86972
@@ -721,7 +721,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	ReactionFlux33<-(kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa)
 	ReactionFlux34<-(kcat__PP1__pCaMKIIa*PP1__pCaMKIIa)
 	SpikeFlux1<-cab
-	SpikeFlux2<-0-(kca1*kca2*caa+(kca1+kca2)*cab)
+	SpikeFlux2<-0.0-(kca1*kca2*caa+(kca1+kca2)*cab)
 	jacp_ <- matrix(0.0,23,62)
 # column 1
 	jacp_[1,1] <- Ca*CaM
@@ -862,7 +862,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	return(jacp_)
 }
 # ode Functions F(t,y;p)
-CaMKIIs_func<-function(t, state, parameters)
+CaMKII_func<-function(t, state, parameters)
 {
 	a <- 3.90264
 	b <- 2.86972
@@ -1049,7 +1049,7 @@ CaMKIIs_func<-function(t, state, parameters)
 	ReactionFlux33 <- (kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa)
 	ReactionFlux34 <- (kcat__PP1__pCaMKIIa*PP1__pCaMKIIa)
 	SpikeFlux1 <- cab
-	SpikeFlux2 <- 0-(kca1*kca2*caa+(kca1+kca2)*cab)
+	SpikeFlux2 <- 0.0-(kca1*kca2*caa+(kca1+kca2)*cab)
 	func_ <- vector(mode='numeric',len=5)
 	func_[1] <- BoundCa / (s + Total_CaM) # CaPerCaM
 	func_[2] <- 100*(Total_pCaMKII / (s + totalCaMKII)) # AutoCaMKII
@@ -1060,7 +1060,7 @@ CaMKIIs_func<-function(t, state, parameters)
 	return(func_)
 }
 # output function Jacobian dF(t,y;p)/dp
-CaMKIIs_funcJac<-function(t, state, parameters)
+CaMKII_funcJac<-function(t, state, parameters)
 {
 	a <- 3.90264
 	b <- 2.86972
@@ -1247,7 +1247,7 @@ CaMKIIs_funcJac<-function(t, state, parameters)
 	ReactionFlux33<-(kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa)
 	ReactionFlux34<-(kcat__PP1__pCaMKIIa*PP1__pCaMKIIa)
 	SpikeFlux1<-cab
-	SpikeFlux2<-0-(kca1*kca2*caa+(kca1+kca2)*cab)
+	SpikeFlux2<-0.0-(kca1*kca2*caa+(kca1+kca2)*cab)
 	fjac_ <- matrix(0.0,5,23)
 # column 1
 # column 2
@@ -1295,7 +1295,7 @@ CaMKIIs_funcJac<-function(t, state, parameters)
 	return(fjac_)
 }
 # output function parameter Jacobian dF(t,y;p)/dp
-CaMKIIs_funcJacp<-function(t, state, parameters)
+CaMKII_funcJacp<-function(t, state, parameters)
 {
 	a <- 3.90264
 	b <- 2.86972
@@ -1482,7 +1482,7 @@ CaMKIIs_funcJacp<-function(t, state, parameters)
 	ReactionFlux33<-(kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa)
 	ReactionFlux34<-(kcat__PP1__pCaMKIIa*PP1__pCaMKIIa)
 	SpikeFlux1<-cab
-	SpikeFlux2<-0-(kca1*kca2*caa+(kca1+kca2)*cab)
+	SpikeFlux2<-0.0-(kca1*kca2*caa+(kca1+kca2)*cab)
 	fjacp_ <- matrix(0.0,5,62)
 # column 1
 # column 2
@@ -1555,7 +1555,7 @@ CaMKIIs_funcJacp<-function(t, state, parameters)
 	return(fjacp_)
 }
 # ode default parameters; can depend on constants, and time  of initialization
-CaMKIIs_default<-function(t=0.0)
+CaMKII_default<-function(t=0.0)
 {
 	a <- 3.90264
 	b <- 2.86972
@@ -1627,7 +1627,7 @@ CaMKIIs_default<-function(t=0.0)
 	return(parameters);
 }
 # ode initial values
-CaMKIIs_init<-function(t=0.0, parameters=NA)
+CaMKII_init<-function(t=0.0, parameters=NA)
 {
 	a<-3.90264
 	b<-2.86972
@@ -1722,4 +1722,4 @@ CaMKIIs_init<-function(t=0.0, parameters=NA)
 	names(state) <- c("CaM_Ca1", "CaM_Ca2", "CaM_Ca3", "CaM_Ca4", "PP2B_CaM", "PP2B_CaM_Ca1", "PP2B_CaM_Ca2", "PP2B_CaM_Ca3", "PP2B_CaM_Ca4", "CaMKII_CaM", "CaMKII_CaM_Ca1", "CaMKII_CaM_Ca2", "CaMKII_CaM_Ca3", "CaMKII_CaM_Ca4", "pCaMKII_CaM_Ca4", "pCaMKIIa", "pCaMKII_CaM_Ca3", "pCaMKII_CaM_Ca2", "pCaMKII_CaM_Ca1", "pCaMKII_CaM", "PP1__pCaMKIIa", "caa", "cab")
 	return(state)
 }
-model<-list(vf=CaMKIIs_vf, jac=CaMKIIs_jac, jacp=CaMKIIs_jacp, func=CaMKIIs_func, funcJac=CaMKIIs_funcJac, funcJacp=CaMKIIs_funcJacp, init=CaMKIIs_init, par=CaMKIIs_default, name="CaMKIIs")
+model<-list(vf=CaMKII_vf, jac=CaMKII_jac, jacp=CaMKII_jacp, func=CaMKII_func, funcJac=CaMKII_funcJac, funcJacp=CaMKII_funcJacp, init=CaMKII_init, par=CaMKII_default, name="CaMKII")
