@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<VectorField Name="CaMKIIs" Description="model created by an R script «sbtab_to_vfgen.R» (https://github.com/a-kramer/SBtabVFGEN)">
+<VectorField Name="CaMKII" Description="model created by an R script «sbtab_to_vfgen.R» (https://github.com/a-kramer/SBtabVFGEN)">
  <Constant Name="a" Description="constant" Value="3.90264"/>
  <Constant Name="b" Description="constant" Value="2.86972"/>
  <Constant Name="s" Description="constant" Value="1e-05"/>
