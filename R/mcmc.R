@@ -837,13 +837,13 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	if (!is.null(simpleUserLLF)){
 		llf <- function(parMCMC){
 			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
-				return(0)
+				return(-Inf)
 			} else {
 				simulations <- attr(parMCMC,"simulations")
 			}
 			for (i in seq(N)){
 				if (!("func" %in% names(simulations[[i]])) || any(is.na(simulations[[i]]$func))){
-					return(0)
+					return(-Inf)
 				}
 				dimFunc <- dim(simulations[[i]]$func)
 				n <- dimFunc[3]
@@ -863,7 +863,7 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	} else if (!is.null(perExpLLF)){
 		llf <- function(parMCMC){
 			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
-				return(0)
+				return(-Inf)
 			} else {
 				simulations <- attr(parMCMC,"simulations")
 			}
@@ -874,14 +874,14 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	} else {
 		llf <- function(parMCMC){
 			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
-				return(0)
+				return(-Inf)
 			} else {
 				simulations <- attr(parMCMC,"simulations")
 			}
 			simulations <- attr(parMCMC,"simulations")
 			for (i in seq(N)){
 				if (!("func" %in% names(simulations[[i]])) || any(is.na(simulations[[i]]$func))){
-					return(0)
+					return(-Inf)
 				}
 				dimFunc <- dim(simulations[[i]]$func)
 				n <- dimFunc[3]

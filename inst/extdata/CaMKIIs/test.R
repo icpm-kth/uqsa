@@ -23,6 +23,7 @@ for (M in Methods[-3]){
 	## 1. Tthis is a normal simulation, as it would be done during MCMC
 	for (i in seq_along(ex)){
 		t_ <- ex[[i]]$outputTimes
+		ex[[i]]$_t <- t_
 		ex[[i]]$events$time <- ex[[i]]$events$time*F[i]
 		ex[[i]]$outputTimes <- t_*F[i]
 	}
@@ -30,8 +31,9 @@ for (M in Methods[-3]){
 
 	T <- Sys.time()
 	y <- tryCatch(s(as.matrix(par)),error = function(e) {print(e); return(NA)})
+	Success <- unlist(lapply(y,\(y) !any(is.na(y$func))))
 	cpuSeconds <- unlist(lapply(y,function(l){l$cpuSeconds}))
-	cat("max(F)=",max(F)," M=",M," time=",difftime(Sys.time(),T,units="mins"),"minutes"," cpuSeconds=[",cpuSeconds,"]\n")
+	cat(M,rgsl::nameMethod(M),Success,difftime(Sys.time(),T,units="mins"),cpuSeconds,"\n")
 	if (length(y)==length(ex)){
 		dev.new()
 		par(mfrow=c(2,6))
@@ -55,9 +57,9 @@ for (M in Methods[-3]){
 
 	s2 <- uqsa::simulator.c(ex,modelName,method=M)
 	 T <- Sys.time()
-	tryCatch(y2 <- s2(as.matrix(par)),error = function(e) {print(e)},finally = print(length(y)))
+	tryCatch(y2 <- s2(as.matrix(par)),error = function(e) {print(e); return(NA)})
 	cpuSeconds <- unlist(lapply(y,function(l){l$cpuSeconds}))
-	cat("max(F)=",max(F)," M=",M," time=",difftime(Sys.time(),T,units="mins"),"minutes"," cpuSeconds=[",cpuSeconds,"]\n")
+	#cat("max(F)=",max(F)," M=",M," time=",difftime(Sys.time(),T,units="mins"),"minutes"," cpuSeconds=[",cpuSeconds,"]\n")
 	if (length(y)==length(ex)){
 		for (i in seq_along(ex)){
 			o <- apply(is.na(ex[[i]]$outputValues),2,any)
