@@ -100,6 +100,9 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/simulate.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/smmala.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/tsv.html</loc>
   </url>
   <url>
@@ -166,6 +169,9 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/simulate.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/smmala.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/tsv.html</loc>
   </url>
   <url>
@@ -218,6 +224,9 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/defaultDistance.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/determinePrefix.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/fisherInformation.html</loc>
@@ -293,6 +302,12 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/logLikelihoodFunc.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/logParMap.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/logParMapJac.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/makeAcceptanceProbability.html</loc>
@@ -386,6 +401,12 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/sensitivityEquilibriumApproximation.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/shs_gsa.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/shs_prior.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/simc.html</loc>

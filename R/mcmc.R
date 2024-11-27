@@ -926,6 +926,30 @@ log10ParMapJac <- function(parMCMC){
 	return(diag(10^(parMCMC) * log(10)))
 }
 
+#' NATURAL LOG parameter mapping used by the MCMC module
+#'
+#' This map is used by the simulator to transform sampling variables
+#' into ODE-model porameters.
+#'
+#' @param parMCMC the sampling variables (numeric vector)
+#' @export
+logParMap <- function(parMCMC){
+	return(exp(parMCMC))
+}
+
+#' NATURAL LOG parameter mapping, jacobian
+#'
+#' This map is used by the simulator to transform sampling variables
+#' into ODE-model porameters. As we often calculate sensitivites, we
+#' alos need the jacobian of the map, due to the chain rule of
+#' differentiation.
+#'
+#' @param parMCMC the sampling variables (numeric vector)
+#' @export
+logParMapJac <- function(parMCMC){
+	return(diag(exp(parMCMC)))
+}
+
 #' Default log-likelihood function, gradient
 #'
 #' This returns a function g(x,simulations), which maps simulation

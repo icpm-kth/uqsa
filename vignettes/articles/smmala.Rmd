@@ -152,7 +152,7 @@ names(cpuSeconds) <- names(ex)
 print(cpuSeconds)
 
 if (length(y)==length(ex)){
-	par(mfrow=c(2,3))
+	par(mfrow=c(2,3),bty="n")
 	for (i in seq_along(ex)){
 		o <- apply(is.na(ex[[i]]$outputValues),2,any)
 		t_<-ex[[i]]$outputTimes
@@ -179,6 +179,64 @@ It is possible that the default parameter set will not allow the
 system to go into steady state quickliy enough, even if we increase
 the time between the transformation events.
 
+## Asymmetry
+
+The experiments for this model are different in complexity. How many
+seconds the solver needs to claculate a simulated trajectory depends
+on the chosen integration method.
+
+![Solver timings for CaMKIIs, with indicated Success and Failure.](./CaMKIIs-integrators-normal.png)
+
+This Table-screenshot shows that some of the integration methods fail
+to return a solution for some of the simulated scenarios, even with
+the default parameters. These methods should be excluded from
+MCMC. The remaining methods perform very differently. Some of these
+methods may fail for parameter-vectors proposed during MCMC. 
+
+This al means that the posterior distribution depends on the used
+solver: no solution from the chosen solver means that the liklelihood
+is 0. So, it may be a good idea to use the most robust solver if it
+means that more solutions are found.
+
+This is a table of acceptable cpu times in seconds:
+
+| id |  method | Exp 1 | Exp 2 | Exp 3 | Exp 4 | Exp 5 | Exp 6  |
+|---:|--------:|:-----:|:-----:|:-----:|:-----:|:-----:|:------:|
+|  0 |   msbdf | 6.603 | 2.41  | 1.522 | 0.035 | 0.265 | 37.386 |
+|  1 | msadams | 6.822 | 1.54  | 0.435 | 0.287 | 0.437 | 6.033  |
+|  7 |    rkck | 1.703 | 0.419 | 0.113 | 0.077 | 0.109 | 1.669  |
+|  8 |   rkf45 | 1.692 | 0.385 | 0.129 | 0.08  | 0.125 | 1.656  |
+| 10 |     rk2 | 1.642 | 0.347 | 0.104 | 0.063 | 0.102 | 1.498  |
+
+: CPU time measured in seconds, tabulated by experiment for different step methods. Only Successful simulations are shown. {#tbl:cpu-time}
+
+This table shows that it is vitally important to pick the right
+integration method, but also that simulating experiments in parallel
+is not always a good idea as some of the threads will return much
+sooner than others and idle until the slowest experiment is
+finished. Starting more Markov chains may be better in that case.
+
+Here is an example, where we stretched the time-line for the
+Experiment named `Bradshaw2003Fig2E` as it is very slow to approach
+steady state and the most problematic experiment in this dose
+sequence.
+
+Stretching the time line allows the ODE system more time to converge, but also increases the simulation time:
+
+![Stretched time line for Experiment 1 (event-shedule and measurement times).](./CaMKIIs-integrators-stretched-time-1.png)
+
+
+And again, just the portion where all experiments returned a result:
+
+| id |  method | Exp 1 | Exp 2 | Exp 3 | Exp 4 | Exp 5 | Exp 6  |
+|---:|--------:|:-----:|:-----:|:-----:|:-----:|:-----:|:------:|
+| 0  | msbdf   |  53.16  | 2.42  | 1.52 | 0.04 | 0.27 | 39.64 |
+| 1  | msadams |  48.23  | 1.54  | 0.44 | 0.29 | 0.44 | 5.91  |
+| 7  | rkck    |  11.81  | 0.38  | 0.12 | 0.08 | 0.12 | 1.57  |
+| 8  | rkf45   |  12.15  | 0.39  | 0.12 | 0.08 | 0.12 | 1.62  |
+| 10 | rk2     |  11.73  | 0.36  | 0.10 | 0.07 | 0.11 | 1.44  |
+
+: CPU time measured in seconds, tabulated by experiment for different step methods. Only Successful simulations are shown. {#tbl:cpu-time-stretched-1}
 
 # Dose Response Approach
 
@@ -260,14 +318,19 @@ cpuSeconds <- unlist(lapply(y,\(l) l$cpuSeconds))
 names(cpuSeconds) <- names(ex[i])
 
 print(cpuSeconds)
+```
 
+```{r plots, eval=TRUE}
 o <- which(!is.na(ex[[head(i,1)]]$outputValues[1,]))
 Ca <- unlist(lapply(ex[i],\(x) x$input['Ca_set']))
 f_ <- unlist(lapply(y[i],\(y) y$func[o,1,1]))
 v_ <- unlist(lapply(ex[i],\(x) x$outputValues[[o]]))
 e_ <- unlist(lapply(ex[i],\(x) x$errorValues[[o]]))
 
-plot(Ca,f_,pch=2,xlab='Ca',ylab=names(ex[[1]]$outputValues)[o],main='E0-series')
+par(bty="n",xlog=TRUE)
+yLabel <- names(ex[[1]]$outputValues)[o]
+E <- rownames(sb$Experiments)
+plot(Ca,f_,pch=2,xlab='Ca',ylab=yLabel,main=E[1],ylim=c(0,120),log="x")
 arrows(Ca,v_,Ca,v_+e_,angle=90,length=0.1)
 points(Ca,v_,pch=1)
 arrows(Ca,v_,Ca,v_-e_,angle=90,length=0.1)

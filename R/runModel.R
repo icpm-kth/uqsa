@@ -127,12 +127,12 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 #'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
 #'  #  simulate <- simc(experiments, modelName,  parABC)
 #'  #  yf <- simulate(parABC)
-simc <- function(experiments, modelName, parMap=identity){
+simc <- function(experiments, modelName, parMap=identity, method = 0){
 	N <- length(experiments)
 	sim <- function(parABC){
 		modelPar <- parMap(parABC)
 		m <- NCOL(parABC)
-		yf <- rgsl::r_gsl_odeiv2_outer_sens(modelName, experiments, as.matrix(modelPar))
+		yf <- rgsl::r_gsl_odeiv2_outer_sens(modelName, experiments, as.matrix(modelPar), method=method)
 		if (N==length(yf)) {
 			names(yf) <- names(experiments)
 		} else {
@@ -196,12 +196,12 @@ simc <- function(experiments, modelName, parMap=identity){
 #'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
 #'  #  simulate <- simcf(experiments, modelName,  parABC)
 #'  #  yf <- simulate(parABC)
-simcf <- function(experiments, modelName, parMap=identity){
+simcf <- function(experiments, modelName, parMap=identity, method = 0){
 	N <- length(experiments)
 	sim <- function(parABC){
 		modelPar <- parMap(parABC)
 		m <- NCOL(parABC)
-		yf <- rgsl::r_gsl_odeiv2_outer(modelName, experiments, as.matrix(modelPar))
+		yf <- rgsl::r_gsl_odeiv2_outer(modelName, experiments, as.matrix(modelPar), method=method)
 		return(yf)
 	}
 	return(sim)

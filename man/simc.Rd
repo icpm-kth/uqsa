@@ -4,7 +4,7 @@
 \alias{simc}
 \title{This creates a closure that simulates the model, similar to simulator.c}
 \usage{
-simc(experiments, modelName, parMap = identity)
+simc(experiments, modelName, parMap = identity, method = 0)
 }
 \arguments{
 \item{experiments}{a list of experiments to simulate: inital

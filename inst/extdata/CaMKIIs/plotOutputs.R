@@ -55,7 +55,7 @@ for (i in seq_along(ex)){
 }
 
 ## ---- Simulations:
-simulate <- simulator.c(ex,modelName,parMap=uqsa::log10ParMap)
+simulate <- simulator.c(ex,modelName,parMap=uqsa::log10ParMap,method=1)
 cat(sprintf("Simulating %i x %i trajectories, this will take a while.\n",length(ex),NROW(x)))
 T0 <- Sys.time()
 y <- simulate(t(x))

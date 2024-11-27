@@ -73,7 +73,7 @@ rprior <- rNormalPrior(mean=parMCMC,sd=stdv)
 gprior <- gradLog_NormalPrior(mean=parMCMC,sd=stdv)
 
 ## ----simulate-----------------------------------------------------------------
-simulate <- simulator.c(experiments,modelName,log10ParMap,approximateSensitivity=TRUE,method=M)
+simulate <- simc(experiments,modelName,log10ParMap,approximateSensitivity=TRUE,method=M)
 
 y <- simulate(parMCMC) ## little test
 stopifnot(all(c("state","func") %in% names(y[[1]])))
