@@ -859,6 +859,7 @@ fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac
 #' @export
 logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	N <- length(experiments)
+	n.out <- sum(unlist(lapply(experiments,\(e) sum(!is.na(e$outputValues))))) # total number of valid values
 	if (!is.null(simpleUserLLF)){
 		llf <- function(parMCMC){
 			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
@@ -866,14 +867,14 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 			} else {
 				simulations <- attr(parMCMC,"simulations")
 			}
+			n <- NCOL(parMCMC)
+			L <- rep(0,n)
 			for (i in seq(N)){
 				if (!("func" %in% names(simulations[[i]])) || any(is.na(simulations[[i]]$func))){
 					return(-Inf)
 				}
 				dimFunc <- dim(simulations[[i]]$func)
-				n <- dimFunc[3]
 				m <- head(dimFunc,2)
-				L <- rep(0,n)
 				y <- t(experiments[[i]]$outputValues)
 				stdv <- t(experiments[[i]]$errorValues)
 				for (k in seq(n)){
@@ -905,7 +906,7 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 			}
 			simulations <- attr(parMCMC,"simulations")
 			n <- NCOL(parMCMC)
-			L <- rep(-0.5*prod(m)*N*log(2*pi),n)
+			L <- rep(-0.5*n.out*log(2*pi),n)
 			for (i in seq(N)){
 				if (!("func" %in% names(simulations[[i]])) || any(is.na(simulations[[i]]$func))){
 					return(-Inf)
