@@ -203,7 +203,7 @@ S[1,]<-0 # the first index of S is time, and initially sensitivity is 0
 cuS<-t(apply(S,1,cumsum))
 plot.new()
 tm<-experiments[[3]]$outputTimes
-plot(tm,cuS[,3],type="l")
+plot(tm,cuS[,3],type="l",xlab="time",ylab="S",main="sensitivity (cumulative)")
 ## this section makes a little sensitivity plot:
 for (si in dim(S)[2]:1){
 	polygon(c(tm,rev(tm)),c(cuS[,si],numeric(length(tm))),col=si+1)
