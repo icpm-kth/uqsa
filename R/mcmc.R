@@ -860,6 +860,7 @@ fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac
 logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	N <- length(experiments)
 	n.out <- sum(unlist(lapply(experiments,\(e) sum(!is.na(e$outputValues))))) # total number of valid values
+	message(sprintf("experiments contain %i non-missing values",n.out))
 	if (!is.null(simpleUserLLF)){
 		llf <- function(parMCMC){
 			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
@@ -871,6 +872,7 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 			L <- rep(0,n)
 			for (i in seq(N)){
 				if (!("func" %in% names(simulations[[i]])) || any(is.na(simulations[[i]]$func))){
+					warning("no simulations attached to parameter vector: attr(parMCMC,'simulations') is missing.")
 					return(-Inf)
 				}
 				dimFunc <- dim(simulations[[i]]$func)
@@ -889,6 +891,7 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	} else if (!is.null(perExpLLF)){
 		llf <- function(parMCMC){
 			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
+				warning("no simulations attached to parameter vector: attr(parMCMC,'simulations') is missing.")
 				return(-Inf)
 			} else {
 				simulations <- attr(parMCMC,"simulations")
@@ -900,6 +903,7 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	} else {
 		llf <- function(parMCMC){
 			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
+				warning("no simulations attached to parameter vector: attr(parMCMC,'simulations') is missing.")
 				return(-Inf)
 			} else {
 				simulations <- attr(parMCMC,"simulations")
