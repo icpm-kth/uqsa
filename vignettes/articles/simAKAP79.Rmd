@@ -39,6 +39,7 @@ Conservation laws (determined by `sbtab_to_vfgen` and saved as RDS file):
 ```{r}
 clf <- uqsa_example("AKAP79",pat='Laws[.]RDS$')
 cl <- readRDS(clf)
+if (any(is.na(cl))) cl <- NULL
 ```
 
 With conservation laws, some species are calculated
@@ -47,15 +48,15 @@ algebraically. Their initial values are turned into input parameters
 
 With this hypothetical relationship ($c$ is a constant):
 
-$$ A+B = c\,, $$
+$$A+B = c\,,$$
 
 we can determine that
 
-$$ c = A_0 + B_0\,. $$
+$$c = A_0 + B_0\,.$$
 
 And thus we can replac either of the two species:
 
-$$ A(t) = A_0 + B_0 - B(t) $$
+$$A(t) = A_0 + B_0 - B(t)$$
 
 And $A_0+B_0$ are turned into an input called `A_ConservedConst` (the
 $c$ above) with the value determined from the stated initial
@@ -67,14 +68,14 @@ condition.
 This also includes instructions for the simulator.
 
 ```{r, experiments}
-experiments <- sbtab.data(SBtab,cl) # with conservation laws
+experiments <- sbtab.data(SBtab) # with conservation laws
 # for example, these are the input
 # and initial state of experiment 1:
 print(experiments[[1]]$input)
 print(experiments[[1]]$initialState)
 # pick prameters for simulation
 nInput <- length(experiments[[1]]$input)
-p <- head(AKAP79_default(),-nInput)
+if (nInput>0) p <- head(AKAP79_default(),-nInput)
 print(p)
 ```
 

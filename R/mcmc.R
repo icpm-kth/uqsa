@@ -16,6 +16,33 @@
 	}
 }
 
+#' Determine a prefix from a character vector str of similar contents
+#'
+#' The result is such that `all(startsWith(str,determinePrefix(str)))` is `TRUE`.
+#'
+#' By default, the strings are assumed to be '-' separated words, and
+#' a series of words is found to be thje prefix if all entries start
+#' with that set of words.
+#'
+#' The normal case is c("abc-1","abc-2b","abc-2a") maps to "abc"
+#' @export
+#' @param str a character vector
+#' @param split the token to use for strsplit instead of '-', this should be `character(0)` if you want to split letter by letter
+#' @return the prefix common to all entries of str.
+determinePrefix <- function(str,split="-",collapse="-"){
+return(paste(
+	Reduce(
+		function(a,b) {
+			m<-seq(min(length(a),length(b)));
+			a<-a[m]; b<-b[m];
+			i<-which(unlist(mapply(identical,a,b)));
+			return(a[i])
+		},
+		strsplit(str,split)),
+		collapse=collapse)
+	)
+}
+
 #' checks whether a variable has the named attributes
 #'
 #' @param var a variable to check for attributes
@@ -443,18 +470,22 @@ gatherSample <- function(files,beta=1.0,size=NA){
 		l <- l[i]
 		x <- rbind(x,s)
 		lL <- c(lL,l)
-	}
-	if (!any(is.na(size)) && size <= NROW(x)){
-		j <- round(seq(1,NROW(x),length.out=size))
-		x <- x[j,,drop=FALSE]
-		lL<- lL[j]
+		if (!any(is.na(size)) && NROW(x)>=size) break
 	}
 	attr(x,"beta") <- beta
 	attr(x,"logLikelihood") <- lL
 	return(x)
 }
 
-
+#' checks whether a given matrix is a valid, invertible fisherInformation
+#'
+#' This matrix has to be symmetric and invertible. But, because the
+#' matrix has a perhaps sketchy origin, it could be defective in all
+#' possible ways.
+#'
+#' @param G a matrix
+#' @param abs_tol absolute tolerance for the reciprocal condition number of G
+#' @return TRUE or FALSE
 is.invertible <- function(G=NULL,abs_tol=1e-11){
 	return(!is.null(G) && is.numeric(G) && is.matrix(G) && all(dim(G)>0) && !any(is.na(G)) && all(is.finite(G)) && isSymmetric(G) && rcond(G) > abs_tol)
 }
@@ -478,7 +509,7 @@ rmvnorm <- function(mean,precision){
 	stopifnot(all(is.finite(mu)))
 	stopifnot(all(is.finite(precision)))
 	k <- length(mu)
-	P <- precision # chol(0.5*(t(precision) %*% precision))
+	P <- chol(precision) # chol(0.5*(t(precision) %*% precision))
 	x <- solve(P,rnorm(k,0,1))+mu
 	return(x)
 }
@@ -538,15 +569,12 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 	G0 <- fisherInformationPrior
 	G <- (beta^2*fiGiven)+G0
 	stopifnot(!is.null(G) && is.matrix(G))
-	#cat("is.invertible(G): ",is.invertible(G), " (rcond: ",rcond(G),").\n")
-	if (isTRUE(is.invertible(G))){
+	if (isTRUE(is.invertible(G))){ # isTRUE has some additional safety for breakage cases we didn't consider
 		g <- solve(G,beta*gradLGiven+gradPGiven)
-		#Sigma <- solve(G)
 	} else {
 		stopifnot(is.matrix(G0) && isSymmetric(G0))
 		g <- solve(G0,gradPGiven)
 		G <- G0
-		#Sigma <- solve(G0)
 	}
 	return(dmvnorm(as.numeric(parProposal),
 		mean=as.numeric(parGiven+0.5*eps*g),
@@ -554,37 +582,72 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 	)
 }
 
-metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior){
-	U <- function(parGiven, eps=1e-4){
-		stopifnot(is.numeric(parGiven) && length(parGiven)>0 && all(is.finite(parGiven)))
-		stopifnot(parGiven %has% c("logLikelihood","prior"))
-		beta <- attr(parGiven,"beta") %otherwise% 1.0
-		llGiven <- attr(parGiven,"logLikelihood")
-		priorGiven <- attr(parGiven,"prior")
-		stopifnot(is.numeric(llGiven) && length(llGiven)==1 && is.finite(llGiven))
-		stopifnot(is.numeric(priorGiven) && length(priorGiven)==1 && is.finite(priorGiven))
-		stopifnot(!is.null(eps) && is.numeric(eps) && length(eps)==1 && is.finite(eps))
-		parProposal <- parGiven + rnorm(length(parGiven),0,eps)
-		stopifnot(is.numeric(parProposal) && all(is.finite(priorGiven)))
-		attr(parProposal,"simulations") <- simulate(parProposal)
-		llProposal <- logLikelihood(parProposal)
-		if (!is.numeric(llProposal) || length(llProposal)!=1 || !is.finite(llProposal)){
-			warning(sprintf("metropolis update encountered an invalid likelihood value: %f\n",llProposal[1]))
-			print(llProposal)
-			print(as.numeric(parGiven))
+metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior, Sigma=NULL){
+	if (!is.null(Sigma)){
+		cSigma <- chol(Sigma)
+	}
+	if (is.null(Sigma)){
+		U <- function(parGiven, eps=1e-4){
+			stopifnot(is.numeric(parGiven) && length(parGiven)>0 && all(is.finite(parGiven)))
+			stopifnot(parGiven %has% c("logLikelihood","prior"))
+			beta <- attr(parGiven,"beta") %otherwise% 1.0
+			llGiven <- attr(parGiven,"logLikelihood")
+			priorGiven <- attr(parGiven,"prior")
+			stopifnot(is.numeric(llGiven) && length(llGiven)==1 && is.finite(llGiven))
+			stopifnot(is.numeric(priorGiven) && length(priorGiven)==1 && is.finite(priorGiven))
+			stopifnot(!is.null(eps) && is.numeric(eps) && length(eps)==1 && is.finite(eps))
+			parProposal <- parGiven + rnorm(length(parGiven),0,eps)
+			stopifnot(is.numeric(parProposal) && all(is.finite(priorGiven)))
+			attr(parProposal,"simulations") <- simulate(parProposal)
+			llProposal <- logLikelihood(parProposal)
+			if (!is.numeric(llProposal) || length(llProposal)!=1){
+				warning(sprintf("metropolisUpdate encountered an invalid likelihood value: %f\n",llProposal[1]))
+				print(llProposal)
+				print(as.numeric(parGiven))
+			}
+			attr(parProposal,"logLikelihood") <- llProposal
+			priorProposal <- dprior(parProposal)
+			attr(parProposal,"prior") <- priorProposal
+			L <- exp(beta*(llProposal - llGiven))
+			if (is.null(L)) cat("llProposal: ",llProposal," llGiven: ",llGiven," beta: ",beta," L:",L,"\n")
+			P <- priorProposal/priorGiven
+			if (!is.null(L) && !is.null(P) && is.finite(L) && is.finite(P) && runif(1) < L*P){
+				attr(parProposal,"accepted") <- TRUE
+				return(parProposal)
+			} else {
+				attr(parGiven,"accepted") <- FALSE
+				return(parGiven)
+			}
 		}
-		attr(parProposal,"logLikelihood") <- llProposal
-		priorProposal <- dprior(parProposal)
-		attr(parProposal,"prior") <- priorProposal
-		L <- exp(beta*(llProposal - llGiven))
-		if (is.null(L)) cat("llProposal: ",llProposal," llGiven: ",llGiven," beta: ",beta," L:",L,"\n")
-		P <- priorProposal/priorGiven
-		if (!is.null(L) && !is.null(P) && is.finite(L) && is.finite(P) && runif(1) < L*P){
-			attr(parProposal,"accepted") <- TRUE
-			return(parProposal)
-		} else {
-			attr(parGiven,"accepted") <- FALSE
-			return(parGiven)
+	} else {
+		U <- function(parGiven,eps=1e-4){
+			stopifnot(is.numeric(parGiven) && length(parGiven)>0 && all(is.finite(parGiven)))
+			stopifnot(parGiven %has% c("logLikelihood","prior"))
+			beta <- attr(parGiven,"beta") %otherwise% 1.0
+			llGiven <- attr(parGiven,"logLikelihood")
+			priorGiven <- attr(parGiven,"prior")
+			parProposal <- parGiven + solve(cSigma,rnorm(length(parGiven),0,eps))
+			stopifnot(is.numeric(parProposal) && all(is.finite(priorGiven)))
+			attr(parProposal,"simulations") <- simulate(parProposal)
+			llProposal <- logLikelihood(parProposal)
+			if (!is.numeric(llProposal) || length(llProposal)!=1){
+				warning(sprintf("metropolis update encountered an invalid likelihood value: %f\n",llProposal[1]))
+				print(llProposal)
+				print(as.numeric(parGiven))
+			}
+			attr(parProposal,"logLikelihood") <- llProposal
+			priorProposal <- dprior(parProposal)
+			attr(parProposal,"prior") <- priorProposal
+			L <- exp(beta*(llProposal - llGiven))
+			if (is.null(L)) cat("llProposal: ",llProposal," llGiven: ",llGiven," beta: ",beta," L:",L,"\n")
+			P <- priorProposal/priorGiven
+			if (!is.null(L) && !is.null(P) && is.finite(L) && is.finite(P) && runif(1) < L*P){
+				attr(parProposal,"accepted") <- TRUE
+				return(parProposal)
+			} else {
+				attr(parGiven,"accepted") <- FALSE
+				return(parGiven)
+			}
 		}
 	}
 	attr(U,"algorithm") <- "Metropolis-Hastings"
@@ -592,8 +655,6 @@ metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior
 }
 
 smmalaUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior){
-	#np <- length(model$par())
-	#nu <- length(experiments[[1]]$input)
 	U <- function(parGiven, eps=1e-4){
 		stopifnot(parGiven %has% c("logLikelihood","prior","fisherInformation","gradLogLikelihood","gradLogPrior"))
 		fp <- fisherInformationPrior
@@ -604,31 +665,26 @@ smmalaUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gr
 		n <- length(parGiven)
 		## the very important step: suggest a successor to parGiven and simulate the model
 		parProposal <- smmala_move(beta,parGiven,fp,eps)
-		#if (any(is.na(parProposal))) {
-		#	attr(parGiven,"accepted") <- FALSE
-		#	return(parGiven)
-		#}
-		##cat("rank ",r,", parProposal: ",as.numeric(parProposal),"\n")
-		flush.console()
 		attr(parProposal,"simulations") <- simulate(parProposal)
 		llProposal <- logLikelihood(parProposal)
+		if (!is.numeric(llProposal) || length(llProposal)!=1){
+			warning(sprintf("smmala update encountered an invalid likelihood value: %f\n",llProposal[1]))
+			print(llProposal)
+			print(as.numeric(parGiven))
+		}
+
 		priorProposal <- dprior(parProposal)
 		attr(parProposal,"beta") <- beta
 		attr(parProposal,"logLikelihood") <- llProposal
 		attr(parProposal,"prior") <- priorProposal
 		attr(parProposal,"fisherInformation") <- fisherInformation(parProposal)
-		##cat("rank ",r," rcond(fisherInformation): ", rcond(attr(parProposal,"fisherInformation")),".\n")
 		attr(parProposal,"gradLogLikelihood") <- gradLogLikelihood(parProposal)
-		##cat("rank",r,"gradient-LL: ", attr(parProposal,"gradLogLikelihood"),"\n")
 		attr(parProposal,"gradLogPrior") <- gprior(parProposal)
-		##cat("rank",r,"gradient-PR: ", attr(parProposal,"gradLogPrior"),"\n")
 		fwdDensity <- smmala_move_density(beta,parProposal,parGiven,fp,eps)
 		bwdDensity <- smmala_move_density(beta,parGiven,parProposal,fp,eps)
 		L <- exp(beta*(llProposal - llGiven)) %otherwise% 0.0
 		P <- priorProposal/priorGiven %otherwise% 0.0
 		K <- bwdDensity/fwdDensity %otherwise% 0.0
-		##cat("rank: ",r,"; beta: ",beta, "; llProposal: ",llProposal,"; llGiven: ",llGiven,".\n")
-		##cat("rank: ",r,";L ",L,";P: ",P,";K: ",K,".\n")
 		flush.console()
 		if (is.finite(L) && is.finite(K) && runif(1) < L * P * K){
 			attr(parProposal,"accepted") <- TRUE
@@ -670,13 +726,17 @@ smmalaUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gr
 #'     Fisher information matrices
 #' @param fisherInformationPrior a constant matrix, the prior
 #'     distributions fisher information
+#' @param Sigma alternatively, Sigma=solve(fisherInformationPrior), [the inverse to fisherInformationPrior] can be specified for the metropolis algorithm
 #' @param dprior prior density function
 #' @param gprior gradient of the prior density
 #' @return a function that returns possibly updated states of the
 #'     Markov chain
-mcmcUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gradLogLikelihood=NULL, gprior=NULL, fisherInformation=NULL, fisherInformationPrior=NULL){
-	if (is.null(gradLogLikelihood)){ # Metropolis Hastings
-		return(metropolisUpdate(simulate, experiments, model, logLikelihood, dprior))
+mcmcUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gradLogLikelihood=NULL, gprior=NULL, fisherInformation=NULL, fisherInformationPrior=NULL, Sigma=NULL){
+	if (is.null(Sigma) && !is.null(fisherInformationPrior)) {
+		Sigma <- solve(fisherInformationPrior)
+	}
+	if (is.null(gradLogLikelihood)) { # Metropolis Hastings
+		return(metropolisUpdate(simulate, experiments, model, logLikelihood, dprior, Sigma=Sigma))
 	} else {
 		return(smmalaUpdate(simulate, experiments, model, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior))
 	}
@@ -756,7 +816,6 @@ fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac
 				lNA <- is.na(Sh)
 				if (any(lNA)) {
 					Sh[lNA] <- 0.0
-					##message(sprintf("Sensitivity has %i missing values. Replacing with 0.",sum(lNA)))
 				}
 				dim(Sh) <- c(nF,np)
 				pmj <- parMapJac(as.numeric(parMCMC))
@@ -768,7 +827,6 @@ fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac
 		}
 		lNAfi <- is.na(fi)
 		if (any(lNAfi)) {
-			##message(sprintf("Fisher-information has %i missing values. Setting them to 0.0.\n",sum(lNAfi)))
 			fi[!is.finite(fi)] <- 0.0
 		}
 		return(fi)
@@ -801,14 +859,24 @@ fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac
 #' @export
 logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	N <- length(experiments)
+	n.out <- sum(unlist(lapply(experiments,\(e) sum(!is.na(e$outputValues))))) # total number of valid values
+	message(sprintf("experiments contain %i non-missing values",n.out))
 	if (!is.null(simpleUserLLF)){
 		llf <- function(parMCMC){
-			simulations <- attr(parMCMC,"simulations")
+			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
+				return(-Inf)
+			} else {
+				simulations <- attr(parMCMC,"simulations")
+			}
+			n <- NCOL(parMCMC)
+			L <- rep(0,n)
 			for (i in seq(N)){
+				if (!("func" %in% names(simulations[[i]])) || any(is.na(simulations[[i]]$func))){
+					warning("no simulations attached to parameter vector: attr(parMCMC,'simulations') is missing.")
+					return(-Inf)
+				}
 				dimFunc <- dim(simulations[[i]]$func)
-				n <- dimFunc[3]
 				m <- head(dimFunc,2)
-				L <- rep(0,n)
 				y <- t(experiments[[i]]$outputValues)
 				stdv <- t(experiments[[i]]$errorValues)
 				for (k in seq(n)){
@@ -822,18 +890,33 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 		}
 	} else if (!is.null(perExpLLF)){
 		llf <- function(parMCMC){
+			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
+				warning("no simulations attached to parameter vector: attr(parMCMC,'simulations') is missing.")
+				return(-Inf)
+			} else {
+				simulations <- attr(parMCMC,"simulations")
+			}
 			simulations <- attr(parMCMC,"simulations")
 			L <- perExpLLF(parMCMC,simulations,experiments)
 			return(L)
 		}
 	} else {
 		llf <- function(parMCMC){
+			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
+				warning("no simulations attached to parameter vector: attr(parMCMC,'simulations') is missing.")
+				return(-Inf)
+			} else {
+				simulations <- attr(parMCMC,"simulations")
+			}
 			simulations <- attr(parMCMC,"simulations")
+			n <- NCOL(parMCMC)
+			L <- rep(-0.5*n.out*log(2*pi),n)
 			for (i in seq(N)){
+				if (!("func" %in% names(simulations[[i]])) || any(is.na(simulations[[i]]$func))){
+					return(-Inf)
+				}
 				dimFunc <- dim(simulations[[i]]$func)
-				n <- dimFunc[3]
 				m <- head(dimFunc,2)
-				L <- rep(-0.5*prod(m)*N*log(2*pi),n)
 				y <- t(experiments[[i]]$outputValues)
 				stdv <- t(experiments[[i]]$errorValues)
 				for (k in seq(n)){
@@ -871,6 +954,30 @@ log10ParMap <- function(parMCMC){
 #' @export
 log10ParMapJac <- function(parMCMC){
 	return(diag(10^(parMCMC) * log(10)))
+}
+
+#' NATURAL LOG parameter mapping used by the MCMC module
+#'
+#' This map is used by the simulator to transform sampling variables
+#' into ODE-model porameters.
+#'
+#' @param parMCMC the sampling variables (numeric vector)
+#' @export
+logParMap <- function(parMCMC){
+	return(exp(parMCMC))
+}
+
+#' NATURAL LOG parameter mapping, jacobian
+#'
+#' This map is used by the simulator to transform sampling variables
+#' into ODE-model porameters. As we often calculate sensitivites, we
+#' alos need the jacobian of the map, due to the chain rule of
+#' differentiation.
+#'
+#' @param parMCMC the sampling variables (numeric vector)
+#' @export
+logParMapJac <- function(parMCMC){
+	return(diag(exp(parMCMC)))
 }
 
 #' Default log-likelihood function, gradient

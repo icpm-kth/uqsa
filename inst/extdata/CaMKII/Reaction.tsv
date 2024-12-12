@@ -1,4 +1,4 @@
-!!SBtab	TableName='Reaction' TableType='Reaction' TableTitle='CaMKIIs Reaction Fluxes' SBtabVersion='1.0' Document='CaMKIIs'  Document='CaMKIIs'				
+!!SBtab	TableName='Reaction' TableType='Reaction' TableTitle='CaMKIIs Reaction Fluxes' SBtabVersion='1.0' Document='CaMKII'  Document='CaMKII'				
 !ID	!Name	!KineticLaw	!IsReversible	!Location	!ReactionFormula
 ReactionFlux1	ReactionFlux1	(kf__CaM__Ca*Ca*CaM)-(kr__CaM__Ca*CaM_Ca1)	TRUE	synapse	Ca + CaM <=> CaM_Ca1
 ReactionFlux2	ReactionFlux2	(kf__CaM_Ca1__Ca*Ca*CaM_Ca1)-(kr__CaM_Ca1__Ca*CaM_Ca2)	TRUE	synapse	Ca + CaM_Ca1 <=> CaM_Ca2
@@ -35,4 +35,4 @@ ReactionFlux32	ReactionFlux32	(kautMax*pairedCaMKIIc*CaMKII_CaM_Ca4)	TRUE	synaps
 ReactionFlux33	ReactionFlux33	(kf__PP1__pCaMKIIa*pCaMKIIa*PP1)-(kr__PP1__pCaMKIIa*PP1__pCaMKIIa)	TRUE	synapse	pCaMKIIa + PP1 <=> PP1__pCaMKIIa
 ReactionFlux34	ReactionFlux34	(kcat__PP1__pCaMKIIa*PP1__pCaMKIIa)	TRUE	synapse	PP1__pCaMKIIa <=> CaMKII + PP1
 SpikeFlux1	SpikeFLux1	cab	FALSE	synapse	Ø <=> caa
-SpikeFlux2	SpikeFlux2	0-(kca1*kca2*caa+(kca1+kca2)*cab)	FALSE	synapse	Ø <=> cab
+SpikeFlux2	SpikeFlux2	0.0-(kca1*kca2*caa+(kca1+kca2)*cab)	FALSE	synapse	Ø <=> cab

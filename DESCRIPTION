@@ -1,7 +1,7 @@
 Package: uqsa
 Type: Package
 Title: Uncertainty Quanitification and Global Sensitivity Analysis via ABC sampling
-Version: 0.1.6
+Version: 0.1.7
 Authors@R: c(person("Alexandra","Jauhiainen",email="Alexandra.Jauhiainen@astrazeneca.com",role=c("aut")),
              person("Olivia","Eriksson",email="olivia@kth.se",role=c("aut","cre")),
              person("Federica","Milinanni",email="fedmil@kth.se",role="aut"),

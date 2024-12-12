@@ -1,32 +1,33 @@
 pandoc: 3.1.3
-pkgdown: 2.0.7
+pkgdown: 2.0.9
 pkgdown_sha: ~
 articles:
   AKAP79: AKAP79.html
   AKAR4: AKAR4.html
-  GSA: GSA.html
-  GenerateCodeInSHELL: GenerateCodeInSHELL.html
-  ODE-Model: ODE-Model.html
-  SBtab: SBtab.html
   cite: cite.html
   data: data.html
   events: events.html
   examples_overview: examples_overview.html
-  installExplanations: installExplanations.html
+  GenerateCodeInSHELL: GenerateCodeInSHELL.html
+  GSA: GSA.html
   installation: installation.html
+  installExplanations: installExplanations.html
   intermediateFiles: intermediateFiles.html
   literature_references: literature_references.html
   models: models.html
   mpi: mpi.html
+  ODE-Model: ODE-Model.html
   path: path.html
   sa: sa.html
+  SBtab: SBtab.html
   simAKAP79: simAKAP79.html
   simulate: simulate.html
+  smmala: smmala.html
   tsv: tsv.html
   uq: uq.html
   uqsa: uqsa.html
   user_model: user_model.html
-last_built: 2024-10-25T10:57Z
+last_built: 2024-11-27T13:33Z
 urls:
   reference: https://icpm-kth.github.io/uqsa/reference
   article: https://icpm-kth.github.io/uqsa/articles

@@ -20,7 +20,7 @@
 #' @param parMap the model will be called with parMap(parABC); so any parameter transformation can happen there.
 #' @param noise boolean variable. If noise=TRUE, Gaussian noise is added to the output of the simulations. The standard
 #'              deviation of the Gaussian noise is equal to the measurement error. If noise=FALSE the output is the
-#'              deterministic solution of the ODE system.
+#'              deterministic solution of the ODE system. noise and sensitivity calculations are mutually exclusive.
 #' @export
 #' @return a closure that returns the model's output for a given parameter vector
 #' @examples
@@ -30,21 +30,21 @@
 #'
 #'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
 #'  #  simulate <- simulator.c(experiments, modelName,  parABC)
-#'  #  yf <- sim(parABC)
-simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE){
+#'  #  yf <- simulate(parABC)
+simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, approximateSensitivity = FALSE, method = 0){
 	require(rgsl)
-	sim <- function(parABC){
-		modelPar <- parMap(parABC)
-		yf <- unlist(
-			mclapply(
-				experiments,
-				function(EX) {
-					rgsl::r_gsl_odeiv2_outer_sens(modelName, list(EX), as.matrix(modelPar))
-				}
-			),
-			recursive=FALSE)
-		stopifnot(length(experiments)==length(yf))
-		if(noise){
+	if (noise){
+		sim <- function(parABC){
+			modelPar <- parMap(parABC)
+			yf <- unlist(
+				mclapply(
+					experiments,
+					function(EX) {
+						rgsl::r_gsl_odeiv2_outer(modelName, list(EX), as.matrix(modelPar), method=method)
+					}
+				),
+				recursive=FALSE)
+			stopifnot(length(experiments)==length(yf))
 			for(i in 1:length(experiments)){
 				out <- yf[[i]]$func
 				l <- dim(out)[2]
@@ -56,8 +56,36 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE){
 					yf[[i]]$func[1,,] <- do.call(cbind,y)
 				}
 			}
+			return(yf)
 		}
-		return(yf)
+	} else if (approximateSensitivity) {
+		sim <- function(parABC){
+			modelPar <- parMap(parABC)
+			yf <- unlist(
+				mclapply(
+					experiments,
+					function(EX) {
+						tryCatch(rgsl::r_gsl_odeiv2_outer_sens(modelName, list(EX), as.matrix(modelPar), method=method),
+							error = function(e) {prinmt(e); return(NA)})
+					}
+				), recursive=FALSE)
+			stopifnot(length(experiments)==length(yf))
+			return(yf)
+		}
+	} else {
+		sim <- function(parABC){
+			modelPar <- parMap(parABC)
+			yf <- unlist(
+				mclapply(
+					experiments,
+					function(EX) {
+						tryCatch(rgsl::r_gsl_odeiv2_outer(modelName, list(EX), as.matrix(modelPar), method=method),
+							error = function(e) {print(e); return(NA)})
+					}
+				), recursive=FALSE)
+			stopifnot(length(experiments)==length(yf))
+			return(yf)
+		}
 	}
 	return(sim)
 }
@@ -97,14 +125,14 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE){
 #'  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 #'
 #'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
-#'  #  simulate <- simulator.c(experiments, modelName,  parABC)
-#'  #  yf <- sim(parABC)
-simc <- function(experiments, modelName, parMap=identity){
+#'  #  simulate <- simc(experiments, modelName,  parABC)
+#'  #  yf <- simulate(parABC)
+simc <- function(experiments, modelName, parMap=identity, method = 0){
 	N <- length(experiments)
 	sim <- function(parABC){
 		modelPar <- parMap(parABC)
 		m <- NCOL(parABC)
-		yf <- rgsl::r_gsl_odeiv2_outer_sens(modelName, experiments, as.matrix(modelPar))
+		yf <- rgsl::r_gsl_odeiv2_outer_sens(modelName, experiments, as.matrix(modelPar), method=method)
 		if (N==length(yf)) {
 			names(yf) <- names(experiments)
 		} else {
@@ -166,14 +194,14 @@ simc <- function(experiments, modelName, parMap=identity){
 #'  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 #'
 #'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
-#'  #  simulate <- simulator.c(experiments, modelName,  parABC)
-#'  #  yf <- sim(parABC)
-simcf <- function(experiments, modelName, parMap=identity){
+#'  #  simulate <- simcf(experiments, modelName,  parABC)
+#'  #  yf <- simulate(parABC)
+simcf <- function(experiments, modelName, parMap=identity, method = 0){
 	N <- length(experiments)
 	sim <- function(parABC){
 		modelPar <- parMap(parABC)
 		m <- NCOL(parABC)
-		yf <- rgsl::r_gsl_odeiv2_outer(modelName, experiments, as.matrix(modelPar))
+		yf <- rgsl::r_gsl_odeiv2_outer(modelName, experiments, as.matrix(modelPar), method=method)
 		return(yf)
 	}
 	return(sim)

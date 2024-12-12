@@ -1,4 +1,4 @@
-!!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableType='Quantity'  TableName='Parameter' TableTitle='Independent parameters within the model'				
+!!SBtab	SBtabVersion='1.0' Document='CaMKII' TableType='Quantity'  TableName='Parameter' TableTitle='Independent parameters within the model'				
 !ID	!DefaultValue	!Std	!Scale	OptimalValue:linspace	!Unit
 kf__CaM__Ca	-1.88446703876257	2.5	natural logarithm	0.15191	1/s
 kf__CaM_Ca1__Ca	-10.2819699893144	2.5	natural logarithm	3.4245E-05	1/s

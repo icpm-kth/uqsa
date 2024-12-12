@@ -4,7 +4,7 @@
 \alias{simcf}
 \title{This creates a closure that simulates the model, similar to simulator.c}
 \usage{
-simcf(experiments, modelName, parMap = identity)
+simcf(experiments, modelName, parMap = identity, method = 0)
 }
 \arguments{
 \item{experiments}{a list of experiments to simulate: inital
@@ -45,6 +45,6 @@ perform sensitivty analysis.
  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 
  #  modelName <- checkModel("<insert_model_name>_gvf.c")
- #  simulate <- simulator.c(experiments, modelName,  parABC)
- #  yf <- sim(parABC)
+ #  simulate <- simcf(experiments, modelName,  parABC)
+ #  yf <- simulate(parABC)
 }

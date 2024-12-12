@@ -1,4 +1,4 @@
-!!SBtab	TableName='Constant' TableType='Quantity' TableTitle='CaMKIIs constants' SBtabVersion='1.0' Document='CaMKIIs'				
+!!SBtab	TableName='Constant' TableType='Quantity' TableTitle='CaMKIIs constants' SBtabVersion='1.0' Document='CaMKII'				
 !ID	!Name	!Unit	!Value	!Description	!Location
 a	a	micromole/litre	3.90264	CaMKII autophosphorylation	synapse
 b	b	micromole/litre	2.86972	CaMKII autophosphorylation	synapse
