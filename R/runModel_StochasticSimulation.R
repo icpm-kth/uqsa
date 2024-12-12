@@ -346,11 +346,10 @@ importReactionsSSA <- function(model){
   return(reactions)
 }
 
-#' Function that reads the SBtab expression table and converts expressions in parameters
-#'
+#' Function that creates a function that reads the SBtab expression table and computes the expressions (which are functions of parameters) given the parameters passed in input
 #'
 #' @param model.tab an SBtab file imported in R, as it is returned by the function SBtabVFGEN::sbtab_from_tsv
-#' @return a vector of parameters corresponding to the parameters that are in the expression table, i.e., parameters that are expressed in terms of sampling parameters in the parameter table
+#' @return a function that given a vector of (sampling) parameters returns a vector of parameters corresponding to the evaluations of the expressions in the SBtab expression table (which are functions of the parameters)
 #' @export
 parameters_from_expressions_func <- function(model.tab){
   param_from_expr <- function(parVal){
