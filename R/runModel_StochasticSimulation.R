@@ -381,6 +381,133 @@ parameters_from_expressions_func <- function(model.tab){
   return(param_from_expr)
 }
 
+
+
+#' Function that creates a closure that simulates a stochastic trajectory with the Gillespie algorithm
+#' given certain experimental conditions and a parameter vector, and computes the 
+#' distance between the simulation and the experimental data
+#' 
+#' @param e an experiment
+#' @param param a named parameter vector
+#' @param parMap a function that translates ABC variables (parABC)
+#'     into something the model will accept.
+#' @param Phi Volume
+#' @param parameters_from_expressions a vector of evaluated expressions
+#' @param nStochSim number of stochastic simulations to average over
+#' @param reactions a list that encodes the reactions for
+#'     GillespieSSA2
+#' @param modelName model name
+#' @param distance a user supplied function that calculates a distance
+#'     between simulation and data with an interface of
+#'     distance(simulation, data, errVal), where errVal is an estimate
+#'     of the measuremnet noise (e.g. standard deviation), if needed
+#'     by the function.
+#' @return a function that given a parameter returns a simulated trajectory using the Gillespie algorithm
+#' @export
+simulator.stoch <- function(e, parMap = parMap, Phi = Phi, 
+                             parameters_from_expressions = parameters_from_expressions,
+                             nStochSim = nStochSim, reactions = compiled_reactions,
+                             modelName = modelName){
+  sim <- function(param){
+    avgOutput <- rep(0, length(e[["outputTimes"]]))
+    SSAparam <- c(parMap(param), Phi = Phi)
+    if(!is.null(parameters_from_expressions)){
+      SSAparam <- c(SSAparam, parameters_from_expressions(parMap(param)))
+    }
+    for(i in 1:nStochSim){
+      out_ssa <- GillespieSSA2::ssa(
+        initial_state = ceil(e[["initialState"]]*Phi),
+        reactions = reactions,
+        params = SSAparam,
+        final_time = max(e[["outputTimes"]]),
+        method = ssa_exact(),
+        verbose = FALSE,
+        log_propensity = TRUE,
+        log_firings = TRUE,
+        census_interval = 5,
+        max_walltime = 1,
+        sim_name = modelName)
+      
+      # out$state is a matrix of dimension (time points)x(num compounds)
+      output <- apply(out_ssa$state/Phi, 1, function(state) model$func(t=0,state=state,parameters=param))
+      if(sum(!is.na(out_ssa$time)) > 2){
+        interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
+        interpOutput$y[e[["outputTimes"]]<min(out_ssa$time)] <- output[which.min(out_ssa$time)]
+        interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
+        avgOutput <- avgOutput + interpOutput$y
+      } else {
+        avgOutput <- Inf*avgOutput
+      }
+    }
+    avgOutput <- avgOutput/nStochSim
+    return(list(time = e[["outputTimes"]], output = avgOutput))
+  }
+  return(sim)
+}
+
+
+
+#' Function that simulates a stochastic trajectory with the Gillespie algorithm
+#' given certain experimental conditions and a parameter vector, and computes the 
+#' distance between the simulation and the experimental data
+#' 
+#' @param e an experiment
+#' @param param a named parameter vector
+#' @param parMap a function that translates ABC variables (parABC)
+#'     into something the model will accept.
+#' @param Phi Volume
+#' @param parameters_from_expressions a vector of evaluated expressions
+#' @param nStochSim number of stochastic simulations to average over
+#' @param reactions a list that encodes the reactions for
+#'     GillespieSSA2
+#' @param modelName model name
+#' @param distance a user supplied function that calculates a distance
+#'     between simulation and data with an interface of
+#'     distance(simulation, data, errVal), where errVal is an estimate
+#'     of the measuremnet noise (e.g. standard deviation), if needed
+#'     by the function.
+#' @return the distance between the trajectory just simulated and the experiment considered
+#' @export
+simulateAndComputeDistance <- function(e, param, 
+                                       parMap = parMap, Phi = Phi, 
+                                       parameters_from_expressions = parameters_from_expressions,
+                                       nStochSim = nStochSim, reactions = compiled_reactions,
+                                       modelName = modelName, distance = distance){
+  avgOutput <- rep(0, length(e[["outputTimes"]]))
+  SSAparam <- c(parMap(param), Phi = Phi)
+  if(!is.null(parameters_from_expressions)){
+    SSAparam <- c(SSAparam, parameters_from_expressions(parMap(param)))
+  }
+  for(i in 1:nStochSim){
+    out_ssa <- GillespieSSA2::ssa(
+      initial_state = ceil(e[["initialState"]]*Phi),
+      reactions = reactions,
+      params = SSAparam,
+      final_time = max(e[["outputTimes"]]),
+      method = ssa_exact(),
+      verbose = FALSE,
+      log_propensity = TRUE,
+      log_firings = TRUE,
+      census_interval = 5,
+      max_walltime = 1,
+      sim_name = modelName)
+    
+    # out$state is a matrix of dimension (time points)x(num compounds)
+    output <- apply(out_ssa$state/Phi, 1, function(state) model$func(t=0,state=state,parameters=param))
+    if(sum(!is.na(out_ssa$time)) > 2){
+      interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
+      interpOutput$y[e[["outputTimes"]]<min(out_ssa$time)] <- output[which.min(out_ssa$time)]
+      interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
+      avgOutput <- avgOutput + interpOutput$y
+    } else {
+      avgOutput <- Inf*avgOutput
+    }
+  }
+  avgOutput <- avgOutput/nStochSim
+  return(distance(avgOutput,t(e[["outputValues"]]),t(e[["errorValues"]])))
+}
+
+
 #' Function that creates the objective function
 #'
 #' Given a parameter set, this function computes the distance between
@@ -407,41 +534,6 @@ parameters_from_expressions_func <- function(model.tab){
 #' @export
 makeObjectiveSSA <- function(experiments, model, parNames, distance, parMap=identity, Phi, reactions, nStochSim = 1, parameters_from_expressions=NULL){
   objectiveFunction <- function(parABC){
-    simulateAndComputeDistance <- function(e, param){
-      avgOutput <- rep(0, length(e[["outputTimes"]]))
-      SSAparam <- c(parMap(param), Phi = Phi)
-      if(!is.null(parameters_from_expressions)){
-        SSAparam <- c(SSAparam, parameters_from_expressions(parMap(param)))
-      }
-      for(i in 1:nStochSim){
-        out_ssa <- GillespieSSA2::ssa(
-          initial_state = ceil(e[["initialState"]]*Phi),
-          reactions = reactions,
-          params = SSAparam,
-          final_time = max(e[["outputTimes"]]),
-          method = ssa_exact(),
-          verbose = FALSE,
-          log_propensity = TRUE,
-          log_firings = TRUE,
-          census_interval = 5,
-          max_walltime = 1,
-          sim_name = modelName)
-
-        # out$state is a matrix of dimension (time points)x(num compounds)
-        output <- apply(out_ssa$state/Phi, 1, function(state) model$func(t=0,state=state,parameters=param))
-        if(sum(!is.na(out_ssa$time)) > 2){
-          interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
-          interpOutput$y[e[["outputTimes"]]<min(out_ssa$time)] <- output[which.min(out_ssa$time)]
-          interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
-          avgOutput <- avgOutput + interpOutput$y
-        } else {
-          avgOutput <- Inf*avgOutput
-        }
-      }
-      avgOutput <- avgOutput/nStochSim
-      return(distance(avgOutput,t(e[["outputValues"]]),t(e[["errorValues"]])))
-    }
-
     if (is.matrix(parABC)) {
       rownames(parABC) <- parNames
       npc <- ncol(parABC)
@@ -456,4 +548,5 @@ makeObjectiveSSA <- function(experiments, model, parNames, distance, parMap=iden
   }
   return(objectiveFunction)
 }
+
 
