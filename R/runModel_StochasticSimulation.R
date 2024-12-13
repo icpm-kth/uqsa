@@ -349,6 +349,11 @@ importReactionsSSA <- function(model.tab, compile = TRUE){
     
     parameters_from_expressions <- parameters_from_expressions_func(model.tab)
     
+    AvoNum <- 6.022e23          #Avogadro constant
+    vol <- 4e-16  #volume where the reactions take place
+    unit <- 1e-6  #unit of measure in meters (1e-6 corresponds to micrometer)
+    Phi <- AvoNum * vol * unit #constant that will be used to simulate the random reactions
+    
     reactions <- GillespieSSA2::compile_reactions(
       reactions = reactions,
       state_ids = model.tab$Compound[["!Name"]],
