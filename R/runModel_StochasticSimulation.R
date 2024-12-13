@@ -293,19 +293,19 @@ makeGillespieModel <- function(SBtab,LV=NULL,strip.null=TRUE){
 #' This translates the Reaction network into the specific form required by GillespieSSA2
 #'
 #' @param model the model, represented by a list of data.frames with SBtab content
-#' @return a list of GillespieSSA2::reaction items
+#' @return a list of compiled GillespieSSA2::reaction items
 #' @export
-importReactionsSSA <- function(model){
-  num_reactions <- length(row.names(model$Reaction))
-  num_reversible_reactions <- sum(model$Reaction[["!IsReversible"]]==TRUE)
+importReactionsSSA <- function(model.tab, compile = TRUE){
+  num_reactions <- length(row.names(model.tab$Reaction))
+  num_reversible_reactions <- sum(model.tab$Reaction[["!IsReversible"]]==TRUE)
   reactions <- vector("list", len=num_reactions + num_reversible_reactions)
-  compound_names <- model$Compound[["!Name"]]
+  compound_names <- model.tab$Compound[["!Name"]]
   k <- 1
   for(i in 1:num_reactions){
-    kinetic_law <- model$Reaction[["!KineticLaw"]][i]
+    kinetic_law <- model.tab$Reaction[["!KineticLaw"]][i]
     propensity <- sub("-.*", "", kinetic_law)
     effect <- c()
-    formula <- model$Reaction[["!ReactionFormula"]][i]
+    formula <- model.tab$Reaction[["!ReactionFormula"]][i]
     reactants <- sub("<=>.*", "", formula)
     products <- sub(".*<=>", "", formula)
     for(j in 1:length(compound_names)){
@@ -326,22 +326,34 @@ importReactionsSSA <- function(model){
     if(sum(effect<0)==2){
       propensity <- paste0(propensity," / Phi")
     }
-    reactions[[k]] <- GillespieSSA2::reaction(propensity = propensity, effect = effect) #, name = model$Reaction[["!Name"]][i])
+    reactions[[k]] <- GillespieSSA2::reaction(propensity = propensity, effect = effect) #, name = model.tab$Reaction[["!Name"]][i])
     k <- k + 1
-    if(model$Reaction[["!IsReversible"]][i]){
+    if(model.tab$Reaction[["!IsReversible"]][i]){
       #also add the backward reaction
       propensity <- sub(".*-", "", kinetic_law)
       effect <- -effect
       if(sum(effect<0)==2){
         propensity <- paste0(propensity," / Phi")
       }
-      reactions[[k]] <- GillespieSSA2::reaction(propensity = propensity, effect = effect) #, name = paste0(model$Reaction[["!Name"]][i],"_backward"))
+      reactions[[k]] <- GillespieSSA2::reaction(propensity = propensity, effect = effect) #, name = paste0(model.tab$Reaction[["!Name"]][i],"_backward"))
       k <- k + 1
     }
   }
 
   if(k-1 != length(reactions)){
     error("Length of reactions list doesn't match")
+  }
+  if(compile){
+    parVal <- model.tab$Parameter[["!DefaultValue"]]
+    names(parVal) <- model.tab$Parameter[["!Name"]]
+    
+    parameters_from_expressions <- parameters_from_expressions_func(model.tab)
+    
+    reactions <- GillespieSSA2::compile_reactions(
+      reactions = reactions,
+      state_ids = model.tab$Compound[["!Name"]],
+      params = c(parVal, parameters_from_expressions(parVal), Phi=Phi)
+    )
   }
   return(reactions)
 }
