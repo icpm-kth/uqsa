@@ -6,7 +6,7 @@ library(ggplot2)
 files <- commandArgs(trailingOnly=TRUE)
 modelName <- "CaMKIIs"
 comment(modelName) <- "./CaMKIIs.so"
-#sz <- 1e3
+
 cat("Loading sample\n")
 PREFIX <- paste(
 	Reduce(
@@ -21,18 +21,19 @@ print(PREFIX)
 
 x <- uqsa::gatherSample(files,beta=1.0)
 l <- attr(x,"logLikelihood")
-I <- order(l,decreasing=TRUE)[seq(round(length(l)/2))]
-MLE <- I[1]
-x <- x[I,]
-l <- l[I]
+i <- seq(1,NROW(x),by=10)
+
+I <- order(l,decreasing=TRUE)
+x <- x[I[i],]
+l <- l[I[i]]
+
 attr(x,"logLikelihood") <- l
-MLE <- 1
 sb <- sbtab_from_tsv(dir(pattern="[.]tsv$",full.names=TRUE))
 ex <- sbtab.data(sb)
 
 ## ---- R functions for this model:
 source(sprintf("%s.R",modelName))
-t0 <- -1
+t0 <- -60
 p0 <- CaMKIIs_default(t0)
 y0 <- CaMKIIs_init(t0,p0)
 C <- NCOL(x)
@@ -49,7 +50,7 @@ for (i in seq_along(ex)){
 		mn_ <- mn_ - 1
 	}
 	r <- abs(mx_ - mn_)
-	L <- round(500.0 + 1000.0*r*r/(100.0**2+r*r))
+	L <- round(500.0 + 500.0*r*r/(100.0**2+r*r))
 	cat(sprintf("Experiment %i gets %i time points for plotting.\n",i,L))
 	ex[[i]]$outputTimes <- sort(unique(c(t_,seq(mn_,mx_,length.out=L))))
 }
@@ -71,5 +72,5 @@ rm(x)
 ## ---- plot the function values and log10-state-variables:
 pngFile <- sprintf("%s-sample-simulations-lines.png",PREFIX)
 png(file=pngFile,width=length(ex)*1920,height=(NROW(y[[1]]$state)+NROW(y[[1]]$func))*1080,res=100)
-print(ggplotTimeSeriesStates(y,ex,type="lines",MLE=MLE))
+print(ggplotTimeSeriesStates(y,ex,type="lines",MLE=1))
 dev.off()

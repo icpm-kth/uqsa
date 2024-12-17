@@ -150,28 +150,69 @@ swap_points_locally <- function(parMCMC){
 #' the given parameters, all other dependencies have to be either
 #' implicit (as a closure) or attributes of parGiven.
 #'
+#' The returned function takes 1 mandatory argument: parMCMC - the
+#' initial position for the Markov chain. There are 4 optional arguments:
+#'
+#'               N - <int> [1000] sample size (that should be returned)
+#'             eps - <double> [1e-4] scalar step size
+#'           batch - <int> [1] sampling will be done in batches of size `batch`,
+#'                   only the last point of every batch is returned (to save disk space)
+#' saveSimulations - <character> ["func"] named simulation results are
+#'                   attached to the sample as an attribute.
+#'                   Does not yet work for sensitivities.
+#'                   set to c() or character(0) to only return the sample,
+#'                   then only the intial simulation will be returned.
 #' @param update and update function
-#' @return M(initiPar,N), a function of initial starting values and
+#' @return M(initiPar,N,batch,saveSimulations), a function of initial starting values and
 #'     number of Markov chain steps
 #' @export
 mcmc <- function(update){
-	M <- function(parMCMC,N=1000,eps=1e-4){
+	M <- function(parMCMC, N=1000, eps=1e-4, batch=1, saveSimulations=c("state","func")){
 		sample <- matrix(nrow=N,ncol=length(parMCMC))
 		ll <- numeric(N)
 		b <- numeric(N)
 		a <- 0
+		s <- attr(parMCMC,"simulations")
+		## --- here we use the simulation results of the init parameters and extend them for the entire sample
+		for (k in seq_along(s)){
+			for (f in saveSimulations){
+				if (f %in% names(s[[k]])){
+					d<-dim(s[[k]][[f]])
+					d[3] <- N # create space for simulation results
+					s[[k]][[f]] <- array(NA,dim=d)
+				} else {
+					stop(
+						sprintf("%s is not a field in simulations: %s",
+							f,
+							paste(names(s[[k]]),collapse=" ")
+						)
+					)
+				}
+			}
+		}
+		## --- the actual sampling happens here
 		for (i in seq(N)){
-			parMCMC <- update(parMCMC,eps)
+			for (j in seq(batch)){
+				parMCMC <- update(parMCMC,eps)
+				a <- a + as.numeric(attr(parMCMC,"accepted"))
+			}
+			## record current state in return values
 			ll[[i]] <- attr(parMCMC,"logLikelihood")
 			sample[i,] <- as.numeric(parMCMC)
 			b[i] <- attr(parMCMC,"beta")
-			a <- a + as.numeric(attr(parMCMC,"accepted"))
+			v <- attr(parMCMC,"simulations")
+			for (k in seq_along(s)){
+				for (f in saveSimulations){
+					s[[k]][[f]][,,i] <- drop(v[[k]][[f]])
+				}
+			}
 		}
-		attr(sample,"acceptanceRate") <- a/N
+		attr(sample,"acceptanceRate") <- a/(N*batch)
 		attr(sample,"logLikelihood") <- ll
 		attr(sample,"lastPoint") <- parMCMC
 		attr(sample,"beta") <- b
 		attr(sample,"stepSize") <- eps
+		attr(sample,"simulations") <- s
 		return(sample)
 	}
 }
@@ -317,8 +358,21 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 #'
 #' this version of the MCMC function returns a Markov chain closure
 #' that assumes that it is bein run in an MPI context: R was launched
-#' using `runmpi` and the Rmpi package is installed. The chains shall
-#' communicate using the provided `comm`.
+#' using `runmpi` (or similar) and some MPI package is installed. The chains shall
+#' communicate using the provided `comm` id.
+#' 
+#' The returned function takes 1 mandatory argument: parMCMC - the
+#' initial position for the Markov chain. There are 4 optional arguments:
+#'
+#'               N - <int> [1000] sample size (that should be returned)
+#'             eps - <double> [1e-4] scalar step size
+#'           batch - <int> [1] sampling will be done in batches of size `batch`,
+#'                   only the last point of every batch is returned (to save disk space)
+#' saveSimulations - <character> ["func"] named simulation results are
+#'                   attached to the sample as an attribute.
+#'                   Does not yet work for sensitivities.
+#'                   set to c() or character(0) to only return the sample,
+#'                   then only the intial simulation will be returned.
 #'
 #' @param update an update function
 #' @param comm an mpi comm which this function will use for send/receive operations
@@ -327,7 +381,7 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 #' @export
 mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures){
 	D <- max(2*swapDelay+1,1)
-	M <- function(parMCMC,N=1000,eps=1e-4){
+	M <- function(parMCMC,N=1000,eps=1e-4,batch=1,saveSimulations=c("state","func")){
 		r <- attr(comm,"rank") # 0..n-1
 		cs  <- attr(comm,"size")
 		sample <- matrix(nrow=N,ncol=length(parMCMC))
@@ -335,28 +389,57 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 		b <- numeric(N)
 		a <- 0
 		swaps <- 0
-		for (i in seq(N)){
-			parMCMC <- update(parMCMC,eps)
-			sample[i,] <- parMCMC
-			LL <- attr(parMCMC,"logLikelihood")
-			B <- attr(parMCMC,"beta")
-			a <- a + as.numeric(attr(parMCMC,"accepted"))
-			ll[i] <- LL
-			b[i]  <- B
-			if (i %% D == 0){ # e.g. i = 3,6,9, or i = 5,10,15
-				res <- swapFunc(i,B,LL,eps,r,comm,cs)
-				if (res$B != B) swaps <- swaps+1
-				attr(parMCMC,"beta") <- res$B
-				attr(parMCMC,"logLikelihood") <- res$LL
-				eps <- res$H
+		s <- attr(parMCMC,"simulations")
+		## --- here we use the simulation results of the init parameters and extend them for the entire sample
+		for (k in seq_along(s)){
+			for (f in saveSimulations){
+				if (f %in% names(s[[k]])){
+					d<-dim(s[[k]][[f]])
+					stopifnot(length(d)>=3)
+					d[3] <- N # create space for simulation results
+					s[[k]][[f]] <- array(NA,dim=d)
+				} else {
+					stop(
+						sprintf("%s is not a field in simulations: %s",
+							f,
+							paste(names(s[[k]]),collapse=" ")
+						)
+					)
+				}
 			}
 		}
-		attr(sample,"acceptanceRate") <- a/N
+		## --- the actual sampling happens here
+		for (i in seq(N)){
+			for (j in seq(batch)){
+				parMCMC <- update(parMCMC,eps)
+				a <- a + as.numeric(attr(parMCMC,"accepted"))
+				LL <- attr(parMCMC,"logLikelihood")
+				B <- attr(parMCMC,"beta")
+				if (i %% D == 0){
+					res <- swapFunc(i,B,LL,eps,r,comm,cs)
+					if (res$B != B) swaps <- swaps+1
+					attr(parMCMC,"beta") <- res$B
+					attr(parMCMC,"logLikelihood") <- res$LL
+					eps <- res$H
+				}
+			}
+			ll[i] <- LL
+			b[i]  <- B
+			v <- attr(parMCMC,"simulations")
+			for (k in seq_along(s)){
+				for (f in saveSimulations){
+					s[[k]][[f]][,,i] <- drop(v[[k]][[f]])
+				}
+			}
+			sample[i,] <- parMCMC
+		}
+		attr(sample,"acceptanceRate") <- a/(N*batch)
 		attr(sample,"logLikelihood") <- ll
 		attr(sample,"lastPoint") <- parMCMC
 		attr(sample,"beta") <- b
-		attr(sample,"swapRate") <- swaps/N
+		attr(sample,"swapRate") <- swaps/(N*batch)
 		attr(sample,"stepSize") <- eps
+		attr(sample,"simulations") <- s
 		return(sample)
 	}
 	return(M)
@@ -466,11 +549,19 @@ gatherSample <- function(files,beta=1.0,size=NA){
 		b <- attr(s,"beta")
 		l <- attr(s,"logLikelihood")
 		i <- which(abs(b - beta) <= 1e-9*beta)
-		s <- s[i,,drop=FALSE]
-		l <- l[i]
-		x <- rbind(x,s)
-		lL <- c(lL,l)
-		if (!any(is.na(size)) && NROW(x)>=size) break
+		if (!any(is.na(size)) && NROW(x) < size){
+			s <- s[i,,drop=FALSE]
+			l <- l[i]
+			x <- rbind(x,s)
+			lL <- c(lL,l)
+		} else { # replace values randomly
+			n <- NROW(x)
+			m <- length(i)
+			ii <- sample(i,size=round(min(n,m)*0.5),replace=FALSE) # take a random set of i
+			j <- sample.int(n,size=length(ii),replace=FALSE)       # put chosen values randomly into x
+			x[j,] <- s[ii,,drop=FALSE]
+			lL[j] <- l[ii]
+		}
 	}
 	attr(x,"beta") <- beta
 	attr(x,"logLikelihood") <- lL
