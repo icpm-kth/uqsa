@@ -13,7 +13,8 @@ mcmcUpdate(
   gradLogLikelihood = NULL,
   gprior = NULL,
   fisherInformation = NULL,
-  fisherInformationPrior = NULL
+  fisherInformationPrior = NULL,
+  Sigma = NULL
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ Fisher information matrices}
 
 \item{fisherInformationPrior}{a constant matrix, the prior
 distributions fisher information}
+
+\item{Sigma}{alternatively, Sigma=solve(fisherInformationPrior), \link{the inverse to fisherInformationPrior} can be specified for the metropolis algorithm}
 }
 \value{
 a function that returns possibly updated states of the
