@@ -119,12 +119,12 @@ generateCode <- function(ode){
 	}
 	# Jacobian
 	C <- c(C,"",writeComment("ODE Jacobian: df(t,y;p)/dy"))
-	J <- replace_powers(yJacobian(ode$vf[[2]],ode$var[[1]]))
+	J <- replace_powers(t(yJacobian(ode$vf[[2]],ode$var[[1]])))
 	z <- grepl("^0$",J)
 	C <- c(C,writeFunc("jac",c("jac_","dfdt_"),sprintf("\tjac_[%i] = %s;",cOffset(J)[!z],J[!z]),length(J)))
 	# parameter Jacobian
 	C <- c(C,"",writeComment("ODE parameter Jacobian: df(t,y;p)/dp"))
-	Jp <- replace_powers(yJacobian(ode$vf[[2]],ode$par[[1]]))
+	Jp <- replace_powers(t(yJacobian(ode$vf[[2]],ode$par[[1]])))
 	z <- grepl("^0$",Jp)
 	C <- c(C,writeFunc("jacp",c("jacp_","dfdt_"),sprintf("\tjacp_[%i] = %s;",cOffset(Jp)[!z],Jp[!z]),length(Jp)))
 	# output function
