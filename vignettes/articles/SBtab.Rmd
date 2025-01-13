@@ -20,26 +20,27 @@ corresponding data stored in [SBtab](https://www.sbtab.net)
 files. SBtab is a table format for system biology. The use of SBtab is
 optional, but very practical. SBML models currently cannot be imported
 by this package, but can be converted to SBtab using the online tools
-that [sbtab.net](https://www.sbtab.net) provides. The content of SBML
-files is more strict than with SBtab files, so the files created by
-conversion are not guaranteed to work here. They are user-friendly,
+that [sbtab.net](https://www.sbtab.net) provides. There could however be
+minor features of SBML that are not supported by us, so the files 
+are not guaranteed to work here. SBtab files are user-friendly 
 i.e. a human can open SBtab files with a text editor and edit them
 manually.
 
-An SBtab Document is a set of tables that represent reactions,
-compounds, parameters, and measured data that correspond to
-simulations of the model under certain input conditions and initial
-values. Input conditions are often related to initial values and
-values of the input parameters (parameters that are used within the
-model of the input signal). The values of the input parameters are
+An SBtab Document is a set of tables that contain the reactions, 
+compounds, parameters, etc of a model, and corresponding 
+experimental data that the model simulations should be able 
+to reproduce. Different experimental settings correspond 
+in the model to different input conditions, which are set 
+by input parameters. The values of the input parameters are
 always known, while the model' s internal parameters (e.g. reaction
 rate coefficients) can be subject to optimization or sampling.
 
 For the most part, in our case, an SBtab document is a collection of
 [tsv](https://en.wikipedia.org/wiki/Tab-separated_values) files (has
-to be one file per table). This can be written by hand, in a text
-editor (one that doesn't auto convert tabs to *N* spaces).
-Each table contains information about the model, data, and their
+to be one file per table). This can be written by hand in a plain text editor 
+(one that doesn't auto convert tabs to *N* spaces) or in a spreadsheet 
+([ODS](https://en.wikipedia.org/wiki/OpenDocument) or [excel](https://en.wikipedia.org/wiki/Microsoft_Excel) ).
+The tables contains information about the model, data, and their
 relationship to one another:
 
 - Reactions
@@ -50,29 +51,27 @@ relationship to one another:
 Each type of items (e.g. parameters) gets a TSV file
 (e.g. `Parameter.tsv`), see our examples.
 
-From these files you can automatically generate ODE code for R and C
-solvers, and load the data from them.
-
+From these files you can automatically generate code to simulate the system deterministically or stochastically in C or R 
+and load the data into R.
 
 # Advantages of SBtab
 
-Data and models are tightly linked and we also include two tables on
-the relationships between the data and model simulations in all our
-examples:
+In SBtab, data and models are tightly linked as they contained in the same document. For uqsa we also require that 
+two tables on the relationships between the experimental data and model simulations exists:
 
-1. *Experiments*, a table with a list of experiments together with appropriate model settings
+1. *Experiments*, where each row describes a different experiment, providing individual model settings (input conditions) and 
+the name of the table that contains the actual data points.
 2. *Output*, a list of output functions that correspond to measurable
-   values for this model, named the same as the corresponding data
-   columns
+   values for this model.
 
 SBML level 2 lacks the ability to carry data with the model and also
 lacks the vocabulary to define which parameters are *inputs* and which
-are *model internal*. There is also no way to define an *observable*
+are *model internal*. There is also no way to define an *observable* (output function)
 in SBML (a function that models the measurement device, an
 observation). For this reason, an SBML document cannot be converted
 into an SBtab document that has these qualities (which we need).  But,
 we may be wrong about what SBML can and cannot do. Future versions of
-SBML may of course add new features. In general, SBML is hard.
+SBML may of course add new features.
 
 # SBtab File Structure
 
@@ -89,20 +88,11 @@ header. You can also include other columns in any order; only some
 column names have special meanings, unknown columns will not be parsed
 (they are harmless).
 
-We don't parse the version attribute or any other attribute other than
-`TableName` and `Document`.
-
-```{r, eval=TRUE}
-f <- uqsa_example("AKAP79")          # this is what the directory is called
-sb <- SBtabVFGEN::sbtab_from_tsv(f)
-print(comment(sb))                   # the value of the Document attribute of f[1]
-print(names(sb))                     # the values of the TableName attributes
-```
+At the moment we only parse two attribute of the header these are `TableName` and `Document`.
 
 Document
 : must be the same string for all tables. We don't check this.  We use
-this attribute to assign a name to each model we read from
-the files
+this attribute to assign a name to the loaded model.
 
 TableType
 : (does not matter) There are two generic table-types that can be used
@@ -125,6 +115,15 @@ The same mechanism is used for Event Schedules.
 SBtabVersion
 : ignored
 
+In the code snippet below the tables in tsv files of the AKAP79 model are parsed into corresponding data frames in R:
+```{r, eval=TRUE}
+files <- uqsa_example("AKAP79")          # this is what the directory is called
+sb <- SBtabVFGEN::sbtab_from_tsv(files)
+print(comment(sb))                   # the value of the Document attribute of f[1]
+print(names(sb))                     # the values of the TableName attributes
+```
+
+
 ## Tabular Content
 
 The second line/row contains the table column names, which often start
@@ -134,8 +133,7 @@ special meaning.
 ### Special Column Symbols (Prefixes)
 
 - In `!abc`, ! means that this column has a special meaning, defined in the SBtab standard
-- In `>xyz`, > means that this column specifies a value for variable `xyz`,
-  it has an entry in some other table 
+- In `>xyz`, > means that this column specifies a value for the variable `xyz` that has an entry in some other table 
     + there must be a table where `xyz` appears in the `!ID` column,
 - In `~xyz`, ~ means _standard error_ -- this is our extension.  
   We don't know how to express this in plain SBtab
@@ -150,9 +148,9 @@ special meaning.
 - any column that doesn't start with one of `!>~` isn't special and
   isn't interpreted by us.
 
-The first column can be called either `!ID` or `!Name` (it is harmless
+The first column is special. It can be called either `!ID` or `!Name` (it is harmless
 to have both). If the first column is not called that, the scripts
-will carry on regardless, assuming that it is some kind of name. So,
+will carry on regardless, assuming that the first column contain some kind of names for the entries. So,
 `!Id`, `!id`, or `ID?` will also work for us -- not for other
 software. All other columns are found by name (case sensitive), they
 can appear in any order. Variables in reaction rates and formulae are
@@ -184,6 +182,8 @@ reaction_1   kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C                            
 reaction_2   kcat_AKARp*AKAR4_C                                                                             AKAR4_C <=> AKAR4p + C             0
 ```
 
+
+
 The same file can look like this in spreadsheet software, e.g.[gnumeric](http://www.gnumeric.org/):
 ![AKAP79 Reaction Table](AKAP79-Reaction.png)
 
@@ -198,20 +198,23 @@ Note 2
 : `FALSE` and `TRUE` (the Boolean values lots of spreadsheet software
   uses) mostly work in R correctly, they can also work (literally) in
   C (if they are defined as macros or enums).  Some spreadsheet
-  software exports `TRUE`/`FALSE` as `1`/`0` into TSV (this is usually
+  software exports `TRUE`/`FALSE` as `1`/`0` into TSV (using 1/0 is usually
   better). See the last Section on this page about this topic.
 
-All of the following examples are tab separated (originally) but
-printed using automatic vertical alignment, starting with the second
-line. You cannot copy paste them into new files, there must be tabs.
-
-Here is a code snippet that displays an SBtab on screen (in the
+If you are familiar with using the terminal window, you can use the following code 
+snippet to display an SBtab on screen (in the
 terminal) with column alignment (but losing the tabstops):
 
 ```{sh aligned-SBtab, eval=FALSE}
 head -n 1 Reaction.tsv
 tail -n +2 Reaction.tsv | column -t -s '	'
 ```
+
+All of the following examples are from tab separated text files (originally) but
+printed using automatic vertical alignment, with the alignment starting with the second
+line. You cannot copy paste them directly into new files 
+(there must be tabs separating the words/values).
+
 
 ### Constant
 
@@ -254,7 +257,8 @@ E1  Time Series  100    1700.0  ...
 
 Possibly unknown parameters of the model, these parameters typically
 refer to internal properties of the model itself rather than something
-we did to the model during an experiment.
+we did to the model reflecting an experiment. Typically, these parameters 
+are the ones that are changed during a sampling process.
 
 ```{sh, eval=FALSE}
 !!SBtab TableName='Parameter' Document='myModel'
@@ -270,8 +274,8 @@ missing, `linear` is assumed.
 ### Expression
 
 Mathematical sub-expressions that can be used in reaction fluxes. Can
-be used to encode thermodynamic relationships between parameters,
-model an input signal. This is used to assign a name to an algebraic
+be used to encode thermodynamic relationships between parameters or to
+model an input signal. This is used to assign a name (e.g. KD_1) to an algebraic
 expression.
 
 ```{sh, eval=FALSE}
@@ -339,7 +343,7 @@ Output could be useful:
 Bound  1      (A<5000) && (A>1000)
 ```
 
-And the data table could be:
+In the end, the model output A from a simulation will be compared with a corresponding experimental data point for the observable A from a data table. The data table could look like:
 
 ```{sh, eval=FALSE}
 !!SBtab [...]
@@ -348,51 +352,7 @@ And the data table could be:
 ```
 
 Data can be Boolean/`logical` (it's alsways treated as `1` or
-`0`). See also the last Section on this page.
-
-### Transformation
-
-A table of all possible transformations (maps) that are part of any
-experiment's described procedure. An event can trigger any of these
-transformation at specific event-times.
-
-```{sh, eval=FALSE}
-!!SBtab TableName='Transformation' Document='MyModel'
- !ID  >A     >B     >C
- TF1  A-B    B      C
- TF2  A      B/2    C
- TF3  A*0.1  B*0.1  C*0.1 
-```
-
-Here we see one transformation per line that affects the variables listed in the column names `>Var`, i.e.:
-
-```{r, eval=FALSE}
-A <- A-B  # TF1
-...
-B <- B/2  # TF2
-...
-A <- A*0.1 # TF3
-B <- B*0.1 # TF3
-C <- C*0.1 # TF3
-...
-```
-
-This is what would conceptually happen in the generated code (not literally, as it actually happens in the C code).
-
-### Event
-
-Events will interrupt the ODE solver in the rgsl package (not other
-solvers), change the values of input parameters, or state variables
-according to the available named tranformations (see above). After the
-transformation the solver is re-initialized to continue from there.
-
-```{sh, eval=FALSE}
-!!SBtab TableName='EventScheduleAlpha' Document='myModel' 
-  !TimePoint  !Time  !Tranformation 
- Event0Time0  10.0   TF1
- Event0Time0  11.0   TF2
-         ...  ...    ...
-```
+`0`). See also the Data Section further down on this page.
 
 ### Experiments
 
@@ -407,7 +367,7 @@ _AuthorYear_ citation keys make good ID values for data sets.
 
 `!Type` is one of: `Time Series`, or `Dose Response` for our purposes
 (possibly more types in the future). All types are convenience
-features, Time Series is the basic type thta can do anything.
+features, Time Series is the basic type that can do anything.
 
 
 The initial time for the ODE, $t_0$, corresponds to the beginning of
@@ -421,7 +381,7 @@ The `!Citation` column is entirely optional.
 
 ### Data
 
-Data is stored in TSV files as well, but isn't used when building the ODE code. It is used in parameter estimation.
+The experimental data is stored in TSV files as well, but isn't used when building the ODE code. It is used in parameter estimation. The data table can have any name `XYZ` but usually something related to the experiment. The data tables are refered to from the Experiment table by having the ID `XYZ` on some row.
 
 #### Time Series
 
@@ -484,11 +444,57 @@ E1D19  34101    3.996      0.3985
 
 Here `Ca_set` is an input value, and `CaPerCam` is an output
 value. Which is Input or Output cannot be determined from the Table
-itself, only from the rest of the Document. Each row can be considered
-a mini time series, with one measurement time each. At which time the
+itself, only from the rest of the SBtab Document. Each row can be considered
+a mini time series, with one single measurement time each. At which time the
 measurement shall occur is written in the table of experiments, column
 `!Time` (the default measurement time). A different time for each row
 is not possible (currently).
+
+
+### Transformation (only available for ODE models)
+
+A table of all possible transformations (maps) that are part of any
+experiment's described procedure. An event can trigger any of these
+transformation at specific event-times.
+
+```{sh, eval=FALSE}
+!!SBtab TableName='Transformation' Document='MyModel'
+ !ID  >A     >B     >C
+ TF1  A-B    B      C
+ TF2  A      B/2    C
+ TF3  A*0.1  B*0.1  C*0.1 
+```
+
+Here we see one transformation per line that affects the variables listed in the column names `>Var`, i.e.:
+
+```{r, eval=FALSE}
+A <- A-B  # TF1
+...
+B <- B/2  # TF2
+...
+A <- A*0.1 # TF3
+B <- B*0.1 # TF3
+C <- C*0.1 # TF3
+...
+```
+
+This is what would conceptually happen in the generated code (not literally, as it actually happens in the C code).
+
+### Event (only availible for ODE models)
+
+Events will interrupt the ODE solver in the rgsl package (not other
+solvers), change the values of input parameters, or state variables
+according to the available named tranformations (see above). After the
+transformation the solver is re-initialized to continue from there.
+
+```{sh, eval=FALSE}
+!!SBtab TableName='EventScheduleAlpha' Document='myModel' 
+  !TimePoint  !Time  !Tranformation 
+ Event0Time0  10.0   TF1
+ Event0Time0  11.0   TF2
+         ...  ...    ...
+```
+
 
 # A Note on Units
 
@@ -532,12 +538,8 @@ don't make such restrictions.
 
 # Issues to be aware of with any File format
 
-According to the specifications of the SBtab authors, MS Excel
-spreadsheets are an acceptable storage format - but we don't use any
-of their original code and therefore do not carry over any guarantees.
-
 Our [SBtabVFGEN](icpm-kth/SBtabVFGEN) package uses either multiple TSV
-files or one [ODS](https://en.wikipedia.org/wiki/OpenDocument)
+files or one [ODS](https://en.wikipedia.org/wiki/OpenDocument) (or [excel](https://en.wikipedia.org/wiki/Microsoft_Excel) )
 file. The TSV reading is done using core R functions, while ODS is
 read through
 [readODS](https://cran.r-project.org/package=readODS). Both formats
