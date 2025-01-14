@@ -35,6 +35,8 @@ navbar:
         href: articles/events.html
       - text: Build your own Model
         href: articles/user_model.html
+      - text: Generate Model Code
+        href: articles/generateCodeInR.html
       - text: Generate C Code Outside of R
         href: articles/GenerateCodeInSHELL.html
       - text: Advantages of Intermediates
@@ -81,9 +83,12 @@ reference:
   - defaultAcceptance
   - defaultDistance
   - fitCopula
+  - generateCode
   - getMCMCPar
   - globalSensitivity
   - importReactionsSSA
+  - is.invertible
+  - loadODE
   - log10ParMap
   - log10ParMapJac
   - logParMap
@@ -98,12 +103,14 @@ reference:
   - parUpdate
   - plotSimualtionsFromSBtab
   - preCalibration
+  - replace_powers
   - rCopulaPrior
   - rNormalPrior
   - rUniformPrior
   - sensitivity.graph
   - shs_gsa
   - shs_prior
+  - simulator.stoch
   - simulator.c
   - uqsa_example
   - "%otherwise%"
@@ -115,6 +122,8 @@ reference:
   - loadSample_mpi
   - mcmc_mpi
   - simc
+  - yacasMath
+  - yJacobian
 - title: "Internal Functions"
   desc: "not exported functions"
   contents:
@@ -140,8 +149,10 @@ reference:
   - "%has%"
   - loadSubSample_mpi
   - logLikelihoodFunc
+  - parameters_from_expressions_func
   - pbdMPI_bcast_reduce_temperatures
   - pbdMPI_swap_temperatures
   - sampleWithNoise
   - simcf
+  - simulateAndComputeDistance
   - swap_points_locally

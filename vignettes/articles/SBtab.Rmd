@@ -128,7 +128,9 @@ print(names(sb))                     # the values of the TableName attributes
 
 The second line/row contains the table column names, which often start
 with an exclamation point, or another special character to signify a
-special meaning. 
+special meaning. Do not copy paste the examples here, they are printed
+using the `column` command, which alignes the columns of a table using
+the appropriate number of spaces (so the printout is not tsv anymore).
 
 ### Special Column Symbols (Prefixes)
 
@@ -161,7 +163,7 @@ all _first column IDs_ (regardless of column label).
 The set of columns are given as example tables in the following
 Sections. An example of an SBtab file, in general, with header:
 
-```{sh, label="Reaction.tsv", eval=FALSE}
+```
 !!SBtab	Document='AKAP79' SBtabVersion='1.0' TableName='Reaction' TableTitle='Reactions in AKAP79 Model' TableType='Reaction'
 !ID          !KineticLaw                                                                                    !ReactionFormula                   !IsReversible
 reaction_51  kf_Rii_C__RiiP_C*Rii_C                                                                         Rii_C <=> RiiP_C                   0
@@ -210,20 +212,20 @@ head -n 1 Reaction.tsv
 tail -n +2 Reaction.tsv | column -t -s '	'
 ```
 
-All of the following examples are from tab separated text files (originally) but
-printed using automatic vertical alignment, with the alignment starting with the second
-line. You cannot copy paste them directly into new files 
-(there must be tabs separating the words/values).
-
+All of the following examples are printed like that, with automatic
+vertical alignment (spaces). You absolutely cannot copy paste them directly into
+new files (there must be tabs separating the words/values).
+Use the bundled example files directly (as templates).
 
 ### Constant
 
 A list of constants. These are values that never change for _this_ model, e.g. Avogadro's number:
 
-```{sh, eval=FALSE}
+```
  !!SBtab  TableName='Constant'  Document='myModel' 
      !ID  !Unit                 !Value
        L  1                     6.02214076E+23
+     ...  .....                 ..............
 ```
 
 The number of items in the first line is usually different from the
@@ -235,7 +237,7 @@ This also breaks the smart display of these files as tables on github.
 
 Known paramters of the model, can vary between experiments.
 
-```{sh, eval=FALSE}
+```
 !!SBtab TableName='Input' Document='myModel'
  !ID  !DefaultValue  !Unit   !Comment
  CaB  2000.0         nM      Calcium-Base-Level
@@ -251,6 +253,7 @@ table, e.g.:
 !!SBtab TableName='Experiment' Document='myModel'
 !ID !Type        !Time  >CaB    >...
 E1  Time Series  100    1700.0  ...
+... ...........  .....  ......  ...
 ```
 
 ### Parameter
@@ -260,10 +263,10 @@ refer to internal properties of the model itself rather than something
 we did to the model reflecting an experiment. Typically, these parameters 
 are the ones that are changed during a sampling process.
 
-```{sh, eval=FALSE}
+```
 !!SBtab TableName='Parameter' Document='myModel'
  !ID  !DefaultValue  !Std  !Unit     !Scale
- kf1            1.8   0.1  s^(1)     natural logarithm 
+ kf1            1.8   0.1  s^(-1)    natural logarithm 
  ...            ...  ...   ...       ...
 ```
 
@@ -278,7 +281,7 @@ be used to encode thermodynamic relationships between parameters or to
 model an input signal. This is used to assign a name (e.g. KD_1) to an algebraic
 expression.
 
-```{sh, eval=FALSE}
+```
 !!SBtab TableName='Expression' Document='myModel'
   !ID  !Unit  !Formula
  KD_1  nM     (KD_3*KD_4)/KD_2
@@ -289,9 +292,9 @@ expression.
 
 In SBML parlance, these are *species*.
 
-```{sh, eval=FALSE}
+```
 !!SBtab TableName='Compound' TableType='Compound' Document='myModel'
-      !ID  !Unit  !InitialValue 
+      !ID  !Unit  !InitialValue
  PP2B_CaM  μM     0.0
       ...  ...    ...
 ```
@@ -305,7 +308,7 @@ framework.
 
 The Table of Reactions can be seen as the main piece of information for the model. 
 
-```{sh, eval=FALSE}
+```
 !!SBtab TableName='Reaction' TableType='Reaction' Document='myModel'
        !ID  !KineticLaw    !IsReversible   !ReactionFormula 
  Reaction1  kf*A*B - kb*C  TRUE            A + B <=> C
@@ -323,7 +326,7 @@ in the official SBtab documentation), there is no one sided arrow.
 
 Outputs are Observables. A function that can be related to measured data.
 
-```{sh, eval=FALSE}
+```
 !!SBtab TableName='Output' Document='myModel'
       !ID  !Unit  !Formula
  CaPerCaM  1      totalCa/totalCaM
@@ -336,7 +339,7 @@ A function can be an inequality. If the experimental data has an
 _allowed range_ (min and max), rather than a standard error, then this
 Output could be useful:
 
-```{sh, eval=FALSE}
+```
 !!SBtab TableName='Output' Document='myModel'
   !ID  !Unit  !Formula
     A  1      Ca/CaB
@@ -345,7 +348,7 @@ Bound  1      (A<5000) && (A>1000)
 
 In the end, the model output A from a simulation will be compared with a corresponding experimental data point for the observable A from a data table. The data table could look like:
 
-```{sh, eval=FALSE}
+```
 !!SBtab [...]
 !TimePoint !Time    >A  ~A  >Bound  ~Bound
         T1     0  1500  150   TRUE  0.1
@@ -356,7 +359,7 @@ Data can be Boolean/`logical` (it's alsways treated as `1` or
 
 ### Experiments
 
-```{sh, eval=FALSE}
+```
 !!SBtab TableName='Experiments' Document='myModel'
                !ID  !Type          !Time  !T0    !Event              !Citation
     Smith2019Fig2E  Time Series    600.0  -100.0  EventScheduleAlpha  https//doi.org/10.[...] 
@@ -385,7 +388,7 @@ The experimental data is stored in TSV files as well, but isn't used when buildi
 
 #### Time Series
 
-```{sh, eval=FALSE}
+```
 !!SBtab Document='myModel' Version='1.0' TableName='Smith2019Fig2E' TableType='QuantityMatrix'			
 !TimePoint  !Time  >AKAR4pOUT  ~AKAR4pOUT
 E0301T001   -15    99.4136     0.711886579917949
@@ -417,7 +420,7 @@ repeatedly. Each row is simulated as a time series by itself.
 The table works the same way, but rather than `Time` we have an input
 column:
 
-```{sh, eval=FALSE}
+```
 !!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableName='Shifman2006Fig1Bsq' TableType='QuantityMatrix' 
 !ID    >Ca_set  >CaPerCaM  ~CaPerCaM
 E1D0   364      0.011      0.3985
@@ -457,7 +460,7 @@ A table of all possible transformations (maps) that are part of any
 experiment's described procedure. An event can trigger any of these
 transformation at specific event-times.
 
-```{sh, eval=FALSE}
+```
 !!SBtab TableName='Transformation' Document='MyModel'
  !ID  >A     >B     >C
  TF1  A-B    B      C
@@ -467,7 +470,7 @@ transformation at specific event-times.
 
 Here we see one transformation per line that affects the variables listed in the column names `>Var`, i.e.:
 
-```{r, eval=FALSE}
+```
 A <- A-B  # TF1
 ...
 B <- B/2  # TF2
@@ -487,7 +490,7 @@ solvers), change the values of input parameters, or state variables
 according to the available named tranformations (see above). After the
 transformation the solver is re-initialized to continue from there.
 
-```{sh, eval=FALSE}
+```
 !!SBtab TableName='EventScheduleAlpha' Document='myModel' 
   !TimePoint  !Time  !Tranformation 
  Event0Time0  10.0   TF1
@@ -595,7 +598,7 @@ inequality constraints.
 
 Consider this:
 
-```{sh, eval=FALSE}
+```
 !!SBtab TableName='Output'
 !ID      !Formula
 a_lt_b   a < b
@@ -603,7 +606,7 @@ a_lt_b   a < b
 
 with an Experiment that checks this condition:
 
-```{sh, eval=FALSE}
+```
 !!SBtab TableName='Experiments'
               !ID  !T0  >A  >B  [...] % input settings, initial values
 CheckInequalities  -1.0  12  13
@@ -611,7 +614,7 @@ CheckInequalities  -1.0  12  13
 
 and this data table:
 
-```{sh, eval=FALSE}
+```
 !!SBtab TableName='CheckInequalities',
 !TimePoint	!Time	>a_lt_b,
         T1	0.00	TRUE
@@ -704,4 +707,6 @@ chmod 744 a.c
 rm a.c
 ```
 
-But, this is unlikely to be useful. But inequality statements are allowed in the ODE itself (for switches).
+But, this is unlikely to be very useful.
+
+Inequality statements are allowed in the ODE itself (to simulate switches in behavior).

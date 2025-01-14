@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,6 +59,7 @@
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
     <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
+    <a class="dropdown-item" href="../articles/generateCodeInR.html">Generate Model Code</a>
     <a class="dropdown-item" href="../articles/GenerateCodeInSHELL.html">Generate C Code Outside of R</a>
     <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
@@ -250,7 +251,10 @@ are parsed into corresponding data frames in R:</p>
 </h3>
 <p>The second line/row contains the table column names, which often
 start with an exclamation point, or another special character to signify
-a special meaning.</p>
+a special meaning. Do not copy paste the examples here, they are printed
+using the <code>column</code> command, which alignes the columns of a
+table using the appropriate number of spaces (so the printout is not tsv
+anymore).</p>
 <div class="section level4">
 <h4 id="special-column-symbols-prefixes">Special Column Symbols (Prefixes)<a class="anchor" aria-label="anchor" href="#special-column-symbols-prefixes"></a>
 </h4>
@@ -300,24 +304,24 @@ column label).</p>
 </h4>
 <p>The set of columns are given as example tables in the following
 Sections. An example of an SBtab file, in general, with header:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="ex">!!SBtab</span> Document=<span class="st">'AKAP79'</span> SBtabVersion=<span class="st">'1.0'</span> TableName=<span class="st">'Reaction'</span> TableTitle=<span class="st">'Reactions in AKAP79 Model'</span> TableType=<span class="st">'Reaction'</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="ex">!ID</span>          !KineticLaw                                                                                    !ReactionFormula                   !IsReversible</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="ex">reaction_51</span>  kf_Rii_C__RiiP_C<span class="pp">*</span>Rii_C                                                                         Rii_C <span class="op">&lt;</span>=<span class="op">&gt;</span> RiiP_C                   0</span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="ex">reaction_14</span>  kf_RiiPxC__RiiP_C<span class="pp">*</span>RiiP<span class="pp">*</span>C <span class="at">-</span> kb_RiiPxC__RiiP_C<span class="pp">*</span>RiiP_C                                            RiiP + C <span class="op">&lt;</span>=<span class="op">&gt;</span> RiiP_C                1</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="ex">reaction_12</span>  kf_RiiP_CxcAMP__RiiP_C_cAMP<span class="pp">*</span>RiiP_C<span class="pp">*</span>cAMP <span class="at">-</span> kb_RiiP_CxcAMP__RiiP_C_cAMP<span class="pp">*</span>RiiP_C_cAMP              RiiP_C + cAMP <span class="op">&lt;</span>=<span class="op">&gt;</span> RiiP_C_cAMP      1</span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="ex">reaction_43</span>  kf_RiiPXcAMP__RiiP_cAMP<span class="pp">*</span>cAMP<span class="pp">*</span>RiiP <span class="at">-</span> kb_RiiPXcAMP__RiiP_cAMP<span class="pp">*</span>RiiP_cAMP                          cAMP + RiiP <span class="op">&lt;</span>=<span class="op">&gt;</span> RiiP_cAMP          1</span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="ex">reaction_23</span>  kf_RiiP_cAMPxC__RiiP_C_cAMP<span class="pp">*</span>RiiP_cAMP<span class="pp">*</span>C <span class="at">-</span> kb_RiiP_cAMPxC__RiiP_C_cAMP<span class="pp">*</span>RiiP_C_cAMP              RiiP_cAMP + C <span class="op">&lt;</span>=<span class="op">&gt;</span> RiiP_C_cAMP      1</span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="ex">reaction_78</span>  kf_cAMPxRii__Rii_cAMP<span class="pp">*</span>cAMP<span class="pp">*</span>Rii <span class="at">-</span> kb_cAMPxRii__Rii_cAMP<span class="pp">*</span>Rii_cAMP                                cAMP + Rii <span class="op">&lt;</span>=<span class="op">&gt;</span> Rii_cAMP            1</span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="ex">reaction_56</span>  kf_Rii_CxcAMP__Rii_C_cAMP<span class="pp">*</span>Rii_C<span class="pp">*</span>cAMP <span class="at">-</span> kb_Rii_CxcAMP__Rii_C_cAMP<span class="pp">*</span>Rii_C_cAMP                    Rii_C + cAMP <span class="op">&lt;</span>=<span class="op">&gt;</span> Rii_C_cAMP        1</span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="ex">reaction_76</span>  kf_Rii_cAMPxC__Rii_C_cAMP<span class="pp">*</span>Rii_cAMP<span class="pp">*</span>C <span class="at">-</span> kb_Rii_cAMPxC__Rii_C_cAMP<span class="pp">*</span>Rii_C_cAMP                    Rii_cAMP + C <span class="op">&lt;</span>=<span class="op">&gt;</span> Rii_C_cAMP        1</span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="ex">reaction_62</span>  kf_Rii_C_cAMP__RiiP_C_cAMP<span class="pp">*</span>Rii_C_cAMP                                                          Rii_C_cAMP <span class="op">&lt;</span>=<span class="op">&gt;</span> RiiP_C_cAMP         0</span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="ex">reaction_58</span>  kf_RiixC__Rii_C<span class="pp">*</span>Rii<span class="pp">*</span>C <span class="at">-</span> kb_RiixC__Rii_C<span class="pp">*</span>Rii_C                                                  Rii + C <span class="op">&lt;</span>=<span class="op">&gt;</span> Rii_C                  1</span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="ex">reaction_44</span>  kf_RiiPxCaN__RiiP_CaN<span class="pp">*</span>RiiP<span class="pp">*</span>CaN <span class="at">-</span> kb_RiiPxCaN__RiiP_CaN<span class="pp">*</span>RiiP_CaN                                RiiP + CaN <span class="op">&lt;</span>=<span class="op">&gt;</span> RiiP_CaN            1</span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="ex">reaction_33</span>  kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN<span class="pp">*</span>CaN<span class="pp">*</span>RiiP_cAMP <span class="at">-</span> kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN<span class="pp">*</span>RiiP_cAMP_CaN  CaN + RiiP_cAMP <span class="op">&lt;</span>=<span class="op">&gt;</span> RiiP_cAMP_CaN  1</span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="ex">reaction_48</span>  kf_RiiP_CaN__RiixCaN<span class="pp">*</span>RiiP_CaN                                                                  RiiP_CaN <span class="op">&lt;</span>=<span class="op">&gt;</span> Rii + CaN             0</span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="ex">reaction_37</span>  kf_RiiP_cAMP_CaN__CaNXRii_cAMP<span class="pp">*</span>RiiP_cAMP_CaN                                                   RiiP_cAMP_CaN <span class="op">&lt;</span>=<span class="op">&gt;</span> CaN + Rii_cAMP   0</span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="ex">reaction_1</span>   kf_C_AKAR4<span class="pp">*</span>C<span class="pp">*</span>AKAR4 <span class="at">-</span> kb_C_AKAR4<span class="pp">*</span>AKAR4_C                                                        C + AKAR4 <span class="op">&lt;</span>=<span class="op">&gt;</span> AKAR4_C              1</span>
-<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="ex">reaction_2</span>   kcat_AKARp<span class="pp">*</span>AKAR4_C                                                                             AKAR4_C <span class="op">&lt;</span>=<span class="op">&gt;</span> AKAR4p + C             0</span></code></pre></div>
+<pre><code>!!SBtab Document='AKAP79' SBtabVersion='1.0' TableName='Reaction' TableTitle='Reactions in AKAP79 Model' TableType='Reaction'
+!ID          !KineticLaw                                                                                    !ReactionFormula                   !IsReversible
+reaction_51  kf_Rii_C__RiiP_C*Rii_C                                                                         Rii_C &lt;=&gt; RiiP_C                   0
+reaction_14  kf_RiiPxC__RiiP_C*RiiP*C - kb_RiiPxC__RiiP_C*RiiP_C                                            RiiP + C &lt;=&gt; RiiP_C                1
+reaction_12  kf_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C*cAMP - kb_RiiP_CxcAMP__RiiP_C_cAMP*RiiP_C_cAMP              RiiP_C + cAMP &lt;=&gt; RiiP_C_cAMP      1
+reaction_43  kf_RiiPXcAMP__RiiP_cAMP*cAMP*RiiP - kb_RiiPXcAMP__RiiP_cAMP*RiiP_cAMP                          cAMP + RiiP &lt;=&gt; RiiP_cAMP          1
+reaction_23  kf_RiiP_cAMPxC__RiiP_C_cAMP*RiiP_cAMP*C - kb_RiiP_cAMPxC__RiiP_C_cAMP*RiiP_C_cAMP              RiiP_cAMP + C &lt;=&gt; RiiP_C_cAMP      1
+reaction_78  kf_cAMPxRii__Rii_cAMP*cAMP*Rii - kb_cAMPxRii__Rii_cAMP*Rii_cAMP                                cAMP + Rii &lt;=&gt; Rii_cAMP            1
+reaction_56  kf_Rii_CxcAMP__Rii_C_cAMP*Rii_C*cAMP - kb_Rii_CxcAMP__Rii_C_cAMP*Rii_C_cAMP                    Rii_C + cAMP &lt;=&gt; Rii_C_cAMP        1
+reaction_76  kf_Rii_cAMPxC__Rii_C_cAMP*Rii_cAMP*C - kb_Rii_cAMPxC__Rii_C_cAMP*Rii_C_cAMP                    Rii_cAMP + C &lt;=&gt; Rii_C_cAMP        1
+reaction_62  kf_Rii_C_cAMP__RiiP_C_cAMP*Rii_C_cAMP                                                          Rii_C_cAMP &lt;=&gt; RiiP_C_cAMP         0
+reaction_58  kf_RiixC__Rii_C*Rii*C - kb_RiixC__Rii_C*Rii_C                                                  Rii + C &lt;=&gt; Rii_C                  1
+reaction_44  kf_RiiPxCaN__RiiP_CaN*RiiP*CaN - kb_RiiPxCaN__RiiP_CaN*RiiP_CaN                                RiiP + CaN &lt;=&gt; RiiP_CaN            1
+reaction_33  kf_CaNxRiiP_cAMP__RiiP_cAMP_CaN*CaN*RiiP_cAMP - kb_CaNxRiiP_cAMP__RiiP_cAMP_CaN*RiiP_cAMP_CaN  CaN + RiiP_cAMP &lt;=&gt; RiiP_cAMP_CaN  1
+reaction_48  kf_RiiP_CaN__RiixCaN*RiiP_CaN                                                                  RiiP_CaN &lt;=&gt; Rii + CaN             0
+reaction_37  kf_RiiP_cAMP_CaN__CaNXRii_cAMP*RiiP_cAMP_CaN                                                   RiiP_cAMP_CaN &lt;=&gt; CaN + Rii_cAMP   0
+reaction_1   kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C                                                        C + AKAR4 &lt;=&gt; AKAR4_C              1
+reaction_2   kcat_AKARp*AKAR4_C                                                                             AKAR4_C &lt;=&gt; AKAR4p + C             0</code></pre>
 <p>The same file can look like this in spreadsheet software, e.g.<a href="http://www.gnumeric.org/" class="external-link">gnumeric</a>: <img src="AKAP79-Reaction.png" alt="AKAP79 Reaction Table"></p>
 <p>Each variable mentioned here, e.g. <code>cAMP</code> is an ID of some
 row in another table, <code>cAMP</code> is a compound and can be found
@@ -343,20 +347,21 @@ following code snippet to display an SBtab on screen (in the terminal)
 with column alignment (but losing the tabstops):</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">head</span> <span class="at">-n</span> 1 Reaction.tsv</span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">tail</span> <span class="at">-n</span> +2 Reaction.tsv <span class="kw">|</span> <span class="ex">column</span> <span class="at">-t</span> <span class="at">-s</span> <span class="st">'    '</span></span></code></pre></div>
-<p>All of the following examples are from tab separated text files
-(originally) but printed using automatic vertical alignment, with the
-alignment starting with the second line. You cannot copy paste them
+<p>All of the following examples are printed like that, with automatic
+vertical alignment (spaces). You absolutely cannot copy paste them
 directly into new files (there must be tabs separating the
-words/values).</p>
+words/values). Use the bundled example files directly (as
+templates).</p>
 </div>
 <div class="section level4">
 <h4 id="constant">Constant<a class="anchor" aria-label="anchor" href="#constant"></a>
 </h4>
 <p>A list of constants. These are values that never change for
 <em>this</em> model, e.g. Avogadro’s number:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a> <span class="ex">!!SBtab</span>  TableName=<span class="st">'Constant'</span>  Document=<span class="st">'myModel'</span> </span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>     <span class="ex">!ID</span>  !Unit                 !Value</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>       <span class="ex">L</span>  1                     6.02214076E+23</span></code></pre></div>
+<pre><code> !!SBtab  TableName='Constant'  Document='myModel' 
+     !ID  !Unit                 !Value
+       L  1                     6.02214076E+23
+     ...  .....                 ..............</code></pre>
 <p>The number of items in the first line is usually different from the
 rest, as this is a header, so they don’t always form a neat table.</p>
 <p>This also breaks the smart display of these files as tables on
@@ -366,17 +371,18 @@ github.</p>
 <h4 id="input">Input<a class="anchor" aria-label="anchor" href="#input"></a>
 </h4>
 <p>Known paramters of the model, can vary between experiments.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Input'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a> <span class="ex">!ID</span>  !DefaultValue  !Unit   !Comment</span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a> <span class="ex">CaB</span>  2000.0         nM      Calcium-Base-Level</span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a> <span class="ex">...</span>  ...            ...     ...</span></code></pre></div>
+<pre><code>!!SBtab TableName='Input' Document='myModel'
+ !ID  !DefaultValue  !Unit   !Comment
+ CaB  2000.0         nM      Calcium-Base-Level
+ ...  ...            ...     ...</code></pre>
 <p>Inputs are what distinguishes experiments alongside initial values,
 and event schedules (interventions). These are default values. Other
 values can be set in the line of each experiment in the experiment
 table, e.g.:</p>
 <pre><code>!!SBtab TableName='Experiment' Document='myModel'
 !ID !Type        !Time  &gt;CaB    &gt;...
-E1  Time Series  100    1700.0  ...</code></pre>
+E1  Time Series  100    1700.0  ...
+... ...........  .....  ......  ...</code></pre>
 </div>
 <div class="section level4">
 <h4 id="parameter">Parameter<a class="anchor" aria-label="anchor" href="#parameter"></a>
@@ -385,10 +391,10 @@ E1  Time Series  100    1700.0  ...</code></pre>
 refer to internal properties of the model itself rather than something
 we did to the model reflecting an experiment. Typically, these
 parameters are the ones that are changed during a sampling process.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Parameter'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a> <span class="ex">!ID</span>  !DefaultValue  !Std  !Unit     !Scale</span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a> <span class="ex">kf1</span>            1.8   0.1  s^<span class="er">(</span><span class="ex">1</span><span class="kw">)</span>     <span class="ex">natural</span> logarithm </span>
-<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a> <span class="ex">...</span>            ...  ...   ...       ...</span></code></pre></div>
+<pre><code>!!SBtab TableName='Parameter' Document='myModel'
+ !ID  !DefaultValue  !Std  !Unit     !Scale
+ kf1            1.8   0.1  s^(-1)    natural logarithm 
+ ...            ...  ...   ...       ...</code></pre>
 <p>Here the <code>!Scale</code> column is optional, but often useful;
 several values are possible:
 <code>log10</code>,<code>log</code>,<code>linear</code> (in various
@@ -401,19 +407,19 @@ spellings). If missing, <code>linear</code> is assumed.</p>
 be used to encode thermodynamic relationships between parameters or to
 model an input signal. This is used to assign a name (e.g. KD_1) to an
 algebraic expression.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Expression'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  <span class="ex">!ID</span>  !Unit  !Formula</span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a> <span class="ex">KD_1</span>  nM     <span class="er">(</span><span class="ex">KD_3*KD_4</span><span class="kw">)</span><span class="ex">/KD_2</span></span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="ex">...</span>  ...    ...</span></code></pre></div>
+<pre><code>!!SBtab TableName='Expression' Document='myModel'
+  !ID  !Unit  !Formula
+ KD_1  nM     (KD_3*KD_4)/KD_2
+  ...  ...    ...</code></pre>
 </div>
 <div class="section level4">
 <h4 id="compound">Compound<a class="anchor" aria-label="anchor" href="#compound"></a>
 </h4>
 <p>In SBML parlance, these are <em>species</em>.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Compound'</span> TableType=<span class="st">'Compound'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>      <span class="ex">!ID</span>  !Unit  !InitialValue </span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a> <span class="ex">PP2B_CaM</span>  μM     0.0</span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>      <span class="ex">...</span>  ...    ...</span></code></pre></div>
+<pre><code>!!SBtab TableName='Compound' TableType='Compound' Document='myModel'
+      !ID  !Unit  !InitialValue
+ PP2B_CaM  μM     0.0
+      ...  ...    ...</code></pre>
 <p>There are several optional columns, e.g. <code>!IsConstant</code> and
 <code>!Type</code>. These variables are usually used as state variables
 in an ODE framework.</p>
@@ -423,10 +429,10 @@ in an ODE framework.</p>
 </h4>
 <p>The Table of Reactions can be seen as the main piece of information
 for the model.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Reaction'</span> TableType=<span class="st">'Reaction'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>       <span class="ex">!ID</span>  !KineticLaw    !IsReversible   !ReactionFormula </span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a> <span class="ex">Reaction1</span>  kf<span class="pp">*</span>A<span class="pp">*</span>B <span class="at">-</span> kb<span class="pp">*</span>C  TRUE            A + B <span class="op">&lt;</span>=<span class="op">&gt;</span> C</span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>       <span class="ex">...</span>  ...            ...             ...</span></code></pre></div>
+<pre><code>!!SBtab TableName='Reaction' TableType='Reaction' Document='myModel'
+       !ID  !KineticLaw    !IsReversible   !ReactionFormula 
+ Reaction1  kf*A*B - kb*C  TRUE            A + B &lt;=&gt; C
+       ...  ...            ...             ...</code></pre>
 <p>Both <code>KineticLaw</code> and <code>Formula</code> are required,
 even though a kinetic law could be determined from the formula in a
 pinch (mass action). We don’t infer kinetic laws in our code. The
@@ -441,25 +447,25 @@ one sided arrow.</p>
 </h4>
 <p>Outputs are Observables. A function that can be related to measured
 data.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Output'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>      <span class="ex">!ID</span>  !Unit  !Formula</span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a> <span class="ex">CaPerCaM</span>  1      totalCa/totalCaM</span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>      <span class="ex">...</span>  ...    ...</span></code></pre></div>
+<pre><code>!!SBtab TableName='Output' Document='myModel'
+      !ID  !Unit  !Formula
+ CaPerCaM  1      totalCa/totalCaM
+      ...  ...    ...</code></pre>
 <p>A unit of <code>1</code> means the same as
 <code>'dimensionless'</code> in SBML.</p>
 <p>A function can be an inequality. If the experimental data has an
 <em>allowed range</em> (min and max), rather than a standard error, then
 this Output could be useful:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Output'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>  <span class="ex">!ID</span>  !Unit  !Formula</span>
-<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>    <span class="ex">A</span>  1      Ca/CaB</span>
-<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="ex">Bound</span>  1      <span class="er">(</span><span class="ex">A</span><span class="op">&lt;</span>5000<span class="kw">)</span> <span class="kw">&amp;&amp;</span> <span class="kw">(</span><span class="ex">A</span><span class="op">&gt;</span>1000<span class="kw">)</span></span></code></pre></div>
+<pre><code>!!SBtab TableName='Output' Document='myModel'
+  !ID  !Unit  !Formula
+    A  1      Ca/CaB
+Bound  1      (A&lt;5000) &amp;&amp; (A&gt;1000)</code></pre>
 <p>In the end, the model output A from a simulation will be compared
 with a corresponding experimental data point for the observable A from a
 data table. The data table could look like:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="ex">!!SBtab</span> <span class="pp">[</span><span class="ss">...</span><span class="pp">]</span></span>
-<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="ex">!TimePoint</span> !Time    <span class="op">&gt;</span>A  ~A  <span class="op">&gt;</span>Bound  ~Bound</span>
-<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>        <span class="ex">T1</span>     0  1500  150   TRUE  0.1</span></code></pre></div>
+<pre><code>!!SBtab [...]
+!TimePoint !Time    &gt;A  ~A  &gt;Bound  ~Bound
+        T1     0  1500  150   TRUE  0.1</code></pre>
 <p>Data can be Boolean/<code>logical</code> (it’s alsways treated as
 <code>1</code> or <code>0</code>). See also the Data Section further
 down on this page.</p>
@@ -467,10 +473,10 @@ down on this page.</p>
 <div class="section level4">
 <h4 id="experiments">Experiments<a class="anchor" aria-label="anchor" href="#experiments"></a>
 </h4>
-<div class="sourceCode" id="cb16"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Experiments'</span> Document=<span class="st">'myModel'</span></span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>               <span class="ex">!ID</span>  !Type          !Time  !T0    !Event              !Citation</span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>    <span class="ex">Smith2019Fig2E</span>  Time Series    600.0  <span class="at">-100.0</span>  EventScheduleAlpha  https//doi.org/10.<span class="pp">[</span><span class="ss">...</span><span class="pp">]</span> </span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>               <span class="ex">...</span>  ...            ...    ...     ...                ...</span></code></pre></div>
+<pre><code>!!SBtab TableName='Experiments' Document='myModel'
+               !ID  !Type          !Time  !T0    !Event              !Citation
+    Smith2019Fig2E  Time Series    600.0  -100.0  EventScheduleAlpha  https//doi.org/10.[...] 
+               ...  ...            ...    ...     ...                ...</code></pre>
 <p><em>AuthorYear</em> citation keys make good ID values for data
 sets.</p>
 <p><code>!Type</code> is one of: <code>Time Series</code>, or
@@ -497,21 +503,21 @@ table by having the ID <code>XYZ</code> on some row.</p>
 <div class="section level5">
 <h5 id="time-series">Time Series<a class="anchor" aria-label="anchor" href="#time-series"></a>
 </h5>
-<div class="sourceCode" id="cb17"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="ex">!!SBtab</span> Document=<span class="st">'myModel'</span> Version=<span class="st">'1.0'</span> TableName=<span class="st">'Smith2019Fig2E'</span> TableType=<span class="st">'QuantityMatrix'</span>          </span>
-<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="ex">!TimePoint</span>  !Time  <span class="op">&gt;</span>AKAR4pOUT  ~AKAR4pOUT</span>
-<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="ex">E0301T001</span>   <span class="at">-15</span>    99.4136     0.711886579917949</span>
-<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="ex">E0301T002</span>   <span class="at">-10</span>    100.617     0.401234567901235</span>
-<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="ex">E0301T003</span>   <span class="at">-5</span>     101.944     0.927467851933129</span>
-<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="ex">E0301T004</span>   0      NA          NA</span>
-<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="ex">E0301T005</span>   5      101.204     0.28287504289851</span>
-<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a><span class="ex">E0301T006</span>   10     102.037     0.565750085797018</span>
-<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="ex">E0301T007</span>   15     102.346     0.432098765432101</span>
-<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a><span class="ex">E0301T008</span>   20     103.765     0.40478015582111</span>
-<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="ex">E0301T009</span>   25     105.463     1.14280917170207</span>
-<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="ex">E0301T010</span>   30     106.204     1.07316905251319</span>
-<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="ex">E0301T011</span>   35     110.648     0.509960235859822</span>
-<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a><span class="ex">E0301T012</span>   40     110.988     1.31417708987925</span>
-<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a><span class="ex">E0301T013</span>   45     112.438     1.60137305815714</span></code></pre></div>
+<pre><code>!!SBtab Document='myModel' Version='1.0' TableName='Smith2019Fig2E' TableType='QuantityMatrix'          
+!TimePoint  !Time  &gt;AKAR4pOUT  ~AKAR4pOUT
+E0301T001   -15    99.4136     0.711886579917949
+E0301T002   -10    100.617     0.401234567901235
+E0301T003   -5     101.944     0.927467851933129
+E0301T004   0      NA          NA
+E0301T005   5      101.204     0.28287504289851
+E0301T006   10     102.037     0.565750085797018
+E0301T007   15     102.346     0.432098765432101
+E0301T008   20     103.765     0.40478015582111
+E0301T009   25     105.463     1.14280917170207
+E0301T010   30     106.204     1.07316905251319
+E0301T011   35     110.648     0.509960235859822
+E0301T012   40     110.988     1.31417708987925
+E0301T013   45     112.438     1.60137305815714</code></pre>
 <p><code>!TimePoint</code> is a kind of <code>!ID</code>, our scripts do
 not check what the first column is called, the contents are always used
 as <code>rownames</code> in R data-frames. These ID’s are not used for
@@ -526,28 +532,28 @@ measured).</p>
 repeatedly. Each row is simulated as a time series by itself.</p>
 <p>The table works the same way, but rather than <code>Time</code> we
 have an input column:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="ex">!!SBtab</span> SBtabVersion=<span class="st">'1.0'</span> Document=<span class="st">'CaMKIIs'</span> TableName=<span class="st">'Shifman2006Fig1Bsq'</span> TableType=<span class="st">'QuantityMatrix'</span> </span>
-<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="ex">!ID</span>    <span class="op">&gt;</span>Ca_set  <span class="op">&gt;</span>CaPerCaM  ~CaPerCaM</span>
-<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a><span class="ex">E1D0</span>   364      0.011      0.3985</span>
-<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="ex">E1D1</span>   2305     1.196      0.3985</span>
-<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="ex">E1D2</span>   2548     1.464      0.3985</span>
-<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="ex">E1D3</span>   2912     1.743      0.3985</span>
-<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a><span class="ex">E1D4</span>   3640     1.956      0.3985</span>
-<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a><span class="ex">E1D5</span>   4126     2.09       0.3985</span>
-<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a><span class="ex">E1D6</span>   3762     2.291      0.3985</span>
-<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a><span class="ex">E1D7</span>   4611     2.38       0.3985</span>
-<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a><span class="ex">E1D8</span>   4247     2.559      0.3985</span>
-<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a><span class="ex">E1D9</span>   5461     2.604      0.3985</span>
-<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a><span class="ex">E1D10</span>  4611     2.85       0.3985</span>
-<span id="cb18-14"><a href="#cb18-14" tabindex="-1"></a><span class="ex">E1D11</span>  6067     2.917      0.3985</span>
-<span id="cb18-15"><a href="#cb18-15" tabindex="-1"></a><span class="ex">E1D12</span>  5339     3.04       0.3985</span>
-<span id="cb18-16"><a href="#cb18-16" tabindex="-1"></a><span class="ex">E1D13</span>  6796     3.163      0.3985</span>
-<span id="cb18-17"><a href="#cb18-17" tabindex="-1"></a><span class="ex">E1D14</span>  6067     3.23       0.3985</span>
-<span id="cb18-18"><a href="#cb18-18" tabindex="-1"></a><span class="ex">E1D15</span>  7281     3.465      0.3985</span>
-<span id="cb18-19"><a href="#cb18-19" tabindex="-1"></a><span class="ex">E1D16</span>  8495     3.61       0.3985</span>
-<span id="cb18-20"><a href="#cb18-20" tabindex="-1"></a><span class="ex">E1D17</span>  9344     3.856      0.3985</span>
-<span id="cb18-21"><a href="#cb18-21" tabindex="-1"></a><span class="ex">E1D18</span>  24393    3.994      0.3985</span>
-<span id="cb18-22"><a href="#cb18-22" tabindex="-1"></a><span class="ex">E1D19</span>  34101    3.996      0.3985</span></code></pre></div>
+<pre><code>!!SBtab SBtabVersion='1.0' Document='CaMKIIs' TableName='Shifman2006Fig1Bsq' TableType='QuantityMatrix' 
+!ID    &gt;Ca_set  &gt;CaPerCaM  ~CaPerCaM
+E1D0   364      0.011      0.3985
+E1D1   2305     1.196      0.3985
+E1D2   2548     1.464      0.3985
+E1D3   2912     1.743      0.3985
+E1D4   3640     1.956      0.3985
+E1D5   4126     2.09       0.3985
+E1D6   3762     2.291      0.3985
+E1D7   4611     2.38       0.3985
+E1D8   4247     2.559      0.3985
+E1D9   5461     2.604      0.3985
+E1D10  4611     2.85       0.3985
+E1D11  6067     2.917      0.3985
+E1D12  5339     3.04       0.3985
+E1D13  6796     3.163      0.3985
+E1D14  6067     3.23       0.3985
+E1D15  7281     3.465      0.3985
+E1D16  8495     3.61       0.3985
+E1D17  9344     3.856      0.3985
+E1D18  24393    3.994      0.3985
+E1D19  34101    3.996      0.3985</code></pre>
 <p>Here <code>Ca_set</code> is an input value, and <code>CaPerCam</code>
 is an output value. Which is Input or Output cannot be determined from
 the Table itself, only from the rest of the SBtab Document. Each row can
@@ -563,22 +569,21 @@ different time for each row is not possible (currently).</p>
 <p>A table of all possible transformations (maps) that are part of any
 experiment’s described procedure. An event can trigger any of these
 transformation at specific event-times.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Transformation'</span> Document=<span class="st">'MyModel'</span></span>
-<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a> <span class="ex">!ID</span>  <span class="op">&gt;</span>A     <span class="op">&gt;</span>B     <span class="op">&gt;</span>C</span>
-<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a> <span class="ex">TF1</span>  A-B    B      C</span>
-<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a> <span class="ex">TF2</span>  A      B/2    C</span>
-<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a> <span class="ex">TF3</span>  A<span class="pp">*</span>0.1  B<span class="pp">*</span>0.1  C<span class="pp">*</span>0.1 </span></code></pre></div>
+<pre><code>!!SBtab TableName='Transformation' Document='MyModel'
+ !ID  &gt;A     &gt;B     &gt;C
+ TF1  A-B    B      C
+ TF2  A      B/2    C
+ TF3  A*0.1  B*0.1  C*0.1 </code></pre>
 <p>Here we see one transformation per line that affects the variables
 listed in the column names <code>&gt;Var</code>, i.e.:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="va">A</span><span class="op">-</span><span class="va">B</span>  <span class="co"># TF1</span></span>
+<pre><code><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="va">A</span><span class="op">-</span><span class="va">B</span>  <span class="co"># TF1</span></span>
 <span><span class="va">...</span></span>
 <span><span class="va">B</span> <span class="op">&lt;-</span> <span class="va">B</span><span class="op">/</span><span class="fl">2</span>  <span class="co"># TF2</span></span>
 <span><span class="va">...</span></span>
 <span><span class="va">A</span> <span class="op">&lt;-</span> <span class="va">A</span><span class="op">*</span><span class="fl">0.1</span> <span class="co"># TF3</span></span>
 <span><span class="va">B</span> <span class="op">&lt;-</span> <span class="va">B</span><span class="op">*</span><span class="fl">0.1</span> <span class="co"># TF3</span></span>
 <span><span class="va">C</span> <span class="op">&lt;-</span> <span class="va">C</span><span class="op">*</span><span class="fl">0.1</span> <span class="co"># TF3</span></span>
-<span><span class="va">...</span></span></code></pre></div>
+<span><span class="va">...</span></span></code></pre>
 <p>This is what would conceptually happen in the generated code (not
 literally, as it actually happens in the C code).</p>
 </div>
@@ -589,11 +594,11 @@ literally, as it actually happens in the C code).</p>
 solvers), change the values of input parameters, or state variables
 according to the available named tranformations (see above). After the
 transformation the solver is re-initialized to continue from there.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'EventScheduleAlpha'</span> Document=<span class="st">'myModel'</span> </span>
-<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>  <span class="ex">!TimePoint</span>  !Time  !Tranformation </span>
-<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a> <span class="ex">Event0Time0</span>  10.0   TF1</span>
-<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a> <span class="ex">Event0Time0</span>  11.0   TF2</span>
-<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>         <span class="ex">...</span>  ...    ...</span></code></pre></div>
+<pre><code>!!SBtab TableName='EventScheduleAlpha' Document='myModel' 
+  !TimePoint  !Time  !Tranformation 
+ Event0Time0  10.0   TF1
+ Event0Time0  11.0   TF2
+         ...  ...    ...</code></pre>
 </div>
 </div>
 </div>
@@ -733,19 +738,19 @@ what this function does to calculate it is up to every user.</p>
 values. This is useful, because the data in the tables can refer to
 inequality constraints.</p>
 <p>Consider this:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Output'</span></span>
-<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a><span class="ex">!ID</span>      !Formula</span>
-<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a><span class="ex">a_lt_b</span>   a <span class="op">&lt;</span> b</span></code></pre></div>
+<pre><code>!!SBtab TableName='Output'
+!ID      !Formula
+a_lt_b   a &lt; b</code></pre>
 <p>with an Experiment that checks this condition:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'Experiments'</span></span>
-<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>              <span class="ex">!ID</span>  !T0  <span class="op">&gt;</span>A  <span class="op">&gt;</span>B  <span class="pp">[</span><span class="ss">...</span><span class="pp">]</span> % input settings, initial values</span>
-<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a><span class="ex">CheckInequalities</span>  <span class="at">-1.0</span>  12  13</span></code></pre></div>
+<pre><code>!!SBtab TableName='Experiments'
+              !ID  !T0  &gt;A  &gt;B  [...] % input settings, initial values
+CheckInequalities  -1.0  12  13</code></pre>
 <p>and this data table:</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="ex">!!SBtab</span> TableName=<span class="st">'CheckInequalities'</span>,</span>
-<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a><span class="ex">!TimePoint</span>  !Time   <span class="op">&gt;</span>a_lt_b,</span>
-<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>        <span class="ex">T1</span>  0.00    TRUE</span>
-<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>        <span class="ex">T2</span>  0.01    TRUE</span>
-<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a>        <span class="ex">T3</span>  0.03    FALSE</span></code></pre></div>
+<pre><code>!!SBtab TableName='CheckInequalities',
+!TimePoint  !Time   &gt;a_lt_b,
+        T1  0.00    TRUE
+        T2  0.01    TRUE
+        T3  0.03    FALSE</code></pre>
 <p>This is perfectly fine.</p>
 <p>Tests in R, to verify:</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
@@ -850,9 +855,10 @@ explicit TRUE/FALSE values in the actual reactions:</p>
 <span id="cb28-19"><a href="#cb28-19" tabindex="-1"></a><span class="fu">chmod</span> 744 a.c</span>
 <span id="cb28-20"><a href="#cb28-20" tabindex="-1"></a><span class="ex">./a.c</span></span>
 <span id="cb28-21"><a href="#cb28-21" tabindex="-1"></a><span class="fu">rm</span> a.c</span>
-<span id="cb28-22"><a href="#cb28-22" tabindex="-1"></a><span class="co">#&gt; sh: ./a.c: /usr/bin/tcc: bad interpreter: No such file or directory</span></span></code></pre></div>
-<p>But, this is unlikely to be useful. But inequality statements are
-allowed in the ODE itself (for switches).</p>
+<span id="cb28-22"><a href="#cb28-22" tabindex="-1"></a><span class="co">#&gt; TRUE=1 , FALSE=0 (both as integer), as_logical(2)=1</span></span></code></pre></div>
+<p>But, this is unlikely to be very useful.</p>
+<p>Inequality statements are allowed in the ODE itself (to simulate
+switches in behavior).</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

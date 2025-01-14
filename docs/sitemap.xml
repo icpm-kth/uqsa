@@ -64,6 +64,9 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/examples_overview.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/generateCodeInR.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/install.html</loc>
   </url>
   <url>
@@ -128,6 +131,9 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/examples_overview.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/generateCodeInR.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/index.html</loc>
@@ -244,6 +250,9 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/gatherSample.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/generateCode.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/getDose.html</loc>
   </url>
   <url>
@@ -284,6 +293,12 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/is.invertible.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/loadODE.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/loadSample_mpi.html</loc>
@@ -352,6 +367,9 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/parameter.from.kinetic.law.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/parameters_from_expressions_func.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/parse.formula.html</loc>
   </url>
   <url>
@@ -388,6 +406,9 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/rUniformPrior.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/replace_powers.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/runModel.html</loc>
   </url>
   <url>
@@ -415,10 +436,16 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/simcf.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/simulateAndComputeDistance.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/simulator.R.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/simulator.c.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/simulator.stoch.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/smmala_move.html</loc>
@@ -440,5 +467,11 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/uqsa_example.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/yJacobian.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/yacasMath.html</loc>
   </url>
 </urlset>

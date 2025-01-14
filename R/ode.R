@@ -76,8 +76,37 @@ generateCode <- function(ode){
 
 	# simplify a data.frame with two columns to a named character vector, assuming it's name/value pairs
 	makeEnum <- \(var,enumName, lastEntry) {
-		sprintf("enum %s { %s, %s };",enumName,paste('_',var,sep='', collapse=', '),lastEntry)
+		if (is.null(var)) return(c())
+		else return(sprintf("enum %s { %s, %s };",enumName,paste('_',var,sep='', collapse=', '),lastEntry))
 	}
+	initVal <- \(y) {
+		arguments <- "double t, const double y_[], void *par"
+		n <- pmax(5,50 - nchar(y) - nchar(names(y)))
+		m <- pmax(5,50 - 2*nchar(ode$par[[1]]))
+		return(c(
+			sprintf("int %s_init(%s){",modelName,arguments),
+			sprintf("\tif (!y_) return %i;",length(y)),
+			sprintf("\tdouble *p_=par;"),
+			sprintf("\tdouble %s = %g;",ode$const[[1]],ode$const[[2]]),
+			writeComment("\tparameter values"),
+			sprintf("\tdouble %s = p_[_%s]; %*s /* [%3i] */",ode$par[[1]],ode$par[[1]],m," ",cOffset(ode$par)),
+			sprintf("\ty[_%s] = %s; %*s /*[%2i]*/",names(y),y,n," ",cOffset(y)),
+			sprintf("\treturn GSL_SUCCESS;\n}")
+		))
+	}
+	defaultPar <- \(p) {
+		arguments <- "double t, void *par"
+		n <- pmax(5,50 - nchar(p) - nchar(names(p)))
+		return(c(
+			sprintf("int %s_default(%s){",modelName,arguments),
+			sprintf("\tif (!par) return %i;",length(p)),
+			sprintf("\tdouble *p_=par;"),
+			sprintf("\tdouble %s = %g;",ode$const[[1]],ode$const[[2]]),
+			sprintf("\tp[_%s] = %s; %*s /*[%2i]*/",names(p),p,n," ",cOffset(p)),
+			sprintf("\treturn GSL_SUCCESS;\n}")
+		))
+	}
+
 	writeFunc <- \(fName,retValue,body,len=length(body),Rest=NULL){
 		if (length(retValue)>0) ret <- paste("double *",retValue,sep="", collapse=", ",recycle0=TRUE)
 		else ret <- NULL
@@ -85,11 +114,14 @@ generateCode <- function(ode){
 		n <- pmax(5,50 - nchar(ode$par[[1]])*2)
 		m <- pmax(5,50 - nchar(ode$var[[1]])*2)
 		return(c(
-			sprintf("int %s_%s(%s)",modelName,fName,arguments),
+			sprintf("int %s_%s(%s){",modelName,fName,arguments),
 			sprintf("\tdouble *p_=par;"),
 			sprintf("\tif (!y_ || !%s_) return %i;",retValue[1],len),
+			writeComment("\tconstants"),
 			sprintf("\tdouble %s = %g;",ode$const[[1]],ode$const[[2]]),
+			writeComment("\tparameter values"),
 			sprintf("\tdouble %s = p_[_%s]; %*s /* [%3i] */",ode$par[[1]],ode$par[[1]],n," ",cOffset(ode$par)),
+			writeComment("\tstate variables"),
 			sprintf("\tdouble %s = y_[_%s]; %*s /* [%3i] */",ode$var[[1]],ode$var[[1]],m," ",cOffset(ode$var)),
 			sprintf("\tdouble %s = %s;",ode$exp[[1]],replace_powers(ode$exp[[2]])),
 			sprintf("\tmemset(%s,0,sizeof(double)*%i); ",retValue[1],len),
@@ -121,15 +153,23 @@ generateCode <- function(ode){
 	C <- c(C,"",writeComment("ODE Jacobian: df(t,y;p)/dy"))
 	J <- replace_powers(t(yJacobian(ode$vf[[2]],ode$var[[1]])))
 	z <- grepl("^0$",J)
-	C <- c(C,writeFunc("jac",c("jac_","dfdt_"),sprintf("\tjac_[%i] = %s;",cOffset(J)[!z],J[!z]),length(J)))
+	i <- cOffset(J) %/% NROW(ode$var)
+	j <- cOffset(J) %% NROW(ode$var)
+	C <- c(C,writeFunc("jac",c("jac_","dfdt_"),sprintf("\t/*[%2i,%2i]*/  jac_[%i] = %s; ",i[!z],j[!z],cOffset(J)[!z],J[!z]),length(J)))
 	# parameter Jacobian
 	C <- c(C,"",writeComment("ODE parameter Jacobian: df(t,y;p)/dp"))
 	Jp <- replace_powers(t(yJacobian(ode$vf[[2]],ode$par[[1]])))
 	z <- grepl("^0$",Jp)
-	C <- c(C,writeFunc("jacp",c("jacp_","dfdt_"),sprintf("\tjacp_[%i] = %s;",cOffset(Jp)[!z],Jp[!z]),length(Jp)))
+	i <- cOffset(Jp) %/% NROW(ode$par)
+	j <- cOffset(Jp) %% NROW(ode$par)
+	C <- c(C,writeFunc("jacp",c("jacp_","dfdt_"),sprintf("\t/*[%2i,%2i]*/  jacp_[%i] = %s; ",i[!z],j[!z],cOffset(Jp)[!z],Jp[!z]),length(Jp)))
 	# output function
 	C <- c(C,"",writeComment("Output Function (Observables)"))
 	C <- c(C,writeFunc("func","func_",sprintf("\tfunc_[_%s] = %s;",ode$func[[1]],ode$func[[2]])))
+	# initial values and default parameters
+	y <- ch(ode$var)
+	p <- ch(ode$par)
+	C <- c(C,initVal(y),defaultPar(p))
 	# event function
 	if ("tf" %in% names(ode)){
 		C <- c(C,"",writeComment(c("Scheduled Events","EventLabel specifies which transformation to apply.","The scalar dose variable can be used in the transformation (on the right)")))
@@ -153,6 +193,7 @@ generateCode <- function(ode){
 		)
 		C <- c(C,writeFunc("event",NULL,evsw,Rest="int eventLabel, double dose"))
 	}
+	
 	return(C)
 }
 
