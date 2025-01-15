@@ -435,7 +435,7 @@ simulator.stoch <- function(experiment, model.tab = model.tab, reactions = NULL,
       }
       for(i in 1:nStochSim){
         out_ssa <- GillespieSSA2::ssa(
-          initial_state = ceil(experiment[["initialState"]]*Phi),
+          initial_state = ceiling(experiment[["initialState"]]*Phi),
           reactions = reactions,
           params = SSAparam,
           final_time = max(experiment[["outputTimes"]]),
@@ -478,7 +478,6 @@ simulator.stoch <- function(experiment, model.tab = model.tab, reactions = NULL,
 #' @param nStochSim number of stochastic simulations to average over
 #' @param reactions a list that encodes the reactions for
 #'     GillespieSSA2
-#' @param modelName model name
 #' @param distance a user supplied function that calculates a distance
 #'     between simulation and data with an interface of
 #'     distance(simulation, data, errVal), where errVal is an estimate
@@ -490,7 +489,7 @@ simulateAndComputeDistance <- function(e, param,
                                        parMap = parMap, Phi = Phi, 
                                        parameters_from_expressions = parameters_from_expressions,
                                        nStochSim = nStochSim, reactions = compiled_reactions,
-                                       modelName = modelName, distance = distance){
+                                       distance = distance){
   avgOutput <- rep(0, length(e[["outputTimes"]]))
   SSAparam <- c(parMap(param), Phi = Phi)
   if(!is.null(parameters_from_expressions)){
@@ -498,7 +497,7 @@ simulateAndComputeDistance <- function(e, param,
   }
   for(i in 1:nStochSim){
     out_ssa <- GillespieSSA2::ssa(
-      initial_state = ceil(e[["initialState"]]*Phi),
+      initial_state = ceiling(e[["initialState"]]*Phi),
       reactions = reactions,
       params = SSAparam,
       final_time = max(e[["outputTimes"]]),
@@ -508,7 +507,7 @@ simulateAndComputeDistance <- function(e, param,
       log_firings = TRUE,
       census_interval = 5,
       max_walltime = 1,
-      sim_name = modelName)
+      sim_name = model$name)
     
     # out$state is a matrix of dimension (time points)x(num compounds)
     output <- apply(out_ssa$state/Phi, 1, function(state) model$func(t=0,state=state,parameters=param))
@@ -555,12 +554,20 @@ makeObjectiveSSA <- function(experiments, model, parNames, distance, parMap=iden
     if (is.matrix(parABC)) {
       rownames(parABC) <- parNames
       npc <- ncol(parABC)
-      S <- do.call(cbind,mclapply(1:npc, function(i) sapply(experiments, function(e) simulateAndComputeDistance(e, parABC[,i]))))
+      S <- do.call(cbind,mclapply(1:npc, function(i) sapply(experiments, function(e) simulateAndComputeDistance(e, parABC[,i],
+                                                                                                                parMap = parMap, Phi = Phi, 
+                                                                                                                parameters_from_expressions = parameters_from_expressions,
+                                                                                                                nStochSim = nStochSim, reactions = reactions,
+                                                                                                                distance = distance))))
       return(S)
     }
     else {
       names(parABC) <- parNames
-      S <- mclapply(experiments, function(e) simulateAndComputeDistance(e, parABC))
+      S <- mclapply(experiments, function(e) simulateAndComputeDistance(e, parABC,
+                                                                        parMap = parMap, Phi = Phi, 
+                                                                        parameters_from_expressions = parameters_from_expressions,
+                                                                        nStochSim = nStochSim, reactions = reactions,
+                                                                        distance = distance))
       return(unlist(S))
     }
   }

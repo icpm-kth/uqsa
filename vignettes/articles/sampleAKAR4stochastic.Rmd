@@ -1,0 +1,220 @@
+---
+title: "Sample AKAR4 stochastically"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r packages}
+library(uqsa)
+library(parallel)
+library(SBtabVFGEN)
+```
+
+This article provides code to perform uncertainty quantification (UQ) of a stochastic reaction network model. As an example we use the AKAR4 stochastic model. The UQ method that we use is ABCMCMC.
+
+For information about the stochastic model, please read the article [Simulate AKAR4 stochastically](simAKAR4stochastic.html).
+
+
+# Load the Model
+
+This model is included with the package. To load your own model, see
+the [user model](user_model.html) article.
+
+```{r}
+modelFiles <- uqsa_example("AKAR4",full.names=TRUE)
+SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
+modelName <- checkModel("AKAR4",uqsa_example("AKAR4",pat="_gvf[.]c$"))
+comment(modelName)
+
+# model related functions, in R, e.g. AKAP79_default() parameters
+source(uqsa_example("AKAR4",pat='^AKAR4[.]R$'))
+print(AKAR4_default())
+```
+
+To simulate the stochastic reaction network model we use the *Gillespie algorithm*. Specifically, we use the functions implemented in the package GillespieSSA2. To use this package we need to create a variable `reactions` using the uqsa function `importReactionsSSA` with the SBtab model as input.
+
+```{r}
+# Create reactions to simulate the stochastic model with the GillespieSSA2 package
+reactions <- importReactionsSSA(SBtab)
+```
+
+Moreover, to simulate the stochastic reactions with the Gillespie algorithm we need to specify the volume of space where the reactions take place and obtain the parameter `Phi` which will be needed for simualtions.
+
+```{r}
+AvoNum <- 6.022e23 #Avogadro constant
+unit <- 1e-6    # unit of measure with respect to m^3 (1e-6 corresponds to micrometers)
+vol <- 4e-15    # volume where the reactions take place
+Phi <- AvoNum * vol * unit  # parameter used in the simulations
+```
+
+# Load Experiments (data)
+
+```{r, experiments}
+experiments <- sbtab.data(SBtab)
+
+# for example, these is the initial state of experiment 1:
+print(experiments[[1]]$initialState)
+
+# pick parameters for simulation
+par_val <- SBtab$Parameter[["!DefaultValue"]]
+par_names <- SBtab$Parameter[["!Name"]]
+names(par_val) <- par_names
+print(par_val)
+```
+
+# Define MCMC settings
+
+```{r}
+
+# a function that tansforms the ABC variables to acceptable model
+# parameters, re-indexing could also happen here
+parMap <- function (parABC=0) {
+  return(10^parABC)
+}
+
+
+# scale to determine prior values
+defRange <- 1000
+
+
+# Define Lower and Upper Limits for logUniform prior distribution for the parameters
+ll <- c(par_val/defRange)
+ul <- c(par_val*defRange)
+ll = log10(ll) # log10-scale
+ul = log10(ul) # log10-scale
+
+# Define the prior distribution. In this case Uniform(ll,ul)
+dprior <- dUniformPrior(ll, ul) # dprior evaluates the prior density function 
+rprior <- rUniformPrior(ll, ul) # rprior generates random samples from the prior
+
+
+# Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
+nChains <- 4  # number of ABCMCMC chains to run
+ns <- 100 # no of samples required from each ABC-MCMC chain
+npc <- 100 # pre-calibration
+
+
+
+# Function to compute the score (distance) between experimental and simulated data
+distance <- function(funcSim, dataExpr, dataErr = 1.0){
+  return(mean(((funcSim-dataExpr)/max(dataExpr))^2,na.rm=TRUE))
+}
+
+# Threshold in the ABCMCMC algorithm
+delta <- 0.0005
+```
+
+# Generate an objective function
+
+An *objective function* in this case is a function that can read the experimental conditions (initial state, inputs etc.) and the experimental data in a list of experiments (variable `experiments` in the code). Give a parameter in input, for each experimental condition specified in the list of experiments, the *objective function*:
+1. simulates the stochastic model given such parameter, and
+2. computes the distance between the simulated trajectories and the observed trajectories (experimental data).
+
+To generate the objective function for stochastic models you can use the `uqsa` function `makeObjectiveSSA`.
+
+```{r}
+
+objectiveFunction <- makeObjectiveSSA(experiments, model, par_names, distance, parMap, Phi, reactions, nStochSim = 3)
+  
+```
+
+# Run PreCalibration sampling
+
+Before running the ABCMCMC code, we run a precalibration to determine good initial values and algorithmic hyperparameters for the ABCMCMC chains.
+
+```{r}
+# run precalibration
+pC <- preCalibration(objectiveFunction, npc, rprior,rep = 1)
+
+
+p <- 0.01 # From the precalibration samples choose Top 1% samples with shortest distance to the experimental values
+sfactor <- 0.1 # scaling factor used to determine a good covariance matrix for the ABCMCMC proposal moves
+
+## Get ABCMCMC Starting Parameters from Pre-Calibration
+M <- getMCMCPar(pC$prePar, pC$preDelta, p, sfactor, delta, num = nChains)
+  Sigma <- M$Sigma
+  startPar <- M$startPar
+  for(j in 1 : nChains){
+    cat("Chain", j, "\n")
+    cat("\tMin distance of starting parameter for chain",j," = ", min(objectiveFunction(M$startPar[,j])),"\n")
+    cat("\tMean distance of starting parameter for chain",j," = ", mean(objectiveFunction(M$startPar[,j])),"\n")
+    cat("\tMax distance of starting parameter for chain",j," = ", max(objectiveFunction(M$startPar[,j])),"\n")
+  }
+```
+
+
+# Run ABC-MCMC Sampling
+The sampling is parallelized on several cores using the `parLapply` function.
+
+```{r}
+cl <- makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
+  clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
+  out_ABCMCMC <- parLapply(cl,
+                           1:nChains,
+                           function(j) {
+                             tryCatch(
+                               ABCMCMC(objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior, batchSize = 1),
+                               error=function(cond) {message("ABCMCMC crashed"); return(NULL)}
+                             )
+                           }
+  )
+  stopCluster(cl)
+  
+  ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
+  colnames(ABCMCMCoutput$draws) <- par_names
+```
+
+# Visualize the sampled parameters
+
+The parameters in the variable `ABCMCMCoutput` are approximate samples from the posterior distribution of the parameters given the considered experiments.
+
+The sampled three dimensional parameters for the AKAR4 model can be visualized via scatter plots.
+
+```{r}
+pairs(ABCMCMCoutput$draws)
+
+```
+
+The marginal distributions of each parameter in the parameter vector can be visualized via histograms as follows.
+
+```{r}
+for(i in 1:3){
+ hist(ABCMCMCoutput$draws[,i], main=par_names[i], xlab = "Value in log scale")
+}
+```
+
+# Simulate the stochastic model given posterior samples
+
+To check the fit of the sampled posterior parameters with the experimental data, we can simulate trajectories given sampled parameters and compare them with the experimental data.
+
+```{r, sim}
+exp_ind <- 1 # index of the experiment to consider
+
+e <- experiments[[exp_ind]]
+
+# Plot the experimental data
+par(bty='n',xaxp=c(80,120,4))
+plot(e$outputTimes, e$outputValues$AKAR4pOUT,ylim=c(90,200), ylab="AKAP79",
+     xlab="t",
+     main=sprintf("Experiment %i",exp_ind),
+     lwd=1.5)
+
+# generate a function (s) that simulates a trajectory given a parameter in input
+s <- simulator.stoch(experiment = e, model.tab = SBtab, parMap = parMap, vol = vol, nStochSim = 3)
+
+n_draws <- dim(ABCMCMCoutput$draws)[1] # number of sampled posterior parameters
+subsample_indices <- sample(n_draws,10) # indices of 10 random parameters out of the paramneters in
+for(i in subsample_indices){ 
+  p <- ABCMCMCoutput$draws[i,] # random parameter from the posterior
+  
+  y <- s(p) # simulate a trajectory (y) given parameter p
+
+  lines(e$outputTimes, y$output, col="blue") # plot the simulated trajectory
+}  
+
+```
