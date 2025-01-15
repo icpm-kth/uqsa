@@ -1,5 +1,5 @@
 ---
-title: "Example - Simulation of a Stochastic Model for the AKAP79 reaction network"
+title: "Example - Simulation of a Stochastic Model for the AKAR4 reaction network"
 ---
 
 ```{r, include = FALSE}
@@ -15,7 +15,7 @@ library(uqsa)
 library(GillespieSSA2)
 ```
 
-This article provides code to simulate the AKAP79 stochastic model (one time, no
+This article provides code to simulate the AKAR4 stochastic model (one time, no
 sampling). We are plotting the model with default parameters which
 are not expected to fit the data (this is the starting point).
 
@@ -23,25 +23,21 @@ are not expected to fit the data (this is the starting point).
 
 When the copy number of molecular species in a reaction network system (AKAP79 in our case) is low, we cannot model the amount of molecules deterministically (e.g., with an ODE model), because the stochasticity in the reactions that take place cannot be ignored. In particular, the time at which reactions take place is random, as well as the specific reactions that take place (i.e., what pair of molecules react). To model such system we can use the *master equation*: we model the (integer) number of each molecule species in the system (e.g., proteins) and how the number of each molecule type (randomly) evolves in time. The likelihood of this model is hard to compute; however, we can easily sample trajectories from this stochastic model using the *Gillespie algorithm*. Given the current amount of each molecular species in the system at a given time point, we can sample the time at which the next reaction takes place and we can sample the type of reaction (i.e., what pair of molecules react).
 
+
 # Load the Model
 
 This model is included with the package. To load your own model, see
 the [user model](user_model.html) article.
 
 ```{r}
-modelFiles <- uqsa_example("AKAP79",full.names=TRUE)
+modelFiles <- uqsa_example("AKAR4",full.names=TRUE)
 SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
-modelName <- checkModel("AKAP79",uqsa_example("AKAP79",pat="_gvf[.]c$"))
+modelName <- checkModel("AKAR4",uqsa_example("AKAR4",pat="_gvf[.]c$"))
 comment(modelName)
 
-# In the terminal run the following:
-# ``ode.sh -R --maxima AKAP79.tar.gz > AKAP79.R```
-# (Read article "..." in the documentation)
-system2(command = "ode_uqsa", args = c("-R", "--maxima", "AKAP79.tar.gz"), stdout = "AKAP79.R")
-
 # model related functions, in R, e.g. AKAP79_default() parameters
-source(uqsa_example("AKAP79",pat='^AKAP79[.]R$'))
-print(AKAP79_default())
+source(uqsa_example("AKAR4",pat='^AKAR4[.]R$'))
+print(AKAR4_default())
 ```
 
 # Load Experiments (data)
@@ -49,41 +45,39 @@ print(AKAP79_default())
 ```{r, experiments}
 experiments <- sbtab.data(SBtab)
 
-# for example, these are the input and initial state of experiment 1:
-print(experiments[[1]]$input)
+# for example, these is the initial state of experiment 1:
 print(experiments[[1]]$initialState)
 
 # pick parameters for simulation
-nInput <- length(experiments[[1]]$input)
 p <- SBtab$Parameter[["!DefaultValue"]]
 par_names <- SBtab$Parameter[["!Name"]]
 names(p) <- par_names
 print(p)
 ```
-
 # Simulate
 
 Function `simulator.stoch` will output a function `s`, which will always simulate the
 scenarios described in experiment `e` (i.e., same initial conditions, same inputs), but for user supplied parameters.
 
 ```{r, sim}
-exp_ind <- 9 #index of the experiment to consider
+exp_ind <- 1 #index of the experiment to consider
 e <- experiments[[exp_ind]]
 
 # generate a function (s) that simulates a trajectory given a parameter in input
-s <- simulator.stoch(experiment = e, model.tab = SBtab, vol = 4e-16)
+s <- simulator.stoch(experiment = e, model.tab = SBtab, vol = 4e-16, nStochSim = 3)
 # vol indicates the volume in m^3 where the reactions take place
+# nStochSim indicates how many times we simulate the stochastic model; the output trajectory is the average of all (in this case nStochSim = 3) the simulated trajectories
 
 # simulate a trajectory (y) given parameter p
 y <- s(p)
-
 ```
+
 
 # Plot
 
 ```{r, plotting}
 par(bty='n',xaxp=c(80,120,4))
-plot(e$outputTimes, e$outputValues$AKAR4pOUT,ylim=c(90,180), ylab="AKAP79",
+plot(e$outputTimes, e$outputValues$AKAR4pOUT,ylim=c(90,200), ylab="AKAP79",
      xlab="t",
      main=sprintf("Experiment %i",exp_ind),
      lwd=1.5)
