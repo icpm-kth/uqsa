@@ -91,7 +91,7 @@ parMap <- function (parABC=0) {
 The ODE model receives a parameter vector `p` for each experiment. It
 consists of the biological model parameters (which are the same for
 all experiments), and input parameters (which together with initial
-conditions distinguish the experimental setups). This model deosn't
+conditions distinguish the experimental setups). This model doesn't
 have input parameters, so the biological and ODE parameters are the
 same. Otherwise, two different kinds of parameters are concatenated into
 one big numeric vector inside of the solver. The model function
