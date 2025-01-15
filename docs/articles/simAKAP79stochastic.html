@@ -117,10 +117,8 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: SBtabVFGEN</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rcannood.github.io/GillespieSSA2/" class="external-link">GillespieSSA2</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">pracma</span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rcannood.github.io/GillespieSSA2/" class="external-link">GillespieSSA2</a></span><span class="op">)</span></span></code></pre></div>
 <p>This article provides code to simulate the AKAP79 stochastic model
 (one time, no sampling). We are plotting the model with default
 parameters which are not expected to fit the data (this is the starting
@@ -134,15 +132,15 @@ molecules deterministically (e.g., with an ODE model), because the
 stochasticity in the reactions that take place cannot be ignored. In
 particular, the time at which reactions take place is random, as well as
 the specific reactions that take place (i.e., what pair of molecules
-react). To model such system we can use the master equation: we model
-the (integer) number of each molecule species in the system (e.g.,
+react). To model such system we can use the <em>master equation</em>: we
+model the (integer) number of each molecule species in the system (e.g.,
 proteins) and how the number of each molecule type (randomly) evolves in
-time. The likelihood of this model is hard to compute; hovever, we can
+time. The likelihood of this model is hard to compute; however, we can
 easily sample trajectories from this stochastic model using the
-Gillespie algorithm. Given the current amount of each molecular species
-in the system at a given time point, we can sample the time at which the
-next reaction takes place and we can sample the type of reaction (i.e.,
-what pair of molecules react).</p>
+<em>Gillespie algorithm</em>. Given the current amount of each molecular
+species in the system at a given time point, we can sample the time at
+which the next reaction takes place and we can sample the type of
+reaction (i.e., what pair of molecules react).</p>
 </div>
 <div class="section level2">
 <h2 id="load-the-model">Load the Model<a class="anchor" aria-label="anchor" href="#load-the-model"></a>
@@ -202,11 +200,10 @@ the <a href="user_model.html">user model</a> article.</p>
 <div class="section level2">
 <h2 id="load-experiments-data">Load Experiments (data)<a class="anchor" aria-label="anchor" href="#load-experiments-data"></a>
 </h2>
-<p>This also includes instructions for the simulator.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">experiments</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">SBtab</span><span class="op">)</span></span>
-<span><span class="co"># for example, these are the input</span></span>
-<span><span class="co"># and initial state of experiment 1:</span></span>
+<span></span>
+<span><span class="co"># for example, these are the input and initial state of experiment 1:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 1</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">initialState</span><span class="op">)</span></span>
@@ -218,6 +215,7 @@ the <a href="user_model.html">user model</a> article.</p>
 <span><span class="co">#&gt;          1.50          0.00          0.00          0.20          0.00 </span></span>
 <span><span class="co">#&gt;        AKAR4p </span></span>
 <span><span class="co">#&gt;          0.00</span></span>
+<span></span>
 <span><span class="co"># pick parameters for simulation</span></span>
 <span><span class="va">nInput</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span><span class="op">)</span></span>
 <span><span class="va">p</span> <span class="op">&lt;-</span> <span class="va">SBtab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!DefaultValue"</span><span class="op">]</span><span class="op">]</span></span>
@@ -256,11 +254,12 @@ the <a href="user_model.html">user model</a> article.</p>
 <div class="section level2">
 <h2 id="simulate">Simulate<a class="anchor" aria-label="anchor" href="#simulate"></a>
 </h2>
-<p>Function <code>simulator.stoch</code> will make a function
+<p>Function <code>simulator.stoch</code> will output a function
 <code>s</code>, which will always simulate the scenarios described in
-experiment <code>e</code>, but for user supplied parameters.</p>
+experiment <code>e</code> (i.e., same initial conditions, same inputs),
+but for user supplied parameters.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">exp_ind</span> <span class="op">&lt;-</span> <span class="fl">7</span> <span class="co">#index of the experiment to consider</span></span>
+<code class="sourceCode R"><span><span class="va">exp_ind</span> <span class="op">&lt;-</span> <span class="fl">9</span> <span class="co">#index of the experiment to consider</span></span>
 <span><span class="va">e</span> <span class="op">&lt;-</span> <span class="va">experiments</span><span class="op">[[</span><span class="va">exp_ind</span><span class="op">]</span><span class="op">]</span></span>
 <span></span>
 <span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.stoch.html">simulator.stoch</a></span><span class="op">(</span>experiment <span class="op">=</span> <span class="va">e</span>, model.tab <span class="op">=</span> <span class="va">SBtab</span>, vol <span class="op">=</span> <span class="fl">4e-16</span><span class="op">)</span></span>
