@@ -435,7 +435,7 @@ simulator.stoch <- function(experiment, model.tab = model.tab, reactions = NULL,
       }
       for(i in 1:nStochSim){
         out_ssa <- GillespieSSA2::ssa(
-          initial_state = ceil(experiment[["initialState"]]*Phi),
+          initial_state = ceiling(experiment[["initialState"]]*Phi),
           reactions = reactions,
           params = SSAparam,
           final_time = max(experiment[["outputTimes"]]),
@@ -497,7 +497,7 @@ simulateAndComputeDistance <- function(e, param,
   }
   for(i in 1:nStochSim){
     out_ssa <- GillespieSSA2::ssa(
-      initial_state = ceil(e[["initialState"]]*Phi),
+      initial_state = ceiling(e[["initialState"]]*Phi),
       reactions = reactions,
       params = SSAparam,
       final_time = max(e[["outputTimes"]]),
