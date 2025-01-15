@@ -1,0 +1,104 @@
+---
+title: "Example - Simulation of a Stochastic Model for the AKAP79 reaction network"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, eval=TRUE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+require(SBtabVFGEN)
+library(uqsa)
+library(GillespieSSA2)
+library(pracma)
+```
+
+This article provides code to simulate the AKAP79 stochastic model (one time, no
+sampling). We are plotting the model with default parameters which
+are not expected to fit the data (this is the starting point).
+
+# The Stochastic Model
+
+When the copy number of molecular species in a reaction network system (AKAP79 in our case) is low, we cannot model the amount of molecules deterministically (e.g., with an ODE model), because the stochasticity in the reactions that take place cannot be ignored. In particular, the time at which reactions take place is random, as well as the specific reactions that take place (i.e., what pair of molecules react). To model such system we can use the master equation: we model the (integer) number of each molecule species in the system (e.g., proteins) and how the number of each molecule type (randomly) evolves in time. The likelihood of this model is hard to compute; hovever, we can easily sample trajectories from this stochastic model using the Gillespie algorithm. Given the current amount of each molecular species in the system at a given time point, we can sample the time at which the next reaction takes place and we can sample the type of reaction (i.e., what pair of molecules react).
+
+# Load the Model
+
+This model is included with the package. To load your own model, see
+the [user model](user_model.html) article.
+
+```{r}
+modelFiles <- uqsa_example("AKAP79",full.names=TRUE)
+SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
+modelName <- checkModel("AKAP79",uqsa_example("AKAP79",pat="_gvf[.]c$"))
+comment(modelName)
+
+# In the terminal run the following:
+# ``ode.sh -R --maxima AKAP79.tar.gz > AKAP79.R```
+# (Read article "..." in the documentation)
+system2(command = "ode_uqsa", args = c("-R", "--maxima", "AKAP79.tar.gz"), stdout = "AKAP79.R")
+
+# model related functions, in R, e.g. AKAP79_default() parameters
+source(uqsa_example("AKAP79",pat='^AKAP79[.]R$'))
+print(AKAP79_default())
+```
+
+# Load Experiments (data)
+
+This also includes instructions for the simulator.
+
+```{r, experiments}
+experiments <- sbtab.data(SBtab)
+# for example, these are the input
+# and initial state of experiment 1:
+print(experiments[[1]]$input)
+print(experiments[[1]]$initialState)
+# pick parameters for simulation
+nInput <- length(experiments[[1]]$input)
+p <- SBtab$Parameter[["!DefaultValue"]]
+par_names <- SBtab$Parameter[["!Name"]]
+names(p) <- par_names
+print(p)
+```
+
+# Simulate
+
+Function `simulator.stoch` will make a function `s`, which will always simulate the
+scenarios described in experiment `e`, but for user supplied parameters.
+
+```{r, sim}
+exp_ind <- 7 #index of the experiment to consider
+e <- experiments[[exp_ind]]
+
+s <- simulator.stoch(experiment = e, model.tab = SBtab, vol = 4e-16)
+
+y <- s(p)
+```
+
+# Plot
+
+```{r, plotting}
+par(bty='n',xaxp=c(80,120,4))
+plot(e$outputTimes, e$outputValues$AKAR4pOUT,ylim=c(90,180), ylab="AKAP79",
+     xlab="t",
+     main=sprintf("Experiment %i",exp_ind),
+     lwd=1.5)
+lines(e$outputTimes, y$output, col="blue")
+```
+
+# gg-Plot
+
+```{r, ggplot}
+require(ggplot2)
+
+D<-data.frame(time=experiments[[exp_ind]]$outputTime,
+              AKAP79=experiments[[exp_ind]]$outputValues$AKAR4pOUT,
+              AKAP79ERR=experiments[[exp_ind]]$errorValues$AKAR4pOUT,
+              sim=y$output)
+ggplot(D) +
+  geom_linerange(mapping=aes(x=time,y=AKAP79,ymin=AKAP79-AKAP79ERR,ymax=AKAP79+AKAP79ERR),na.rm=TRUE) +
+  geom_point(mapping=aes(x=time,y=AKAP79),na.rm=TRUE) +
+  geom_line(mapping=aes(x=time,y=sim),color="purple",lwd=1.2)
+```
