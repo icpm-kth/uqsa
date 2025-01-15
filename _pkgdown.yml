@@ -58,8 +58,8 @@ navbar:
           href: articles/examples_overview.html
         - text: Simulate AKAP79
           href: articles/simAKAP79.html
-	- text: Simulate AKAP79 stochastically
-	  href: articles/simAKAP79stochastic.html
+        - text: Simulate AKAP79 stochastically
+          href: articles/simAKAP79stochastic.html
         - text: Sample AKAP79
           href: articles/AKAP79.html
         - text: Sample AKAR4
