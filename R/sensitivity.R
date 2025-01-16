@@ -186,6 +186,7 @@ shs_prior <- function(nSamples,rprior){
 #'
 #' See Geir Halnes et al. (Halnes, Geir, et al. J. comp. neuroscience 27.3 (2009): 471.
 #'
+#' @export
 #' @param fM1 output (f)unction values for M1, nSamples × nOuts
 #' @param fM2 output (f)unction values for M2, nSamples × nOuts
 #' @param fN output (f)unction values for N, nSamples × nOuts × nPars

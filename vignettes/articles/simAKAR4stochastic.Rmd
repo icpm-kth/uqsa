@@ -1,5 +1,5 @@
 ---
-title: "Example - Simulation of a Stochastic Model for the AKAR4 reaction network"
+title: "Simulation of a Stochastic Model for the AKAR4 reaction network"
 ---
 
 ```{r, include = FALSE}

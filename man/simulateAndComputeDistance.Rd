@@ -14,7 +14,6 @@ simulateAndComputeDistance(
   parameters_from_expressions = parameters_from_expressions,
   nStochSim = nStochSim,
   reactions = compiled_reactions,
-  modelName = modelName,
   distance = distance
 )
 }
@@ -34,8 +33,6 @@ into something the model will accept.}
 
 \item{reactions}{a list that encodes the reactions for
 GillespieSSA2}
-
-\item{modelName}{model name}
 
 \item{distance}{a user supplied function that calculates a distance
 between simulation and data with an interface of
