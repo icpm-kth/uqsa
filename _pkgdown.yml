@@ -56,24 +56,26 @@ navbar:
         menu:
         - text: Overview
           href: articles/examples_overview.html
-        - text: Simulate AKAP79
-          href: articles/simAKAP79.html
+        - text: -------
+        - text: AKAR4
         - text: Simulate AKAR4 stochastically
           href: articles/simAKAR4stochastic.html
-        - text: Simulate AKAP79 stochastically
-          href: articles/simAKAP79stochastic.html
-        - text: Sample AKAP79
-          href: articles/AKAP79.html
-        - text: Sample AKAR4
-          href: articles/AKAR4.html
-        - text: Sample AKAR4 stochastically
-          href: articles/sampleAKAR4stochastic.html
-        - text: Multiple chains via MPI
-          href: articles/mpi.html
-        - text: SMMALA and CaMKII
-          href: articles/smmala.html
+        - text: Calibrate stochasic AKAR4
+          href: articles/sampleAKAR4stochastic
         - text: GSA on AKAR4
           href: articles/GSA_AKAR4.html
+        - text: -------
+        - text: AKAP79
+        - text: Multiple chains via MPI
+          href: articles/mpi.html
+        - text: -------
+        - text: CaMKII
+        - text: Calibrate CaMKII with SMMALA
+          href: articles/smmala.html
+        - text: -------
+        - text: Extra
+        - text: More examples...
+          href: articles/extraExamples.html
     reference:
         text: Function reference
         href: reference/index.html
