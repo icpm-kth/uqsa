@@ -68,10 +68,20 @@ ch <- \(d) {
 cOffset <- \(d) {seq(0,NROW(d)-1)}
 
 #' Write C code
+#'
+#' This function generates C code, expecting the information about the
+#' ODE to come from the files that SBtabVFGEN::sbtab_to_vfgen()
+#' writes. It exists for compatibility with the scripts in the
+#' RPN-derivative package.
+#'
+#' sbtab_to_vfgen() also returns a variable. This variable (a list)
+#' has the same information as the files and can be used directly (by a different function).
+#'
 #' @param ode a list of data.frames with the text representation of the ordinary differential equation
-#' @export
+#'
 #' @return a character vector with the generated code, one element is one line.
-generateCode <- function(ode){
+generateCodeFromFile <- function(fileList){
+	ode <- loadODE(fileList)
 	modelName <- comment(ode) %otherwise% "model"
 
 	# simplify a data.frame with two columns to a named character vector, assuming it's name/value pairs
@@ -196,6 +206,196 @@ generateCode <- function(ode){
 	return(C)
 }
 
+#' Write C Function
+#'
+#' This function writes a C function according to a typical template.
+#' 
+#' @param prefix function's prefix (name of model)
+#' @param fNname function's name
+#' @param defs optional expressions, parameters, etc.
+#' @param retValue name of return value (attr: memset?)
+#' @param values a character vecotor with values or mathematic formulae to return.
+#' @param body a character vector of additional content for the body of the function
+#' @param otherArgs additional arguments
+writeCFunction <- function(prefix, fName, defArgs=c("double t","const double y_[]"), retValue=NULL, defs=NULL, values=NULL, body=NULL, otherArgs="void *par", init0 = TRUE){
+	if (missing(otherArgs)) {
+		pDefinition <- sprintf("\tdouble *p_=par;")
+	} else {
+		pDefinition <- NULL
+	}
+	named <- \(x) "names" %in% names(attributes(x))
+	if (length(retValue)>0) {
+		ret <- paste("double *",retValue,sep="", collapse=", ",recycle0=TRUE)
+	} else {
+		ret <- NULL
+	}
+	arguments <- paste(c(defArgs,ret,otherArgs),sep=", ",collapse=", ")
+	if (!is.null(retValue)) {
+		errValue <- sprintf("\tif (!y_ || !%s) return %i;",retValue[1],length(values))
+	} else {
+		errValue <- sprintf("\tif (!y_ || EventLabel<0) return numEvents;")
+	}
+	if (init0) {
+		zeroBuffer<-sprintf("\tmemset(%s,0,sizeof(double)*%i); ",retValue[1],length(values))
+	} else {
+		zeroBuffer <- NULL
+	}
+	# values to write into return buffer:
+	z <- grepl('^0$',values)
+	if ("stride" %in% names(attributes(values))){
+		k <- cOffset(values)
+		stride <- attr(values,"stride")
+		i <- k %/% stride
+		j <- k %% stride
+		v <- sprintf("\t/*[%2i,%2i]*/  %s[%i] = %s; ",i[!z],j[!z],retValue[1],k[!z],values[!z])
+	} else if (named(values)){
+		v <- sprintf("\t%s[_%s] = %s;",retValue[1],names(values)[!z],values[!z])
+	} else {
+		v <- sprintf("\t%s[%i] = %s;",retValue[1],cOffset(values)[!z],values[!z])
+	}
+	return(c(
+		sprintf("int %s_%s(%s){",prefix,fName,arguments),
+		pDefinition,# double *p_=par;
+		errValue,   # early return
+		defs,       # assign local variables
+		zeroBuffer, # initialize return buffer
+		v,          # the values
+		body,       # additional body content
+		sprintf("\treturn GSL_SUCCESS;\n}")
+	))
+}
+
+eventCode <-function(odeModel){
+	if ("tf" %in% names(odeModel)){
+		C <- c(C,"",writeComment(c("Scheduled Events","EventLabel specifies which transformation to apply.","The scalar dose variable can be used in the transformation (on the right)")))
+		affectedVector <- sapply(attr(odeModel$tf,"type"),
+			\(x) switch(x,var="y",par="p")
+		)
+		effect <- lapply(seq(NCOL(odeModel$tf)),\(i){
+			ev <- odeModel$tf[,i]
+			trivial <- names(ev) == ev
+			return(c(
+				sprintf("\tcase %s:",colnames(odeModel$tf)[i]),
+				sprintf("\t\t%s_[_%s] = %s;",affectedVector[!trivial],names(ev)[!trivial],ev[!trivial]),
+				sprintf("\tbreak;")
+				)
+			)
+		})
+		evsw <- c(
+		 sprintf("\tswitch(eventLabel){"),
+		 unlist(effect),
+		 "\t}"
+		)
+	} else {
+		evsw <- NULL
+	}
+	return(evsw)
+}
+
+#' Write C code
+#'
+#' This function expects a list of character vectors, as returned by
+#' SBtabVFGEN::sbtab_to_vfgen. This list describes an ODE model
+#' (initial values, default parameters, transformation events, output
+#' functions).  This function uses this information, calculates
+#' Jacobians via Ryacas and returns a character vector with C source
+#' code for the solvers in the GNU Scientific Library (GSL).
+#'
+#' The value can be written to a file:
+#' `cat(generateCode(odeModel),sep="\n",file=...)`. This file can be
+#' compiled into a shared library and used by the solvers in the
+#' icpm-kth/rgsl package.
+#'
+#' @param odeModel a list, as returned from SBtabVFGEN::sbtab_to_vfgen()
+#' @export
+#' @return a character vector with the generated code, one vector-element is one line of code.
+generateCode <- function(odeModel){
+	modelName <- comment(odeModel) %otherwise% "model"
+	# simplify a data.frame with two columns to a named character vector, assuming it's name/value pairs
+	makeEnum <- \(var,enumName, lastEntry) {
+		if (is.null(var)) return(c())
+		else return(sprintf("enum %s { %s, %s };",enumName,paste('_',names(var),sep='', collapse=', '),lastEntry))
+	}
+	h <- c('stdlib','math','string','gsl/gsl_errno','gsl/gsl_odeiv2','gsl/gsl_math.h')
+	C <- c(sprintf("#include <%s.h>",h),"")
+	# C expressions:
+	x <- odeModel$exp
+	for (i in seq_along(x)){
+		CMD <- sprintf("%s := %s",names(x)[i],x[i])
+		Ryacas::yac_silent(yacasMath(CMD))
+	}
+	n <- pmax(5,50 - nchar(names(odeModel$par))*2)
+	m <- pmax(5,50 - nchar(names(odeModel$var))*2)
+	cc <- c(writeComment("\tconstants"),
+		sprintf("\tdouble %s = %s;",names(odeModel$const),as.character(odeModel$const)))
+	cp <- c(writeComment("\tparameter values"),
+		sprintf("\tdouble %s = p_[_%s]; %*s /* [%3i] */",names(odeModel$par),names(odeModel$par),n," ",cOffset(odeModel$par)))
+	cy <- c(
+		writeComment("\tstate variables"),
+		sprintf("\tdouble %s = y_[_%s]; %*s /* [%3i] */",names(odeModel$var),names(odeModel$var),m," ",cOffset(odeModel$var)))
+	cx <- c(
+		writeComment("\texpressions"),
+		sprintf("\tdouble %s = %s;",names(odeModel$exp), replace_powers(odeModel$exp)))
+	C <- c(C,
+	writeComment("Enums will be used for indexing purposes."),
+	makeEnum(odeModel$vf,'stateVariable','numStateVar'),
+	makeEnum(odeModel$par,'param','numParam'),
+	makeEnum(odeModel$func,'func','numFunc'),
+	makeEnum(odeModel$events,'eventLabel','numEvents'),"", # ens with a blank line
+	writeComment(c("The error codes indicate how many values a function returns.",
+		"Each function expects the output buffer to be allocated with at least that many values")))
+	# Jacobian
+	J <- replace_powers(t(yJacobian(odeModel$vf,names(odeModel$var))))
+	attr(J,"stride") <- length(odeModel$var)
+	# parameter Jacobian
+	Jp <- replace_powers(t(yJacobian(odeModel$vf,names(odeModel$par))))
+	attr(Jp,"stride") <- length(odeModel$par)
+
+	C <- c(C,"",
+		writeComment("ODE vector field: y' = f(t,y;p)"),
+		writeCFunction(modelName,"vf",
+			retValue="f_",
+			defs=c(cc,cp,cy,cx),
+			values=replace_powers(odeModel$vf),
+			init0=TRUE),"",
+		writeComment("ODE Jacobian: df(t,y;p)/dy"),
+		writeCFunction(modelName,"jac",
+			retValue=c("jac_","dfdt_"),
+			defs=c(cc,cp,cy,cx),
+			values=J,
+			init0=TRUE),"",
+		writeComment("ODE parameter Jacobian: df(t,y;p)/dp"),
+		writeCFunction(modelName,"jacp",
+			retValue=c("jacp_","dfdt_"),
+			defs=c(cc,cp,cy,cx),
+			values=Jp,
+			init0=TRUE),"",
+		writeComment("Output Function (Observables)"),
+		writeCFunction(modelName,"func",
+			retValue="func_",
+			defs=c(cc,cp,cy,cx),
+			values=odeModel$func,
+			init0=FALSE),"",
+		writeCFunction(modelName,"default",
+			defArgs="double t",
+			retValue="p_",
+			defs=cc,
+			values=odeModel$par,
+			otherArgs=NULL),"",
+		writeCFunction(modelName,"init",
+			defArgs="double t",
+			retValue="y_",
+			defs=c(cc,cp),
+			values=odeModel$var),"",
+		writeCFunction(modelName,"event",
+			defs=c(cc,cp,cy,cx),
+			body=eventCode(odeModel),
+			otherArgs=c("double *p_","int EventLabel","double dose"))
+	)
+	# event function
+	return(C)
+}
+
 #' Load an ODE model from a file
 #'
 #' The input can be either a list of files, or one compressed archive
@@ -203,7 +403,9 @@ generateCode <- function(ode){
 #' model from the name of the archive, or from the parent directory of
 #' uncompressed tsv files. This auto-determined name is attached as a
 #' comment of the return value. To override this choice, replace the
-#' comment.
+#' comment. This function exists for compatibility with the scripts in
+#' the RPN-derivative repository and loads the zip and tar.gz files
+#' that SBtabVFGEN::sbtab_to_vfgen writes to disk.
 #'
 #' @param fileList list of file paths
 #' @export

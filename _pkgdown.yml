@@ -96,7 +96,6 @@ reference:
   - globalSensitivity
   - importReactionsSSA
   - is.invertible
-  - loadODE
   - log10ParMap
   - log10ParMapJac
   - logParMap
@@ -136,6 +135,7 @@ reference:
   desc: "not exported functions"
   contents:
   - convert.parameter
+  - generateCodeFromFile
   - match.coefficients
   - match.names
   - observable.mean.in.bin
@@ -155,6 +155,7 @@ reference:
   - gradLogLikelihoodFunc
   - gradLog_NormalPrior
   - "%has%"
+  - loadODE
   - loadSubSample_mpi
   - logLikelihoodFunc
   - parameters_from_expressions_func
@@ -164,3 +165,4 @@ reference:
   - simcf
   - simulateAndComputeDistance
   - swap_points_locally
+  - writeCFunction

@@ -3,7 +3,7 @@ title: "Sample AKAR4 stochastically"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
+knitr::opts_chunk$set(cache = TRUE, eval=TRUE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -70,8 +70,7 @@ print(par_val)
 
 # Define MCMC settings
 
-```{r}
-
+```{r configure}
 # a function that tansforms the ABC variables to acceptable model
 # parameters, re-indexing could also happen here
 parMap <- function (parABC=0) {
@@ -96,8 +95,8 @@ rprior <- rUniformPrior(ll, ul) # rprior generates random samples from the prior
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
 nChains <- 4  # number of ABCMCMC chains to run
-ns <- 100 # no of samples required from each ABC-MCMC chain
-npc <- 100 # pre-calibration
+ns <- 100   # no of samples required from each ABC-MCMC chain
+npc <- 1000 # pre-calibration
 
 
 
@@ -118,20 +117,16 @@ An *objective function* in this case is a function that can read the experimenta
 
 To generate the objective function for stochastic models you can use the `uqsa` function `makeObjectiveSSA`.
 
-```{r}
-
+```{r makeObjective}
 objectiveFunction <- makeObjectiveSSA(experiments, model, par_names, distance, parMap, Phi, reactions, nStochSim = 3)
-  
 ```
 
 # Run PreCalibration sampling
 
 Before running the ABCMCMC code, we run a precalibration to determine good initial values and algorithmic hyperparameters for the ABCMCMC chains.
 
-```{r}
-# run precalibration
+```{r precalibration}
 pC <- preCalibration(objectiveFunction, npc, rprior,rep = 1)
-
 
 p <- 0.01 # From the precalibration samples choose Top 1% samples with shortest distance to the experimental values
 sfactor <- 0.1 # scaling factor used to determine a good covariance matrix for the ABCMCMC proposal moves
@@ -154,20 +149,22 @@ The sampling is parallelized on several cores using the `parLapply` function.
 
 ```{r}
 cl <- makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
-  clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
-  out_ABCMCMC <- parLapply(cl,
-                           1:nChains,
-                           function(j) {
-                             tryCatch(
-                               ABCMCMC(objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior, batchSize = 1),
-                               error=function(cond) {message("ABCMCMC crashed"); return(NULL)}
-                             )
-                           }
-  )
-  stopCluster(cl)
-  
-  ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
-  colnames(ABCMCMCoutput$draws) <- par_names
+clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
+out_ABCMCMC <- parLapply(
+  cl,
+  1:nChains,
+  function(j) {
+    tryCatch(
+      ABCMCMC(
+       objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior, batchSize = 1),
+       error=function(cond) {message("ABCMCMC crashed"); return(NULL)}
+    )
+  }
+)
+stopCluster(cl)
+
+ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
+colnames(ABCMCMCoutput$draws) <- par_names
 ```
 
 # Visualize the sampled parameters
@@ -178,7 +175,6 @@ The sampled three dimensional parameters for the AKAR4 model can be visualized v
 
 ```{r}
 pairs(ABCMCMCoutput$draws)
-
 ```
 
 The marginal distributions of each parameter in the parameter vector can be visualized via histograms as follows.
@@ -210,12 +206,12 @@ s <- simulator.stoch(experiment = e, model.tab = SBtab, parMap = parMap, vol = v
 
 n_draws <- dim(ABCMCMCoutput$draws)[1] # number of sampled posterior parameters
 subsample_indices <- sample(n_draws,10) # indices of 10 random parameters out of the paramneters in
-for(i in subsample_indices){ 
+for(i in subsample_indices){
   p <- ABCMCMCoutput$draws[i,] # random parameter from the posterior
-  
+
   y <- s(p) # simulate a trajectory (y) given parameter p
 
   lines(e$outputTimes, y$output, col="blue") # plot the simulated trajectory
-}  
+}
 
 ```
