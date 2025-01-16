@@ -34,8 +34,6 @@ nStates<-length(AKAR4_init())
 Set meta-parameters for the global sensitivity simulation
 ```{r}
 nSamples <- 40000
-
-
 ```
 nSamples corresponds to the number of samples in M1 (or M2) of the Soboll-Saltelli approach..The number of simulations of the Sobol-Saltelli approach consists of 2\*nSampels+nPars\*nSamples number of simulations. In the binning approach below we use 2\*nSamples number of samples (corresponding to 2\*nSamples number of simulations) to use the same number of independent sample points as Sobol-Saltelli. 
 

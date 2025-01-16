@@ -58,6 +58,8 @@ navbar:
           href: articles/examples_overview.html
         - text: Simulate AKAP79
           href: articles/simAKAP79.html
+        - text: Simulate AKAR4 stochastically
+          href: articles/simAKAR4stochastic.html
         - text: Simulate AKAP79 stochastically
           href: articles/simAKAP79stochastic.html
         - text: Sample AKAP79
@@ -68,6 +70,8 @@ navbar:
           href: articles/mpi.html
         - text: SMMALA and CaMKII
           href: articles/smmala.html
+        - text: GSA on AKAR4
+          href: articles/GSA_AKAR4.html
     reference:
         text: Function reference
         href: reference/index.html
