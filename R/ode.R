@@ -193,7 +193,6 @@ generateCode <- function(ode){
 		)
 		C <- c(C,writeFunc("event",NULL,evsw,Rest="int eventLabel, double dose"))
 	}
-	
 	return(C)
 }
 
@@ -214,7 +213,11 @@ loadODE <- function(fileList){
 	if (length(fileList)==1 && endsWith(basename(fileList),".tar.gz")) {
 		modelName <- sub("[.].*$","",basename(fileList[1]))
 		tartf <- untar(fileList,list=TRUE)
-		TMP="/dev/shm/ode_gen"
+		if (file.exists("/dev/shm")) {
+			TMP <- "/dev/shm/ode_gen"
+		} else {
+			TMP <- "/tmp/ode_gen"
+		}
 		untar(fileList,exdir=TMP)
 		fileList <- paste0(TMP,'/',tartf)
 	}
