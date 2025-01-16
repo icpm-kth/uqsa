@@ -13,6 +13,7 @@ knitr::opts_chunk$set(cache = TRUE,
 library(uqsa)
 library(parallel)
 library(SBtabVFGEN)
+library(GillespieSSA2)
 ```
 
 This article provides code to perform uncertainty quantification (UQ) of a stochastic reaction network model. As an example we use the AKAR4 stochastic model. The UQ method that we use is ABCMCMC.
