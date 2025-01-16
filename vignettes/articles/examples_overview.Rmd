@@ -9,25 +9,34 @@ knitr::opts_chunk$set(cache = TRUE,
 )
 ```
 
+We here provide some examples to simulate, calibrate or analyse different models. The calibration (parameter estimation) process includes uncertainty quantification and with analyses we mean global sensitivity analysis (SA). You find more details about the different tools in the accompanying [article](https://doi.org/10.48550/arXiv.2308.05527).
 
-# Example Models
+The examples are listed in order of increasing difficulty and run time.
 
-A simple example using the AKAR4 model is available in the article [AKAR4](AKAR4.html). You can run it locally using
+# AKAR4
+These examples can be run on a laptop.
 
-```{r, eval=FALSE}
-library(uqsa)
-source(uqsa_example("AKAR4",pat="^runABCMCMC_AKAR4[.]R$"))
-```
+- [Simulate AKAR4 deterministically](error.html) Builds the AKAR4 model as an ODE and simulates it with the an ODE solver.
+- [Simulate AKAR4 stochastically](./simAKAR4stochastic.html) Builds the AKAR4 model as a stochastic model and simulates it with the Gillespie algorithm.
+- [UQ of deterministic AKAR4](./sampleAKAR4stochastic.html) AKAR4 is calibrated with a likelihood based Metropolis approach.
+- [UQ of stochastic AKAR4](./sampleAKAR4stochastic.html) AKAR4 is calibrated with an Approximate Bayesian Computation (ABC) approach.
+- [SA of AKAR4](./GSA_AKAR4.html) Global sesnitivity analysis is perfomed on the determinitic AKAR4 model using independent prior parameter distributions.
+- [UQ and SA of AKAR4](error.html) First UQ and then SA is performed on the deterministic AKAR4 model.
 
-A few larger (computationally expensive) examples: *AKAP79*, *CaMKII*, and the stochastic version of AKAR4 are available in the form of R scripts and can be run locally or (preferably) on a computer cluster. These are the examples that are included in the package
+# AKAP79
+These examples are meant to be run on a compute cluster, but with some patience you can test them on a multi core workstation or laptop.
 
-* [AKAR4](AKAR4.html)
-* [AKAP79 ODE model](./uqsa-AKAP79.html)
-* [CaMKII ODE model](https://github.com/icpm-kth/uqsa/blob/master/inst/extdata/CaMKII/runABCMCMC_CaMKII.R)
-* [AKAR4 stochastic model](https://github.com/icpm-kth/uqsa/blob/master/inst/extdata/AKAR4/runABCMCMC_AKAR4_withStochasticStimulation.R)
+- [Paralllel chains with MPI](./mpi.html) Describes how to run the packege in parallel.
+- [UQ and SA of AKAP79 deterministic model](./error.html)
+- [UQ and SA of AKAP79 stochastic model](./error.html)
 
 
-For the ODE models we added measurement noise or used an acceptance probability in order to allow the use of ABC ([Alahmadi et al 2020](http://dx.doi.org/10.1098/rsos.191315)).
+
+# CAMKII
+
+- [UQ and SA on CaMKII with SMMALA](./smmala.html)
+
+
 The demo R scrips can be found in the folder [`inst/extdata`](https://github.com/icpm-kth/uqsa/tree/master/inst/extdata).
 
 The `?uqsa::uqsa_example` function can locate the example folders after package installation.
