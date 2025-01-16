@@ -64,6 +64,8 @@ navbar:
           href: articles/AKAP79.html
         - text: Sample AKAR4
           href: articles/AKAR4.html
+        - text: Sample AKAR4 stochastically
+          href: articles/sampleAKAR4stochastic.html
         - text: Multiple chains via MPI
           href: articles/mpi.html
         - text: SMMALA and CaMKII
