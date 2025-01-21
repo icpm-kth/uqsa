@@ -46,6 +46,9 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/GSA.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/GSA_AKAR4.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/GenerateCodeInSHELL.html</loc>
   </url>
   <url>
@@ -65,6 +68,9 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/examples_overview.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/extraExamples.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/generateCodeInR.html</loc>
@@ -97,10 +103,19 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/sa.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/sampleAKAR4stochastic.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/shortMakeSharedLibrary.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/simAKAP79.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/simAKAP79stochastic.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/simAKAR4stochastic.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/simulate.html</loc>

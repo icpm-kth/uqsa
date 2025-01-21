@@ -14,7 +14,7 @@ It may appear inconvenient to go through so many steps
 	SBtab -> .vf -> .c -> .so,
 
 but something like this happens in most simulators
-anyway. Here it happens more explicitlty and we purposefully draw the
+anyway. Here it happens more explicitly and we purposefully draw the
 users attention to these files. Each is an opportunity to verify
 correctness, add functionality, or modify.
 
@@ -30,13 +30,13 @@ Every step produces an output file that carries a distinct meaning:
 
 Each of these files can be checked by the user, their internal formats
 are not hidden; this can help with checking for errors and testing,
-resability, and interoperability between different software packages.
+reusability, and interoperability between different software packages.
 
 ## Note on VFGEN
 
 The vfgen software can also create model files for both R and C and
 even two different solver libraries in C: cvode and GSL; but this is
-not all, vfgen can create models for many other langueges. It is really good!
+not all, vfgen can create models for many other languages. It is really good!
 
 The functions it creates are slightly different from ours. 
 
@@ -46,7 +46,7 @@ We decided to write our own converter to better suit our needs, for several reas
   output's name (the `Name` in .vf), e.g.: 
     + `double  myModel_ABCoverSUM(double t, double y_[], void *par) {` 
 - ode.sh creates one output function that returns a vector
-    + `int myModel_func(double t, doubel y_[], double *func_, void *par){`
+    + `int myModel_func(double t, double y_[], double *func_, void *par){`
     + i.e. vector valued output, like all the other functions
 - vfgen does not write a *default initial conditions* or *default
   parameter* function -- these should be functions, because they can depend on 

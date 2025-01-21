@@ -230,13 +230,13 @@ writeCFunction <- function(prefix, fName, defArgs=c("double t","const double y_[
 		ret <- NULL
 	}
 	arguments <- paste(c(defArgs,ret,otherArgs),sep=", ",collapse=", ")
-	if (!is.null(retValue)) {
+	if (!is.null(retValue) && grepl("\\by_",arguments)) {
 		errValue <- sprintf("\tif (!y_ || !%s) return %i;",retValue[1],length(values))
 	} else {
-		errValue <- sprintf("\tif (!y_ || EventLabel<0) return numEvents;")
+		errValue <- switch(fName,default=sprintf("\tif (!p_) return numParam;"),event=sprintf("\tif (!y_ || EventLabel<0) return numEvents;"),NULL)
 	}
 	if (init0) {
-		zeroBuffer<-sprintf("\tmemset(%s,0,sizeof(double)*%i); ",retValue[1],length(values))
+		zeroBuffer<-sprintf("\tmemset(%s,0,sizeof(double)*%i); /* initialize with 0.0 */",retValue[1],length(values))
 	} else {
 		zeroBuffer <- NULL
 	}
@@ -247,7 +247,7 @@ writeCFunction <- function(prefix, fName, defArgs=c("double t","const double y_[
 		stride <- attr(values,"stride")
 		i <- k %/% stride
 		j <- k %% stride
-		v <- sprintf("\t/*[%2i,%2i]*/  %s[%i] = %s; ",i[!z],j[!z],retValue[1],k[!z],values[!z])
+		v <- sprintf("\t/*[%2i,%2i]*/  %s[%i] = %s;",i[!z],j[!z],retValue[1],k[!z],values[!z])
 	} else if (named(values)){
 		v <- sprintf("\t%s[_%s] = %s;",retValue[1],names(values)[!z],values[!z])
 	} else {
@@ -282,7 +282,7 @@ eventCode <-function(odeModel){
 			)
 		})
 		evsw <- c(
-		 sprintf("\tswitch(eventLabel){"),
+		 sprintf("\tswitch(EventLabel){"),
 		 unlist(effect),
 		 "\t}"
 		)
@@ -312,11 +312,11 @@ eventCode <-function(odeModel){
 generateCode <- function(odeModel){
 	modelName <- comment(odeModel) %otherwise% "model"
 	# simplify a data.frame with two columns to a named character vector, assuming it's name/value pairs
-	makeEnum <- \(var,enumName, lastEntry) {
-		if (is.null(var)) return(c())
-		else return(sprintf("enum %s { %s, %s };",enumName,paste('_',names(var),sep='', collapse=', '),lastEntry))
+	makeEnum <- \(varNames, enumName, lastEntry, prefix="_") {
+		if (is.null(varNames)) return(c())
+		else return(sprintf("enum %s { %s, %s };",enumName,paste(prefix,varNames,sep='', collapse=', '),lastEntry))
 	}
-	h <- c('stdlib','math','string','gsl/gsl_errno','gsl/gsl_odeiv2','gsl/gsl_math.h')
+	h <- c('stdlib','math','string','gsl/gsl_errno','gsl/gsl_odeiv2','gsl/gsl_math')
 	C <- c(sprintf("#include <%s.h>",h),"")
 	# C expressions:
 	x <- odeModel$exp
@@ -338,10 +338,10 @@ generateCode <- function(odeModel){
 		sprintf("\tdouble %s = %s;",names(odeModel$exp), replace_powers(odeModel$exp)))
 	C <- c(C,
 	writeComment("Enums will be used for indexing purposes."),
-	makeEnum(odeModel$vf,'stateVariable','numStateVar'),
-	makeEnum(odeModel$par,'param','numParam'),
-	makeEnum(odeModel$func,'func','numFunc'),
-	makeEnum(odeModel$events,'eventLabel','numEvents'),"", # ens with a blank line
+	makeEnum(names(odeModel$var),'stateVariable','numStateVar'),
+	makeEnum(names(odeModel$par),'param','numParam'),
+	makeEnum(names(odeModel$func),'func','numFunc'),
+	makeEnum(colnames(odeModel$tf),'eventLabel','numEvents',prefix=NULL),"", # ens with a blank line
 	writeComment(c("The error codes indicate how many values a function returns.",
 		"Each function expects the output buffer to be allocated with at least that many values")))
 	# Jacobian
@@ -388,6 +388,7 @@ generateCode <- function(odeModel){
 			defs=c(cc,cp),
 			values=odeModel$var),"",
 		writeCFunction(modelName,"event",
+			defArgs=c("double t", "double *y_"),
 			defs=c(cc,cp,cy,cx),
 			body=eventCode(odeModel),
 			otherArgs=c("double *p_","int EventLabel","double dose"))

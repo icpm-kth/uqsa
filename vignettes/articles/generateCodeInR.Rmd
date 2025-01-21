@@ -19,7 +19,9 @@ available computer algebra system for this task is the
 interfaces between R and [yacas](http://www.yacas.org/) -- both need
 to be installed.
 
-The functions use the same files as the standalone POSIX shell implementation in RPN-derivative.
+The function `generateCode` accepts the return value of
+`SBtabVFGEN::sbtab_to_vfgen()` (a list of ode properties) and returns
+a character vector of C code:
 
 ```{r, label="load the file", eval=TRUE}
  f <- uqsa::uqsa_example("AKAP79")    # paths to the TSV files
@@ -42,10 +44,12 @@ Then we convert it to an ordinary differential equation (and create intermediate
 C <- uqsa::generateCode(odeModel)
 ```
 
-This returns the generated code as a character vector, it can be viewed (and written to a file using the `cat` function):
+This returns the generated code as a character vector, it can be
+viewed (and written to a file using the `cat` function). Here are a
+few lines of the generated code:
 
-```{r, eval=FALSE}
-cat(C,sep="\n")
+```{r, eval=TRUE}
+cat(head(C,25),sep="\n")
 ```
 
 This command will print the code, use the `file=` argument of `cat` to print it into a file.

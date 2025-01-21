@@ -20,7 +20,7 @@ Advantages:
     + all real spreadsheet formats, and sbml, require a library with
       language bindings to import the content into a language like R
       (or similar)
-    + if the import libraries become unmaintained, and theR package is
+    + if the import libraries become unmaintained, and the R package is
       removed from CRAN, the format becomes unavailable.
 - spreadsheets have many features that don't translate well into other
   data objects (like data frames, or arrays)
@@ -31,14 +31,14 @@ Advantages:
     + multiline cell content
 
 You may be asking yourself: json, yaml, toml? All valid questions!
-But, tsv is the simlest of the lot.
+But, tsv is the simplest of the lot.
 
 Disadvantages:
 
 - TSV files are best when they contain one table at a time, thus an
   SBtab document should be a collection of tsv files (for us, this is
   a *must*)
-- TSV files are ususally not displayed in a pretty way when opening
+- TSV files are usually not displayed in a pretty way when opening
   them in a text editor (the columns do not align)
 - text files can have different line endings
    + `\n` on some systems
@@ -61,7 +61,7 @@ or the reverse:
 tr '\n' '\r\n'
 ```
 
-to restore line endings that operating systems ending *dows will prefer.
+to restore line endings that operating systems ending in *dows will prefer.
 
 ## Conversion
 
@@ -101,7 +101,7 @@ and the `.ods` file ending can be replaced by a different format.
 
 Spreadsheets can contain the values `TRUE` and `FALSE`, these Boolean
 values are written exactly like this in both C and R. So, even when
-not converted to numerical values these words shoudl work out of the
+not converted to numerical values these words should work out of the
 box.
 
 Some spreadsheet software converts them to `1` and `0` when exporting

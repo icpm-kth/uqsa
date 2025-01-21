@@ -14,53 +14,21 @@ knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
 See the Sections below for instructions. Short summary of what they do:
 
 * Install the [GNU Scientific Library](https://www.gnu.org/software/gsl/)
-* The auto-generation of code for each model is done using the shell script in
-  `icpm-kth/RPN-derivative`; that package has several methods for
-  analystic (symbolc) math (the thing that computer algebra systems
-  do), either of this is OK in most cases:
-    - [maxima](https://maxima.sourceforge.io/)
-    - [yacas](http://www.yacas.org/index.html)
-    - the [RPN-derivative](icpm-kth/RPN-derivative) package
-      itself has code to perform derivatives
-      (needs `make && sudo make install`)
+* [yacas](http://www.yacas.org/index.html) and [Ryacas](https://cran.r-project.org/package=Ryacas)
+  - `install.packages("Ryacas")` after _yacas_
 
 ## Pick One
 
-maxima is optional
-
 ```{sh macOS, eval=FALSE}
 # macOS has a lot of issues with xcode, it loves it for some reason; maybe agree to xcode license
-brew install pkg-config gcc gsl maxima
+brew install pkg-config gcc gsl yacas
 ```
 
 ```{sh ubuntu/debian, eval=FALSE}
 # other linux distributions have some version of this:
 # zypper install, apk add, guix install
-sudo apt install pkg-config gcc libgsl-dev maxima
+sudo apt install pkg-config gcc libgsl-dev yacas
 ```
-
-## Analytical derivatives and Model Code Generation
-
-You may have to adjust this to fit your specific circumstances (do you use `zsh`? Does it parse `.profile`?)
-
-```{sh derivatives, eval=FALSE}
-git clone https://github.com/icpm-kth/RPN-derivative.git
-cd RPN-derivative
-make
-dir=`pwd`
-mkdir -p ~/.local/bin && ln -s "$dir/sh/ode.sh" "$HOME/.local/bin/ode"
-```
-
-RPN-derivative contains a c program that can calculate simple derivatives, it can be installed like this:
-```{sh optionally, eval=FALSE}
-# this installs the derivative program in RPN-derivative
-make && make test
-sudo make install
-```
-
-The `ode.sh` script will work regardless of whether you run `make`,
-but without the above block the `--maxima` or `--yacas` backend options are
-mandatory.
 
 # Installation of the R packages
 
@@ -86,3 +54,5 @@ and in R:
 install.packages("pbdMPI")
 ```
 
+On other systems, install the equivalent package for _OpenMPI_ and
+_pbdMPI_ (R package interfacing with MPI libraries on your system).

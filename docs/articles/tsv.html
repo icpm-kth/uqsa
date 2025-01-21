@@ -42,7 +42,6 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
     <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
-    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -59,7 +58,6 @@
     <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
     <a class="dropdown-item" href="../articles/generateCodeInR.html">Generate Model Code</a>
-    <a class="dropdown-item" href="../articles/GenerateCodeInSHELL.html">Generate C Code Outside of R</a>
     <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
     <div class="dropdown-divider"></div>
@@ -77,7 +75,7 @@
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAR4</h6>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate AKAR4 stochastically</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic">Calibrate stochasic AKAR4</a>
+    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">Calibrate stochasic AKAR4</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAP79</h6>
@@ -135,7 +133,7 @@ changes (git)</li>
 <li>all real spreadsheet formats, and sbml, require a library with
 language bindings to import the content into a language like R (or
 similar)</li>
-<li>if the import libraries become unmaintained, and theR package is
+<li>if the import libraries become unmaintained, and the R package is
 removed from CRAN, the format becomes unavailable.</li>
 </ul>
 </li>
@@ -151,13 +149,13 @@ data objects (like data frames, or arrays)
 </li>
 </ul>
 <p>You may be asking yourself: json, yaml, toml? All valid questions!
-But, tsv is the simlest of the lot.</p>
+But, tsv is the simplest of the lot.</p>
 <p>Disadvantages:</p>
 <ul>
 <li>TSV files are best when they contain one table at a time, thus an
 SBtab document should be a collection of tsv files (for us, this is a
 <em>must</em>)</li>
-<li>TSV files are ususally not displayed in a pretty way when opening
+<li>TSV files are usually not displayed in a pretty way when opening
 them in a text editor (the columns do not align)</li>
 <li>text files can have different line endings
 <ul>
@@ -183,7 +181,7 @@ program:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">tr</span> <span class="at">-d</span> <span class="st">'\r'</span></span></code></pre></div>
 <p>or the reverse:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">tr</span> <span class="st">'\n'</span> <span class="st">'\r\n'</span></span></code></pre></div>
-<p>to restore line endings that operating systems ending *dows will
+<p>to restore line endings that operating systems ending in *dows will
 prefer.</p>
 </div>
 <div class="section level3">
@@ -215,7 +213,7 @@ format.</p>
 <p>Spreadsheets can contain the values <code>TRUE</code> and
 <code>FALSE</code>, these Boolean values are written exactly like this
 in both C and R. So, even when not converted to numerical values these
-words shoudl work out of the box.</p>
+words should work out of the box.</p>
 <p>Some spreadsheet software converts them to <code>1</code> and
 <code>0</code> when exporting to TSV. This works even better.</p>
 <p>If, for some reason, the C model still contains <code>TRUE</code> and

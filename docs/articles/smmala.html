@@ -42,7 +42,6 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
     <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
-    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -59,7 +58,6 @@
     <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
     <a class="dropdown-item" href="../articles/generateCodeInR.html">Generate Model Code</a>
-    <a class="dropdown-item" href="../articles/GenerateCodeInSHELL.html">Generate C Code Outside of R</a>
     <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
     <div class="dropdown-divider"></div>
@@ -77,7 +75,7 @@
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAR4</h6>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate AKAR4 stochastically</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic">Calibrate stochasic AKAR4</a>
+    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">Calibrate stochasic AKAR4</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAP79</h6>
@@ -229,7 +227,7 @@ equilibria:</p>
 <span><span class="va">cfile</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,f<span class="op">=</span><span class="st">"c"</span><span class="op">)</span></span>
 <span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,<span class="va">cfile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).</span></span>
-<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './CaMKIIs.so' '/tmp/RtmpJcZrDP/temp_libpath117436111b3a/uqsa/extdata/CaMKIIs/CaMKIIs_gvf.c' `pkg-config --libs gsl`</span></span>
+<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './CaMKIIs.so' '/tmp/RtmpAJRrSc/temp_libpath4a777745142a/uqsa/extdata/CaMKIIs/CaMKIIs_gvf.c' `pkg-config --libs gsl`</span></span>
 <span><span class="va">rfile</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,pat<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"^%s[.]R$"</span>,<span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="va">rfile</span><span class="op">)</span></span>
 <span></span>
@@ -254,9 +252,9 @@ equilibria:</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cpuSeconds</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Bradshaw2003Fig2E Shifman2006Fig1Bsq  ODonnel2010Fig3Co  Stemmer1993Fig1tr </span></span>
-<span><span class="co">#&gt;           7.172544           1.589714           0.531694           0.263893 </span></span>
+<span><span class="co">#&gt;           7.077217           1.840241           0.497266           0.294114 </span></span>
 <span><span class="co">#&gt;  Stemmer1993Fig1fc Stemmer1993Fig2Afc </span></span>
-<span><span class="co">#&gt;           0.530616           6.671955</span></span>
+<span><span class="co">#&gt;           0.634721           6.669697</span></span>
 <span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">==</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>,bty<span class="op">=</span><span class="st">"n"</span><span class="op">)</span></span>
@@ -518,7 +516,7 @@ order.</p>
 <span><span class="va">cfile</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,f<span class="op">=</span><span class="st">"c"</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
 <span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,<span class="va">cfile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).</span></span>
-<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './CaMKII.so' '/tmp/RtmpJcZrDP/temp_libpath117436111b3a/uqsa/extdata/CaMKII/CaMKII_gvf.c' `pkg-config --libs gsl`</span></span>
+<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './CaMKII.so' '/tmp/RtmpAJRrSc/temp_libpath4a777745142a/uqsa/extdata/CaMKII/CaMKII_gvf.c' `pkg-config --libs gsl`</span></span>
 <span><span class="va">rfile</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,pat<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"^%s[.]R$"</span>,<span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="va">rfile</span><span class="op">)</span></span>
 <span></span>
@@ -536,11 +534,11 @@ order.</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cpuSeconds</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     E0D0     E0D1     E0D2     E0D3     E0D4     E0D5     E0D6     E0D7 </span></span>
-<span><span class="co">#&gt; 5.105080 5.126191 5.239334 5.102396 5.122788 5.139606 5.184292 5.201036 </span></span>
+<span><span class="co">#&gt; 5.230821 5.159520 5.295578 5.148994 5.168618 5.192885 5.187591 5.250753 </span></span>
 <span><span class="co">#&gt;     E0D8     E0D9    E0D10    E0D11    E0D12    E0D13    E0D14    E0D15 </span></span>
-<span><span class="co">#&gt; 5.315158 5.383370 5.471791 6.837337 6.864698 7.108834 7.291992 6.445334 </span></span>
+<span><span class="co">#&gt; 5.414976 5.411192 5.523694 6.790849 6.586266 6.686983 7.443709 6.741364 </span></span>
 <span><span class="co">#&gt;    E0D16 </span></span>
-<span><span class="co">#&gt; 4.620172</span></span></code></pre></div>
+<span><span class="co">#&gt; 4.987958</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">i</span>,<span class="fl">1</span><span class="op">)</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">Ca</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,\<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">input</span><span class="op">[</span><span class="st">'Ca_set'</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>

@@ -6,7 +6,6 @@ articles:
   AKAR4: AKAR4.html
   GSA: GSA.html
   GSA_AKAR4: GSA_AKAR4.html
-  GenerateCodeInSHELL: GenerateCodeInSHELL.html
   ODE-Model: ODE-Model.html
   SBtab: SBtab.html
   cite: cite.html
@@ -21,7 +20,6 @@ articles:
   literature_references: literature_references.html
   models: models.html
   mpi: mpi.html
-  path: path.html
   sa: sa.html
   sampleAKAR4stochastic: sampleAKAR4stochastic.html
   simAKAP79: simAKAP79.html
@@ -33,7 +31,7 @@ articles:
   uq: uq.html
   uqsa: uqsa.html
   user_model: user_model.html
-last_built: 2025-01-21T10:36Z
+last_built: 2025-01-21T14:15Z
 urls:
   reference: https://icpm-kth.github.io/uqsa/reference
   article: https://icpm-kth.github.io/uqsa/articles

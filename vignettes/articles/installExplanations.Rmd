@@ -70,8 +70,8 @@ but if not then please do.
 WARNING: macOS will definitely mention xcode at some point, apple is
 really keen on this. We have absolutely nothing to do with xcode,
 neither does gcc, or pkg-config. The insistence of macOS to provide
-gcc only through xcode is despicable as they have no right to
-gate-keep any of these.
+gcc only through xcode and developer ids is despicable as they have no
+right to put up any constraints on things that don't belong to them.
 
 ## GNU Scientific Library and pkg-config
 
@@ -96,8 +96,6 @@ Linux, Unix, and *BSD (even Windows, not that it helps).
 |        Arch Linux | `sudo pacman -S gsl`          | `sudo pacman -S pkgconf`        |
 |            Gentoo | `sudo emerge sci-libs/gsl`    | `sudo emerge virtual/pkgconfig` |
 |             macOS | `brew install gsl`            | `brew install pkg-config`       |
-|                   |                               |                                 |
-
 
 Once `gsl` and `pkg-config` are available on the system, the
 `icpm-kth/rgsl` package should compile nicely.
@@ -116,7 +114,8 @@ You can use `pkgconf` instead of `pkg-config` on macOS. However, it is possible 
 brew install pkgconf
 ```
 
-will not actually provide the `pkg-config` command (it may).
+will not actually provide the `pkg-config` command in this spelling
+(it may just be pkgconf).
 
 This is again not something that has anything to do with us. Everyone
 who wants to use `pkg-config` via pkgconf on macOS needs to consider
@@ -131,20 +130,7 @@ which pkg-config      # e.g.: /usr/bin/pkg-config
 ```
 
 should print a path if that command is available (or nothing, then it
-isn't).  If `which pkgconf` prints a valid path (it should), then make
-a symlink to it:
-
-```{sh, eval=FALSE}
-cd ~/.local/bin
-# make the link
-ln -s `which pkgconf` pkg-config
-```
-
-For this to have the desired effect, `~/.local/bin` needs to be in
-your [PATH](articles/path.html) environment variable.
-
-If it is, then `pkg-config` becomes available from any directory, even
-in non-interactive shells.
+isn't).
 
 ## R itself
 
@@ -174,7 +160,7 @@ r-cran-desolve` would install the *deSolve* package for all users of
 your machine. In HPC environments this is preferable as user accounts
 can have harsh quotas on *file sizes* and *file numbers*.
 
-But, R packages can also be installed from within R (for individual
+R packages can also be installed from within R (for individual
 users), but only to a location that is writable to you, typically in
 your `$HOME` diectory. Please ensure that `.libPaths()` returns at
 least one location that you have write access to (this -- again -- is
@@ -233,6 +219,9 @@ remotes::install_github("icpm-kth/rgsl")       # requires gsl in your OS, see ab
 
 This can be replaced with the standard solvers in the deSolve
 package. In our examples, the solvers in deSolve are always slower.
+
+It is possible to use shared libraries with deSolve, to make solutions
+faster, but this is not very easy to do.
 
 ## SBtab Model Handling
 

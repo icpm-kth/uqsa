@@ -13,8 +13,6 @@ navbar:
         href: articles/installation.html
       - text: Explanation for System Prerequisites
         href: articles/installExplanations.html
-      - text: The PATH variable
-        href: articles/path.html
     articles:
       text: Documentation
       menu:
@@ -37,8 +35,6 @@ navbar:
         href: articles/user_model.html
       - text: Generate Model Code
         href: articles/generateCodeInR.html
-      - text: Generate C Code Outside of R
-        href: articles/GenerateCodeInSHELL.html
       - text: Advantages of Intermediates
         href: articles/intermediateFiles.html
       - text: ODE Model
@@ -61,7 +57,7 @@ navbar:
         - text: Simulate AKAR4 stochastically
           href: articles/simAKAR4stochastic.html
         - text: Calibrate stochasic AKAR4
-          href: articles/sampleAKAR4stochastic
+          href: articles/sampleAKAR4stochastic.html
         - text: GSA on AKAR4
           href: articles/GSA_AKAR4.html
         - text: -------

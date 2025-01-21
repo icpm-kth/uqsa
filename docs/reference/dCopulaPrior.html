@@ -27,7 +27,6 @@ makeIndepCopula() and creates a density function from it."><!-- mathjax --><scri
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
     <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
-    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -44,7 +43,6 @@ makeIndepCopula() and creates a density function from it."><!-- mathjax --><scri
     <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
     <a class="dropdown-item" href="../articles/generateCodeInR.html">Generate Model Code</a>
-    <a class="dropdown-item" href="../articles/GenerateCodeInSHELL.html">Generate C Code Outside of R</a>
     <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
     <div class="dropdown-divider"></div>
@@ -62,7 +60,7 @@ makeIndepCopula() and creates a density function from it."><!-- mathjax --><scri
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAR4</h6>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate AKAR4 stochastically</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic">Calibrate stochasic AKAR4</a>
+    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">Calibrate stochasic AKAR4</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAP79</h6>
@@ -126,7 +124,7 @@ makeIndepCopula() and creates a density function from it.</p>
 <span class="r-in"><span><span class="va">C</span><span class="op">&lt;-</span><span class="fu"><a href="fitCopula.html">fitCopula</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">d</span><span class="op">&lt;-</span><span class="fu">dCopulaPrior</span><span class="op">(</span><span class="va">C</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu">d</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.005982341</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.003642926</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/prod.html" class="external-link">prod</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>,FUN<span class="op">=</span><span class="va">dnorm</span>,mean<span class="op">=</span><span class="fl">1</span>,sd<span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.004248212</span>
 </code></pre></div>

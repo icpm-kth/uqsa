@@ -42,7 +42,6 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
     <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
-    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -59,7 +58,6 @@
     <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
     <a class="dropdown-item" href="../articles/generateCodeInR.html">Generate Model Code</a>
-    <a class="dropdown-item" href="../articles/GenerateCodeInSHELL.html">Generate C Code Outside of R</a>
     <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
     <div class="dropdown-divider"></div>
@@ -77,7 +75,7 @@
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAR4</h6>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate AKAR4 stochastically</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic">Calibrate stochasic AKAR4</a>
+    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">Calibrate stochasic AKAR4</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAP79</h6>
@@ -173,8 +171,8 @@ similar, but if not then please do.</p>
 <p>WARNING: macOS will definitely mention xcode at some point, apple is
 really keen on this. We have absolutely nothing to do with xcode,
 neither does gcc, or pkg-config. The insistence of macOS to provide gcc
-only through xcode is despicable as they have no right to gate-keep any
-of these.</p>
+only through xcode and developer ids is despicable as they have no right
+to put up any constraints on things that don’t belong to them.</p>
 <div class="section level3">
 <h3 id="gnu-scientific-library-and-pkg-config">GNU Scientific Library and pkg-config<a class="anchor" aria-label="anchor" href="#gnu-scientific-library-and-pkg-config"></a>
 </h3>
@@ -231,11 +229,6 @@ helps).</p>
 <td align="left"><code>brew install gsl</code></td>
 <td align="left"><code>brew install pkg-config</code></td>
 </tr>
-<tr class="odd">
-<td align="right"></td>
-<td align="left"></td>
-<td align="left"></td>
-</tr>
 </tbody>
 </table>
 <p>Once <code>gsl</code> and <code>pkg-config</code> are available on
@@ -253,8 +246,8 @@ don’t require administration rights.</p>
 <p>You can use <code>pkgconf</code> instead of <code>pkg-config</code>
 on macOS. However, it is possible that</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">brew</span> install pkgconf</span></code></pre></div>
-<p>will not actually provide the <code>pkg-config</code> command (it
-may).</p>
+<p>will not actually provide the <code>pkg-config</code> command in this
+spelling (it may just be pkgconf).</p>
 <p>This is again not something that has anything to do with us. Everyone
 who wants to use <code>pkg-config</code> via pkgconf on macOS needs to
 consider these things.</p>
@@ -263,16 +256,7 @@ actually available after installation. If it is not, then you can make a
 symbolic link to <code>pkgconf</code> and make it available:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">which</span> pkg-config      <span class="co"># e.g.: /usr/bin/pkg-config</span></span></code></pre></div>
 <p>should print a path if that command is available (or nothing, then it
-isn’t). If <code>which pkgconf</code> prints a valid path (it should),
-then make a symlink to it:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="bu">cd</span> ~/.local/bin</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co"># make the link</span></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="fu">ln</span> <span class="at">-s</span> <span class="kw">`</span><span class="fu">which</span> pkgconf<span class="kw">`</span> pkg-config</span></code></pre></div>
-<p>For this to have the desired effect, <code>~/.local/bin</code> needs
-to be in your <a href="articles/path.html">PATH</a> environment
-variable.</p>
-<p>If it is, then <code>pkg-config</code> becomes available from any
-directory, even in non-interactive shells.</p>
+isn’t).</p>
 </div>
 </div>
 <div class="section level3">
@@ -325,23 +309,23 @@ ubuntu has <code>r-cran-desolve</code>, such that
 <em>deSolve</em> package for all users of your machine. In HPC
 environments this is preferable as user accounts can have harsh quotas
 on <em>file sizes</em> and <em>file numbers</em>.</p>
-<p>But, R packages can also be installed from within R (for individual
+<p>R packages can also be installed from within R (for individual
 users), but only to a location that is writable to you, typically in
 your <code>$HOME</code> diectory. Please ensure that
 <code><a href="https://rdrr.io/r/base/libPaths.html" class="external-link">.libPaths()</a></code> returns at least one location that you have
 write access to (this – again – is true for everyone, has nothing to do
 with us).</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/libPaths.html" class="external-link">.libPaths</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>If this command doesn’t print a path that you can write to, then you
 can create a new directory (in your home), and make it known to R:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> ~/R/library <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">"R_LIBS=~/R/library"</span> <span class="op">&gt;&gt;</span> ~/.Renviron</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> ~/R/library <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">"R_LIBS=~/R/library"</span> <span class="op">&gt;&gt;</span> ~/.Renviron</span></code></pre></div>
 <p>Now, you can install R packages from <em>The Comprehensive R Archive
 Network</em> <a href="https://cran.r-project.org/" class="external-link">cran</a> and <a href="https://github.com/" class="external-link">github</a>:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span></code></pre></div>
 <p>Our packages are not on CRAN, and can be installed like this:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://remotes.r-lib.org" class="external-link">remotes</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/uqsa"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -378,10 +362,12 @@ variables (lists of <em>simulation experiment</em> setups)</li>
 <p>This package solves ODE initial value problems, given as lists of
 simulation experiments, with sudden interventions (like
 <em>activation</em>, or a sudden signal).</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/rgsl"</span><span class="op">)</span>       <span class="co"># requires gsl in your OS, see above</span></span></code></pre></div>
 <p>This can be replaced with the standard solvers in the deSolve
 package. In our examples, the solvers in deSolve are always slower.</p>
+<p>It is possible to use shared libraries with deSolve, to make
+solutions faster, but this is not very easy to do.</p>
 </div>
 <div class="section level3">
 <h3 id="sbtab-model-handling">SBtab Model Handling<a class="anchor" aria-label="anchor" href="#sbtab-model-handling"></a>
@@ -389,7 +375,7 @@ package. In our examples, the solvers in deSolve are always slower.</p>
 <p>This package loads a model written in the SBtab format, which is
 designed for models in systems biology, but much easier to read than
 SBML:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/SBtabVFGEN"</span><span class="op">)</span> <span class="co"># if you plan to use SBtab</span></span></code></pre></div>
 <p>This can be replaced, if you have a different method of model
 creation or want to write the model source files by hand (which is hard
@@ -399,7 +385,7 @@ for large models).</p>
 <div class="section level2">
 <h2 id="installation-of-uqsa">Installation of UQSA<a class="anchor" aria-label="anchor" href="#installation-of-uqsa"></a>
 </h2>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/uqsa"</span><span class="op">)</span>       <span class="co"># this package</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span>                                  <span class="co"># to load it</span></span></code></pre></div>
 <div class="section level3">
@@ -409,7 +395,7 @@ for large models).</p>
 script for each of them. We advise users to copy the run scripts either
 from the repository or the installed package and adapt them. The
 location of a <em>run</em> file can be found like this:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,pat<span class="op">=</span><span class="st">"^run.*R$"</span><span class="op">)</span></span></code></pre></div>
 <p>or by browsing the folders on GitHub (<code>inst/extdata/</code>).
 Copy one of them and adapt it to your needs.</p>

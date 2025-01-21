@@ -33,7 +33,6 @@ function."><!-- mathjax --><script src="file:///usr/share/javascript/mathjax/Mat
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
     <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
-    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -50,7 +49,6 @@ function."><!-- mathjax --><script src="file:///usr/share/javascript/mathjax/Mat
     <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
     <a class="dropdown-item" href="../articles/generateCodeInR.html">Generate Model Code</a>
-    <a class="dropdown-item" href="../articles/GenerateCodeInSHELL.html">Generate C Code Outside of R</a>
     <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
     <div class="dropdown-divider"></div>
@@ -68,7 +66,7 @@ function."><!-- mathjax --><script src="file:///usr/share/javascript/mathjax/Mat
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAR4</h6>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate AKAR4 stochastically</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic">Calibrate stochasic AKAR4</a>
+    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">Calibrate stochasic AKAR4</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAP79</h6>
@@ -138,19 +136,19 @@ where n is the requested number of vectors (rows)</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">rup</span><span class="op">&lt;-</span><span class="fu">rUniformPrior</span><span class="op">(</span>ll<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,ul<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rup</span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]     [,2]     [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.25699906 1.255340 2.684178</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.00993824 1.520586 2.465481</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.88758017 1.996779 2.399345</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.39223976 1.944931 2.311471</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.39595686 1.179668 2.740211</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.32432392 1.587361 2.405616</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.57609536 1.763310 2.536940</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.12356470 1.574781 2.848965</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.11437081 1.127715 2.776041</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.77697412 1.550813 2.822441</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.46946757 1.532783 2.978806</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.03573165 1.218212 2.978781</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              [,1]     [,2]     [,3]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.348801221 1.910260 2.272913</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.008070129 1.743971 2.349899</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.434325315 1.040387 2.798145</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.565631195 1.793197 2.538685</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.918813924 1.043443 2.860945</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.381045450 1.949274 2.743274</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.989331951 1.423412 2.892586</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.333999090 1.743572 2.069019</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.247313729 1.244261 2.678555</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.051638780 1.333643 2.039329</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.829155840 1.727409 2.707017</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.051869401 1.175577 2.153556</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

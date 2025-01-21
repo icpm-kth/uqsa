@@ -42,7 +42,6 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
     <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
-    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="active nav-item dropdown">
@@ -59,7 +58,6 @@
     <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
     <a class="dropdown-item" href="../articles/generateCodeInR.html">Generate Model Code</a>
-    <a class="dropdown-item" href="../articles/GenerateCodeInSHELL.html">Generate C Code Outside of R</a>
     <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
     <div class="dropdown-divider"></div>
@@ -77,7 +75,7 @@
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAR4</h6>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate AKAR4 stochastically</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic">Calibrate stochasic AKAR4</a>
+    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">Calibrate stochasic AKAR4</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAP79</h6>
@@ -128,8 +126,9 @@
 available computer algebra system for this task is the <a href="https://cran.r-project.org/package=Ryacas" class="external-link">Ryacas</a> package that
 interfaces between R and <a href="http://www.yacas.org/" class="external-link">yacas</a> –
 both need to be installed.</p>
-<p>The functions use the same files as the standalone POSIX shell
-implementation in RPN-derivative.</p>
+<p>The function <code>generateCode</code> accepts the return value of
+<code><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">SBtabVFGEN::sbtab_to_vfgen()</a></code> (a list of ode properties) and
+returns a character vector of C code:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span> <span class="va">f</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span><span class="op">)</span>    <span class="co"># paths to the TSV files</span></span>
 <span><span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span>   <span class="co"># loads the TSV files</span></span>
@@ -146,9 +145,35 @@ formats).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/generateCode.html">generateCode</a></span><span class="op">(</span><span class="va">odeModel</span><span class="op">)</span></span></code></pre></div>
 <p>This returns the generated code as a character vector, it can be
-viewed (and written to a file using the <code>cat</code> function):</p>
+viewed (and written to a file using the <code>cat</code> function). Here
+are a few lines of the generated code:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">C</span>,sep<span class="op">=</span><span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">C</span>,<span class="fl">25</span><span class="op">)</span>,sep<span class="op">=</span><span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; #include &lt;stdlib.h&gt;</span></span>
+<span><span class="co">#&gt; #include &lt;math.h&gt;</span></span>
+<span><span class="co">#&gt; #include &lt;string.h&gt;</span></span>
+<span><span class="co">#&gt; #include &lt;gsl/gsl_errno.h&gt;</span></span>
+<span><span class="co">#&gt; #include &lt;gsl/gsl_odeiv2.h&gt;</span></span>
+<span><span class="co">#&gt; #include &lt;gsl/gsl_math.h&gt;</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; /* Enums will be used for indexing purposes.   */</span></span>
+<span><span class="co">#&gt; enum stateVariable { _RiiP, _RiiP_cAMP, _RiiP_C, _RiiP_C_cAMP, _C, _Rii_cAMP, _Rii_C_cAMP, _RiiP_CaN, _RiiP_cAMP_CaN, _AKAR4_C, _AKAR4p, numStateVar };</span></span>
+<span><span class="co">#&gt; enum param { _kf_Rii_C__RiiP_C, _kf_RiiP_CxcAMP__RiiP_C_cAMP, _kf_RiiP_cAMPxC__RiiP_C_cAMP, _kb_RiiP_cAMPxC__RiiP_C_cAMP, _kb_RiiPXcAMP__RiiP_cAMP, _kf_RiiPXcAMP__RiiP_cAMP, _kf_RiiPxC__RiiP_C, _kb_RiiPxC__RiiP_C, _kf_cAMPxRii__Rii_cAMP, _kb_cAMPxRii__Rii_cAMP, _kf_Rii_CxcAMP__Rii_C_cAMP, _kb_Rii_CxcAMP__Rii_C_cAMP, _kf_RiixC__Rii_C, _kf_Rii_cAMPxC__Rii_C_cAMP, _kb_Rii_cAMPxC__Rii_C_cAMP, _kf_Rii_C_cAMP__RiiP_C_cAMP, _kb_RiixC__Rii_C, _AKAPoff_1, _AKAPoff_3, _AKAPon_1, _AKAPon_3, _kf_C_AKAR4, _kb_C_AKAR4, _kcat_AKARp, _kmOFF, _kmON, _KD_T, _b_AKAP, _AKAR4_ConservedConst, _CaN_ConservedConst, _Rii_C_ConservedConst, _cAMP_ConservedConst, _Rii_ConservedConst, numParam };</span></span>
+<span><span class="co">#&gt; enum func { _AKAR4pOUT, numFunc };</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; /* The error codes indicate how many values a function returns.                             */</span></span>
+<span><span class="co">#&gt; /* Each function expects the output buffer to be allocated with at least that many values   */</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; /* ODE vector field: y' = f(t,y;p)   */</span></span>
+<span><span class="co">#&gt; int AKAP79_vf(double t, const double y_[], double *f_, void *par){</span></span>
+<span><span class="co">#&gt;  double *p_=par;</span></span>
+<span><span class="co">#&gt;  if (!y_ || !f_) return 11;</span></span>
+<span><span class="co">#&gt; /*   constants   */</span></span>
+<span><span class="co">#&gt; /*   parameter values   */</span></span>
+<span><span class="co">#&gt;  double kf_Rii_C__RiiP_C = p_[_kf_Rii_C__RiiP_C];                    /* [  0] */</span></span>
+<span><span class="co">#&gt;  double kf_RiiP_CxcAMP__RiiP_C_cAMP = p_[_kf_RiiP_CxcAMP__RiiP_C_cAMP];       /* [  1] */</span></span>
+<span><span class="co">#&gt;  double kf_RiiP_cAMPxC__RiiP_C_cAMP = p_[_kf_RiiP_cAMPxC__RiiP_C_cAMP];       /* [  2] */</span></span>
+<span><span class="co">#&gt;  double kb_RiiP_cAMPxC__RiiP_C_cAMP = p_[_kb_RiiP_cAMPxC__RiiP_C_cAMP];       /* [  3] */</span></span></code></pre></div>
 <p>This command will print the code, use the <code>file=</code> argument
 of <code>cat</code> to print it into a file.</p>
   </main>

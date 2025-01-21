@@ -42,7 +42,6 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-installation">
     <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
     <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
-    <a class="dropdown-item" href="../articles/path.html">The PATH variable</a>
   </div>
 </li>
 <li class="active nav-item dropdown">
@@ -59,7 +58,6 @@
     <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
     <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
     <a class="dropdown-item" href="../articles/generateCodeInR.html">Generate Model Code</a>
-    <a class="dropdown-item" href="../articles/GenerateCodeInSHELL.html">Generate C Code Outside of R</a>
     <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
     <div class="dropdown-divider"></div>
@@ -77,7 +75,7 @@
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAR4</h6>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate AKAR4 stochastically</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic">Calibrate stochasic AKAR4</a>
+    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">Calibrate stochasic AKAR4</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAP79</h6>
@@ -161,7 +159,7 @@ used to trigger sudden spikes (action potentials)</p>
 <code class="sourceCode R"><span><span class="va">cfile</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"Spike"</span>,pat<span class="op">=</span><span class="st">'_gvf[.]c$'</span><span class="op">)</span></span>
 <span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="st">"Spike"</span>,<span class="va">cfile</span><span class="op">)</span></span>
 <span><span class="co">#&gt; building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).</span></span>
-<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './Spike.so' '/tmp/RtmpJcZrDP/temp_libpath117436111b3a/uqsa/extdata/Spike/Spike_gvf.c' `pkg-config --libs gsl`</span></span>
+<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './Spike.so' '/tmp/RtmpAJRrSc/temp_libpath4a777745142a/uqsa/extdata/Spike/Spike_gvf.c' `pkg-config --libs gsl`</span></span>
 <span><span class="va">t</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">4</span>,<span class="fl">1000</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span> <span class="op">&lt;-</span> <span class="va">t</span></span>
