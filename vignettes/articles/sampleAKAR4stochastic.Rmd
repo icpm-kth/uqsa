@@ -3,7 +3,7 @@ title: "Sample AKAR4 stochastically"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE, eval=TRUE,
+knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
   collapse = TRUE,
   comment = "#>"
 )
