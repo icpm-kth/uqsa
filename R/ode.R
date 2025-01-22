@@ -397,6 +397,118 @@ generateCode <- function(odeModel){
 	return(C)
 }
 
+writeRFunction <- function(prefix,fName,ret,value,arguments=c('t','state','parameters'),defs=NULL){
+	z <- grepl("^0$",as.character(value))
+	if (is.matrix(value)){
+		n <- NROW(value)
+		m <- NCOL(value)
+		i <- matrix(seq(n),n,m,byrow=FALSE)
+		j <- matrix(seq(m),n,m,byrow=TRUE)
+		v <- c(
+			sprintf("\t%s <- matrix(0.0,%i,%i)",ret,n,m),
+			sprintf("\t%s[%i,%i] <- %s",ret,i[!z],j[!z],as.character(value)[!z])
+		)
+	} else {
+		v <- c(
+			sprintf("\t%s <- numeric(%i)",ret,length(value)),
+			sprintf("\t%s[%i] <- %s",ret,seq_along(value)[!z],value[!z])
+		)
+	}
+	print(paste(arguments,collapse=', '))
+	f <- c(
+		sprintf("%s_%s <- function(%s) {",prefix,fName,paste(arguments,collapse=', ')),
+		defs,
+		v,
+		switch(fName,vf=sprintf("\treturn(list(%s))",ret),sprintf("\treturn(%s)",ret)),
+		"}"
+	)
+}
+
+
+#' Write R code
+#'
+#' This function expects a list of character vectors, as returned by
+#' SBtabVFGEN::sbtab_to_vfgen. This list describes an ODE model
+#' (initial values, default parameters, transformation events, output
+#' functions).  This function uses this information, calculates
+#' Jacobians via Ryacas and returns a character vector with R source
+#' code for the deSolve package.
+#'
+#' The value can be written to a file:
+#' `cat(generateRCode(odeModel),sep="\n",file=...)`. This file can be
+#' sourced later.
+#'
+#' @param odeModel a list, as returned from SBtabVFGEN::sbtab_to_vfgen()
+#' @export
+#' @return a character vector with the generated code, one vector-element is one line of code.
+generateRCode <- function(odeModel){
+	modelName <- comment(odeModel) %otherwise% "model"
+	# simplify a data.frame with two columns to a named character vector, assuming it's name/value pairs
+	x <- odeModel$exp
+	for (i in seq_along(x)){
+		CMD <- sprintf("%s := %s",names(x)[i],x[i])
+		Ryacas::yac_silent(yacasMath(CMD))
+	}
+	n <- pmax(5,50 - nchar(names(odeModel$par)))
+	m <- pmax(5,50 - nchar(names(odeModel$var)))
+	cc <- c(sprintf("##\tconstants"),
+		sprintf("\t%s = %s;",names(odeModel$const),as.character(odeModel$const)))
+	cp <- c(sprintf("##\tparameter values"),
+		sprintf("\t%s = p_[%i];",names(odeModel$par),seq_along(odeModel$par)))
+	cy <- c(
+		sprintf("##\tstate variables"),
+		sprintf("\t%s = y_[%i];",names(odeModel$var),seq_along(odeModel$var)))
+	cx <- c(
+		sprintf("##\texpressions"),
+		sprintf("\t%s = %s;",names(odeModel$exp), odeModel$exp))
+	# Jacobian
+	J <- yJacobian(odeModel$vf,names(odeModel$var))
+	# parameter Jacobian
+	Jp <- yJacobian(odeModel$vf,names(odeModel$par))
+	# code string:
+	C <- c(
+		sprintf("# ODE vector field: y' = f(t,y;p)"),
+		writeRFunction(modelName,"vf",
+			ret="f_",
+			defs=c(cc,cp,cy,cx),
+			value=odeModel$vf,
+		),"",
+		sprintf("# ODE Jacobian: df(t,y;p)/dy"),
+		writeRFunction(modelName,"jac",
+			ret="jac_",
+			defs=c(cc,cp,cy,cx),
+			value=J,
+		),"",
+		sprintf("# ODE parameter Jacobian: df(t,y;p)/dp"),
+		writeRFunction(modelName,"jacp",
+			ret="jacp_",
+			defs=c(cc,cp,cy,cx),
+			value=Jp,
+		),"",
+		sprintf("# Output Function (Observables)"),
+		writeRFunction(modelName,"func",
+			ret="func_",
+			defs=c(cc,cp,cy,cx),
+			value=odeModel$func,
+		),"",
+		writeRFunction(modelName,"default",
+			ret="p_",
+			defs=cc,
+			value=odeModel$par,
+		arguments="t"
+		),"",
+		writeRFunction(modelName,"init",
+			ret="y_",
+			defs=c(cc,cp),
+			value=odeModel$var,
+			arguments=c('t','parameters')
+		)
+	)
+	# event function
+	return(C)
+}
+
+
 #' Load an ODE model from a file
 #'
 #' The input can be either a list of files, or one compressed archive

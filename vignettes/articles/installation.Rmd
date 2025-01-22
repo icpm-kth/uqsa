@@ -14,8 +14,10 @@ knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
 See the Sections below for instructions. Short summary of what they do:
 
 * Install the [GNU Scientific Library](https://www.gnu.org/software/gsl/)
-* [yacas](http://www.yacas.org/index.html) and [Ryacas](https://cran.r-project.org/package=Ryacas)
-  - `install.packages("Ryacas")` after _yacas_
+  - in your system, using your package management system
+* [Ryacas](https://cran.r-project.org/package=Ryacas)
+  - `install.packages("Ryacas")`
+  - uses [yacas](http://www.yacas.org/index.html) as backend
 
 ## Pick One
 
@@ -26,7 +28,10 @@ brew install pkg-config gcc gsl yacas
 
 ```{sh ubuntu/debian, eval=FALSE}
 # other linux distributions have some version of this:
-# zypper install, apk add, guix install
+#  zypper install,
+#  apk add,
+#  guix install,
+# etc.
 sudo apt install pkg-config gcc libgsl-dev yacas
 ```
 
