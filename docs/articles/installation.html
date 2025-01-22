@@ -25,7 +25,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -128,13 +128,16 @@ do:</p>
 <ul>
 <li>Install the <a href="https://www.gnu.org/software/gsl/" class="external-link">GNU
 Scientific Library</a>
-</li>
-<li>
-<a href="http://www.yacas.org/index.html" class="external-link">yacas</a> and <a href="https://cran.r-project.org/package=Ryacas" class="external-link">Ryacas</a>
 <ul>
-<li>
-<code>install.packages("Ryacas")</code> after <em>yacas</em>
+<li>in your system, using your package management system</li>
+</ul>
 </li>
+<li>
+<a href="https://cran.r-project.org/package=Ryacas" class="external-link">Ryacas</a>
+<ul>
+<li><code>install.packages("Ryacas")</code></li>
+<li>uses <a href="http://www.yacas.org/index.html" class="external-link">yacas</a> as
+backend</li>
 </ul>
 </li>
 </ul>
@@ -144,8 +147,11 @@ Scientific Library</a>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># macOS has a lot of issues with xcode, it loves it for some reason; maybe agree to xcode license</span></span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="ex">brew</span> install pkg-config gcc gsl yacas</span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># other linux distributions have some version of this:</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co"># zypper install, apk add, guix install</span></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">sudo</span> apt install pkg-config gcc libgsl-dev yacas</span></code></pre></div>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#  zypper install,</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#  apk add,</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#  guix install,</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co"># etc.</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="fu">sudo</span> apt install pkg-config gcc libgsl-dev yacas</span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

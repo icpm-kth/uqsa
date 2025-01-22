@@ -25,7 +25,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -176,6 +176,32 @@ are a few lines of the generated code:</p>
 <span><span class="co">#&gt;  double kb_RiiP_cAMPxC__RiiP_C_cAMP = p_[_kb_RiiP_cAMPxC__RiiP_C_cAMP];       /* [  3] */</span></span></code></pre></div>
 <p>This command will print the code, use the <code>file=</code> argument
 of <code>cat</code> to print it into a file.</p>
+<div class="section level2">
+<h2 id="code-for-desolve">Code for deSolve<a class="anchor" aria-label="anchor" href="#code-for-desolve"></a>
+</h2>
+<p>It is also possible to create R code, intended for use with <a href="https://cran.r-project.org/package=deSolve" class="external-link">deSolve</a>. Combining
+all previous function calls into one (writing to file immediately)</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">rFile</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">odeModel</span><span class="op">)</span>,<span class="st">".R"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/generateRCode.html">generateRCode</a></span><span class="op">(</span><span class="va">odeModel</span><span class="op">)</span>,sep<span class="op">=</span><span class="st">"\n"</span>,file<span class="op">=</span><span class="va">rFile</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="va">rFile</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># example call:</span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">AKAP79_default</span><span class="op">(</span><span class="fl">0.0</span><span class="op">)</span></span>
+<span><span class="va">y0</span> <span class="op">&lt;-</span> <span class="fu">AKAP79_init</span><span class="op">(</span><span class="fl">0.0</span>,<span class="va">p</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">y0</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] 0 0 0 0 0 0 0 0 0 0 0</span></span></code></pre></div>
+<p>A test-simulation:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="http://desolve.r-forge.r-project.org/" class="external-link">deSolve</a></span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">t_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">50</span>,length.out<span class="op">=</span><span class="fl">128</span><span class="op">)</span></span>
+<span>    <span class="va">y_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/deSolve/man/ode.html" class="external-link">ode</a></span><span class="op">(</span><span class="va">y0</span>,<span class="va">t_</span>,<span class="va">AKAP79_vf</span>,<span class="va">p</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">t_</span>,<span class="va">y_</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>,type<span class="op">=</span><span class="st">'l'</span>,main<span class="op">=</span><span class="st">"AKAP79"</span>,xlab<span class="op">=</span><span class="st">"time"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="co">#&gt; Loading required package: deSolve</span></span></code></pre></div>
+<p><img src="generateCodeInR_files/figure-html/simulation-1.png" width="700"></p>
+</div>
   </main>
 </div>
 

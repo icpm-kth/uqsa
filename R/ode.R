@@ -414,7 +414,6 @@ writeRFunction <- function(prefix,fName,ret,value,arguments=c('t','state','param
 			sprintf("\t%s[%i] <- %s",ret,seq_along(value)[!z],value[!z])
 		)
 	}
-	print(paste(arguments,collapse=', '))
 	f <- c(
 		sprintf("%s_%s <- function(%s) {",prefix,fName,paste(arguments,collapse=', ')),
 		defs,
@@ -454,10 +453,10 @@ generateRCode <- function(odeModel){
 	cc <- c(sprintf("##\tconstants"),
 		sprintf("\t%s = %s;",names(odeModel$const),as.character(odeModel$const)))
 	cp <- c(sprintf("##\tparameter values"),
-		sprintf("\t%s = p_[%i];",names(odeModel$par),seq_along(odeModel$par)))
+		sprintf("\t%s = parameters[%i];",names(odeModel$par),seq_along(odeModel$par)))
 	cy <- c(
 		sprintf("##\tstate variables"),
-		sprintf("\t%s = y_[%i];",names(odeModel$var),seq_along(odeModel$var)))
+		sprintf("\t%s = state[%i];",names(odeModel$var),seq_along(odeModel$var)))
 	cx <- c(
 		sprintf("##\texpressions"),
 		sprintf("\t%s = %s;",names(odeModel$exp), odeModel$exp))
@@ -492,13 +491,13 @@ generateRCode <- function(odeModel){
 			value=odeModel$func,
 		),"",
 		writeRFunction(modelName,"default",
-			ret="p_",
+			ret="parameters",
 			defs=cc,
 			value=odeModel$par,
 		arguments="t"
 		),"",
 		writeRFunction(modelName,"init",
-			ret="y_",
+			ret="state",
 			defs=c(cc,cp),
 			value=odeModel$var,
 			arguments=c('t','parameters')

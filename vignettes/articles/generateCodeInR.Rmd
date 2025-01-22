@@ -53,3 +53,32 @@ cat(head(C,25),sep="\n")
 ```
 
 This command will print the code, use the `file=` argument of `cat` to print it into a file.
+
+
+# Code for deSolve
+
+It is also possible to create R code, intended for use with [deSolve](https://cran.r-project.org/package=deSolve).
+Combining all previous function calls into one (writing to file immediately)
+
+
+```{r, label="generate R code"}
+rFile <- paste0(comment(odeModel),".R")
+cat(uqsa::generateRCode(odeModel),sep="\n",file=rFile)
+source(rFile)
+
+# example call:
+p <- AKAP79_default(0.0)
+y0 <- AKAP79_init(0.0,p)
+
+print(y0)
+```
+
+A test-simulation:
+
+```{r simulation}
+if (require(deSolve)){
+    t_ <- seq(0,50,length.out=128)
+    y_ <- ode(y0,t_,AKAP79_vf,p)
+    plot(t_,y_[,1],type='l',main="AKAP79",xlab="time")
+}
+```
