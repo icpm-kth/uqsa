@@ -461,6 +461,7 @@ generateRCode <- function(odeModel){
 	cx <- c(
 		sprintf("##\texpressions"),
 		sprintf("\t%s = %s;",names(odeModel$exp), odeModel$exp))
+	mc <- c('vf','jac','jacp','default','init','func')
 	# Jacobian
 	J <- yJacobian(odeModel$vf,names(odeModel$var))
 	# parameter Jacobian
@@ -502,7 +503,9 @@ generateRCode <- function(odeModel){
 			defs=c(cc,cp),
 			value=odeModel$var,
 			arguments=c('t','parameters')
-		)
+		),"",
+		"# a variable that collects all functions into one list:",
+		sprintf("model <- list(%s,name='%s')",paste0(mc,'=',modelName,"_",mc,collapse=', '),modelName)
 	)
 	# event function
 	return(C)
