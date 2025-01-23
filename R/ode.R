@@ -418,6 +418,7 @@ writeRFunction <- function(prefix,fName,ret,value,arguments=c('t','state','param
 		sprintf("%s_%s <- function(%s) {",prefix,fName,paste(arguments,collapse=', ')),
 		defs,
 		v,
+		ifelse(is.null(names(value)),"## no names for return value",sprintf("\tnames(%s) <- c(%s)",ret,paste0('"',names(value),'"',collapse=', '))),
 		switch(fName,vf=sprintf("\treturn(list(%s))",ret),sprintf("\treturn(%s)",ret)),
 		"}"
 	)
