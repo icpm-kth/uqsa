@@ -96,6 +96,7 @@ reference:
   - defaultDistance
   - fitCopula
   - generateCode
+  - generateRCode
   - getMCMCPar
   - globalSensitivity
   - importReactionsSSA
