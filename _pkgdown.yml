@@ -54,12 +54,18 @@ navbar:
           href: articles/examples_overview.html
         - text: -------
         - text: AKAR4
-        - text: Simulate AKAR4 stochastically
+        - text: Simulate deterministic AKAR4
+          href: articles/simAKAR4.html
+        - text: Simulate stochastic AKAR4
           href: articles/simAKAR4stochastic.html
-        - text: Calibrate stochasic AKAR4
+        - text: UQ on deterministic AKAR4
+          href: articles/sampleAKAR4.html
+        - text: UQ on stochasic AKAR4
           href: articles/sampleAKAR4stochastic.html
         - text: GSA on AKAR4
           href: articles/GSA_AKAR4.html
+        - text: UQ and SA on AKAR4
+          href: articles/UQSA_AKAR4.html
         - text: -------
         - text: AKAP79
         - text: Multiple chains via MPI
