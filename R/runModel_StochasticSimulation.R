@@ -551,7 +551,7 @@ simulateAndComputeDistance <- function(e, param,
 #' @export
 makeObjectiveSSA <- function(experiments, model, parNames, distance, parMap=identity, Phi, reactions, nStochSim = 1, parameters_from_expressions=NULL){
   if(is.null(parameters_from_expressions)){
-    parameters_from_expressions <- parameters_from_expressions_func(SBtab)
+    parameters_from_expressions <- parameters_from_expressions_func(model)
   }
   
   objectiveFunction <- function(parABC){
