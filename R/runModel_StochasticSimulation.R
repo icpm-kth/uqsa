@@ -550,6 +550,10 @@ simulateAndComputeDistance <- function(e, param,
 #'     only on the ABC parameters parABC.
 #' @export
 makeObjectiveSSA <- function(experiments, model, parNames, distance, parMap=identity, Phi, reactions, nStochSim = 1, parameters_from_expressions=NULL){
+  if(is.null(parameters_from_expressions)){
+    parameters_from_expressions <- parameters_from_expressions_func(SBtab)
+  }
+  
   objectiveFunction <- function(parABC){
     if (is.matrix(parABC)) {
       rownames(parABC) <- parNames
