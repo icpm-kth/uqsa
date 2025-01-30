@@ -32,8 +32,6 @@ the [user model](user_model.html) article.
 ```{r}
 modelFiles <- uqsa_example("AKAR4",full.names=TRUE)
 SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
-modelName <- checkModel("AKAR4",uqsa_example("AKAR4",pat="_gvf[.]c$"))
-comment(modelName)
 
 # model related functions, in R, e.g. AKAP79_default() parameters
 source(uqsa_example("AKAR4",pat='^AKAR4[.]R$'))

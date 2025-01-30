@@ -88,8 +88,11 @@ Function `simulator.c` will output a function (variable `sim` in the code below)
 
 ```{r}
 # This will make a function `sim`, which will always simulate the scenarios described in the `experiments` list, but for user supplied parameters
+sim <- simulator.c(experiments,modelName)
+
+
 # If function `simulator.c` is called with the argument `noise=TRUE`, measurement errors are simulated and added to the trajectory
-sim <- simulator.c(experiments,modelName,noise=FALSE)
+sim_with_noise <- simulator.c(experiments,modelName, noise = TRUE)
 ```
 
 The variable `sim` just created is a function that requires a parameter `p` as input argument. The output of function `sim` is the simulation of the ODE model given the parameter `p`.
@@ -100,6 +103,9 @@ p <- AKAR4_default()
 
 # Simulate the model and save the simulations in variable 'y'
 y <- sim(p)
+
+# Simulate the model with simulated measurement noise
+y_with_noise <- sim_with_noise(p)
 ```
 
 
@@ -134,7 +140,40 @@ plot(tm,                      # time points
      ylim=c(90,200), ylab="AKAR4p",
      xlab="t",
      main=sprintf("Experiment %i",E),
-     lwd=1.5,
+     lwd=2.5,
+     col="purple"
+)
+
+# Plot experimental data with error bars
+points(tm,out)
+arrows(x0=tm,x1=tm,y0=out,y1=out+err,angle=90,length=0.025)
+arrows(x0=tm,x1=tm,y0=out,y1=out-err,angle=90,length=0.025)
+```
+
+
+We now run the same code to plot the simulations with nois `y_with_noise`.
+
+```{r}
+E <- 2 # which experiment to plot
+
+# experimental data for experiment E
+out <- experiments[[E]]$outputValues$AKAR4pOUT
+
+# measurement error for experiment E
+err <- experiments[[E]]$errorValues$AKAR4pOUT
+
+# measurements time points
+tm <- experiments[[E]]$outputTime
+
+# Plot simulations
+par(bty='n',xaxp=c(80,200,4))
+plot(tm,                      # time points
+     y_with_noise[[E]]$func[1,,1],       # simulated trajectory
+     type='l',                
+     ylim=c(90,200), ylab="AKAR4p",
+     xlab="t",
+     main=sprintf("Experiment %i",E),
+     lwd=2.5,
      col="purple"
 )
 
@@ -155,6 +194,21 @@ D<-data.frame(time=experiments[[E]]$outputTime,
               AKAR4p=experiments[[E]]$outputValues$AKAR4pOUT,
               AKAR4pERR=experiments[[E]]$errorValues$AKAR4pOUT,
               sim=y[[E]]$func[1,,1])
+ggplot(D) +
+  geom_linerange(mapping=aes(x=time,y=AKAR4p,ymin=AKAR4p-AKAR4pERR,ymax=AKAR4p+AKAR4pERR),na.rm=TRUE) +
+  geom_point(mapping=aes(x=time,y=AKAR4p),na.rm=TRUE) +
+  geom_line(mapping=aes(x=time,y=sim),color="purple",lwd=1.2)
+```
+Plots for the simulations with noise `y_with_noise`.
+
+
+```{r}
+require(ggplot2)
+
+D<-data.frame(time=experiments[[E]]$outputTime,
+              AKAR4p=experiments[[E]]$outputValues$AKAR4pOUT,
+              AKAR4pERR=experiments[[E]]$errorValues$AKAR4pOUT,
+              sim=y_with_noise[[E]]$func[1,,1])
 ggplot(D) +
   geom_linerange(mapping=aes(x=time,y=AKAR4p,ymin=AKAR4p-AKAR4pERR,ymax=AKAR4p+AKAR4pERR),na.rm=TRUE) +
   geom_point(mapping=aes(x=time,y=AKAR4p),na.rm=TRUE) +

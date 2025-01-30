@@ -224,8 +224,11 @@ AKAR4 ODE model (specified through the input argument
 <code>experiments</code>.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># This will make a function `sim`, which will always simulate the scenarios described in the `experiments` list, but for user supplied parameters</span></span>
+<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">experiments</span>,<span class="va">modelName</span><span class="op">)</span></span>
+<span></span>
+<span></span>
 <span><span class="co"># If function `simulator.c` is called with the argument `noise=TRUE`, measurement errors are simulated and added to the trajectory</span></span>
-<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">experiments</span>,<span class="va">modelName</span>,noise<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">sim_with_noise</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">experiments</span>,<span class="va">modelName</span>, noise <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>The variable <code>sim</code> just created is a function that
 requires a parameter <code>p</code> as input argument. The output of
 function <code>sim</code> is the simulation of the ODE model given the
@@ -235,7 +238,10 @@ parameter <code>p</code>.</p>
 <span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">AKAR4_default</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Simulate the model and save the simulations in variable 'y'</span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">sim</span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">sim</span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Simulate the model with simulated measurement noise</span></span>
+<span><span class="va">y_with_noise</span> <span class="op">&lt;-</span> <span class="fu">sim_with_noise</span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></code></pre></div>
 <p>In the AKAR4 example we have a list of 3 experiments, thus function
 <code>sim</code> simulates the system 3 times, each time considering the
 specific initial condition of the corresponding experiment. The output
@@ -272,7 +278,7 @@ runtime)</p>
 <span>     ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>,<span class="fl">200</span><span class="op">)</span>, ylab<span class="op">=</span><span class="st">"AKAR4p"</span>,</span>
 <span>     xlab<span class="op">=</span><span class="st">"t"</span>,</span>
 <span>     main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Experiment %i"</span>,<span class="va">E</span><span class="op">)</span>,</span>
-<span>     lwd<span class="op">=</span><span class="fl">1.5</span>,</span>
+<span>     lwd<span class="op">=</span><span class="fl">2.5</span>,</span>
 <span>     col<span class="op">=</span><span class="st">"purple"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -281,12 +287,43 @@ runtime)</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span>x0<span class="op">=</span><span class="va">tm</span>,x1<span class="op">=</span><span class="va">tm</span>,y0<span class="op">=</span><span class="va">out</span>,y1<span class="op">=</span><span class="va">out</span><span class="op">+</span><span class="va">err</span>,angle<span class="op">=</span><span class="fl">90</span>,length<span class="op">=</span><span class="fl">0.025</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span>x0<span class="op">=</span><span class="va">tm</span>,x1<span class="op">=</span><span class="va">tm</span>,y0<span class="op">=</span><span class="va">out</span>,y1<span class="op">=</span><span class="va">out</span><span class="op">-</span><span class="va">err</span>,angle<span class="op">=</span><span class="fl">90</span>,length<span class="op">=</span><span class="fl">0.025</span><span class="op">)</span></span></code></pre></div>
 <p><img src="simAKAR4_files/figure-html/plotting-1.png" width="700"></p>
+<p>We now run the same code to plot the simulations with nois
+<code>y_with_noise</code>.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">E</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="co"># which experiment to plot</span></span>
+<span></span>
+<span><span class="co"># experimental data for experiment E</span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="va">experiments</span><span class="op">[[</span><span class="va">E</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">$</span><span class="va">AKAR4pOUT</span></span>
+<span></span>
+<span><span class="co"># measurement error for experiment E</span></span>
+<span><span class="va">err</span> <span class="op">&lt;-</span> <span class="va">experiments</span><span class="op">[[</span><span class="va">E</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">errorValues</span><span class="op">$</span><span class="va">AKAR4pOUT</span></span>
+<span></span>
+<span><span class="co"># measurements time points</span></span>
+<span><span class="va">tm</span> <span class="op">&lt;-</span> <span class="va">experiments</span><span class="op">[[</span><span class="va">E</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTime</span></span>
+<span></span>
+<span><span class="co"># Plot simulations</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>bty<span class="op">=</span><span class="st">'n'</span>,xaxp<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">80</span>,<span class="fl">200</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tm</span>,                      <span class="co"># time points</span></span>
+<span>     <span class="va">y_with_noise</span><span class="op">[[</span><span class="va">E</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="fl">1</span>,,<span class="fl">1</span><span class="op">]</span>,       <span class="co"># simulated trajectory</span></span>
+<span>     type<span class="op">=</span><span class="st">'l'</span>,                </span>
+<span>     ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>,<span class="fl">200</span><span class="op">)</span>, ylab<span class="op">=</span><span class="st">"AKAR4p"</span>,</span>
+<span>     xlab<span class="op">=</span><span class="st">"t"</span>,</span>
+<span>     main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Experiment %i"</span>,<span class="va">E</span><span class="op">)</span>,</span>
+<span>     lwd<span class="op">=</span><span class="fl">2.5</span>,</span>
+<span>     col<span class="op">=</span><span class="st">"purple"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Plot experimental data with error bars</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">tm</span>,<span class="va">out</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span>x0<span class="op">=</span><span class="va">tm</span>,x1<span class="op">=</span><span class="va">tm</span>,y0<span class="op">=</span><span class="va">out</span>,y1<span class="op">=</span><span class="va">out</span><span class="op">+</span><span class="va">err</span>,angle<span class="op">=</span><span class="fl">90</span>,length<span class="op">=</span><span class="fl">0.025</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span>x0<span class="op">=</span><span class="va">tm</span>,x1<span class="op">=</span><span class="va">tm</span>,y0<span class="op">=</span><span class="va">out</span>,y1<span class="op">=</span><span class="va">out</span><span class="op">-</span><span class="va">err</span>,angle<span class="op">=</span><span class="fl">90</span>,length<span class="op">=</span><span class="fl">0.025</span><span class="op">)</span></span></code></pre></div>
+<p><img src="simAKAR4_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
 <div class="section level3">
 <h3 id="plots-with-gg-plot">Plots with gg-Plot<a class="anchor" aria-label="anchor" href="#plots-with-gg-plot"></a>
 </h3>
 <p>The following code plots simulations and data using an alternative
 function, from the package <code>ggplot2</code>.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: ggplot2</span></span>
 <span></span>
@@ -298,7 +335,20 @@ function, from the package <code>ggplot2</code>.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">geom_linerange</a></span><span class="op">(</span>mapping<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,y<span class="op">=</span><span class="va">AKAR4p</span>,ymin<span class="op">=</span><span class="va">AKAR4p</span><span class="op">-</span><span class="va">AKAR4pERR</span>,ymax<span class="op">=</span><span class="va">AKAR4p</span><span class="op">+</span><span class="va">AKAR4pERR</span><span class="op">)</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>mapping<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,y<span class="op">=</span><span class="va">AKAR4p</span><span class="op">)</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>mapping<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,y<span class="op">=</span><span class="va">sim</span><span class="op">)</span>,color<span class="op">=</span><span class="st">"purple"</span>,lwd<span class="op">=</span><span class="fl">1.2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="simAKAR4_files/figure-html/ggplot-1.png" width="700"></p>
+<p><img src="simAKAR4_files/figure-html/ggplot-1.png" width="700">
+Plots for the simulations with noise <code>y_with_noise</code>.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">D</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>time<span class="op">=</span><span class="va">experiments</span><span class="op">[[</span><span class="va">E</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTime</span>,</span>
+<span>              AKAR4p<span class="op">=</span><span class="va">experiments</span><span class="op">[[</span><span class="va">E</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">$</span><span class="va">AKAR4pOUT</span>,</span>
+<span>              AKAR4pERR<span class="op">=</span><span class="va">experiments</span><span class="op">[[</span><span class="va">E</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">errorValues</span><span class="op">$</span><span class="va">AKAR4pOUT</span>,</span>
+<span>              sim<span class="op">=</span><span class="va">y_with_noise</span><span class="op">[[</span><span class="va">E</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="fl">1</span>,,<span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">geom_linerange</a></span><span class="op">(</span>mapping<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,y<span class="op">=</span><span class="va">AKAR4p</span>,ymin<span class="op">=</span><span class="va">AKAR4p</span><span class="op">-</span><span class="va">AKAR4pERR</span>,ymax<span class="op">=</span><span class="va">AKAR4p</span><span class="op">+</span><span class="va">AKAR4pERR</span><span class="op">)</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>mapping<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,y<span class="op">=</span><span class="va">AKAR4p</span><span class="op">)</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>mapping<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,y<span class="op">=</span><span class="va">sim</span><span class="op">)</span>,color<span class="op">=</span><span class="st">"purple"</span>,lwd<span class="op">=</span><span class="fl">1.2</span><span class="op">)</span></span></code></pre></div>
+<p><img src="simAKAR4_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

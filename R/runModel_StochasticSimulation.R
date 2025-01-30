@@ -423,7 +423,7 @@ simulator.stoch <- function(experiment, model.tab = model.tab, reactions = NULL,
     parameters_from_expressions <- parameters_from_expressions_func(model.tab)
     
     if(is.null(reactions)){
-      reactions <- importReactionsSSA(SBtab)
+      reactions <- importReactionsSSA(model.tab)
     }
     
     
