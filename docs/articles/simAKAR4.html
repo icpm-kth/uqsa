@@ -217,35 +217,36 @@ conditions that were used in each of the experiments. In AKAR4, the 3
 experiments differ only in the initial conditions. In larger models,
 different experiments may also have different <em>inputs</em>, and this
 will be also taken into account when running the R commands below.</p>
-<p>Function <code>simulator.c</code> will output a function
-(<code>s</code> in the code) that will allow us to simulate the AKAR4
-ODE model (specified through the input argument <code>modelName</code>)
-given the experimental conditions saved in <code>experiments</code>.</p>
+<p>Function <code>simulator.c</code> will output a function (variable
+<code>sim</code> in the code below) that will allow us to simulate the
+AKAR4 ODE model (specified through the input argument
+<code>modelName</code>) given the experimental conditions saved in
+<code>experiments</code>.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># This will make a function `s`, which will always simulate the scenarios described in the `experiments` list, but for user supplied parameters</span></span>
+<code class="sourceCode R"><span><span class="co"># This will make a function `sim`, which will always simulate the scenarios described in the `experiments` list, but for user supplied parameters</span></span>
 <span><span class="co"># If function `simulator.c` is called with the argument `noise=TRUE`, measurement errors are simulated and added to the trajectory</span></span>
-<span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">experiments</span>,<span class="va">modelName</span>,noise<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: rgsl</span></span></code></pre></div>
-<p>The variable <code>s</code> just created is a function that requires
-a parameter <code>p</code> as input argument. The output of function
-<code>s</code> is the simulation of the ODE model given the parameter
-<code>p</code>.</p>
+<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">experiments</span>,<span class="va">modelName</span>,noise<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<p>The variable <code>sim</code> just created is a function that
+requires a parameter <code>p</code> as input argument. The output of
+function <code>sim</code> is the simulation of the ODE model given the
+parameter <code>p</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># This function returns the default parameter (which is not expected to fit the experimental data)</span></span>
 <span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">AKAR4_default</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Simulate the model and save the simulations in variable 'y'</span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">s</span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">sim</span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></code></pre></div>
 <p>In the AKAR4 example we have a list of 3 experiments, thus function
-<code>s</code> simulates the system 3 times, each time considering the
+<code>sim</code> simulates the system 3 times, each time considering the
 specific initial condition of the corresponding experiment. The output
-of function <code>s</code> (here saved in the variable <code>y</code>)
+of function <code>sim</code> (here saved in the variable <code>y</code>)
 is a list of 3 elements, corresponding to the 3 experimental conditions.
 Each element of the list is in turn a list with the following elements:
 * <code>state</code> (simulated trajectory of the ODE system) *
 <code>func</code> (the corresponding output of the system given the
 computed <code>state</code>) * <code>cpuSeconds</code> (simulation
 runtime)</p>
+<p>ADD SIM WITH NOISE</p>
 </div>
 <div class="section level2">
 <h2 id="plot">Plot<a class="anchor" aria-label="anchor" href="#plot"></a>

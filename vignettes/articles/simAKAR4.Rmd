@@ -84,30 +84,31 @@ print(experiments[[1]]$initialState)
 
 Here we show how to simulate the AKAR4 ODE model using the same conditions that were used in each of the experiments. In AKAR4, the 3 experiments differ only in the initial conditions. In larger models, different experiments may also have different *inputs*, and this will be also taken into account when running the R commands below.
 
-Function `simulator.c` will output a function (`s` in the code) that will allow us to simulate the AKAR4 ODE model (specified through the input argument `modelName`) given the experimental conditions saved in `experiments`.
+Function `simulator.c` will output a function (variable `sim` in the code below) that will allow us to simulate the AKAR4 ODE model (specified through the input argument `modelName`) given the experimental conditions saved in `experiments`.
 
 ```{r}
-# This will make a function `s`, which will always simulate the scenarios described in the `experiments` list, but for user supplied parameters
+# This will make a function `sim`, which will always simulate the scenarios described in the `experiments` list, but for user supplied parameters
 # If function `simulator.c` is called with the argument `noise=TRUE`, measurement errors are simulated and added to the trajectory
-s <- simulator.c(experiments,modelName,noise=TRUE)
+sim <- simulator.c(experiments,modelName,noise=FALSE)
 ```
 
-The variable `s` just created is a function that requires a parameter `p` as input argument. The output of function `s` is the simulation of the ODE model given the parameter `p`.
+The variable `sim` just created is a function that requires a parameter `p` as input argument. The output of function `sim` is the simulation of the ODE model given the parameter `p`.
 
 ```{r}
 # This function returns the default parameter (which is not expected to fit the experimental data)
 p <- AKAR4_default()
 
 # Simulate the model and save the simulations in variable 'y'
-y <- s(p)
+y <- sim(p)
 ```
 
 
-In the AKAR4 example we have a list of 3 experiments, thus function `s` simulates the system 3 times, each time considering the specific initial condition of the corresponding experiment. The output of function `s` (here saved in the variable `y`) is a list of 3 elements, corresponding to the 3 experimental conditions. Each element of the list is in turn a list with the following elements:
+In the AKAR4 example we have a list of 3 experiments, thus function `sim` simulates the system 3 times, each time considering the specific initial condition of the corresponding experiment. The output of function `sim` (here saved in the variable `y`) is a list of 3 elements, corresponding to the 3 experimental conditions. Each element of the list is in turn a list with the following elements:
 * `state` (simulated trajectory of the ODE system)
 * `func` (the corresponding output of the system given the computed `state`)
 * `cpuSeconds` (simulation runtime)
 
+ADD SIM WITH NOISE
 
 # Plot
 

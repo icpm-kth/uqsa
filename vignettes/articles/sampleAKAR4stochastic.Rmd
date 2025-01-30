@@ -44,7 +44,7 @@ To simulate the stochastic reaction network model we use the *Gillespie algorith
 reactions <- importReactionsSSA(SBtab)
 ```
 
-Moreover, to simulate the stochastic reactions with the Gillespie algorithm we need to specify the volume of space where the reactions take place and obtain the parameter `Phi` which will be needed for simualtions.
+Moreover, to simulate the stochastic reactions with the Gillespie algorithm we need to specify the volume of space where the reactions take place and obtain the parameter `Phi` which will be needed for simulations.
 
 ```{r}
 AvoNum <- 6.022e23 #Avogadro constant
@@ -61,11 +61,8 @@ experiments <- sbtab.data(SBtab)
 # for example, these is the initial state of experiment 1:
 print(experiments[[1]]$initialState)
 
-# pick parameters for simulation
-par_val <- SBtab$Parameter[["!DefaultValue"]]
+# save parameters' names
 par_names <- SBtab$Parameter[["!Name"]]
-names(par_val) <- par_names
-print(par_val)
 ```
 
 # Define MCMC settings
