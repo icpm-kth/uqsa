@@ -29,7 +29,7 @@
 #' @param rep number of repetitions of the preCalibration process
 #' @return list with entries preDelta and prePar, final values of
 #'     calibration run
-preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
+preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1, p=0.05, sfactor=0.1, delta=0.01, num=1){
 	nCores <- unlist(options("mc.cores"))
 	if (is.null(nCores)){
 		nCores <- parallel::detectCores()
@@ -55,7 +55,10 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1){
 		preDelta <- newPreDelta[ix]
 		prePar <- newPrePar[,ix]
 	}
-	return(list(preDelta=preDelta, prePar=prePar))
+	
+	
+	startPar <- getMCMCPar(prePar, preDelta, p=p, sfactor=sfactor, delta = delta, num=num)
+	return(list(preDelta=preDelta, prePar=prePar, Sigma=startPar$Sigma, startPar=startPar$startPar))
 }
 
 #' Selects MCMC scheme specific setup parameters
