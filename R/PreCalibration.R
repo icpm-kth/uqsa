@@ -67,7 +67,6 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1, p=0.05,
 #' parameters of that transition kernel. Better parameters make the
 #' Markov chain perform better (i.e. lower auto-correlation).
 #'
-#' @export
 #' @param prePar a sample of parameters from pre-Calibration
 #' @param preDelta distance values (scores) for those parameters
 #' @param p fraction (top scoring) of sampled points to base Sigma on
