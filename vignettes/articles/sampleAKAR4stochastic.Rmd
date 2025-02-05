@@ -1,5 +1,5 @@
 ---
-title: "Sample AKAR4 stochastically"
+title: "Calibrate the AKAR4 stochastic model (UQ)"
 ---
 
 ```{r, include = FALSE}
@@ -29,8 +29,6 @@ the [user model](user_model.html) article.
 ```{r}
 modelFiles <- uqsa_example("AKAR4",full.names=TRUE)
 SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
-modelName <- checkModel("AKAR4",uqsa_example("AKAR4",pat="_gvf[.]c$"))
-comment(modelName)
 
 # model related functions, in R, e.g. AKAP79_default() parameters
 source(uqsa_example("AKAR4",pat='^AKAR4[.]R$'))
@@ -62,7 +60,10 @@ experiments <- sbtab.data(SBtab)
 print(experiments[[1]]$initialState)
 
 # save parameters' names
+par_val <- SBtab$Parameter[["!DefaultValue"]]
 par_names <- SBtab$Parameter[["!Name"]]
+names(par_val) <- par_names
+print(par_val)
 ```
 
 # Define MCMC settings
@@ -93,7 +94,7 @@ rprior <- rUniformPrior(ll, ul) # rprior generates random samples from the prior
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
 nChains <- 4  # number of ABCMCMC chains to run
 ns <- 100   # no of samples required from each ABC-MCMC chain
-npc <- 1000 # pre-calibration
+npc <- 100 # pre-calibration
 
 
 
@@ -115,7 +116,7 @@ An *objective function* in this case is a function that can read the experimenta
 To generate the objective function for stochastic models you can use the `uqsa` function `makeObjectiveSSA`.
 
 ```{r makeObjective}
-objectiveFunction <- makeObjectiveSSA(experiments, model, par_names, distance, parMap, Phi, reactions, nStochSim = 3)
+objectiveFunction <- makeObjectiveSSA(experiments, SBtab, par_names, distance, parMap, Phi, reactions, nStochSim = 3)
 ```
 
 # Run PreCalibration sampling
@@ -123,21 +124,19 @@ objectiveFunction <- makeObjectiveSSA(experiments, model, par_names, distance, p
 Before running the ABCMCMC code, we run a precalibration to determine good initial values and algorithmic hyperparameters for the ABCMCMC chains.
 
 ```{r precalibration}
-pC <- preCalibration(objectiveFunction, npc, rprior,rep = 1)
+p <- 0.01 # Choose Top 1% samples from the precalibration samples with shortest distance to the experimental values
+sfactor <- 0.1 # Scaling factor used to determine a good covariance matrix for the ABCMCMC proposal moves
 
-p <- 0.01 # From the precalibration samples choose Top 1% samples with shortest distance to the experimental values
-sfactor <- 0.1 # scaling factor used to determine a good covariance matrix for the ABCMCMC proposal moves
+pC <- preCalibration(objectiveFunction, npc, rprior, rep = 1, p=p, sfactor=sfactor, delta=delta, num=nChains)
 
-## Get ABCMCMC Starting Parameters from Pre-Calibration
-M <- getMCMCPar(pC$prePar, pC$preDelta, p, sfactor, delta, num = nChains)
-  Sigma <- M$Sigma
-  startPar <- M$startPar
-  for(j in 1 : nChains){
+Sigma <- pC$Sigma
+startPar <- pC$startPar
+for(j in 1 : nChains){
     cat("Chain", j, "\n")
-    cat("\tMin distance of starting parameter for chain",j," = ", min(objectiveFunction(M$startPar[,j])),"\n")
-    cat("\tMean distance of starting parameter for chain",j," = ", mean(objectiveFunction(M$startPar[,j])),"\n")
-    cat("\tMax distance of starting parameter for chain",j," = ", max(objectiveFunction(M$startPar[,j])),"\n")
-  }
+    cat("\tMin distance of starting parameter for chain",j," = ", min(objectiveFunction(startPar[,j])),"\n")
+    cat("\tMean distance of starting parameter for chain",j," = ", mean(objectiveFunction(startPar[,j])),"\n")
+    cat("\tMax distance of starting parameter for chain",j," = ", max(objectiveFunction(startPar[,j])),"\n")
+}
 ```
 
 
@@ -146,14 +145,14 @@ The sampling is parallelized on several cores using the `parLapply` function.
 
 ```{r}
 cl <- makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
-clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
+clusterExport(cl, c("objectiveFunction", "Sigma", "startPar", "ns", "delta", "dprior"))
 out_ABCMCMC <- parLapply(
   cl,
   1:nChains,
   function(j) {
     tryCatch(
       ABCMCMC(
-       objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior, batchSize = 1),
+       objectiveFunction, startPar[,j], ns, Sigma, delta, dprior, batchSize = 1),
        error=function(cond) {message("ABCMCMC crashed"); return(NULL)}
     )
   }
