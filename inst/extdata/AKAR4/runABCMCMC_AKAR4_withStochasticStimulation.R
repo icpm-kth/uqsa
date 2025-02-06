@@ -77,8 +77,8 @@ compiled_reactions <- GillespieSSA2::compile_reactions(
 start_time = Sys.time()
 
 # work packages
-#chunks <- list(c(1,2),3)
-chunks <- list(c(1,2,3))
+chunks <- list(c(1,2),3)
+#chunks <- list(c(1,2,3))
 
 i<-1
 #for (i in seq(length(chunks))){

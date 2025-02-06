@@ -97,6 +97,11 @@ ns <- 100   # no of samples required from each ABC-MCMC chain
 npc <- 100 # pre-calibration
 
 
+# Function that, given the state of the system, outputs the value(s) measured in the experiment
+# E.g., the AKAR4 model has 4 states (AKAR4, AKAR4_C, AKAR4p, and C), 
+# but in the experiments only one of these states (AKAR4p) is measured
+outputFunction <- function(state){model$func(t=0, state=state, parameters = par_val)}
+
 
 # Function to compute the score (distance) between experimental and simulated data
 distance <- function(funcSim, dataExpr, dataErr = 1.0){
@@ -116,7 +121,7 @@ An *objective function* in this case is a function that can read the experimenta
 To generate the objective function for stochastic models you can use the `uqsa` function `makeObjectiveSSA`.
 
 ```{r makeObjective}
-objectiveFunction <- makeObjectiveSSA(experiments, SBtab, par_names, distance, parMap, Phi, reactions, nStochSim = 3)
+objectiveFunction <- makeObjectiveSSA(experiments = experiments, model.tab = SBtab, parNames = par_names, outputFunction = outputFunction, distance = distance, parMap = parMap, reactions = reactions, nStochSim = 3)
 ```
 
 # Run PreCalibration sampling
@@ -145,7 +150,7 @@ The sampling is parallelized on several cores using the `parLapply` function.
 
 ```{r}
 cl <- makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
-clusterExport(cl, c("objectiveFunction", "Sigma", "startPar", "ns", "delta", "dprior"))
+#clusterExport(cl, c("objectiveFunction", "startPar", "ns", "Sigma", "delta", "dprior"))
 out_ABCMCMC <- parLapply(
   cl,
   1:nChains,

@@ -415,7 +415,7 @@ parameters_from_expressions_func <- function(model.tab){
 #' @param nStochSim number of stochastic simulations to average over
 #' @return a function that given a parameter returns a simulated trajectory obrained via the Gillespie algorithm
 #' @export
-simulator.stoch <- function(experiment, model.tab = model.tab, reactions = NULL, parMap = identity, vol = 4e-16, unit = 1e-6, nStochSim = 3){
+simulator.stoch <- function(experiments, model.tab = model.tab, reactions = NULL, parMap = identity, outputFunction = identity, vol = 4e-16, unit = 1e-6, nStochSim = 3, distance = NULL){
   
     AvoNum <- 6.022e23          #Avogadro constant
     Phi <- AvoNum * vol * unit #constant that will be used to simulate the random reactions
@@ -426,8 +426,8 @@ simulator.stoch <- function(experiment, model.tab = model.tab, reactions = NULL,
       reactions <- importReactionsSSA(model.tab)
     }
     
-    
-    sim <- function(param){
+    simulate_one_experiment <- function(param, experiment){
+      
       avgOutput <- rep(0, length(experiment[["outputTimes"]]))
       SSAparam <- c(parMap(param), Phi = Phi)
       if(!is.null(parameters_from_expressions)){
@@ -447,7 +447,7 @@ simulator.stoch <- function(experiment, model.tab = model.tab, reactions = NULL,
           max_walltime = 1)
         
         # out$state is a matrix of dimension (time points)x(num compounds)
-        output <- apply(out_ssa$state/Phi, 1, function(state) model$func(t=0,state=state,parameters=param))
+        output <- apply(out_ssa$state/Phi, 1, function(state) outputFunction(state=state))
         if(sum(!is.na(out_ssa$time)) > 2){
           interpOutput <- approx(out_ssa$time, output, experiment[["outputTimes"]])
           interpOutput$y[experiment[["outputTimes"]]<min(out_ssa$time)] <- output[which.min(out_ssa$time)]
@@ -458,71 +458,23 @@ simulator.stoch <- function(experiment, model.tab = model.tab, reactions = NULL,
         }
       }
       avgOutput <- avgOutput/nStochSim
-      return(list(time = experiment[["outputTimes"]], output = avgOutput))
-  }
+      
+      if(!is.null(distance)){
+        dist <- distance(avgOutput,t(experiment[["outputValues"]]),t(experiment[["errorValues"]]))
+      } else {
+        dist <- NULL
+      }
+      
+      return(list(time = experiment[["outputTimes"]], output = avgOutput, distance_data_simulation = dist))
+    }
+    
+    sim <- function(param){
+      simulators <- mclapply(experiments, function(e){simulate_one_experiment(param = param, experiment = e)})
+      return(simulators)
+    }
   return(sim)
 }
 
-
-
-#' Function that simulates a stochastic trajectory with the Gillespie algorithm
-#' given certain experimental conditions and a parameter vector, and computes the 
-#' distance between the simulation and the experimental data
-#' 
-#' @param e an experiment
-#' @param param a named parameter vector
-#' @param parMap a function that translates ABC variables (parABC)
-#'     into something the model will accept.
-#' @param Phi Volume
-#' @param parameters_from_expressions a vector of evaluated expressions
-#' @param nStochSim number of stochastic simulations to average over
-#' @param reactions a list that encodes the reactions for
-#'     GillespieSSA2
-#' @param distance a user supplied function that calculates a distance
-#'     between simulation and data with an interface of
-#'     distance(simulation, data, errVal), where errVal is an estimate
-#'     of the measuremnet noise (e.g. standard deviation), if needed
-#'     by the function.
-#' @return the distance between the trajectory just simulated and the experiment considered
-#' @export
-simulateAndComputeDistance <- function(e, param, 
-                                       parMap = parMap, Phi = Phi, 
-                                       parameters_from_expressions = parameters_from_expressions,
-                                       nStochSim = nStochSim, reactions = compiled_reactions,
-                                       distance = distance){
-  avgOutput <- rep(0, length(e[["outputTimes"]]))
-  SSAparam <- c(parMap(param), Phi = Phi)
-  if(!is.null(parameters_from_expressions)){
-    SSAparam <- c(SSAparam, parameters_from_expressions(parMap(param)))
-  }
-  for(i in 1:nStochSim){
-    out_ssa <- GillespieSSA2::ssa(
-      initial_state = ceiling(e[["initialState"]]*Phi),
-      reactions = reactions,
-      params = SSAparam,
-      final_time = max(e[["outputTimes"]]),
-      method = ssa_exact(),
-      verbose = FALSE,
-      log_propensity = TRUE,
-      log_firings = TRUE,
-      census_interval = 5,
-      max_walltime = 1,
-      sim_name = model$name)
-    
-    # out$state is a matrix of dimension (time points)x(num compounds)
-    output <- apply(out_ssa$state/Phi, 1, function(state) model$func(t=0,state=state,parameters=param))
-    if(sum(!is.na(out_ssa$time)) > 2){
-      interpOutput <- approx(out_ssa$time, output, e[["outputTimes"]])
-      interpOutput$y[e[["outputTimes"]]<min(out_ssa$time)] <- output[which.min(out_ssa$time)]
-      interpOutput$y[is.na(interpOutput$y)] <- tail(output,1)
-      avgOutput <- avgOutput + interpOutput$y
-    } else {
-      avgOutput <- Inf*avgOutput
-    }
-  }
-  avgOutput <- avgOutput/nStochSim
-  return(distance(avgOutput,t(e[["outputValues"]]),t(e[["errorValues"]])))
-}
 
 
 #' Function that creates the objective function
@@ -549,31 +501,35 @@ simulateAndComputeDistance <- function(e, param,
 #'     depends on all of the arguments to this function but explicitly
 #'     only on the ABC parameters parABC.
 #' @export
-makeObjectiveSSA <- function(experiments, model, parNames, distance, parMap=identity, Phi, reactions, nStochSim = 1, parameters_from_expressions=NULL){
-  if(is.null(parameters_from_expressions)){
-    parameters_from_expressions <- parameters_from_expressions_func(model)
-  }
+makeObjectiveSSA <- function(experiments, model.tab, parNames, distance, parMap=identity, outputFunction = identity, vol = 4e-16, unit = 1e-6, reactions, nStochSim = 1, parameters_from_expressions=NULL){
   
+  simulate_experiments <- simulator.stoch(experiments = experiments,
+                                          model.tab = model.tab,
+                                          reactions = reactions,
+                                          parMap = parMap,
+                                          outputFunction = outputFunction,
+                                          vol = vol,
+                                          unit = unit,
+                                          nStochSim = nStochSim,
+                                          distance = distance)
+  n_experiments <- length(experiments)
   objectiveFunction <- function(parABC){
+    
+    sim_all_experiments_one_parameter <- function(par){
+      simulations <- simulate_experiments(par)
+      return(sapply(1:n_experiments, function(i) simulations[[i]]$distance_data_simulation))
+    }
+    
     if (is.matrix(parABC)) {
       rownames(parABC) <- parNames
       npc <- ncol(parABC)
-      S <- do.call(cbind,mclapply(1:npc, function(i) sapply(experiments, function(e) simulateAndComputeDistance(e, parABC[,i],
-                                                                                                                parMap = parMap, Phi = Phi, 
-                                                                                                                parameters_from_expressions = parameters_from_expressions,
-                                                                                                                nStochSim = nStochSim, reactions = reactions,
-                                                                                                                distance = distance))))
-      return(S)
+      S <- do.call(cbind,mclapply(1:npc, function(i) sim_all_experiments_one_parameter(parABC[,i])))
     }
     else {
       names(parABC) <- parNames
-      S <- mclapply(experiments, function(e) simulateAndComputeDistance(e, parABC,
-                                                                        parMap = parMap, Phi = Phi, 
-                                                                        parameters_from_expressions = parameters_from_expressions,
-                                                                        nStochSim = nStochSim, reactions = reactions,
-                                                                        distance = distance))
-      return(unlist(S))
+      S <- sim_all_experiments_one_parameter(parABC)
     }
+    return(S)
   }
   return(objectiveFunction)
 }
