@@ -67,8 +67,12 @@ save_sample <- function(ABCMCMCoutput){
 
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
+#ns <- 1000 or more on a cluster
 ns <- 100 # no of samples required from each ABC-MCMC chain
+#npc <- 1000 or more on a cluster
 npc <- 100 # pre-calibration
+
+# Threshold for distance between experimental data and simulations
 delta <- 0.01
 
 # Define ABC-MCMC Settings
@@ -131,7 +135,7 @@ out_ABCMCMC <- parLapply(cl,
                            1:nChains,
                            function(j) {
                              tryCatch(
-                               ABCMCMC(objectiveFunction, startPar[,j], ns, Sigma, delta, dprior, batchSize = 100),
+                               ABCMCMC(objectiveFunction, startPar[,j], ns, Sigma, delta, dprior, batchSize = 1),
                                error=function(cond) {message("ABCMCMC crashed"); return(NULL)})
                            }
 )
@@ -167,16 +171,6 @@ for(i in 1:length(parVal)){
   hist(ABCMCMCoutput$draws[,i], main=par_names[i], xlab = "Value in log scale")
 }
 
-
-xlabel <- c("log10(k_51) - [1/s]","log10(k_12) - [1/(uM*s)]","log10(k_32) - [1/(uM*s)]", 
-            "log10(k_23) - [1/s]","log10(k_34) - [1/s]", "log10(k_43) - [1/(uM*s)]",
-            "log10(k_41) - [1/(uM*s)]","log10(k_14) - [1/s]", "log10(k_87) - [1/(uM*s)]", 
-            "log10(k_78) - [1/s]","log10(k_56) - [1/(uM*s)]", "log10(k_65) - [1/s]",
-            "log10(k_85) - [1/(uM*s)]","log10(k_76) - [1/(uM*s)]","log10(k_67) - [1/s]", 
-            "log10(k_62) - [1/s]","log10(k_58) - [1/s]","log10(k_3'7), log10(4'8) AKAPoff - [1/s]", "log10(k_4'4),
-            log10(3'3) AKAPoff - [1/s]","log10(k_3'7), log10(4'8) AKAPon - [1/s]","log10(k_4'4), log10(3'3) AKAPon - [1/s]", 
-            "","","",
-            "","", "log10(KD)")
 
 # PLOT DRAWS of first state
 plot(ABCMCMCoutput$draws[,1])
