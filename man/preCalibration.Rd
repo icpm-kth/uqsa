@@ -4,7 +4,16 @@
 \alias{preCalibration}
 \title{Determine a starting value for ABC's delta}
 \usage{
-preCalibration(objectiveFunction, npc = 1000, rprior, rep = 1)
+preCalibration(
+  objectiveFunction,
+  npc = 1000,
+  rprior,
+  rep = 1,
+  p = 0.05,
+  sfactor = 0.1,
+  delta = 0.01,
+  num = 1
+)
 }
 \arguments{
 \item{objectiveFunction}{function that, given a (vectorial)

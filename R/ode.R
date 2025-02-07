@@ -209,7 +209,7 @@ generateCodeFromFile <- function(fileList){
 #' Write C Function
 #'
 #' This function writes a C function according to a typical template.
-#' 
+#'
 #' @param prefix function's prefix (name of model)
 #' @param fNname function's name
 #' @param defs optional expressions, parameters, etc.
@@ -323,7 +323,8 @@ generateCode <- function(odeModel){
 	# C expressions:
 	x <- odeModel$exp
 	for (i in seq_along(x)){
-		CMD <- sprintf("%s := %s",yacasMath(names(x)[i]),x[i])
+		CMD <- sprintf("%s := %s",yacasMath(names(x)[i]),yacasMath(x[i]))
+		#cat("CMD: ",CMD,"\n")
 		Ryacas::yac_silent(yacasMath(CMD))
 	}
 	n <- pmax(5,50 - nchar(names(odeModel$par))*2)
