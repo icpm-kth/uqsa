@@ -16,7 +16,7 @@ The examples are listed in order of increasing difficulty and run time.
 # AKAR4
 These examples can be run on a laptop.
 
-- [Simulate AKAR4 deterministically](error.html) Builds the AKAR4 model as an ODE and simulates it with the an ODE solver.
+- [Simulate AKAR4 deterministically](./simAKAR4.html) Builds the AKAR4 model as an ODE and simulates it with the an ODE solver.
 - [Simulate AKAR4 stochastically](./simAKAR4stochastic.html) Builds the AKAR4 model as a stochastic model and simulates it with the Gillespie algorithm.
 - [UQ of deterministic AKAR4](./sampleAKAR4stochastic.html) AKAR4 is calibrated with a likelihood based Metropolis approach.
 - [UQ of stochastic AKAR4](./sampleAKAR4stochastic.html) AKAR4 is calibrated with an Approximate Bayesian Computation (ABC) approach.
