@@ -447,7 +447,7 @@ simulator.stoch <- function(experiments, model.tab = model.tab, reactions = NULL
           max_walltime = 1)
         
         # out$state is a matrix of dimension (time points)x(num compounds)
-        output <- apply(out_ssa$state/Phi, 1, function(state) outputFunction(state=state))
+        output <- apply(out_ssa$state/Phi, 1, function(state) outputFunction(t=0, state=state, param = parMap(param)))
         if(sum(!is.na(out_ssa$time)) > 2){
           interpOutput <- approx(out_ssa$time, output, experiment[["outputTimes"]])
           interpOutput$y[experiment[["outputTimes"]]<min(out_ssa$time)] <- output[which.min(out_ssa$time)]
