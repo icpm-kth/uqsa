@@ -1,0 +1,214 @@
+---
+title: "Uncertainty Quantification on AKAR4 (deterministic)"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(eval=TRUE, cache=TRUE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(uqsa)
+library(SBtabVFGEN)
+library(rgsl)
+```
+
+In this article, we will assume that you don't yet have `c` sources
+prepared for your model. And rather than vfgen, or the RPN-derivative
+package, we will use the uqsa (this package) code generating
+functions.
+
+# Locate Files
+
+The first step is to load the SBtab model files
+(with `dir` for non-example models):
+
+```{r}
+f  <- uqsa::uqsa_example("AKAR4")
+sb <- SBtabVFGEN::sbtab_from_tsv(f)
+```
+
+From the `sb` variable (list of data frames with the file contents) we can create an ordinary
+differential equation, this will print lots of text about how it
+interprets the contents (printouts are omitted here):
+
+```{r include=FALSE}
+m  <- SBtabVFGEN::sbtab_to_vfgen(sb,cla=FALSE)
+```
+
+```{r eval=FALSE}
+m  <- SBtabVFGEN::sbtab_to_vfgen(sb,cla=FALSE)
+```
+
+We will also load the experimental data:
+
+```{r data}
+ex <- SBtabVFGEN::sbtab.data(sb)
+```
+
+We have loaded these constructs:
+
+```{r summary}
+print(names(sb))
+print(names(ex))
+print(names(m))
+```
+
+## Generate Code
+
+We take `m` and generate c code from it, then write this code into a file (`AKAR4_gvf.c`):
+
+```{r code}
+C <- uqsa::generateCode(m)
+cat(C,sep="\n",file="./AKAR4_gvf.c")
+```
+
+The `ex` variable holds the experimental data and instructions about
+how they correspond to model simulations (`ex` is a list).
+
+Next, we check that the c sources exist in the specified location,
+that the model compiles on the current system, with the default c
+compiler (called by `checkModel`) and a shared library can be built:
+
+```{r check}
+modelName <- checkModel("AKAR4",modelFile="./AKAR4_gvf.c")
+```
+
+The function `checkModel` also appends the location of the shared library as a comment to its return value.
+
+For a test simulation we create the function `s` which will remember the experiments to simulate and the model to simulate them with:
+
+```{r test}
+s <- simulator.c(ex,modelName,parMap=log10ParMap)
+p <- log10(sb$Parameter[["!DefaultValue"]])
+names(p) <- rownames(sb$Parameter)
+y <- s(p) # here the simulation happens
+```
+
+The function/closure `s` maps parameter vectors to model solutions (trajectories):
+
+```{r plot}
+ylab <- colnames(ex[[1]]$outputValues)
+d_ <- ex[[1]]$outputValues[[1]]
+e_ <- ex[[1]]$errorValues[[1]]
+t_ <- ex[[1]]$outputTimes
+f_ <- y[[1]]$func[1,,1]
+par(bty="n")
+plot(t_,d_,type="p",main=names(ex)[1],xlab="time",ylab=ylab)
+arrows(t_,d_,t_,d_+e_,angle=90,length=0.01)
+arrows(t_,d_,t_,d_-e_,angle=90,length=0.01)
+lines(t_,f_,lw=3)
+```
+
+## Take a parameter Sample for this Model
+
+We use just one core as this is a tiny model. No MPI, no parallel tempering:
+
+```{r prior}
+sd <- rep(2,length(p))
+dprior <- dNormalPrior(p,sd)
+rprior <- rNormalPrior(p,sd)
+```
+
+The Metropolis Hastings Algorithm does not require any model functions (The R variant of the generated code), so we set model to `NULL`:
+
+```{r likelihood}
+llf <- logLikelihoodFunc(ex)
+metropolis_hastings <- mcmcUpdate(s,ex,model=NULL,logLikelihood=llf,dprior=dprior)
+MH_MCMC <- mcmc(metropolis_hastings)
+```
+
+Obtain a sample of parameters:
+
+```{r sample}
+x <- mcmcInit(
+    1.0,
+    parMCMC=p,
+    simulate=s,
+    logLikelihood=llf,
+    dprior=dprior)
+
+h <- 5e-2
+S <- MH_MCMC(x,N=10000,eps=h)
+colnames(S) <- names(p)
+print(attr(S,"acceptanceRate"))
+
+if (require(hexbin)){
+    hexplom(S)
+}
+```
+
+## Better Sample
+
+We can try to obtain a higher quality sample, through simple means:
+
+1. Combine several samples (replicas) into one big sample
+2. Use several random starting locations
+3. Remove burn-in phase from each chain
+4. Adjust the step size at least once to get close to 25% acceptance rate
+
+```{r betterSample}
+A <- function(a) {
+    return(0.5 + a^4/(0.25^4 + a^4))
+}
+
+set.seed(137)
+
+bigSample <- parallel::mclapply(
+    seq(8),
+    \(i) {
+        x <- mcmcInit(
+            1.0,
+            parMCMC=t(rprior(1)),
+            simulate=s,
+            logLikelihood=llf,
+            dprior=dprior)
+        for (i in seq(6)){
+            z <- MH_MCMC(x,200,h)
+            x <- attr(z,"lastPoint")
+            h <- h*A(attr(z,"acceptanceRate"))
+        }
+        return(MH_MCMC(x,10000,h))
+    },
+    mc.cores=parallel::detectCores()
+)
+
+S_ <- Reduce(\(a,b) {rbind(a,b)},bigSample,init=NULL)
+L_ <- Reduce(\(a,b) {c(a,attr(b,"logLikelihood"))},bigSample,init=NULL)
+colnames(S_) <- names(p)
+
+if (require(hadron)){
+    ac <- hadron::uwerr(data=L_,nrep=rep(10000,8),pl=TRUE)
+}
+
+if (require(hexbin)){
+    hexbin::hexplom(S_)
+}
+```
+
+The code above can of course also be done in a loop (sequentially), and `rbind` within the loop.
+
+Let us also plot the log-likelihood
+
+```{r}
+plot(L_,main="Big Sample for AKAR4",xlab="Markov chain index",ylab="log-likelihood", type="l")
+```
+
+This should be enough for this model size. For bigger models we turn
+to either more advanced MCMC algorithms, such as SMMALA or parallel
+tempering combined with the Metropolis-Hastings algorithm.
+
+## Alternative to `checkModel()`
+
+The steps described above to compile the model with the `checkModel`
+function can also be done outside of R, by running an appropriate
+command, e.g.:
+
+```{sh, eval=FALSE}
+# alternative, directly in the shell:
+cc -shared -fPIC -o AKAR4.so ./AKAR4_gvf.c -lgsl -lgslcblas -lm
+```
+
+
