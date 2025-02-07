@@ -18,7 +18,7 @@ These examples can be run on a laptop.
 
 - [Simulate AKAR4 deterministically](./simAKAR4.html) Builds the AKAR4 model as an ODE and simulates it with the an ODE solver.
 - [Simulate AKAR4 stochastically](./simAKAR4stochastic.html) Builds the AKAR4 model as a stochastic model and simulates it with the Gillespie algorithm.
-- [UQ of deterministic AKAR4](./sampleAKAR4stochastic.html) AKAR4 is calibrated with a likelihood based Metropolis approach.
+- [UQ of deterministic AKAR4](./sampleAKAR4.html) AKAR4 is calibrated with a likelihood based Metropolis approach.
 - [UQ of stochastic AKAR4](./sampleAKAR4stochastic.html) AKAR4 is calibrated with an Approximate Bayesian Computation (ABC) approach.
 - [SA of AKAR4](./GSA_AKAR4.html) Global sesnitivity analysis is perfomed on the determinitic AKAR4 model using independent prior parameter distributions.
 - [UQ and SA of AKAR4](error.html) First UQ and then SA is performed on the deterministic AKAR4 model.

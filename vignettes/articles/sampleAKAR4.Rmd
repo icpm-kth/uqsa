@@ -1,202 +1,214 @@
 ---
-title: "Calibrate the AKAR4 deteministic model (UQ)"
+title: "Uncertainty Quantification on AKAR4 (deterministic)"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
+knitr::opts_chunk$set(eval=TRUE, cache=TRUE,
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
-```{r packages}
+```{r setup}
 library(uqsa)
-library(parallel)
 library(SBtabVFGEN)
-library(GillespieSSA2)
+library(rgsl)
 ```
 
-This article provides code to perform uncertainty quantification (UQ) of a deterministic reaction network model. In particular we model the time evolution of concentrations of compounds using an ODE system. As an example we use the AKAR4 model, which was described in [simulate deterministic AKAR4](simAKAR4.html). The UQ method that we use is a Markov chain Monte Carlo algorithm, called SMMALA.
+In this article, we will assume that you don't yet have `c` sources
+prepared for your model. And rather than vfgen, or the RPN-derivative
+package, we will use the uqsa (this package) code generating
+functions.
 
-# Load the Model
+# Locate Files
 
-This model is included with the package. To load your own model, see
-the [user model](user_model.html) article.
+The first step is to load the SBtab model files
+(with `dir` for non-example models):
 
 ```{r}
-modelFiles <- uqsa_example("AKAR4",full.names=TRUE)
-SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
-modelName <- checkModel("AKAR4",uqsa_example("AKAR4",pat="_gvf[.]c$"))
-comment(modelName)
-
-# model related functions, in R, e.g. AKAP79_default() parameters
-source(uqsa_example("AKAR4",pat='^AKAR4[.]R$'))
-print(AKAR4_default())
+f  <- uqsa::uqsa_example("AKAR4")
+sb <- SBtabVFGEN::sbtab_from_tsv(f)
 ```
 
+From the `sb` variable (list of data frames with the file contents) we can create an ordinary
+differential equation, this will print lots of text about how it
+interprets the contents (printouts are omitted here):
 
-# Load Experiments (data)
-
-```{r, experiments}
-experiments <- sbtab.data(SBtab)
-
-# for example, these is the initial state of experiment 1:
-print(experiments[[1]]$initialState)
-
-# pick parameters for simulation
-par_val <- SBtab$Parameter[["!DefaultValue"]]
-par_names <- SBtab$Parameter[["!Name"]]
-names(par_val) <- par_names
-print(par_val)
+```{r include=FALSE}
+m  <- SBtabVFGEN::sbtab_to_vfgen(sb,cla=FALSE)
 ```
 
-# Define MCMC settings
+```{r eval=FALSE}
+m  <- SBtabVFGEN::sbtab_to_vfgen(sb,cla=FALSE)
+```
 
-```{r configure}
-# a function that tansforms the ABC variables to acceptable model
-# parameters, re-indexing could also happen here
-parMap <- function (parABC=0) {
-  return(10^parABC)
+We will also load the experimental data:
+
+```{r data}
+ex <- SBtabVFGEN::sbtab.data(sb)
+```
+
+We have loaded these constructs:
+
+```{r summary}
+print(names(sb))
+print(names(ex))
+print(names(m))
+```
+
+## Generate Code
+
+We take `m` and generate c code from it, then write this code into a file (`AKAR4_gvf.c`):
+
+```{r code}
+C <- uqsa::generateCode(m)
+cat(C,sep="\n",file="./AKAR4_gvf.c")
+```
+
+The `ex` variable holds the experimental data and instructions about
+how they correspond to model simulations (`ex` is a list).
+
+Next, we check that the c sources exist in the specified location,
+that the model compiles on the current system, with the default c
+compiler (called by `checkModel`) and a shared library can be built:
+
+```{r check}
+modelName <- checkModel("AKAR4",modelFile="./AKAR4_gvf.c")
+```
+
+The function `checkModel` also appends the location of the shared library as a comment to its return value.
+
+For a test simulation we create the function `s` which will remember the experiments to simulate and the model to simulate them with:
+
+```{r test}
+s <- simulator.c(ex,modelName,parMap=log10ParMap)
+p <- log10(sb$Parameter[["!DefaultValue"]])
+names(p) <- rownames(sb$Parameter)
+y <- s(p) # here the simulation happens
+```
+
+The function/closure `s` maps parameter vectors to model solutions (trajectories):
+
+```{r plot}
+ylab <- colnames(ex[[1]]$outputValues)
+d_ <- ex[[1]]$outputValues[[1]]
+e_ <- ex[[1]]$errorValues[[1]]
+t_ <- ex[[1]]$outputTimes
+f_ <- y[[1]]$func[1,,1]
+par(bty="n")
+plot(t_,d_,type="p",main=names(ex)[1],xlab="time",ylab=ylab)
+arrows(t_,d_,t_,d_+e_,angle=90,length=0.01)
+arrows(t_,d_,t_,d_-e_,angle=90,length=0.01)
+lines(t_,f_,lw=3)
+```
+
+## Take a parameter Sample for this Model
+
+We use just one core as this is a tiny model. No MPI, no parallel tempering:
+
+```{r prior}
+sd <- rep(2,length(p))
+dprior <- dNormalPrior(p,sd)
+rprior <- rNormalPrior(p,sd)
+```
+
+The Metropolis Hastings Algorithm does not require any model functions (The R variant of the generated code), so we set model to `NULL`:
+
+```{r likelihood}
+llf <- logLikelihoodFunc(ex)
+metropolis_hastings <- mcmcUpdate(s,ex,model=NULL,logLikelihood=llf,dprior=dprior)
+MH_MCMC <- mcmc(metropolis_hastings)
+```
+
+Obtain a sample of parameters:
+
+```{r sample}
+x <- mcmcInit(
+    1.0,
+    parMCMC=p,
+    simulate=s,
+    logLikelihood=llf,
+    dprior=dprior)
+
+h <- 5e-2
+S <- MH_MCMC(x,N=10000,eps=h)
+colnames(S) <- names(p)
+print(attr(S,"acceptanceRate"))
+
+if (require(hexbin)){
+    hexplom(S)
+}
+```
+
+## Better Sample
+
+We can try to obtain a higher quality sample, through simple means:
+
+1. Combine several samples (replicas) into one big sample
+2. Use several random starting locations
+3. Remove burn-in phase from each chain
+4. Adjust the step size at least once to get close to 25% acceptance rate
+
+```{r betterSample}
+A <- function(a) {
+    return(0.5 + a^4/(0.25^4 + a^4))
 }
 
-# scale to determine prior values
-defRange <- 1000
+set.seed(137)
 
-# Define Lower and Upper Limits for logUniform prior distribution for the parameters
-ll <- c(par_val/defRange)
-ul <- c(par_val*defRange)
-ll = log10(ll) # log10-scale
-ul = log10(ul) # log10-scale
-
-# Define the prior distribution. In this case Uniform(ll,ul)
-dprior <- dUniformPrior(ll, ul) # dprior evaluates the prior density function 
-rprior <- rUniformPrior(ll, ul) # rprior generates random samples from the prior
-
-
-# Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
-nChains <- 4  # number of ABCMCMC chains to run
-ns <- 100   # no of samples required from each ABC-MCMC chain
-npc <- 100 # pre-calibration
-
-
-# Function to compute the score (distance) between experimental and simulated data
-distance <- function(funcSim, dataExpr, dataErr = 1.0){
-  d <- mean(((funcSim-dataExpr$AKAR4pOUT)/max(dataExpr$AKAR4pOUT))^2,na.rm=TRUE)
-  return(d)
-}
-
-# Threshold in the ABCMCMC algorithm
-delta <- 0.0005
-```
-
-# Generate an objective function
-
-An *objective function* in this case is a function that can read the experimental conditions (initial state, inputs etc.) and the experimental data in a list of experiments (variable `experiments` in the code). Give a parameter in input, for each experimental condition specified in the list of experiments, the *objective function*:
-1. simulates the ODE model given such parameter, and
-2. computes the distance between the simulated trajectories and the observed trajectories (experimental data).
-
-To simulate the deterministic reaction network model we first create a *simulator* with specific experimental conditions (in this case, initial condition; in more complex models, we can also specify inputs to the system). The *simulator* is saved in an R variable and, given a parameter `p` as argument, it simulated the ODE system, given the experimental conditions previously specified. More details can be found in the article [simulate deterministic AKAR4](simAKAR4.html).
-
-```{r}
-simulate <- simulator.c(experiments,modelName,parMap,noise=TRUE)
-```
-
-
-
-To generate the objective function for ODE models you can use the `uqsa` function `makeObjective`.
-
-```{r makeObjective}
-objectiveFunction <- makeObjective(experiments, modeNamel, distance, parMap, simulate)
-```
-
-
-
-# Run PreCalibration sampling
-
-Before running the MCMC code, we run a precalibration to determine good initial values and algorithmic hyperparameters for the MCMC chains.
-
-```{r precalibration}
-p <- 0.01 # Choose Top 1% samples from the precalibration samples with shortest distance to the experimental values
-sfactor <- 0.1 # Scaling factor used to determine a good covariance matrix for the ABCMCMC proposal moves
-
-pC <- preCalibration(objectiveFunction, npc, rprior, p=p, sfactor=sfactor, delta=delta, num=nChains)
-
-Sigma <- pC$Sigma
-startPar <- pC$startPar
-for(j in 1 : nChains){
-    cat("Chain", j, "\n")
-    cat("\tMin distance of starting parameter for chain",j," = ", min(objectiveFunction(startPar[,j])),"\n")
-    cat("\tMean distance of starting parameter for chain",j," = ", mean(objectiveFunction(startPar[,j])),"\n")
-    cat("\tMax distance of starting parameter for chain",j," = ", max(objectiveFunction(startPar[,j])),"\n")
-}
-```
-
-
-# Run MCMC Sampling
-The sampling is parallelized on several cores using the `parLapply` function.
-
-```{r}
-cl <- makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
-clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
-out_MCMC <- parLapply(
-  cl,
-  1:nChains,
-  function(j) {
-    tryCatch(
-      # ABCMCMC(
-      #  objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior, batchSize = 1),
-      #  error=function(cond) {message("ABCMCMC crashed"); return(NULL)}
-    )
-  }
+bigSample <- parallel::mclapply(
+    seq(8),
+    \(i) {
+        x <- mcmcInit(
+            1.0,
+            parMCMC=t(rprior(1)),
+            simulate=s,
+            logLikelihood=llf,
+            dprior=dprior)
+        for (i in seq(6)){
+            z <- MH_MCMC(x,200,h)
+            x <- attr(z,"lastPoint")
+            h <- h*A(attr(z,"acceptanceRate"))
+        }
+        return(MH_MCMC(x,10000,h))
+    },
+    mc.cores=parallel::detectCores()
 )
-stopCluster(cl)
 
-MCMCoutput <- do.call(Map, c(rbind,out_MCMC))
-colnames(MCMCoutput$draws) <- par_names
-```
+S_ <- Reduce(\(a,b) {rbind(a,b)},bigSample,init=NULL)
+L_ <- Reduce(\(a,b) {c(a,attr(b,"logLikelihood"))},bigSample,init=NULL)
+colnames(S_) <- names(p)
 
-# Visualize the sampled parameters
+if (require(hadron)){
+    ac <- hadron::uwerr(data=L_,nrep=rep(10000,8),pl=TRUE)
+}
 
-The parameters in the variable `MCMCoutput` are approximate samples from the posterior distribution of the parameters given the considered experiments.
-
-The sampled three dimensional parameters for the AKAR4 model can be visualized via scatter plots.
-
-```{r}
-pairs(MCMCoutput$draws)
-```
-
-The marginal distributions of each parameter in the parameter vector can be visualized via histograms as follows.
-
-```{r}
-for(i in 1:3){
- hist(MCMCoutput$draws[,i], main=par_names[i], xlab = "Value in log scale")
+if (require(hexbin)){
+    hexbin::hexplom(S_)
 }
 ```
 
-# Simulate the ODE model given posterior samples
+The code above can of course also be done in a loop (sequentially), and `rbind` within the loop.
 
-To check the fit of the sampled posterior parameters with the experimental data, we can simulate trajectories given sampled parameters and compare them with the experimental data.
+Let us also plot the log-likelihood
 
-```{r, sim}
-exp_ind <- 1 # index of the experiment to consider
-
-e <- experiments[[exp_ind]]
-
-# Plot the experimental data
-par(bty='n',xaxp=c(80,120,4))
-plot(e$outputTimes, e$outputValues$AKAR4pOUT,ylim=c(90,200), ylab="AKAP79",
-     xlab="t",
-     main=sprintf("Experiment %i",exp_ind),
-     lwd=1.5)
-
-n_draws <- dim(MCMCoutput$draws)[1] # number of sampled posterior parameters
-subsample_indices <- sample(n_draws,10) # indices of 10 random parameters out of the paramneters in
-for(i in subsample_indices){
-  p <- MCMCoutput$draws[i,] # random parameter from the posterior
-
-  y <- simulate(p) # simulate a trajectory (y) given parameter p
-
-  lines(e$outputTimes, y$output, col="blue") # plot the simulated trajectory
-}
-
+```{r}
+plot(L_,main="Big Sample for AKAR4",xlab="Markov chain index",ylab="log-likelihood", type="l")
 ```
+
+This should be enough for this model size. For bigger models we turn
+to either more advanced MCMC algorithms, such as SMMALA or parallel
+tempering combined with the Metropolis-Hastings algorithm.
+
+## Alternative to `checkModel()`
+
+The steps described above to compile the model with the `checkModel`
+function can also be done outside of R, by running an appropriate
+command, e.g.:
+
+```{sh, eval=FALSE}
+# alternative, directly in the shell:
+cc -shared -fPIC -o AKAR4.so ./AKAR4_gvf.c -lgsl -lgslcblas -lm
+```
+
+
