@@ -97,12 +97,6 @@ ns <- 100   # no of samples required from each ABC-MCMC chain
 npc <- 100 # pre-calibration
 
 
-# Function that, given the state of the system, outputs the value(s) measured in the experiment
-# E.g., the AKAR4 model has 4 states (AKAR4, AKAR4_C, AKAR4p, and C), 
-# but in the experiments only one of these states (AKAR4p) is measured
-outputFunction <- function(state){model$func(t=0, state=state, parameters = par_val)}
-
-
 # Function to compute the score (distance) between experimental and simulated data
 distance <- function(funcSim, dataExpr, dataErr = 1.0){
   return(mean(((funcSim-dataExpr)/max(dataExpr))^2,na.rm=TRUE))
@@ -121,7 +115,7 @@ An *objective function* in this case is a function that can read the experimenta
 To generate the objective function for stochastic models you can use the `uqsa` function `makeObjectiveSSA`.
 
 ```{r makeObjective}
-objectiveFunction <- makeObjectiveSSA(experiments = experiments, model.tab = SBtab, parNames = par_names, outputFunction = outputFunction, distance = distance, parMap = parMap, reactions = reactions, nStochSim = 3)
+objectiveFunction <- makeObjectiveSSA(experiments = experiments, model.tab = SBtab, parNames = par_names, outputFunction = model$func, distance = distance, parMap = parMap, reactions = reactions, nStochSim = 3)
 ```
 
 # Run PreCalibration sampling
@@ -150,7 +144,6 @@ The sampling is parallelized on several cores using the `parLapply` function.
 
 ```{r}
 cl <- makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
-#clusterExport(cl, c("objectiveFunction", "startPar", "ns", "Sigma", "delta", "dprior"))
 out_ABCMCMC <- parLapply(
   cl,
   1:nChains,
@@ -191,9 +184,9 @@ for(i in 1:3){
 To check the fit of the sampled posterior parameters with the experimental data, we can simulate trajectories given sampled parameters and compare them with the experimental data.
 
 ```{r, sim}
-exp_ind <- 1 # index of the experiment to consider
 
-e <- experiments[[exp_ind]]
+expInd <- 1 # Index of the experiment that we want to plot, with corresponding fitted trajectories
+e <- experiments[[1]]
 
 # Plot the experimental data
 par(bty='n',xaxp=c(80,120,4))
@@ -203,7 +196,7 @@ plot(e$outputTimes, e$outputValues$AKAR4pOUT,ylim=c(90,200), ylab="AKAP79",
      lwd=1.5)
 
 # generate a function (s) that simulates a trajectory given a parameter in input
-s <- simulator.stoch(experiment = e, model.tab = SBtab, parMap = parMap, vol = vol, nStochSim = 3)
+s <- simulator.stoch(experiments = experiments, model.tab = SBtab, parMap = parMap, outputFunction = model$func, vol = vol, unit = unit, nStochSim = 3)
 
 n_draws <- dim(ABCMCMCoutput$draws)[1] # number of sampled posterior parameters
 subsample_indices <- sample(n_draws,10) # indices of 10 random parameters out of the paramneters in
@@ -211,8 +204,10 @@ for(i in subsample_indices){
   p <- ABCMCMCoutput$draws[i,] # random parameter from the posterior
 
   y <- s(p) # simulate a trajectory (y) given parameter p
-
-  lines(e$outputTimes, y$output, col="blue") # plot the simulated trajectory
+  # "experiments" is a list of experiments
+  # "y" is a list where element i of the list is a simulation performed with the experimental conditions as in the i-th element of list "experiments"
+  
+  lines(e$outputTimes, y[[expInd]]$output, col="blue") # plot the simulated trajectory
 }
 
 ```
