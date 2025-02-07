@@ -156,7 +156,7 @@ generateCodeFromFile <- function(fileList){
 	C <- c(C,writeFunc("vf","f_",sprintf("\tf_[_%s] = %s;",ode$vf[[1]],replace_powers(ode$vf[[2]]))))
 	x <- ch(ode$exp)
 	for (i in seq_along(x)){
-		CMD <- sprintf("%s := %s",names(x)[i],x[i])
+		CMD <- sprintf("%s := %s",yacasMath(names(x)[i]),x[i])
 		Ryacas::yac_silent(yacasMath(CMD))
 	}
 	# Jacobian
@@ -323,7 +323,7 @@ generateCode <- function(odeModel){
 	# C expressions:
 	x <- odeModel$exp
 	for (i in seq_along(x)){
-		CMD <- sprintf("%s := %s",names(x)[i],x[i])
+		CMD <- sprintf("%s := %s",yacasMath(names(x)[i]),x[i])
 		Ryacas::yac_silent(yacasMath(CMD))
 	}
 	n <- pmax(5,50 - nchar(names(odeModel$par))*2)
