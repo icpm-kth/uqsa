@@ -1,0 +1,202 @@
+---
+title: "Calibrate the AKAR4 deteministic model (UQ)"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r packages}
+library(uqsa)
+library(parallel)
+library(SBtabVFGEN)
+library(GillespieSSA2)
+```
+
+This article provides code to perform uncertainty quantification (UQ) of a deterministic reaction network model. In particular we model the time evolution of concentrations of compounds using an ODE system. As an example we use the AKAR4 model, which was described in [simulate deterministic AKAR4](simAKAR4.html). The UQ method that we use is a Markov chain Monte Carlo algorithm, called SMMALA.
+
+# Load the Model
+
+This model is included with the package. To load your own model, see
+the [user model](user_model.html) article.
+
+```{r}
+modelFiles <- uqsa_example("AKAR4",full.names=TRUE)
+SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
+modelName <- checkModel("AKAR4",uqsa_example("AKAR4",pat="_gvf[.]c$"))
+comment(modelName)
+
+# model related functions, in R, e.g. AKAP79_default() parameters
+source(uqsa_example("AKAR4",pat='^AKAR4[.]R$'))
+print(AKAR4_default())
+```
+
+
+# Load Experiments (data)
+
+```{r, experiments}
+experiments <- sbtab.data(SBtab)
+
+# for example, these is the initial state of experiment 1:
+print(experiments[[1]]$initialState)
+
+# pick parameters for simulation
+par_val <- SBtab$Parameter[["!DefaultValue"]]
+par_names <- SBtab$Parameter[["!Name"]]
+names(par_val) <- par_names
+print(par_val)
+```
+
+# Define MCMC settings
+
+```{r configure}
+# a function that tansforms the ABC variables to acceptable model
+# parameters, re-indexing could also happen here
+parMap <- function (parABC=0) {
+  return(10^parABC)
+}
+
+# scale to determine prior values
+defRange <- 1000
+
+# Define Lower and Upper Limits for logUniform prior distribution for the parameters
+ll <- c(par_val/defRange)
+ul <- c(par_val*defRange)
+ll = log10(ll) # log10-scale
+ul = log10(ul) # log10-scale
+
+# Define the prior distribution. In this case Uniform(ll,ul)
+dprior <- dUniformPrior(ll, ul) # dprior evaluates the prior density function 
+rprior <- rUniformPrior(ll, ul) # rprior generates random samples from the prior
+
+
+# Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
+nChains <- 4  # number of ABCMCMC chains to run
+ns <- 100   # no of samples required from each ABC-MCMC chain
+npc <- 100 # pre-calibration
+
+
+# Function to compute the score (distance) between experimental and simulated data
+distance <- function(funcSim, dataExpr, dataErr = 1.0){
+  d <- mean(((funcSim-dataExpr$AKAR4pOUT)/max(dataExpr$AKAR4pOUT))^2,na.rm=TRUE)
+  return(d)
+}
+
+# Threshold in the ABCMCMC algorithm
+delta <- 0.0005
+```
+
+# Generate an objective function
+
+An *objective function* in this case is a function that can read the experimental conditions (initial state, inputs etc.) and the experimental data in a list of experiments (variable `experiments` in the code). Give a parameter in input, for each experimental condition specified in the list of experiments, the *objective function*:
+1. simulates the ODE model given such parameter, and
+2. computes the distance between the simulated trajectories and the observed trajectories (experimental data).
+
+To simulate the deterministic reaction network model we first create a *simulator* with specific experimental conditions (in this case, initial condition; in more complex models, we can also specify inputs to the system). The *simulator* is saved in an R variable and, given a parameter `p` as argument, it simulated the ODE system, given the experimental conditions previously specified. More details can be found in the article [simulate deterministic AKAR4](simAKAR4.html).
+
+```{r}
+simulate <- simulator.c(experiments,modelName,parMap,noise=TRUE)
+```
+
+
+
+To generate the objective function for ODE models you can use the `uqsa` function `makeObjective`.
+
+```{r makeObjective}
+objectiveFunction <- makeObjective(experiments, modeNamel, distance, parMap, simulate)
+```
+
+
+
+# Run PreCalibration sampling
+
+Before running the MCMC code, we run a precalibration to determine good initial values and algorithmic hyperparameters for the MCMC chains.
+
+```{r precalibration}
+p <- 0.01 # Choose Top 1% samples from the precalibration samples with shortest distance to the experimental values
+sfactor <- 0.1 # Scaling factor used to determine a good covariance matrix for the ABCMCMC proposal moves
+
+pC <- preCalibration(objectiveFunction, npc, rprior, p=p, sfactor=sfactor, delta=delta, num=nChains)
+
+Sigma <- pC$Sigma
+startPar <- pC$startPar
+for(j in 1 : nChains){
+    cat("Chain", j, "\n")
+    cat("\tMin distance of starting parameter for chain",j," = ", min(objectiveFunction(startPar[,j])),"\n")
+    cat("\tMean distance of starting parameter for chain",j," = ", mean(objectiveFunction(startPar[,j])),"\n")
+    cat("\tMax distance of starting parameter for chain",j," = ", max(objectiveFunction(startPar[,j])),"\n")
+}
+```
+
+
+# Run MCMC Sampling
+The sampling is parallelized on several cores using the `parLapply` function.
+
+```{r}
+cl <- makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
+clusterExport(cl, c("objectiveFunction", "M", "ns", "delta", "dprior"))
+out_MCMC <- parLapply(
+  cl,
+  1:nChains,
+  function(j) {
+    tryCatch(
+      # ABCMCMC(
+      #  objectiveFunction, M$startPar[,j], ns, M$Sigma, delta, dprior, batchSize = 1),
+      #  error=function(cond) {message("ABCMCMC crashed"); return(NULL)}
+    )
+  }
+)
+stopCluster(cl)
+
+MCMCoutput <- do.call(Map, c(rbind,out_MCMC))
+colnames(MCMCoutput$draws) <- par_names
+```
+
+# Visualize the sampled parameters
+
+The parameters in the variable `MCMCoutput` are approximate samples from the posterior distribution of the parameters given the considered experiments.
+
+The sampled three dimensional parameters for the AKAR4 model can be visualized via scatter plots.
+
+```{r}
+pairs(MCMCoutput$draws)
+```
+
+The marginal distributions of each parameter in the parameter vector can be visualized via histograms as follows.
+
+```{r}
+for(i in 1:3){
+ hist(MCMCoutput$draws[,i], main=par_names[i], xlab = "Value in log scale")
+}
+```
+
+# Simulate the ODE model given posterior samples
+
+To check the fit of the sampled posterior parameters with the experimental data, we can simulate trajectories given sampled parameters and compare them with the experimental data.
+
+```{r, sim}
+exp_ind <- 1 # index of the experiment to consider
+
+e <- experiments[[exp_ind]]
+
+# Plot the experimental data
+par(bty='n',xaxp=c(80,120,4))
+plot(e$outputTimes, e$outputValues$AKAR4pOUT,ylim=c(90,200), ylab="AKAP79",
+     xlab="t",
+     main=sprintf("Experiment %i",exp_ind),
+     lwd=1.5)
+
+n_draws <- dim(MCMCoutput$draws)[1] # number of sampled posterior parameters
+subsample_indices <- sample(n_draws,10) # indices of 10 random parameters out of the paramneters in
+for(i in subsample_indices){
+  p <- MCMCoutput$draws[i,] # random parameter from the posterior
+
+  y <- simulate(p) # simulate a trajectory (y) given parameter p
+
+  lines(e$outputTimes, y$output, col="blue") # plot the simulated trajectory
+}
+
+```
