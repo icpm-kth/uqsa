@@ -195,8 +195,7 @@ for(i in idx_min_delta){
                          outputFunction = model$func, 
                          vol = vol, 
                          unit = unit, 
-                         nStochSim = 3, 
-                         distance = distanceMeasure)
+                         nStochSim = 3)
   # compute trajectory in all experimental conditions
   output <- sim(param)
   
