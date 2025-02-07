@@ -114,8 +114,6 @@ In the AKAR4 example we have a list of 3 experiments, thus function `sim` simula
 * `func` (the corresponding output of the system given the computed `state`)
 * `cpuSeconds` (simulation runtime)
 
-ADD SIM WITH NOISE
-
 # Plot
 
 Here we plot the results of the simulations.
