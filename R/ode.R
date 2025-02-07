@@ -218,6 +218,8 @@ generateCodeFromFile <- function(fileList){
 #' @param body a character vector of additional content for the body of the function
 #' @param otherArgs additional arguments
 writeCFunction <- function(prefix, fName, defArgs=c("double t","const double y_[]"), retValue=NULL, defs=NULL, values=NULL, body=NULL, otherArgs="void *par", init0 = TRUE){
+	if (is.null(values)) return(character(0))
+
 	if (missing(otherArgs)) {
 		pDefinition <- sprintf("\tdouble *p_=par;")
 	} else {
