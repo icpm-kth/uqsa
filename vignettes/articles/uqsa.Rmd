@@ -1,5 +1,5 @@
 ---
-title: "uqsa"
+title: "Introduction"
 ---
 
 ```{r, include = FALSE}
@@ -8,26 +8,24 @@ knitr::opts_chunk$set(cache = TRUE,
   comment = "#>"
 )
 ```
+UQSA is an R-package for modelling and calibration of biochemical (and other) reaction networks. 
 
-UQSA is an R-package for modelling and calibration of biochemical reaction networks.
+![**Example of a Chemical Reaction Network**](CRN.png){width=100%}
 
-1. In order to use this package you (obviously) need the 
-   [R language](https://www.r-project.org/) (and maybe a graphical interface to it
-   [R-studio](https://posit.co/download/rstudio-desktop/)).
-2. Once R is available, you can install the UQSA package following the
-   [installation instructions](installation.html). The articles on
-   this webpage (_Documentation_ at the top) offer explanations to all
-   the different features of the package, with examples.
-3. After installation, to test that everything is working and to get
-   to know UQSA run the introductory example:
-   [AKAR4](AKAR4.html)
-4. It could be useful to read about the model and data format that we
-   use in our examples: use our short [intro to SBtab](SBtab.html) and
-   perhaps the official docs [SBtab](https://sbtab.net).
-5. Look into more [examples](examples_overview.html).
 
-For very large examples you need to be able to run the sampling
-problem (ABC, MCMC) on a cluster (High Performance Computing).
+<br>
+An important part of this is the parameter estimation (calibration), and to make sure that the uncertainty in the parameter estimates and predictions are accounted for. UQSA allow you to perform Baysian *uncertainty quantification* while calibrating your model. With UQSA you can also do a global *sensitivity analysis* to guide further experiments.
+(To get to know UQSA quickly try out our smallest and easiest example: [AKAR4](AKAR4.html).)
 
-Some of the tools we use to build models are not R packages. This is
-why this documentation goes beyond R in some cases.
+![**UQSA workflow**](uqsa.png){width=100%}
+
+
+<br>
+
+
+UQSA is specially constructed for systems biology models as we use the [SBtab](https://sbtab.net) format to define the model and calibration data (see [intro to SBtab](SBtab.html)). But SBtab can be translated to and from other formats like SBML.
+
+Models (reaction networks) written in SBtab can automatically be translated to ODE or stochastic models within UQSA. These mathematical models can next be simulated and calibrated. As part of the calibration uncertainty quantification is performed. We use likelihood based Bayesian approaches for the ODE models and Approximate Bayesian Comutation (ABC) for the stochastic models to do this. Finally a global sensitivity analysis can be don on a independent or non-independent parameter space.
+
+You can read more about UQSA in our [paper](https://doi.org/10.1093/bioinformatics/bty607) and there are several [examples](examples_overview.html) to try out within this documentation.
+

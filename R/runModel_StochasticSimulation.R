@@ -160,16 +160,16 @@ parameter.from.kinetic.law <- function(kineticLaw,tab){
 	cat("kineticLaw: ", kineticLaw,"\n")
 	kName <- ftsplit(gsub("[-+*/()]"," ",kineticLaw)," ")[1]
 	cat("kName: ",kName,"\n")
-	if (kName %in% tab$Parameter[["!ID"]]){
-		id <- tab$Parameter[["!ID"]]
+	if (kName %in% rownames(tab$Parameter)){
+		id <- rownames(tab$Parameter)
 		kValue <- tab$Parameter[["!DefaultValue"]][id==kName]
 		kUnit <- as.character(tab$Parameter[["!Unit"]][id==kName])
-	} else if ("Expression" %in% names(tab) && kName %in% tab$Expression[["!ID"]]){
-		id <- tab$Expression[["!ID"]]
+	} else if ("Expression" %in% names(tab) && kName %in% rownames(tab$Expression)){
+		id <- rownames(tab$Expression)
 		kValue <- NA
 		kUnit  <- as.character(tab$Expression[["!Unit"]][id==kName])
-	} else if ("Constant" %in% names(tab) && kName %in% tab$Constant[["!ID"]]){
-		id <- tab$Constant[["!ID"]]
+	} else if ("Constant" %in% names(tab) && kName %in% rownames(tab$Constant)){
+		id <- rownames(tab$Constant)
 		kValue <- tab$Constant[["!Value"]][id==kName]
 		kUnit  <- as.character(tab$Constant[["!Unit"]][id==kName])
 	} else {

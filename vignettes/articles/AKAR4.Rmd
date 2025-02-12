@@ -180,7 +180,11 @@ the hexbin package:
 
 ```{r sample-density}
 colnames(mcmc$draws)<-names(parVal)
-hexbin::hexplom(mcmc$draws)
+if (require(hexbin)){
+    hexbin::hexplom(mcmc$draws)
+} else {
+    pairs(mcmc$draws)
+}
 ```
 
 A sensitivity plot using the results of the above loop:

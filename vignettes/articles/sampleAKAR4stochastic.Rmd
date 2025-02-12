@@ -3,7 +3,7 @@ title: "Calibrate the AKAR4 stochastic model (UQ)"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
+knitr::opts_chunk$set(cache = TRUE, eval=TRUE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -93,7 +93,7 @@ rprior <- rUniformPrior(ll, ul) # rprior generates random samples from the prior
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
 nChains <- 4  # number of ABCMCMC chains to run
-ns <- 100   # no of samples required from each ABC-MCMC chain
+ns <- 100  # no of samples required from each ABC-MCMC chain
 npc <- 100 # pre-calibration
 
 
@@ -192,7 +192,7 @@ e <- experiments[[1]]
 par(bty='n',xaxp=c(80,120,4))
 plot(e$outputTimes, e$outputValues$AKAR4pOUT,ylim=c(90,200), ylab="AKAP79",
      xlab="t",
-     main=sprintf("Experiment %i",exp_ind),
+     main=sprintf("Experiment %i",expInd),
      lwd=1.5)
 
 # generate a function (s) that simulates a trajectory given a parameter in input
