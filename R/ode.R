@@ -350,9 +350,15 @@ generateCode <- function(odeModel){
 	# Jacobian
 	J <- replace_powers(t(yJacobian(odeModel$vf,names(odeModel$var))))
 	attr(J,"stride") <- length(odeModel$var)
-	# parameter Jacobian
+	# Parameter Jacobian
 	Jp <- replace_powers(t(yJacobian(odeModel$vf,names(odeModel$par))))
 	attr(Jp,"stride") <- length(odeModel$par)
+	# Output-Function Jacobian
+	fJ <- replace_powers(t(yJacobian(odeModel$func,names(odeModel$var))))
+	attr(fJ,"stride") <- length(odeModel$var)
+	# Output-Function Parameter Jacobian
+	fJp <- replace_powers(t(yJacobian(odeModel$func,names(odeModel$par))))
+	attr(fJp,"stride") <- length(odeModel$par)
 
 	C <- c(C,"",
 		writeComment("ODE vector field: y' = f(t,y;p)"),
@@ -379,6 +385,18 @@ generateCode <- function(odeModel){
 			defs=c(cc,cp,cy,cx),
 			values=odeModel$func,
 			init0=FALSE),"",
+		writeComment("Output function Jacobian: dF(t,y;p)/dx"),
+		writeCFunction(modelName,"funcJac",
+			retValue=c("funcJac_"),
+			defs=c(cc,cp,cy,cx),
+			values=fJ,
+			init0=TRUE),"",
+		writeComment("Output function parameter Jacobian: dF(t,y;p)/dp"),
+		writeCFunction(modelName,"funcJacp",
+			retValue=c("funcJacp_"),
+			defs=c(cc,cp,cy,cx),
+			values=fJp,
+			init0=TRUE),"",
 		writeCFunction(modelName,"default",
 			defArgs="double t",
 			retValue="p_",

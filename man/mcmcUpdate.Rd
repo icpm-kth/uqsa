@@ -7,7 +7,6 @@
 mcmcUpdate(
   simulate,
   experiments,
-  model,
   logLikelihood,
   dprior,
   gradLogLikelihood = NULL,
@@ -23,8 +22,6 @@ parMCMC}
 
 \item{experiments}{the list of experiments (with simulation
 instructions)}
-
-\item{model}{the list of model functions}
 
 \item{logLikelihood}{a function that calculates log-likelihood
 values for given parMCMC}

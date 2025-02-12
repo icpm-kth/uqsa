@@ -5,7 +5,6 @@
 \title{Default log-likelihood function, gradient}
 \usage{
 gradLogLikelihoodFunc(
-  model,
   experiments,
   parMap = identity,
   parMapJac = function(x) {

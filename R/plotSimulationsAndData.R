@@ -187,7 +187,7 @@ plotTimeSeriesBase <- function(simulations, experiments, nmax=NULL){
 			plot(time,experiments[[i]]$outputValues[[j]],type='p',)
 			for (k in seq(nmax)){
 				y<-as.numeric(simulations[[i]]$func[j,,k])
-				lines(time,y,col=rgb(0.3,0.6,0.9,0.1));
+				lines(time,y,col=rgb(0.3,0.6,0.9,0.4));
 			}
 		}
 	}

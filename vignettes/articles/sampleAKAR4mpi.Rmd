@@ -1,9 +1,10 @@
 ---
-title: "sampleAKAP79"
+title: "Sample AKAR4 with Parallel Tempering"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache=FALSE, eval=TRUE,
+knitr::opts_chunk$set(cache = TRUE,
+  eval = TRUE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -27,7 +28,7 @@ files. We do this step only once and have the MPI part of the process
 load the coimpleted results of this:
 
 ```{r SBtab}
-f <- uqsa::uqsa_example("AKAP79")
+f <- uqsa::uqsa_example("AKAR4")
 sb <- SBtabVFGEN::sbtab_from_tsv(f)
 ```
 
@@ -41,8 +42,8 @@ m <- SBtabVFGEN::sbtab_to_vfgen(sb)
 
 ```{r experiments}
 ex <- SBtabVFGEN::sbtab.data(sb,m$conservationLaws)
-saveRDS(sb,file="AKAP79-sb.RDS")
-saveRDS(ex,file="AKAP79-ex.RDS")
+saveRDS(sb,file="AKAR4-sb.RDS")
+saveRDS(ex,file="AKAR4-ex.RDS")
 ```
 
 The next step is to generate the code, write it into a file ending in
@@ -55,20 +56,6 @@ cat(C,sep="\n",file=cFile)                 # write sources to that file
 modelName <- checkModel(comment(sb),cFile) # this compiles the sources
 ```
 
-```{r, label="test-order-1", eval=FALSE, include=FALSE}
-cat("test",file="test.txt")
-```
-
-```{sh, label="test-order-2", eval=FALSE, include=FALSE}
-cat test.txt
-echo "MODIFICATION" >> test.txt
-```
-
-```{r, label="test-ordre-3", eval=FALSE, include=FALSE}
-l <- readLines("test.txt")
-cat(l,sep="\n")
-```
-
 # Sample via MPI
 
 Here we run a prepared R script from the command line (any POSIX shell will do: bash/zsh/fish/dash)
@@ -79,7 +66,7 @@ N=4 # by default
 echo "We will use $N cores with $nm"
 
 date
-mpirun -H localhost:$N ./pt-mh-akap79.R
+mpirun -H localhost:$N ./pt-mh-akar4.R 50000 > ./log.txt 2>&1
 date
 ```
 
@@ -92,12 +79,13 @@ Here we check the integrated auto-correlation length (Markov chain
 time)
 
 ```{r uwerr}
-Sample <- readRDS(file="./AKAP79-parameter-sample-for-rank-0.RDS")
+Sample <- readRDS(file="./AKAR4-parameter-sample-for-rank-0.RDS")
 n <- NROW(Sample)
 l <- attr(Sample,"logLikelihood")
 
 if (require(hadron)){
     res <- hadron::uwerr(data=l,pl=TRUE)
+    tau <- ceiling(res$tauint+res$dtauint)
 } else {
     plot(l,type="l",xlab="mcmc index",ylab="log-likelihood")
 }
@@ -107,11 +95,11 @@ if (require(hadron)){
 We reduce the sample for plotting purposes, by showing only every \(\tau_{\text{int.}}\)-th point and create a pairs plot for the first 6 parameters:
 
 ```{r pairs, fig.width=12, fig.height=12, fig.fullwidth=TRUE, dpi=100}
-X <- Sample[seq(1,n,by=ceiling(res$tauint)),]
+X <- Sample[seq(1,n,by=tau),]
 colnames(X) <- rownames(sb$Parameter)
 if (require(hexbin)){
-    hexbin::hexplom(X[,seq(6)])
+    hexbin::hexplom(X)
 } else {
-    pairs(X[,seq(6)])
+    pairs(X)
 }
 ```

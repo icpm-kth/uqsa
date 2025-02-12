@@ -1,5 +1,5 @@
 ---
-title: "Sample AKAR4"
+title: "Sample AKAR4 via ABC"
 ---
 
 ```{r, include = FALSE}
@@ -116,7 +116,7 @@ Define Number of Samples for the pre-calibration `npc` and each
 ABC-MCMC chain `ns`. During ABC, we save every 100-th point, so `work(nChains*ns*100) ≈ work(npc)`:
 
 ```{r sample-size}
-ns <- 800    # ABC-MCMC sample size
+ns <- 50000  # ABC-MCMC sample size
 npc <- 50000 # pre-calibration size
 ```
 
@@ -178,12 +178,21 @@ print(time_)
 We plot the sample as a two dimensional histogram plot-matrix using
 the hexbin package:
 
-```{r sample-density}
+```{r sample-density, fig.width=12, fig.height=12, dpi=100}
 colnames(mcmc$draws)<-names(parVal)
-if (require(hexbin)){
-    hexbin::hexplom(mcmc$draws)
+
+if (require(hadron)){
+    ac <- hadron::uwerr(data=mcmc$deltas,nrep=rep(10000,8),pl=TRUE)
+    tau <- ceiling(ac$tauint+ac$dtauint)
+    i <- seq(1,NROW(mcmc$draws),by=tau)
 } else {
-    pairs(mcmc$draws)
+    i <- seq(1,NROW(mcmc$draws),by=100)
+}
+
+if (require(hexbin)){
+    hexbin::hexplom(mcmc$draws[i,])
+} else {
+    pairs(mcmc$draws[i,])
 }
 ```
 

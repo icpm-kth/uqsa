@@ -35,17 +35,17 @@ differential equation, this will print lots of text about how it
 interprets the contents (printouts are omitted here):
 
 ```{r include=FALSE}
-m  <- SBtabVFGEN::sbtab_to_vfgen(sb,cla=FALSE)
+m  <- SBtabVFGEN::sbtab_to_vfgen(sb)
 ```
 
 ```{r eval=FALSE}
-m  <- SBtabVFGEN::sbtab_to_vfgen(sb,cla=FALSE)
+m  <- SBtabVFGEN::sbtab_to_vfgen(sb)
 ```
 
 We will also load the experimental data:
 
 ```{r data}
-ex <- SBtabVFGEN::sbtab.data(sb)
+ex <- SBtabVFGEN::sbtab.data(sb,m$conservationLaws)
 ```
 
 We have loaded these constructs:
@@ -81,7 +81,7 @@ The function `checkModel` also appends the location of the shared library as a c
 For a test simulation we create the function `s` which will remember the experiments to simulate and the model to simulate them with:
 
 ```{r test}
-s <- simulator.c(ex,modelName,parMap=log10ParMap)
+s <- simcf(ex,modelName,parMap=log10ParMap) # or simulator.c
 p <- log10(sb$Parameter[["!DefaultValue"]])
 names(p) <- rownames(sb$Parameter)
 y <- s(p) # here the simulation happens
@@ -96,7 +96,7 @@ e_ <- ex[[1]]$errorValues[[1]]
 t_ <- ex[[1]]$outputTimes
 f_ <- y[[1]]$func[1,,1]
 par(bty="n")
-plot(t_,d_,type="p",main=names(ex)[1],xlab="time",ylab=ylab)
+plot(t_,d_,type="p",main=names(ex)[1],xlab="time",ylab=ylab,ylim=c(100,200))
 arrows(t_,d_,t_,d_+e_,angle=90,length=0.01)
 arrows(t_,d_,t_,d_-e_,angle=90,length=0.01)
 lines(t_,f_,lw=3)
@@ -112,17 +112,18 @@ dprior <- dNormalPrior(p,sd)
 rprior <- rNormalPrior(p,sd)
 ```
 
-The Metropolis Hastings Algorithm does not require any model functions (The R variant of the generated code), so we set model to `NULL`:
+The function `mcmcUpdate` will automatically determine that the
+Metropolis Hastings Algorithm should be used with these inputs:
 
 ```{r likelihood}
 llf <- logLikelihoodFunc(ex)
-metropolis_hastings <- mcmcUpdate(s,ex,model=NULL,logLikelihood=llf,dprior=dprior)
+metropolis_hastings <- mcmcUpdate(s,ex,logLikelihood=llf,dprior=dprior)
 MH_MCMC <- mcmc(metropolis_hastings)
 ```
 
 Obtain a sample of parameters:
 
-```{r sample}
+```{r sample, fig.width=12, fig.height=12, dpi=100}
 x <- mcmcInit(
     1.0,
     parMCMC=p,
@@ -131,12 +132,15 @@ x <- mcmcInit(
     dprior=dprior)
 
 h <- 5e-2
-S <- MH_MCMC(x,N=10000,eps=h)
+N <- 3e4
+S <- MH_MCMC(x,N,eps=h)
 colnames(S) <- names(p)
 print(attr(S,"acceptanceRate"))
 
 if (require(hexbin)){
     hexplom(S)
+} else {
+    pairs(S)
 }
 ```
 
@@ -156,8 +160,10 @@ A <- function(a) {
 
 set.seed(137)
 
+
+nCores <- parallel::detectCores()
 bigSample <- parallel::mclapply(
-    seq(8),
+    seq(nCores),
     \(i) {
         x <- mcmcInit(
             1.0,
@@ -165,14 +171,15 @@ bigSample <- parallel::mclapply(
             simulate=s,
             logLikelihood=llf,
             dprior=dprior)
-        for (i in seq(6)){
+        ## adjust acceptance rate to 25% via step-size h
+        for (i in seq(30)){
             z <- MH_MCMC(x,200,h)
             x <- attr(z,"lastPoint")
             h <- h*A(attr(z,"acceptanceRate"))
         }
-        return(MH_MCMC(x,10000,h))
+        return(MH_MCMC(x,N,h))
     },
-    mc.cores=parallel::detectCores()
+    mc.cores=nCores
 )
 
 S_ <- Reduce(\(a,b) {rbind(a,b)},bigSample,init=NULL)
@@ -180,11 +187,19 @@ L_ <- Reduce(\(a,b) {c(a,attr(b,"logLikelihood"))},bigSample,init=NULL)
 colnames(S_) <- names(p)
 
 if (require(hadron)){
-    ac <- hadron::uwerr(data=L_,nrep=rep(10000,8),pl=TRUE)
+    ac <- hadron::uwerr(data=L_,nrep=rep(N,nCores),pl=TRUE)
+    tau <- ceiling(ac$tauint+ac$dtauint)
+    i <- seq(1,NROW(S_),by=tau)
+} else {
+    i <- seq(1,NROW(S_),by=100)
+    plot(L_,type="l",xlab="mcmc index",ylab="log-likelihood")
 }
-
+```
+```{r pairs-2, fig.width=12, fig.height=12, dpi=100}
 if (require(hexbin)){
-    hexbin::hexplom(S_)
+    hexbin::hexplom(S_[i,])
+} else {
+    pairs(S_[i,])
 }
 ```
 
