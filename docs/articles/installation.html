@@ -47,11 +47,8 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
-    <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
     <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
     <a class="dropdown-item" href="../articles/sa.html">Sensitivity Analysis</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
@@ -60,11 +57,7 @@
     <a class="dropdown-item" href="../articles/generateCodeInR.html">Generate Model Code</a>
     <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Sensitivity Analysis</h6>
     <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
   </div>
 </li>
@@ -77,6 +70,7 @@
     <a class="dropdown-item" href="../articles/simAKAR4.html">Simulate deterministic AKAR4</a>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate stochastic AKAR4</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4.html">UQ on deterministic AKAR4</a>
+    <a class="dropdown-item" href="../articles/sampleAKAR4mpi.html">UQ on deterministic AKAR4 with MPI</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">UQ on stochasic AKAR4</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <a class="dropdown-item" href="../articles/UQSA_AKAR4.html">UQ and SA on AKAR4</a>
@@ -124,57 +118,52 @@
     
     
 <div class="section level2">
-<h2 id="prerequisites-for-model-building">Prerequisites for Model Building<a class="anchor" aria-label="anchor" href="#prerequisites-for-model-building"></a>
-</h2>
-<p>See the Sections below for instructions. Short summary of what they
-do:</p>
-<ul>
-<li>Install the <a href="https://www.gnu.org/software/gsl/" class="external-link">GNU
-Scientific Library</a>
-<ul>
-<li>in your system, using your package management system</li>
-</ul>
-</li>
-<li>
-<a href="https://cran.r-project.org/package=Ryacas" class="external-link">Ryacas</a>
-<ul>
-<li><code>install.packages("Ryacas")</code></li>
-<li>uses <a href="http://www.yacas.org/index.html" class="external-link">yacas</a> as
-backend</li>
-</ul>
-</li>
-</ul>
-<div class="section level3">
-<h3 id="pick-one">Pick One<a class="anchor" aria-label="anchor" href="#pick-one"></a>
-</h3>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># macOS has a lot of issues with xcode, it loves it for some reason; maybe agree to xcode license</span></span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="ex">brew</span> install pkg-config gcc gsl yacas</span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># other linux distributions have some version of this:</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#  zypper install,</span></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#  apk add,</span></span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#  guix install,</span></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co"># etc.</span></span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="fu">sudo</span> apt install pkg-config gcc libgsl-dev yacas</span></code></pre></div>
-</div>
-</div>
-<div class="section level2">
 <h2 id="installation-of-the-r-packages">Installation of the R packages<a class="anchor" aria-label="anchor" href="#installation-of-the-r-packages"></a>
 </h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<p>In order to use UQSA you (obviously) need the <a href="https://www.r-project.org/" class="external-link">R language</a> (and maybe a graphical
+interface to it like <a href="https://posit.co/download/rstudio-desktop/" class="external-link">R-studio</a>). With
+this you can run most of our <a href="./examples_overview.html">examples</a> by installing the following
+packages:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># requires the 'remotes' package</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://remotes.r-lib.org" class="external-link">remotes</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="va">remotes</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/SBtabVFGEN"</span>,dependencies<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/rgsl"</span>,dependencies<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"icpm-kth/uqsa"</span>,dependencies<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>To also build your own model from SBtab files you need a few external
+programs and one additional R package.</p>
+</div>
+<div class="section level2">
+<h2 id="model-building">Model building<a class="anchor" aria-label="anchor" href="#model-building"></a>
+</h2>
+<p>The model building part of UQSA (transfering the SBtab network model
+to a mathematical model in C or R) requires that you have a C compiler
+(e.g. <a href="https://gcc.gnu.org" class="external-link">gcc</a>), the GNU Scientific Library
+<a href="https://www.gnu.org/software/gsl/" class="external-link">(gsl)</a> and <a href="https://www.freedesktop.org/wiki/Software/pkg-config/" class="external-link">pkg-config</a>.
+These can be installed all at once with the following command (that you
+have to write in the terminal window of your computer).</p>
+<p><strong>In macOS:</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># macOS has a lot of issues with xcode, it loves it for some reason; maybe agree to xcode license</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="ex">brew</span> install pkg-config gcc gsl</span></code></pre></div>
+<p><strong>In linux (ubuntu/debian):</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># other linux distributions have some version of this:</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#  zypper install,</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#  apk add,</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#  guix install,</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co"># etc.</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="fu">sudo</span> apt install pkg-config gcc libgsl-dev</span></code></pre></div>
+<p>Model building also requires an additional R package (to be installed
+in R) based on <a href="http://www.yacas.org/index.html" class="external-link">yacas</a>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="ex">install.packages</span><span class="er">(</span><span class="st">"Ryacas"</span><span class="kw">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="mpi">MPI<a class="anchor" aria-label="anchor" href="#mpi"></a>
 </h2>
 <p>If you want to run on several nodes of a cluster via MPI
 (debian/ubuntu):</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">sudo</span> apt install libopenmpi-dev</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">sudo</span> apt install libopenmpi-dev</span></code></pre></div>
 <p>and in R:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"pbdMPI"</span><span class="op">)</span></span></code></pre></div>
 <p>On other systems, install the equivalent package for <em>OpenMPI</em>
 and <em>pbdMPI</em> (R package interfacing with MPI libraries on your

@@ -9,40 +9,44 @@ knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
 )
 ```
 
-# Prerequisites for Model Building
-
-See the Sections below for instructions. Short summary of what they do:
-
-* Install the [GNU Scientific Library](https://www.gnu.org/software/gsl/)
-  - in your system, using your package management system
-* [Ryacas](https://cran.r-project.org/package=Ryacas)
-  - `install.packages("Ryacas")`
-  - uses [yacas](http://www.yacas.org/index.html) as backend
-
-## Pick One
-
-```{sh macOS, eval=FALSE}
-# macOS has a lot of issues with xcode, it loves it for some reason; maybe agree to xcode license
-brew install pkg-config gcc gsl yacas
-```
-
-```{sh ubuntu/debian, eval=FALSE}
-# other linux distributions have some version of this:
-#  zypper install,
-#  apk add,
-#  guix install,
-# etc.
-sudo apt install pkg-config gcc libgsl-dev yacas
-```
 
 # Installation of the R packages
-
+In order to use UQSA you (obviously) need the 
+   [R language](https://www.r-project.org/) (and maybe a graphical interface to it like
+   [R-studio](https://posit.co/download/rstudio-desktop/)).
+With this you can run most of our [examples](./examples_overview.html) by installing the following packages:
 ```{r remotes, eval=FALSE}
 # requires the 'remotes' package
 if (!require(remotes)) install.packages(remotes)
 remotes::install_github("icpm-kth/SBtabVFGEN",dependencies=TRUE)
 remotes::install_github("icpm-kth/rgsl",dependencies=TRUE)
 remotes::install_github("icpm-kth/uqsa",dependencies=TRUE)
+```
+To also build your own model from SBtab files you need a few external programs and one additional R package. 
+
+# Model building
+The model building part of UQSA (transfering the SBtab network model to a mathematical model in C or R) requires that you have a C compiler (e.g. [gcc](https://gcc.gnu.org)), the GNU Scientific Library [(gsl)](https://www.gnu.org/software/gsl/) and [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/).
+These can be installed all at once with the following command (that you have to write in the terminal window of your computer).
+
+**In macOS:**
+```{sh macOS, eval=FALSE}
+# macOS has a lot of issues with xcode, it loves it for some reason; maybe agree to xcode license
+brew install pkg-config gcc gsl
+```
+
+**In linux (ubuntu/debian):**
+```{sh ubuntu/debian, eval=FALSE}
+# other linux distributions have some version of this:
+#  zypper install,
+#  apk add,
+#  guix install,
+# etc.
+sudo apt install pkg-config gcc libgsl-dev
+```
+
+Model building also requires an additional R package (to be installed in R) based on [yacas](http://www.yacas.org/index.html):
+```{sh Ryacas, eval=FALSE}
+install.packages("Ryacas")
 ```
 
 # MPI
