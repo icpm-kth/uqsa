@@ -52,7 +52,7 @@ The next step is to generate the code, write it into a file ending in
 C <- uqsa::generateCode(m)
 cFile <- sprintf("./%s_gvf.c",comment(sb)) # GSL Vector Field file name
 cat(C,sep="\n",file=cFile)                 # write sources to that file
-modelName <- checkModel(comment(sb),cFile) # this compiles the sources
+modelName <- uqsa::checkModel(comment(sb),cFile) # this compiles the sources
 ```
 
 ```{r, label="test-order-1", eval=FALSE, include=FALSE}
@@ -78,9 +78,12 @@ N=4 # by default
 [ -e '/proc/cpuinfo' ] && N=$((`grep -c processor /proc/cpuinfo`)) && nm="`grep -m1 'model name' /proc/cpuinfo`"
 echo "We will use $N cores with $nm"
 
+start_time=$((`date +%s`))
 date
-mpirun -H localhost:$N ./pt-mh-akap79.R
+mpirun -H localhost:$N ./pt-smmala-akap79.R
 date
+end_time=$((`date +%s`))
+echo "Time spent sampling: $((end_time - start_time)) seconds ($(( (end_time - start_time)/60 )) minutes)."
 ```
 
 On a high performance computing (hpc) cluster, the above would be in a

@@ -3,7 +3,8 @@ title: "Parallel chains with MPI"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
+knitr::opts_chunk$set(eval = FALSE,
+  cache = TRUE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -53,11 +54,11 @@ below instructions may not work for everyone.
 # AKAP79
 
 MPI has several mechanisms to launch worker processes, one ow which is
-the `spawn` method (`MPI_Comm_spawn`). We don't use this here. 
+the `spawn` method (`MPI_Comm_spawn`). We don't use this here.
 
 Instead we launch an Rscript via `mpirun` (and the `send` and
 `recv` functions on `MPI_COMM_WORLD`, which corresponds to `comm=0` in
-pbdMPI). 
+pbdMPI).
 
 The only difference between the workers is the `rank` and possibly the
 random number seed. The rank will determine the value of $\beta$ and
@@ -77,7 +78,7 @@ For this to work, `AKAP79.R` starts with the line:
 
 ```{sh, eval=FALSE}
 #!/usr/bin/env Rscript
-## ^^^^^^^^^^^^^^^^^^^ 
+## ^^^^^^^^^^^^^^^^^^^
 ## The above has to be the first line.
 ## Nothing may be written before that.
 [...]
@@ -169,7 +170,7 @@ if (n>0){
 ## ----range--------------------------------------------------------------------
 stdv <- head(sb$Parameter[["!Std"]],length(parMCMC))
 if (is.null(stdv) || any(is.na(stdv))){ # some alternative default value
-	stdv <- parMCMC*0.05 + max(parMCMC)*0.05 + 1e-2 
+	stdv <- parMCMC*0.05 + max(parMCMC)*0.05 + 1e-2
 }
 dprior <- dNormalPrior(mean=parMCMC,sd=stdv)
 rprior <- rNormalPrior(mean=parMCMC,sd=stdv)

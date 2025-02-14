@@ -10,23 +10,12 @@ knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
 ```
 
 
-# Installation of the R packages
-In order to use UQSA you (obviously) need the 
-   [R language](https://www.r-project.org/) (and maybe a graphical interface to it like
-   [R-studio](https://posit.co/download/rstudio-desktop/)).
-With this you can run most of our [examples](./examples_overview.html) by installing the following packages:
-```{r remotes, eval=FALSE}
-# requires the 'remotes' package
-if (!require(remotes)) install.packages(remotes)
-remotes::install_github("icpm-kth/SBtabVFGEN",dependencies=TRUE)
-remotes::install_github("icpm-kth/rgsl",dependencies=TRUE)
-remotes::install_github("icpm-kth/uqsa",dependencies=TRUE)
-```
-To also build your own model from SBtab files you need a few external programs and one additional R package. 
 
-# Model building
+# Prerequisits
+
+
 The model building part of UQSA (transfering the SBtab network model to a mathematical model in C or R) requires that you have a C compiler (e.g. [gcc](https://gcc.gnu.org)), the GNU Scientific Library [(gsl)](https://www.gnu.org/software/gsl/) and [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/).
-These can be installed all at once with the following command (that you have to write in the terminal window of your computer).
+These can be installed all at once with the following command (that you have to write in the terminal window).
 
 **In macOS:**
 ```{sh macOS, eval=FALSE}
@@ -44,10 +33,25 @@ brew install pkg-config gcc gsl
 sudo apt install pkg-config gcc libgsl-dev
 ```
 
-Model building also requires an additional R package (to be installed in R) based on [yacas](http://www.yacas.org/index.html):
+# Installation of the R packages
+In order to use UQSA you (obviously) need the [R language](https://www.r-project.org/) (and maybe a graphical interface to it like [R-studio](https://posit.co/download/rstudio-desktop/)).
+
+In R, you first need install the package [Ryacas](https://cran.r-project.org/web/packages/Ryacas/index.html):
 ```{sh Ryacas, eval=FALSE}
 install.packages("Ryacas")
 ```
+which is needed for model building.
+
+You can now install the packages developed by the uqsa team:
+```{r remotes, eval=FALSE}
+# requires the 'remotes' package
+if (!require(remotes)) install.packages(remotes)
+remotes::install_github("icpm-kth/SBtabVFGEN",dependencies=TRUE)
+remotes::install_github("icpm-kth/rgsl",dependencies=TRUE)
+remotes::install_github("icpm-kth/uqsa",dependencies=TRUE)
+```
+
+
 
 # MPI
 

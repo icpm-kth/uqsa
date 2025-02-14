@@ -163,6 +163,5 @@ reference:
   - pbdMPI_swap_temperatures
   - sampleWithNoise
   - simcf
-  - simulateAndComputeDistance
   - swap_points_locally
   - writeCFunction
