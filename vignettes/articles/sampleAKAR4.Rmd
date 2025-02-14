@@ -132,13 +132,15 @@ x <- mcmcInit(
     dprior=dprior)
 
 h <- 5e-2
-N <- 3e4
+N <- 6e4
+start_time <- Sys.time()
 S <- MH_MCMC(x,N,eps=h)
+cat(sprintf("Time spent sampling: %i seconds\n",round(difftime(Sys.time(),start_time,units="secs"))))
 colnames(S) <- names(p)
 print(attr(S,"acceptanceRate"))
 
 if (require(hexbin)){
-    hexplom(S)
+    hexplom(S,xbins=16)
 } else {
     pairs(S)
 }
@@ -153,13 +155,14 @@ We can try to obtain a higher quality sample, through simple means:
 3. Remove burn-in phase from each chain
 4. Adjust the step size at least once to get close to 25% acceptance rate
 
-```{r betterSample}
+```{r betterSample, collapse=FALSE}
 A <- function(a) {
     return(0.5 + a^4/(0.25^4 + a^4))
 }
 
 set.seed(137)
 
+start_time = Sys.time()
 
 nCores <- parallel::detectCores()
 bigSample <- parallel::mclapply(
@@ -182,6 +185,11 @@ bigSample <- parallel::mclapply(
     mc.cores=nCores
 )
 
+end_time = Sys.time()
+time_ = difftime(end_time,start_time,units="mins")
+cat(sprintf("Time spend on sampling: %f minutes\n",time_))
+
+
 S_ <- Reduce(\(a,b) {rbind(a,b)},bigSample,init=NULL)
 L_ <- Reduce(\(a,b) {c(a,attr(b,"logLikelihood"))},bigSample,init=NULL)
 colnames(S_) <- names(p)
@@ -190,14 +198,19 @@ if (require(hadron)){
     ac <- hadron::uwerr(data=L_,nrep=rep(N,nCores),pl=TRUE)
     tau <- ceiling(ac$tauint+ac$dtauint)
     i <- seq(1,NROW(S_),by=tau)
+    cat(sprintf("tau: %i ± %i\n",round(ac$tauint),round(ac$dtauint)))
+    cat(sprintf("Effective sample size: %i\n",round((nCores*N)/(2*tau))))
 } else {
     i <- seq(1,NROW(S_),by=100)
     plot(L_,type="l",xlab="mcmc index",ylab="log-likelihood")
 }
 ```
+
+And finally, we produce the same pairwise density plot (binning) or scatterplots:
+
 ```{r pairs-2, fig.width=12, fig.height=12, dpi=100}
 if (require(hexbin)){
-    hexbin::hexplom(S_[i,])
+    hexbin::hexplom(S_[i,],xbins=16)
 } else {
     pairs(S_[i,])
 }

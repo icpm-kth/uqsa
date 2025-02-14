@@ -58,16 +58,21 @@ modelName <- checkModel(comment(sb),cFile) # this compiles the sources
 
 # Sample via MPI
 
-Here we run a prepared R script from the command line (any POSIX shell will do: bash/zsh/fish/dash)
+Here we run a prepared R script from the command line (any POSIX shell
+will do: bash/zsh/fish/dash). This way, the entire R program is
+wrapped in an mpirun call.
 
 ```{sh MPI, eval=TRUE}
 N=4 # by default
 [ -e '/proc/cpuinfo' ] && N=$((`grep -c processor /proc/cpuinfo`)) && nm="`grep -m1 'model name' /proc/cpuinfo`"
 echo "We will use $N cores with $nm"
 
+start_time=$((`date +%s`))
 date
 mpirun -H localhost:$N ./pt-mh-akar4.R 50000 > ./log.txt 2>&1
 date
+end_time=$((`date +%s`))
+echo "Time spent sampling: $((end_time - start_time)) seconds."
 ```
 
 On a high performance computing (hpc) cluster, the above would be in a
@@ -86,6 +91,7 @@ l <- attr(Sample,"logLikelihood")
 if (require(hadron)){
     res <- hadron::uwerr(data=l,pl=TRUE)
     tau <- ceiling(res$tauint+res$dtauint)
+    cat(sprintf("Effective sampple size: %i\n",round(n/(2*tau))))
 } else {
     plot(l,type="l",xlab="mcmc index",ylab="log-likelihood")
 }
@@ -98,7 +104,7 @@ We reduce the sample for plotting purposes, by showing only every \(\tau_{\text{
 X <- Sample[seq(1,n,by=tau),]
 colnames(X) <- rownames(sb$Parameter)
 if (require(hexbin)){
-    hexbin::hexplom(X)
+    hexbin::hexplom(X,xbins=16)
 } else {
     pairs(X)
 }
