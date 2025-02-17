@@ -15,18 +15,13 @@ library(SBtabVFGEN)
 library(rgsl)
 ```
 
-In this article, we will assume that you don't yet have `c` sources
-prepared for your model. And rather than vfgen, or the RPN-derivative
-package, we will use the uqsa (this package) code generating
-functions.
+# Load Model and Data
 
-# Locate Files
+The first step is to locate and load the SBtab model files. In this example we use the SBtab files from an already existing example ("AKAR4"). (In the [user model](user_model.html) article you can read about how the set up your own SBtab model. You can list the files in a directory with the `dir()` command.)  
 
-The first step is to load the SBtab model files
-(with `dir` for non-example models):
 
 ```{r}
-f  <- uqsa::uqsa_example("AKAR4")
+f  <- uqsa::uqsa_example("AKAR4") 
 sb <- SBtabVFGEN::sbtab_from_tsv(f)
 ```
 
@@ -42,7 +37,7 @@ m  <- SBtabVFGEN::sbtab_to_vfgen(sb)
 m  <- SBtabVFGEN::sbtab_to_vfgen(sb)
 ```
 
-We will also load the experimental data:
+We also load the experimental data:
 
 ```{r data}
 ex <- SBtabVFGEN::sbtab.data(sb,m$conservationLaws)
@@ -56,9 +51,9 @@ print(names(ex))
 print(names(m))
 ```
 
-## Generate Code
+## Generate C ODE-code for model simulation
 
-We take `m` and generate c code from it, then write this code into a file (`AKAR4_gvf.c`):
+We next take `m` and generate c code from it, then write this code into a file (`AKAR4_gvf.c`):
 
 ```{r code}
 C <- uqsa::generateCode(m)
@@ -78,7 +73,7 @@ modelName <- checkModel("AKAR4",modelFile="./AKAR4_gvf.c")
 
 The function `checkModel` also appends the location of the shared library as a comment to its return value.
 
-For a test simulation we create the function `s` which will remember the experiments to simulate and the model to simulate them with:
+For a test simulation we create the function `s` which will remember the experiments to simulate and the model to simulate them with. The function/closure `s` maps parameter vectors to model solutions (trajectories):
 
 ```{r test}
 s <- simcf(ex,modelName,parMap=log10ParMap) # or simulator.c
@@ -87,7 +82,7 @@ names(p) <- rownames(sb$Parameter)
 y <- s(p) # here the simulation happens
 ```
 
-The function/closure `s` maps parameter vectors to model solutions (trajectories):
+We can plot the simulated output together with the experimental data and experimental error:
 
 ```{r plot}
 ylab <- colnames(ex[[1]]$outputValues)
@@ -104,7 +99,7 @@ lines(t_,f_,lw=3)
 
 ## Take a parameter Sample for this Model
 
-We use just one core as this is a tiny model. No MPI, no parallel tempering:
+We use just one core as this is a tiny model. No MPI, no parallel tempering. First we construct the prior:
 
 ```{r prior}
 sd <- rep(2,length(p))
@@ -112,8 +107,8 @@ dprior <- dNormalPrior(p,sd)
 rprior <- rNormalPrior(p,sd)
 ```
 
-The function `mcmcUpdate` will automatically determine that the
-Metropolis Hastings Algorithm should be used with these inputs:
+Next, we set up the loglikelihood function and the function `mcmcUpdate` which will automatically determine that the
+Metropolis Hastings Algorithm should be used with these inputs. Finally we construct the function 'MH_MCMC' (below), which actually performs the MCMC run, this takes the inital values, number of steps and the stepsize as arguments.
 
 ```{r likelihood}
 llf <- logLikelihoodFunc(ex)
@@ -121,7 +116,7 @@ metropolis_hastings <- mcmcUpdate(s,ex,logLikelihood=llf,dprior=dprior)
 MH_MCMC <- mcmc(metropolis_hastings)
 ```
 
-Obtain a sample of parameters:
+Finally, to obtain a sample of parameters:
 
 ```{r sample, fig.width=12, fig.height=12, dpi=100}
 x <- mcmcInit(
@@ -132,15 +127,13 @@ x <- mcmcInit(
     dprior=dprior)
 
 h <- 5e-2
-N <- 6e4
-start_time <- Sys.time()
+N <- 3e4
 S <- MH_MCMC(x,N,eps=h)
-cat(sprintf("Time spent sampling: %i seconds\n",round(difftime(Sys.time(),start_time,units="secs"))))
 colnames(S) <- names(p)
 print(attr(S,"acceptanceRate"))
 
 if (require(hexbin)){
-    hexplom(S,xbins=16)
+    hexplom(S)
 } else {
     pairs(S)
 }
@@ -155,14 +148,13 @@ We can try to obtain a higher quality sample, through simple means:
 3. Remove burn-in phase from each chain
 4. Adjust the step size at least once to get close to 25% acceptance rate
 
-```{r betterSample, collapse=FALSE}
+```{r betterSample}
 A <- function(a) {
     return(0.5 + a^4/(0.25^4 + a^4))
 }
 
 set.seed(137)
 
-start_time = Sys.time()
 
 nCores <- parallel::detectCores()
 bigSample <- parallel::mclapply(
@@ -185,11 +177,6 @@ bigSample <- parallel::mclapply(
     mc.cores=nCores
 )
 
-end_time = Sys.time()
-time_ = difftime(end_time,start_time,units="mins")
-cat(sprintf("Time spend on sampling: %f minutes\n",time_))
-
-
 S_ <- Reduce(\(a,b) {rbind(a,b)},bigSample,init=NULL)
 L_ <- Reduce(\(a,b) {c(a,attr(b,"logLikelihood"))},bigSample,init=NULL)
 colnames(S_) <- names(p)
@@ -198,19 +185,14 @@ if (require(hadron)){
     ac <- hadron::uwerr(data=L_,nrep=rep(N,nCores),pl=TRUE)
     tau <- ceiling(ac$tauint+ac$dtauint)
     i <- seq(1,NROW(S_),by=tau)
-    cat(sprintf("tau: %i ± %i\n",round(ac$tauint),round(ac$dtauint)))
-    cat(sprintf("Effective sample size: %i\n",round((nCores*N)/(2*tau))))
 } else {
     i <- seq(1,NROW(S_),by=100)
     plot(L_,type="l",xlab="mcmc index",ylab="log-likelihood")
 }
 ```
-
-And finally, we produce the same pairwise density plot (binning) or scatterplots:
-
 ```{r pairs-2, fig.width=12, fig.height=12, dpi=100}
 if (require(hexbin)){
-    hexbin::hexplom(S_[i,],xbins=16)
+    hexbin::hexplom(S_[i,])
 } else {
     pairs(S_[i,])
 }
@@ -224,9 +206,8 @@ Let us also plot the log-likelihood
 plot(L_,main="Big Sample for AKAR4",xlab="Markov chain index",ylab="log-likelihood", type="l")
 ```
 
-This should be enough for this model size. For bigger models we turn
-to either more advanced MCMC algorithms, such as SMMALA or parallel
-tempering combined with the Metropolis-Hastings algorithm.
+This should be enough for this model size to be used as a basis for uncertainty quantification. For bigger models we turn
+to either more advanced MCMC algorithms, such as [SMMALA](smmala.html)or [parallel tempering](mpi.html) combined with the Metropolis-Hastings algorithm.
 
 ## Alternative to `checkModel()`
 
