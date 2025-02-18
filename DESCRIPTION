@@ -26,7 +26,8 @@ Suggests:
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
-    hexbin
+    hexbin,
+    GillespieSSA2
 Remotes:
     icpm-kth/rgsl,
     icpm-kth/SBtabVFGEN
