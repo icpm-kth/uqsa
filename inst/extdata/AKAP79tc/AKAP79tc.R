@@ -1,4 +1,5 @@
-require("deSolve")
+## can be used with deSolve:
+## require("deSolve")
 
 # ode vector field: y'=f(t,y;p)
 AKAP79tc_vf <- function(t, state, parameters)

@@ -134,7 +134,7 @@ tm <- experiments[[E]]$outputTime
 par(bty='n',xaxp=c(80,200,4))
 plot(tm,                      # time points
      y[[E]]$func[1,,1],       # simulated trajectory
-     type='l',                
+     type='l',
      ylim=c(90,200), ylab="AKAR4p",
      xlab="t",
      main=sprintf("Experiment %i",E),
@@ -165,9 +165,9 @@ tm <- experiments[[E]]$outputTime
 
 # Plot simulations
 par(bty='n',xaxp=c(80,200,4))
-plot(tm,                      # time points
+plot(tm,                                 # time points
      y_with_noise[[E]]$func[1,,1],       # simulated trajectory
-     type='l',                
+     type='l',
      ylim=c(90,200), ylab="AKAR4p",
      xlab="t",
      main=sprintf("Experiment %i",E),
@@ -181,9 +181,9 @@ arrows(x0=tm,x1=tm,y0=out,y1=out+err,angle=90,length=0.025)
 arrows(x0=tm,x1=tm,y0=out,y1=out-err,angle=90,length=0.025)
 ```
 
-## Plots with gg-Plot
+## Plots with ggplot2
 
-The following code plots simulations and data using an alternative function, from the package `ggplot2`.
+The following code plots simulations and data using an alternative function, from the package [ggplot2](https://ggplot2.tidyverse.org/).
 
 ```{r, ggplot}
 require(ggplot2)
@@ -197,8 +197,8 @@ ggplot(D) +
   geom_point(mapping=aes(x=time,y=AKAR4p),na.rm=TRUE) +
   geom_line(mapping=aes(x=time,y=sim),color="purple",lwd=1.2)
 ```
-Plots for the simulations with noise `y_with_noise`.
 
+Plots for the simulations with noise `y_with_noise`.
 
 ```{r}
 require(ggplot2)

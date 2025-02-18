@@ -17,26 +17,43 @@ knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
 The model building part of UQSA (transfering the SBtab network model to a mathematical model in C or R) requires that you have a C compiler (e.g. [gcc](https://gcc.gnu.org)), the GNU Scientific Library [(gsl)](https://www.gnu.org/software/gsl/) and [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/).
 These can be installed all at once with the following command (that you have to write in the terminal window).
 
-**In macOS:**
+## On macOS
+
+To install libraries and science related software, people typically
+opt for [homebrew](https://brew.sh/), or [nix](https://nixos.org). Here is an example using brew:
+
 ```{sh macOS, eval=FALSE}
 # macOS has a lot of issues with xcode, it loves it for some reason; maybe agree to xcode license
 brew install pkg-config gcc gsl
 ```
 
-**In linux (ubuntu/debian):**
+MacOS does not have a default package manager for software of this
+kind. There is probably no easier way of getting the above done on a
+factory fresh device without first installing brew or nix.
+
+## On GNU/Linux
+
+Ubuntu or debian:
+
 ```{sh ubuntu/debian, eval=FALSE}
-# other linux distributions have some version of this:
-#  zypper install,
-#  apk add,
-#  guix install,
-# etc.
 sudo apt install pkg-config gcc libgsl-dev
 ```
 
-# Installation of the R packages
-In order to use UQSA you (obviously) need the [R language](https://www.r-project.org/) (and maybe a graphical interface to it like [R-studio](https://posit.co/download/rstudio-desktop/)).
+Other distributions have some version of this:
 
-In R, you first need install the package [Ryacas](https://cran.r-project.org/web/packages/Ryacas/index.html):
+```
+zypper install  # OpenSuSE, SLES
+apk add         # Alpine
+guix install    # GNU Guix
+```
+
+... and many more. 
+
+# Installation of the R packages
+
+In order to use UQSA you (obviously) need the [R language](https://www.r-project.org/) (and maybe a graphical interface to it like [R-studio](https://posit.co/download/rstudio-desktop/)). We will assume that you already have R.
+
+To auto-generate model-code in R, you need install the package [Ryacas](https://cran.r-project.org/web/packages/Ryacas/index.html):
 ```{sh Ryacas, eval=FALSE}
 install.packages("Ryacas")
 ```
@@ -45,17 +62,20 @@ which is needed for model building.
 You can now install the packages developed by the uqsa team:
 ```{r remotes, eval=FALSE}
 # requires the 'remotes' package
-if (!require(remotes)) install.packages(remotes)
+if (!require(remotes)) install.packages("remotes")
 remotes::install_github("icpm-kth/SBtabVFGEN",dependencies=TRUE)
 remotes::install_github("icpm-kth/rgsl",dependencies=TRUE)
 remotes::install_github("icpm-kth/uqsa",dependencies=TRUE)
 ```
 
-
-
 # MPI
 
-If you want to run on several nodes of a cluster via MPI (debian/ubuntu):
+MPI is intended for compute clusters (HPC) and is typically not needed if
+you have one machine you want to do simulations on.
+
+We do have several examples about MPI usage with this package however and if you want to try them, you will need MPI.
+
+On debian/ubuntu:
 
 ```{sh MPI, eval=FALSE}
 sudo apt install libopenmpi-dev
