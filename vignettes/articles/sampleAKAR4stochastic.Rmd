@@ -93,8 +93,8 @@ rprior <- rUniformPrior(ll, ul) # rprior generates random samples from the prior
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
 nChains <- 4  # number of ABCMCMC chains to run
-ns <- 100   # no of samples required from each ABC-MCMC chain
-npc <- 100 # pre-calibration
+ns <- 1000   # no of samples required from each ABC-MCMC chain
+npc <- 1000 # pre-calibration
 
 
 # Function to compute the score (distance) between experimental and simulated data
@@ -185,7 +185,7 @@ To check the fit of the sampled posterior parameters with the experimental data,
 
 ```{r, sim}
 
-expInd <- 1 # Index of the experiment that we want to plot, with corresponding fitted trajectories
+exp_ind <- 1 # Index of the experiment that we want to plot, with corresponding fitted trajectories
 e <- experiments[[1]]
 
 # Plot the experimental data
@@ -207,7 +207,7 @@ for(i in subsample_indices){
   # "experiments" is a list of experiments
   # "y" is a list where element i of the list is a simulation performed with the experimental conditions as in the i-th element of list "experiments"
   
-  lines(e$outputTimes, y[[expInd]]$output, col="blue") # plot the simulated trajectory
+  lines(e$outputTimes, y[[exp_ind]]$output, col="blue") # plot the simulated trajectory
 }
 
 ```

@@ -176,7 +176,7 @@ for(i in 1:length(parVal)){
 plot(ABCMCMCoutput$draws[,1])
 
 # PLOT EXPERIMENT 
-expInd <- 16
+expInd <- 1
 e <- experiments[[expInd]]
 
 plot(e$outputTimes, e$outputValues$AKAR4pOUT)

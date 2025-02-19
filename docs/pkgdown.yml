@@ -1,4 +1,4 @@
-pandoc: 3.1.3
+pandoc: 3.1.1
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
@@ -21,6 +21,7 @@ articles:
   models: models.html
   mpi: mpi.html
   sa: sa.html
+  sampleAKAR4: sampleAKAR4.html
   sampleAKAR4stochastic: sampleAKAR4stochastic.html
   simAKAP79: simAKAP79.html
   simAKAP79stochastic: simAKAP79stochastic.html
@@ -32,7 +33,7 @@ articles:
   uq: uq.html
   uqsa: uqsa.html
   user_model: user_model.html
-last_built: 2025-02-06T11:54Z
+last_built: 2025-02-07T10:10Z
 urls:
   reference: https://icpm-kth.github.io/uqsa/reference
   article: https://icpm-kth.github.io/uqsa/articles
