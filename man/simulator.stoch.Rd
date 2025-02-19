@@ -7,18 +7,18 @@ given certain experimental conditions and a parameter vector, and computes the
 distance between the simulation and the experimental data}
 \usage{
 simulator.stoch(
-  experiment,
+  experiments,
   model.tab = model.tab,
   reactions = NULL,
   parMap = identity,
+  outputFunction = identity,
   vol = 4e-16,
   unit = 1e-06,
-  nStochSim = 3
+  nStochSim = 3,
+  distance = NULL
 )
 }
 \arguments{
-\item{experiment}{an experiment}
-
 \item{model.tab}{an SBtab model}
 
 \item{reactions}{a list that encodes the reactions for
@@ -32,6 +32,8 @@ into something the model will accept.}
 \item{unit}{unit of measure (1e-6 corresponds to micrometer)}
 
 \item{nStochSim}{number of stochastic simulations to average over}
+
+\item{experiment}{an experiment}
 }
 \value{
 a function that given a parameter returns a simulated trajectory obrained via the Gillespie algorithm

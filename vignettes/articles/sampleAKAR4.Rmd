@@ -15,18 +15,13 @@ library(SBtabVFGEN)
 library(rgsl)
 ```
 
-In this article, we will assume that you don't yet have `c` sources
-prepared for your model. And rather than vfgen, or the RPN-derivative
-package, we will use the uqsa (this package) code generating
-functions.
+# Load Model and Data
 
-# Locate Files
+The first step is to locate and load the SBtab model files. In this example we use the SBtab files from an already existing example ("AKAR4"). (In the [user model](user_model.html) article you can read about how the set up your own SBtab model. You can list the files in a directory with the `dir()` command.)  
 
-The first step is to load the SBtab model files
-(with `dir` for non-example models):
 
 ```{r}
-f  <- uqsa::uqsa_example("AKAR4")
+f  <- uqsa::uqsa_example("AKAR4") 
 sb <- SBtabVFGEN::sbtab_from_tsv(f)
 ```
 
@@ -35,17 +30,17 @@ differential equation, this will print lots of text about how it
 interprets the contents (printouts are omitted here):
 
 ```{r include=FALSE}
-m  <- SBtabVFGEN::sbtab_to_vfgen(sb,cla=FALSE)
+m  <- SBtabVFGEN::sbtab_to_vfgen(sb)
 ```
 
 ```{r eval=FALSE}
-m  <- SBtabVFGEN::sbtab_to_vfgen(sb,cla=FALSE)
+m  <- SBtabVFGEN::sbtab_to_vfgen(sb)
 ```
 
-We will also load the experimental data:
+We also load the experimental data:
 
 ```{r data}
-ex <- SBtabVFGEN::sbtab.data(sb)
+ex <- SBtabVFGEN::sbtab.data(sb,m$conservationLaws)
 ```
 
 We have loaded these constructs:
@@ -56,9 +51,9 @@ print(names(ex))
 print(names(m))
 ```
 
-## Generate Code
+## Generate C ODE-code for model simulation
 
-We take `m` and generate c code from it, then write this code into a file (`AKAR4_gvf.c`):
+We next take `m` and generate c code from it, then write this code into a file (`AKAR4_gvf.c`):
 
 ```{r code}
 C <- uqsa::generateCode(m)
@@ -78,16 +73,16 @@ modelName <- checkModel("AKAR4",modelFile="./AKAR4_gvf.c")
 
 The function `checkModel` also appends the location of the shared library as a comment to its return value.
 
-For a test simulation we create the function `s` which will remember the experiments to simulate and the model to simulate them with:
+For a test simulation we create the function `s` which will remember the experiments to simulate and the model to simulate them with. The function/closure `s` maps parameter vectors to model solutions (trajectories):
 
 ```{r test}
-s <- simulator.c(ex,modelName,parMap=log10ParMap)
+s <- simcf(ex,modelName,parMap=log10ParMap) # or simulator.c
 p <- log10(sb$Parameter[["!DefaultValue"]])
 names(p) <- rownames(sb$Parameter)
 y <- s(p) # here the simulation happens
 ```
 
-The function/closure `s` maps parameter vectors to model solutions (trajectories):
+We can plot the simulated output together with the experimental data and experimental error:
 
 ```{r plot}
 ylab <- colnames(ex[[1]]$outputValues)
@@ -96,7 +91,7 @@ e_ <- ex[[1]]$errorValues[[1]]
 t_ <- ex[[1]]$outputTimes
 f_ <- y[[1]]$func[1,,1]
 par(bty="n")
-plot(t_,d_,type="p",main=names(ex)[1],xlab="time",ylab=ylab)
+plot(t_,d_,type="p",main=names(ex)[1],xlab="time",ylab=ylab,ylim=c(100,200))
 arrows(t_,d_,t_,d_+e_,angle=90,length=0.01)
 arrows(t_,d_,t_,d_-e_,angle=90,length=0.01)
 lines(t_,f_,lw=3)
@@ -104,7 +99,7 @@ lines(t_,f_,lw=3)
 
 ## Take a parameter Sample for this Model
 
-We use just one core as this is a tiny model. No MPI, no parallel tempering:
+We use just one core as this is a tiny model. No MPI, no parallel tempering. First we construct the prior:
 
 ```{r prior}
 sd <- rep(2,length(p))
@@ -112,17 +107,18 @@ dprior <- dNormalPrior(p,sd)
 rprior <- rNormalPrior(p,sd)
 ```
 
-The Metropolis Hastings Algorithm does not require any model functions (The R variant of the generated code), so we set model to `NULL`:
+Next, we set up the loglikelihood function and the function `mcmcUpdate` which will automatically determine that the
+Metropolis Hastings Algorithm should be used with these inputs. Finally we construct the function 'MH_MCMC' (below), which actually performs the MCMC run, this takes the inital values, number of steps and the stepsize as arguments.
 
 ```{r likelihood}
 llf <- logLikelihoodFunc(ex)
-metropolis_hastings <- mcmcUpdate(s,ex,model=NULL,logLikelihood=llf,dprior=dprior)
+metropolis_hastings <- mcmcUpdate(s,ex,logLikelihood=llf,dprior=dprior)
 MH_MCMC <- mcmc(metropolis_hastings)
 ```
 
-Obtain a sample of parameters:
+Finally, to obtain a sample of parameters:
 
-```{r sample}
+```{r sample, fig.width=12, fig.height=12, dpi=100}
 x <- mcmcInit(
     1.0,
     parMCMC=p,
@@ -131,12 +127,15 @@ x <- mcmcInit(
     dprior=dprior)
 
 h <- 5e-2
-S <- MH_MCMC(x,N=10000,eps=h)
+N <- 3e4
+S <- MH_MCMC(x,N,eps=h)
 colnames(S) <- names(p)
 print(attr(S,"acceptanceRate"))
 
 if (require(hexbin)){
     hexplom(S)
+} else {
+    pairs(S)
 }
 ```
 
@@ -156,8 +155,10 @@ A <- function(a) {
 
 set.seed(137)
 
+
+nCores <- parallel::detectCores()
 bigSample <- parallel::mclapply(
-    seq(8),
+    seq(nCores),
     \(i) {
         x <- mcmcInit(
             1.0,
@@ -165,14 +166,15 @@ bigSample <- parallel::mclapply(
             simulate=s,
             logLikelihood=llf,
             dprior=dprior)
-        for (i in seq(6)){
+        ## adjust acceptance rate to 25% via step-size h
+        for (i in seq(30)){
             z <- MH_MCMC(x,200,h)
             x <- attr(z,"lastPoint")
             h <- h*A(attr(z,"acceptanceRate"))
         }
-        return(MH_MCMC(x,10000,h))
+        return(MH_MCMC(x,N,h))
     },
-    mc.cores=parallel::detectCores()
+    mc.cores=nCores
 )
 
 S_ <- Reduce(\(a,b) {rbind(a,b)},bigSample,init=NULL)
@@ -180,11 +182,19 @@ L_ <- Reduce(\(a,b) {c(a,attr(b,"logLikelihood"))},bigSample,init=NULL)
 colnames(S_) <- names(p)
 
 if (require(hadron)){
-    ac <- hadron::uwerr(data=L_,nrep=rep(10000,8),pl=TRUE)
+    ac <- hadron::uwerr(data=L_,nrep=rep(N,nCores),pl=TRUE)
+    tau <- ceiling(ac$tauint+ac$dtauint)
+    i <- seq(1,NROW(S_),by=tau)
+} else {
+    i <- seq(1,NROW(S_),by=100)
+    plot(L_,type="l",xlab="mcmc index",ylab="log-likelihood")
 }
-
+```
+```{r pairs-2, fig.width=12, fig.height=12, dpi=100}
 if (require(hexbin)){
-    hexbin::hexplom(S_)
+    hexbin::hexplom(S_[i,])
+} else {
+    pairs(S_[i,])
 }
 ```
 
@@ -196,9 +206,8 @@ Let us also plot the log-likelihood
 plot(L_,main="Big Sample for AKAR4",xlab="Markov chain index",ylab="log-likelihood", type="l")
 ```
 
-This should be enough for this model size. For bigger models we turn
-to either more advanced MCMC algorithms, such as SMMALA or parallel
-tempering combined with the Metropolis-Hastings algorithm.
+This should be enough for this model size to be used as a basis for uncertainty quantification. For bigger models we turn
+to either more advanced MCMC algorithms, such as [SMMALA](smmala.html)or [parallel tempering](mpi.html) combined with the Metropolis-Hastings algorithm.
 
 ## Alternative to `checkModel()`
 

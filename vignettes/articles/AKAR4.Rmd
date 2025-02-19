@@ -1,5 +1,5 @@
 ---
-title: "Sample AKAR4"
+title: "Sample AKAR4 via ABC"
 ---
 
 ```{r, include = FALSE}
@@ -35,20 +35,26 @@ model (e.g. the jacobian of the model):
 - `AKAR4_jac`, the jacobian,
 - `AKAR4_default`, the default parameters
 
-The R file we source additionally includes a variable called `model`, which serves the purpose of having generic names for all model constituents, to make it easier to write generic scripts:
+The R file we source additionally includes a variable called `model`,
+which serves the purpose of having generic names for all model
+constituents, to make it easier to write generic scripts:
 
 - `model$vf()` corresponds to `AKAR4_vf()`
-    + but does nt use AKAR4 in the name
+    + but does not use AKAR4 in the name
+    + otherwise identical
 - `model$jac()` corresponds to `AKAR4_jac()`
 - `model$name` is a string, `"AKAR4"` in this case
 
-You can investigate the sourced file to find out more.
+
+This can help to write fairly general scripts where the model's name
+appears only at the top.  You can investigate the sourced file to find
+out more.
 
 Generally, `model` is a list of functions, one of which is called
 `model$par()` and returns the default parameters of the model in
 linear space:
 
-```{r, label="source the model files"}
+```{r, label="source the model files", collapse=FALSE}
 source(uqsa_example("AKAR4",pat="^AKAR4[.]R$")) # loads "model"
 model$name   # AKAR4
 model$par()  # default values for parameters
@@ -60,10 +66,10 @@ The model exists in R and C form:
 - `AKAR4_gvf.c`
 
 The file ending in `_gvf.c` contains functions used for simulations
-with `rgsl::r_gsl_odeiv2_outer()` (`_gvf.c` needs to be compiled). The
-functions in `.R` can be used more freely in R, and are functionally
-identical (they describe the same model, but solutions are slower in
-R).
+with `rgsl::r_gsl_odeiv2_outer()` (`_gvf.c` needs to be compiled to a
+shared library). The functions in `.R` can be used more freely in R,
+and are functionally identical (they describe the same model, but
+solutions are slower in R).
 
 The next function call checks that the model `[...]_gvf.c` file exist,
 and builds a shared library `.so` from these sources. It attaches a
@@ -116,7 +122,7 @@ Define Number of Samples for the pre-calibration `npc` and each
 ABC-MCMC chain `ns`. During ABC, we save every 100-th point, so `work(nChains*ns*100) ≈ work(npc)`:
 
 ```{r sample-size}
-ns <- 800    # ABC-MCMC sample size
+ns <- 2500  # ABC-MCMC sample size
 npc <- 50000 # pre-calibration size
 ```
 
@@ -136,9 +142,23 @@ distanceMeasure <- function(funcSim, dataExpr, dataErr = 1.0){
 }
 ```
 
-We divide the workload into chunks and loop over the chunks:
+If the data is very informative, then the difference between the prior
+and posterior are large. In such cases, it may be difficult to find
+the posterior through sampling. Dividing the data into chunks and
+processing them sequentially can help. Our model of the posterior of
+previous chunks is based on Copulas and the `VineCopula` package.
 
-```{r ABC}
+We divide the workload into chunks and loop over the chunks in th
+ecode block below.
+
+The ABCMCMC function returns 1% of all sampled points, because of the
+very low acceptance rates of the ABC method. This is the reason for
+the comparatively low sample size request `ns`: the simulation
+workload will be proportional to `100*ns`. But the returned sample is
+of a very high quality, with very low apparent auto-correlation
+(because we omitted the large number of repeated points).
+
+```{r ABC, collapse=FALSE}
 chunks <- list(c(1,2),3)
 priorPDF <- dUniformPrior(ll, ul)
 rprior <- rUniformPrior(ll, ul)
@@ -151,14 +171,13 @@ for (i in seq(length(chunks))){
     time_pC <- Sys.time()
 
     pC <- preCalibration(Obj, npc, rprior, rep=3)
-    M <- getMCMCPar(pC$prePar, pC$preDelta, delta, num=1)
-    time_pC <- Sys.time() - time_pC
-    cat(sprintf("\t - time spent on precalibration: %g s\n",time_pC))
+    time_pC <- difftime(Sys.time(),time_pC,units="secs")
+    cat(sprintf("\t - time spent on precalibration: %g seconds\n",time_pC))
 
     time_ABC <- Sys.time()
-    mcmc <- ABCMCMC(Obj, as.numeric(M$startPar), ns, M$Sigma, delta, priorPDF)
-    time_ABC <- Sys.time() - time_ABC
-    cat(sprintf("\t - time spent on ABC-MCMC: %g s\n",time_ABC))
+    mcmc <- ABCMCMC(Obj, as.numeric(pC$startPar), ns, pC$Sigma, delta, priorPDF)
+    time_ABC <- difftime(Sys.time(),time_ABC,units="mins")
+    cat(sprintf("\t - time spent on ABC-MCMC: %g minutes\n",time_ABC))
 
     if (i>1){
         simulate <- simulator.c(experiments[chunks[[1]]],modelName,parMap)
@@ -178,9 +197,22 @@ print(time_)
 We plot the sample as a two dimensional histogram plot-matrix using
 the hexbin package:
 
-```{r sample-density}
+```{r sample-density, fig.width=12, fig.height=12, dpi=100}
 colnames(mcmc$draws)<-names(parVal)
-hexbin::hexplom(mcmc$draws)
+#
+if (require(hadron)){
+    ac <- hadron::uwerr(data=mcmc$scores,pl=TRUE)
+    tau <- ceiling(ac$tauint+ac$dtauint)
+    i <- seq(1,NROW(mcmc$draws),by=tau)
+} else {
+    i <- seq(1,NROW(mcmc$draws),by=100)
+}
+
+if (require(hexbin)){
+    hexbin::hexplom(mcmc$draws[i,],xbins=10)
+} else {
+    pairs(mcmc$draws[i,])
+}
 ```
 
 A sensitivity plot using the results of the above loop:

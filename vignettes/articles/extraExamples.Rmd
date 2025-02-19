@@ -14,3 +14,9 @@ Here are some more examples:
 - [Simulate AKAP79 deterministically and add noise](./simAKAP79.html)
 - [Simulate AKAP79 stochastically](./simAKAP79stochastic.html)
 - [Sample deterministic AKAP79 with ABC](./AKAP79.html)
+
+It is also possible to use ABC for deterministic models, if they are
+stochastically embedded in a noise process. So, if we turn on the
+`noise` option of the simulator, we can just use ABC on AKAR4, with
+similar results as with the deterministic example: [AKAR4 with
+ABC](./AKAR4.html)

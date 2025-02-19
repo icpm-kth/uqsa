@@ -16,13 +16,10 @@ navbar:
     articles:
       text: Documentation
       menu:
-      - text: Introduction
       - text: Uncertainty Quantification
         href: articles/uq.html
       - text: Sensitivity Analysis
         href: articles/sa.html
-      - text: -------
-      - text: Model and data management
       - text: SBtab
         href: articles/SBtab.html
       - text: Importing Models
@@ -39,12 +36,8 @@ navbar:
         href: articles/intermediateFiles.html
       - text: ODE Model
         href: articles/ODE-Model.html
-      - text: -------
-      - text: Paremeter estimation and uncertainty quantification
       - text: Simulating a Model
         href: articles/simulate.html
-      - text: -------
-      - text: Sensitivity Analysis
       - text: Global Sensitivity Analysis
         href: articles/GSA.html
     tutorials:
@@ -60,6 +53,8 @@ navbar:
           href: articles/simAKAR4stochastic.html
         - text: UQ on deterministic AKAR4
           href: articles/sampleAKAR4.html
+        - text: UQ on deterministic AKAR4 with MPI
+          href: articles/sampleAKAR4mpi.html
         - text: UQ on stochasic AKAR4
           href: articles/sampleAKAR4stochastic.html
         - text: GSA on AKAR4
@@ -168,6 +163,5 @@ reference:
   - pbdMPI_swap_temperatures
   - sampleWithNoise
   - simcf
-  - simulateAndComputeDistance
   - swap_points_locally
   - writeCFunction

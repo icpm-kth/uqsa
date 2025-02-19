@@ -47,11 +47,8 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
-    <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
     <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
     <a class="dropdown-item" href="../articles/sa.html">Sensitivity Analysis</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
@@ -60,11 +57,7 @@
     <a class="dropdown-item" href="../articles/generateCodeInR.html">Generate Model Code</a>
     <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Sensitivity Analysis</h6>
     <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
   </div>
 </li>
@@ -77,6 +70,7 @@
     <a class="dropdown-item" href="../articles/simAKAR4.html">Simulate deterministic AKAR4</a>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate stochastic AKAR4</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4.html">UQ on deterministic AKAR4</a>
+    <a class="dropdown-item" href="../articles/sampleAKAR4mpi.html">UQ on deterministic AKAR4 with MPI</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">UQ on stochasic AKAR4</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <a class="dropdown-item" href="../articles/UQSA_AKAR4.html">UQ and SA on AKAR4</a>
@@ -141,10 +135,15 @@ the <a href="user_model.html">user model</a> article.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">modelFiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,full.names<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">SBtab</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">modelFiles</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [tsv] file[1] «AKAR4_100nM.tsv» belongs to Document «AKAR4»</span></span>
+<span><span class="co">#&gt;  I'll take this as the Model Name.</span></span>
+<span><span class="co">#&gt; AKAR4_100nM.tsv  AKAR4_25nM.tsv  AKAR4_400nM.tsv  AKAR4_Compound.tsv  AKAR4_Experiments.tsv  AKAR4_Output.tsv  AKAR4_Parameter.tsv  AKAR4_Reaction.tsv</span></span>
 <span></span>
 <span><span class="co"># model related functions, in R, e.g. AKAP79_default() parameters</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4"</span>,pat<span class="op">=</span><span class="st">'^AKAR4[.]R$'</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu">AKAR4_default</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu">AKAR4_default</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; kf_C_AKAR4 kb_C_AKAR4 kcat_AKARp </span></span>
+<span><span class="co">#&gt;      0.018      0.106     10.200</span></span></code></pre></div>
 <p>To simulate the stochastic reaction network model we use the
 <em>Gillespie algorithm</em>. Specifically, we use the functions
 implemented in the package GillespieSSA2. To use this package we need to
@@ -171,12 +170,16 @@ needed for simulations.</p>
 <span></span>
 <span><span class="co"># for example, these is the initial state of experiment 1:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">initialState</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   AKAR4 AKAR4_C  AKAR4p       C </span></span>
+<span><span class="co">#&gt;     0.2     0.0     0.0     0.4</span></span>
 <span></span>
 <span><span class="co"># save parameters' names</span></span>
 <span><span class="va">par_val</span> <span class="op">&lt;-</span> <span class="va">SBtab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!DefaultValue"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="va">par_names</span> <span class="op">&lt;-</span> <span class="va">SBtab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!Name"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">par_val</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">par_names</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">par_val</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">par_val</span><span class="op">)</span></span>
+<span><span class="co">#&gt; kf_C_AKAR4 kb_C_AKAR4 kcat_AKARp </span></span>
+<span><span class="co">#&gt;      0.018      0.106     10.200</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="define-mcmc-settings">Define MCMC settings<a class="anchor" aria-label="anchor" href="#define-mcmc-settings"></a>
@@ -206,9 +209,8 @@ needed for simulations.</p>
 <span></span>
 <span><span class="co"># Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)</span></span>
 <span><span class="va">nChains</span> <span class="op">&lt;-</span> <span class="fl">4</span>  <span class="co"># number of ABCMCMC chains to run</span></span>
-<span><span class="va">ns</span> <span class="op">&lt;-</span> <span class="fl">100</span>   <span class="co"># no of samples required from each ABC-MCMC chain</span></span>
+<span><span class="va">ns</span> <span class="op">&lt;-</span> <span class="fl">100</span>  <span class="co"># no of samples required from each ABC-MCMC chain</span></span>
 <span><span class="va">npc</span> <span class="op">&lt;-</span> <span class="fl">100</span> <span class="co"># pre-calibration</span></span>
-<span></span>
 <span></span>
 <span></span>
 <span><span class="co"># Function to compute the score (distance) between experimental and simulated data</span></span>
@@ -233,7 +235,7 @@ trajectories and the observed trajectories (experimental data).</p>
 <p>To generate the objective function for stochastic models you can use
 the <code>uqsa</code> function <code>makeObjectiveSSA</code>.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">objectiveFunction</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/makeObjectiveSSA.html">makeObjectiveSSA</a></span><span class="op">(</span><span class="va">experiments</span>, <span class="va">SBtab</span>, <span class="va">par_names</span>, <span class="va">distance</span>, <span class="va">parMap</span>, <span class="va">Phi</span>, <span class="va">reactions</span>, nStochSim <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">objectiveFunction</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/makeObjectiveSSA.html">makeObjectiveSSA</a></span><span class="op">(</span>experiments <span class="op">=</span> <span class="va">experiments</span>, model.tab <span class="op">=</span> <span class="va">SBtab</span>, parNames <span class="op">=</span> <span class="va">par_names</span>, outputFunction <span class="op">=</span> <span class="va">model</span><span class="op">$</span><span class="va">func</span>, distance <span class="op">=</span> <span class="va">distance</span>, parMap <span class="op">=</span> <span class="va">parMap</span>, reactions <span class="op">=</span> <span class="va">reactions</span>, nStochSim <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="run-precalibration-sampling">Run PreCalibration sampling<a class="anchor" aria-label="anchor" href="#run-precalibration-sampling"></a>
@@ -246,6 +248,7 @@ chains.</p>
 <span><span class="va">sfactor</span> <span class="op">&lt;-</span> <span class="fl">0.1</span> <span class="co"># Scaling factor used to determine a good covariance matrix for the ABCMCMC proposal moves</span></span>
 <span></span>
 <span><span class="va">pC</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/preCalibration.html">preCalibration</a></span><span class="op">(</span><span class="va">objectiveFunction</span>, <span class="va">npc</span>, <span class="va">rprior</span>, rep <span class="op">=</span> <span class="fl">1</span>, p<span class="op">=</span><span class="va">p</span>, sfactor<span class="op">=</span><span class="va">sfactor</span>, delta<span class="op">=</span><span class="va">delta</span>, num<span class="op">=</span><span class="va">nChains</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in getMCMCPar(prePar, preDelta, p = p, sfactor = sfactor, delta = delta, : distances between experiment and simulation are too big; selecting the best (104) parameter vectors.</span></span>
 <span></span>
 <span><span class="va">Sigma</span> <span class="op">&lt;-</span> <span class="va">pC</span><span class="op">$</span><span class="va">Sigma</span></span>
 <span><span class="va">startPar</span> <span class="op">&lt;-</span> <span class="va">pC</span><span class="op">$</span><span class="va">startPar</span></span>
@@ -254,7 +257,23 @@ chains.</p>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\tMin distance of starting parameter for chain"</span>,<span class="va">j</span>,<span class="st">" = "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="fu">objectiveFunction</span><span class="op">(</span><span class="va">startPar</span><span class="op">[</span>,<span class="va">j</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>,<span class="st">"\n"</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\tMean distance of starting parameter for chain"</span>,<span class="va">j</span>,<span class="st">" = "</span>, <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu">objectiveFunction</span><span class="op">(</span><span class="va">startPar</span><span class="op">[</span>,<span class="va">j</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>,<span class="st">"\n"</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\tMax distance of starting parameter for chain"</span>,<span class="va">j</span>,<span class="st">" = "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu">objectiveFunction</span><span class="op">(</span><span class="va">startPar</span><span class="op">[</span>,<span class="va">j</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>,<span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
+<span><span class="op">}</span></span>
+<span><span class="co">#&gt; Chain 1 </span></span>
+<span><span class="co">#&gt;  Min distance of starting parameter for chain 1  =  0.001814165 </span></span>
+<span><span class="co">#&gt;  Mean distance of starting parameter for chain 1  =  0.00362649 </span></span>
+<span><span class="co">#&gt;  Max distance of starting parameter for chain 1  =  0.005020058 </span></span>
+<span><span class="co">#&gt; Chain 2 </span></span>
+<span><span class="co">#&gt;  Min distance of starting parameter for chain 2  =  0.01013758 </span></span>
+<span><span class="co">#&gt;  Mean distance of starting parameter for chain 2  =  0.02570159 </span></span>
+<span><span class="co">#&gt;  Max distance of starting parameter for chain 2  =  0.03312393 </span></span>
+<span><span class="co">#&gt; Chain 3 </span></span>
+<span><span class="co">#&gt;  Min distance of starting parameter for chain 3  =  0.001320331 </span></span>
+<span><span class="co">#&gt;  Mean distance of starting parameter for chain 3  =  0.009153739 </span></span>
+<span><span class="co">#&gt;  Max distance of starting parameter for chain 3  =  0.02487452 </span></span>
+<span><span class="co">#&gt; Chain 4 </span></span>
+<span><span class="co">#&gt;  Min distance of starting parameter for chain 4  =  0.000405867 </span></span>
+<span><span class="co">#&gt;  Mean distance of starting parameter for chain 4  =  0.03334542 </span></span>
+<span><span class="co">#&gt;  Max distance of starting parameter for chain 4  =  0.06291086</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="run-abc-mcmc-sampling">Run ABC-MCMC Sampling<a class="anchor" aria-label="anchor" href="#run-abc-mcmc-sampling"></a>
@@ -263,7 +282,6 @@ chains.</p>
 <code>parLapply</code> function.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeForkCluster</a></span><span class="op">(</span><span class="va">nChains</span>, outfile<span class="op">=</span><span class="st">"outputMessagesABCMCMC.txt"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">clusterExport</a></span><span class="op">(</span><span class="va">cl</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"objectiveFunction"</span>, <span class="st">"Sigma"</span>, <span class="st">"startPar"</span>, <span class="st">"ns"</span>, <span class="st">"delta"</span>, <span class="st">"dprior"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">out_ABCMCMC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span></span>
 <span>  <span class="va">cl</span>,</span>
 <span>  <span class="fl">1</span><span class="op">:</span><span class="va">nChains</span>,</span>
@@ -290,12 +308,14 @@ given the considered experiments.</p>
 visualized via scatter plots.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html" class="external-link">pairs</a></span><span class="op">(</span><span class="va">ABCMCMCoutput</span><span class="op">$</span><span class="va">draws</span><span class="op">)</span></span></code></pre></div>
+<p><img src="sampleAKAR4stochastic_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 <p>The marginal distributions of each parameter in the parameter vector
 can be visualized via histograms as follows.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">{</span></span>
 <span> <span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">ABCMCMCoutput</span><span class="op">$</span><span class="va">draws</span><span class="op">[</span>,<span class="va">i</span><span class="op">]</span>, main<span class="op">=</span><span class="va">par_names</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, xlab <span class="op">=</span> <span class="st">"Value in log scale"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
+<p><img src="sampleAKAR4stochastic_files/figure-html/unnamed-chunk-7-1.png" width="700"><img src="sampleAKAR4stochastic_files/figure-html/unnamed-chunk-7-2.png" width="700"><img src="sampleAKAR4stochastic_files/figure-html/unnamed-chunk-7-3.png" width="700"></p>
 </div>
 <div class="section level2">
 <h2 id="simulate-the-stochastic-model-given-posterior-samples">Simulate the stochastic model given posterior samples<a class="anchor" aria-label="anchor" href="#simulate-the-stochastic-model-given-posterior-samples"></a>
@@ -304,19 +324,19 @@ can be visualized via histograms as follows.</p>
 experimental data, we can simulate trajectories given sampled parameters
 and compare them with the experimental data.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">exp_ind</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="co"># index of the experiment to consider</span></span>
-<span></span>
-<span><span class="va">e</span> <span class="op">&lt;-</span> <span class="va">experiments</span><span class="op">[[</span><span class="va">exp_ind</span><span class="op">]</span><span class="op">]</span></span>
+<code class="sourceCode R"><span></span>
+<span><span class="va">expInd</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="co"># Index of the experiment that we want to plot, with corresponding fitted trajectories</span></span>
+<span><span class="va">e</span> <span class="op">&lt;-</span> <span class="va">experiments</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co"># Plot the experimental data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>bty<span class="op">=</span><span class="st">'n'</span>,xaxp<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">80</span>,<span class="fl">120</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">e</span><span class="op">$</span><span class="va">outputTimes</span>, <span class="va">e</span><span class="op">$</span><span class="va">outputValues</span><span class="op">$</span><span class="va">AKAR4pOUT</span>,ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>,<span class="fl">200</span><span class="op">)</span>, ylab<span class="op">=</span><span class="st">"AKAP79"</span>,</span>
 <span>     xlab<span class="op">=</span><span class="st">"t"</span>,</span>
-<span>     main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Experiment %i"</span>,<span class="va">exp_ind</span><span class="op">)</span>,</span>
+<span>     main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Experiment %i"</span>,<span class="va">expInd</span><span class="op">)</span>,</span>
 <span>     lwd<span class="op">=</span><span class="fl">1.5</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># generate a function (s) that simulates a trajectory given a parameter in input</span></span>
-<span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.stoch.html">simulator.stoch</a></span><span class="op">(</span>experiment <span class="op">=</span> <span class="va">e</span>, model.tab <span class="op">=</span> <span class="va">SBtab</span>, parMap <span class="op">=</span> <span class="va">parMap</span>, vol <span class="op">=</span> <span class="va">vol</span>, nStochSim <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.stoch.html">simulator.stoch</a></span><span class="op">(</span>experiments <span class="op">=</span> <span class="va">experiments</span>, model.tab <span class="op">=</span> <span class="va">SBtab</span>, parMap <span class="op">=</span> <span class="va">parMap</span>, outputFunction <span class="op">=</span> <span class="va">model</span><span class="op">$</span><span class="va">func</span>, vol <span class="op">=</span> <span class="va">vol</span>, unit <span class="op">=</span> <span class="va">unit</span>, nStochSim <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">n_draws</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">ABCMCMCoutput</span><span class="op">$</span><span class="va">draws</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="co"># number of sampled posterior parameters</span></span>
 <span><span class="va">subsample_indices</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">n_draws</span>,<span class="fl">10</span><span class="op">)</span> <span class="co"># indices of 10 random parameters out of the paramneters in</span></span>
@@ -324,9 +344,12 @@ and compare them with the experimental data.</p>
 <span>  <span class="va">p</span> <span class="op">&lt;-</span> <span class="va">ABCMCMCoutput</span><span class="op">$</span><span class="va">draws</span><span class="op">[</span><span class="va">i</span>,<span class="op">]</span> <span class="co"># random parameter from the posterior</span></span>
 <span></span>
 <span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">s</span><span class="op">(</span><span class="va">p</span><span class="op">)</span> <span class="co"># simulate a trajectory (y) given parameter p</span></span>
-<span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">e</span><span class="op">$</span><span class="va">outputTimes</span>, <span class="va">y</span><span class="op">$</span><span class="va">output</span>, col<span class="op">=</span><span class="st">"blue"</span><span class="op">)</span> <span class="co"># plot the simulated trajectory</span></span>
+<span>  <span class="co"># "experiments" is a list of experiments</span></span>
+<span>  <span class="co"># "y" is a list where element i of the list is a simulation performed with the experimental conditions as in the i-th element of list "experiments"</span></span>
+<span>  </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">e</span><span class="op">$</span><span class="va">outputTimes</span>, <span class="va">y</span><span class="op">[[</span><span class="va">expInd</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">output</span>, col<span class="op">=</span><span class="st">"blue"</span><span class="op">)</span> <span class="co"># plot the simulated trajectory</span></span>
 <span><span class="op">}</span></span></code></pre></div>
+<p><img src="sampleAKAR4stochastic_files/figure-html/sim-1.png" width="700"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

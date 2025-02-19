@@ -582,7 +582,7 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 	)
 }
 
-metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior, Sigma=NULL){
+metropolisUpdate <- function(simulate, experiments, logLikelihood, dprior, Sigma=NULL){
 	if (!is.null(Sigma)){
 		cSigma <- chol(Sigma)
 	}
@@ -654,7 +654,7 @@ metropolisUpdate <- function(simulate, experiments, model, logLikelihood, dprior
 	return(U)
 }
 
-smmalaUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior){
+smmalaUpdate <- function(simulate, experiments, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior){
 	U <- function(parGiven, eps=1e-4){
 		stopifnot(parGiven %has% c("logLikelihood","prior","fisherInformation","gradLogLikelihood","gradLogPrior"))
 		fp <- fisherInformationPrior
@@ -717,7 +717,6 @@ smmalaUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gr
 #'     parMCMC
 #' @param experiments the list of experiments (with simulation
 #'     instructions)
-#' @param model the list of model functions
 #' @param logLikelihood a function that calculates log-likelihood
 #'     values for given parMCMC
 #' @param gradLogLikelihood a function that calculates the gradient of
@@ -731,14 +730,14 @@ smmalaUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gr
 #' @param gprior gradient of the prior density
 #' @return a function that returns possibly updated states of the
 #'     Markov chain
-mcmcUpdate <- function(simulate, experiments, model, logLikelihood, dprior, gradLogLikelihood=NULL, gprior=NULL, fisherInformation=NULL, fisherInformationPrior=NULL, Sigma=NULL){
+mcmcUpdate <- function(simulate, experiments, logLikelihood, dprior, gradLogLikelihood=NULL, gprior=NULL, fisherInformation=NULL, fisherInformationPrior=NULL, Sigma=NULL){
 	if (is.null(Sigma) && !is.null(fisherInformationPrior)) {
 		Sigma <- solve(fisherInformationPrior)
 	}
 	if (is.null(gradLogLikelihood)) { # Metropolis Hastings
-		return(metropolisUpdate(simulate, experiments, model, logLikelihood, dprior, Sigma=Sigma))
+		return(metropolisUpdate(simulate, experiments, logLikelihood, dprior, Sigma=Sigma))
 	} else {
-		return(smmalaUpdate(simulate, experiments, model, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior))
+		return(smmalaUpdate(simulate, experiments, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior))
 	}
 }
 
@@ -788,13 +787,12 @@ fisherInformationFromGSA <- function(Sample,yf=NULL,E){
 #' parameters.
 #'
 #' @export
-#' @param model list of R functions for the ODE model
 #' @param experiments list of experiments, with inputs
 #' @param parMap mapping between MCMC variables and ODE parameters
 #' @param parMapJac the jacobian of the above map
 #' @return fisher information calculating funciton
-fisherInformationFunc <- function(model, experiments, parMap=identity, parMapJac=function (x) {diag(1,length(x))}){
-	nF <- length(model$func(0.0,model$init(),model$par()))
+fisherInformationFunc <- function(experiments, parMap=identity, parMapJac=function (x) {diag(1,length(x))}){
+	nF <- NCOL(experiments[[1]]$outputValues)
 	l10 <- log(10)
 	F <- function(parMCMC){
 		simulations <- attr(parMCMC,"simulations")
@@ -989,10 +987,10 @@ logParMapJac <- function(parMCMC){
 #'
 #' @param experiment will be compared tp the simulation results
 #' @export
-gradLogLikelihoodFunc <- function(model,experiments,parMap=identity,parMapJac=function(x) {diag(1,length(x))})
+gradLogLikelihoodFunc <- function(experiments,parMap=identity,parMapJac=function(x) {diag(1,length(x))})
 {
 	N <- length(experiments)
-	nF <- length(model$func(0.0,model$init(),model$par()))
+	nF <- NCOL(experiments[[1]]$outputValues)
 	gradLL <- function(parMCMC){
 		simulations <- attr(parMCMC,"simulations")
 		np <- NROW(parMCMC) # the dimension of the MCMC variable (parMCMC)

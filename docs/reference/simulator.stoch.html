@@ -38,11 +38,8 @@ distance between the simulation and the experimental data"><!-- mathjax --><scri
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
-    <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
     <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
     <a class="dropdown-item" href="../articles/sa.html">Sensitivity Analysis</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
@@ -51,11 +48,7 @@ distance between the simulation and the experimental data"><!-- mathjax --><scri
     <a class="dropdown-item" href="../articles/generateCodeInR.html">Generate Model Code</a>
     <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Sensitivity Analysis</h6>
     <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
   </div>
 </li>
@@ -68,6 +61,7 @@ distance between the simulation and the experimental data"><!-- mathjax --><scri
     <a class="dropdown-item" href="../articles/simAKAR4.html">Simulate deterministic AKAR4</a>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate stochastic AKAR4</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4.html">UQ on deterministic AKAR4</a>
+    <a class="dropdown-item" href="../articles/sampleAKAR4mpi.html">UQ on deterministic AKAR4 with MPI</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">UQ on stochasic AKAR4</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <a class="dropdown-item" href="../articles/UQSA_AKAR4.html">UQ and SA on AKAR4</a>
@@ -114,23 +108,21 @@ distance between the simulation and the experimental data</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">simulator.stoch</span><span class="op">(</span></span>
-<span>  <span class="va">experiment</span>,</span>
+<span>  <span class="va">experiments</span>,</span>
 <span>  model.tab <span class="op">=</span> <span class="va">model.tab</span>,</span>
 <span>  reactions <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  parMap <span class="op">=</span> <span class="va">identity</span>,</span>
+<span>  outputFunction <span class="op">=</span> <span class="va">identity</span>,</span>
 <span>  vol <span class="op">=</span> <span class="fl">4e-16</span>,</span>
 <span>  unit <span class="op">=</span> <span class="fl">1e-06</span>,</span>
-<span>  nStochSim <span class="op">=</span> <span class="fl">3</span></span>
+<span>  nStochSim <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  distance <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>experiment</dt>
-<dd><p>an experiment</p></dd>
-
-
-<dt>model.tab</dt>
+    <dl><dt>model.tab</dt>
 <dd><p>an SBtab model</p></dd>
 
 
@@ -154,6 +146,10 @@ into something the model will accept.</p></dd>
 
 <dt>nStochSim</dt>
 <dd><p>number of stochastic simulations to average over</p></dd>
+
+
+<dt>experiment</dt>
+<dd><p>an experiment</p></dd>
 
 </dl></div>
     <div class="section level2">

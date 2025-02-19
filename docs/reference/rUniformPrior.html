@@ -38,11 +38,8 @@ function."><!-- mathjax --><script src="file:///usr/share/javascript/mathjax/Mat
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
-    <h6 class="dropdown-header" data-toc-skip>Introduction</h6>
     <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
     <a class="dropdown-item" href="../articles/sa.html">Sensitivity Analysis</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Model and data management</h6>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
@@ -51,11 +48,7 @@ function."><!-- mathjax --><script src="file:///usr/share/javascript/mathjax/Mat
     <a class="dropdown-item" href="../articles/generateCodeInR.html">Generate Model Code</a>
     <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Paremeter estimation and uncertainty quantification</h6>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Sensitivity Analysis</h6>
     <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
   </div>
 </li>
@@ -68,6 +61,7 @@ function."><!-- mathjax --><script src="file:///usr/share/javascript/mathjax/Mat
     <a class="dropdown-item" href="../articles/simAKAR4.html">Simulate deterministic AKAR4</a>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate stochastic AKAR4</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4.html">UQ on deterministic AKAR4</a>
+    <a class="dropdown-item" href="../articles/sampleAKAR4mpi.html">UQ on deterministic AKAR4 with MPI</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">UQ on stochasic AKAR4</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <a class="dropdown-item" href="../articles/UQSA_AKAR4.html">UQ and SA on AKAR4</a>
@@ -140,18 +134,18 @@ where n is the requested number of vectors (rows)</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">rup</span><span class="op">&lt;-</span><span class="fu">rUniformPrior</span><span class="op">(</span>ll<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,ul<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rup</span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]     [,2]     [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.63800028 1.131954 2.523796</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.01546784 1.730922 2.589015</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.89735055 1.557863 2.095538</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.76970891 1.802389 2.938171</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.66055086 1.628115 2.840644</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.33395491 1.391518 2.333552</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.03052661 1.564281 2.937988</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.57094218 1.666221 2.536167</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.30518194 1.313868 2.902429</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.21842157 1.463625 2.444530</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.90940322 1.527498 2.379092</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.58049391 1.488352 2.941712</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.12811576 1.538633 2.129016</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.51096488 1.543793 2.241776</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.80314412 1.947914 2.407361</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.51474456 1.981542 2.354187</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.45584015 1.220025 2.081833</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.36923607 1.126667 2.739873</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.95586629 1.668675 2.468089</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.53819245 1.330954 2.628682</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.45255247 1.888015 2.784202</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.13805955 1.281313 2.706946</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.44218692 1.677699 2.700715</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.06840642 1.958504 2.244484</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

@@ -6,11 +6,13 @@
 \usage{
 makeObjectiveSSA(
   experiments,
-  model,
+  model.tab,
   parNames,
   distance,
   parMap = identity,
-  Phi,
+  outputFunction = identity,
+  vol = 4e-16,
+  unit = 1e-06,
   reactions,
   nStochSim = 1,
   parameters_from_expressions = NULL
@@ -31,12 +33,12 @@ by the function.}
 \item{parMap}{a function that translates ABC variables (parABC)
 into something the model will accept.}
 
-\item{Phi}{Volume}
-
 \item{reactions}{a list that encodes the reactions for
 GillespieSSA2}
 
 \item{nStochSim}{number of stochastic simulations to average over}
+
+\item{Phi}{Volume}
 }
 \value{
 a closure for the objective function that implicitly

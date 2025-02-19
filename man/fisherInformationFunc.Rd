@@ -5,7 +5,6 @@
 \title{Fisher Information from Sensitivity}
 \usage{
 fisherInformationFunc(
-  model,
   experiments,
   parMap = identity,
   parMapJac = function(x) {
@@ -14,8 +13,6 @@ fisherInformationFunc(
 )
 }
 \arguments{
-\item{model}{list of R functions for the ODE model}
-
 \item{experiments}{list of experiments, with inputs}
 
 \item{parMap}{mapping between MCMC variables and ODE parameters}
