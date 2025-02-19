@@ -429,6 +429,7 @@ simulator.stoch <- function(experiments, model.tab = model.tab, reactions = NULL
     simulate_one_experiment <- function(param, experiment){
       
       avgOutput <- rep(0, length(experiment[["outputTimes"]]))
+      names(param) <- model.tab$Parameter[["!Name"]]
       SSAparam <- c(parMap(param), Phi = Phi)
       if(!is.null(parameters_from_expressions)){
         SSAparam <- c(SSAparam, parameters_from_expressions(parMap(param)))

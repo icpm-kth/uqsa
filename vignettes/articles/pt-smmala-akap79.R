@@ -80,8 +80,8 @@ A <- function(a) { # step-size adjuster
 
 ## ----converge-and-adapt-------------------------------------------------------
 for (i in seq(1)){
-	s <- MC(x,200,h)           # evaluate rate of acceptance
-	a <- attr(s,"acceptanceRate")
+	s <- MC(x,200,h)           
+	a <- attr(s,"acceptanceRate") # evaluate rate of acceptance
 	h <- h*A(a)                # adjust h up or down
 	x <- attr(s,"lastPoint")   # start next iteration from last point
 	cat(sprintf("rank: %02i; iteration: %02i; a: %f; h: %g\n",r,i,a,h))
