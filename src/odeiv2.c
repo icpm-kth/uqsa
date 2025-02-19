@@ -714,8 +714,101 @@ int sensitivityApproximation(double t0, gsl_vector *t, gsl_vector *p, gsl_matrix
 	return GSL_SUCCESS;
 }
 
+/* experiment: one experiment, with data and standard error        */
+/* f: calculated output function values, from the simulation       */
+/* returns the value of the log-likelihood assuming gaussian noise */
+/* Details:                                                        */
+/* Likelihood = 1/sqrt(2*pi*sd)*exp(-0.5*((f-d)/sd)**2)            */
+/*            = exp(-0.5*((f-d)/sd)**2 - 0.5*(log(2*pi*sd)))       */
+/* log(Likelihood) = -0.5*(((f-d)/sd)**2 + log(2*pi*sd))           */
+double logLikelihood(Rdata experiment, double *f){
+	/* these two are supposed to be matrices, without missing values */
+  Rdata data=from_list(experiment,"data measuredData experimentalData");
+	Rdata stdv=from_list(experiment,"stdv standardError standardDeviationOfTheMean");
+	double ll=0;
+	double d,s;
+	int i,j;
+	int nt=ncols(data);
+	int n=nrows(data);
+	double C;
+	for (i=0;i<n*nt;i++){
+		d = REAL(data)[i];
+		s = REAL(stdv)[i];
+		C = ((d != NAN) && (s != INFINITY)) ? log(2*M_PI*s) : 0.0;
+		ll+= gsl_pow_2((f[i]-d)/s) + C;
+	}
+	return -0.5*ll;
+}
 
-/* This prgram loads an ODE model, with functions compatible with `gsl_odeiv2`
+/* experiment: one experiment, with data and standard error        */
+/* f: calculated output function values, from the simulation       */
+/* returns the value of the log-likelihood assuming gaussian noise */
+/* Details:                                                        */
+/* Likelihood = 1/sqrt(2*pi*sd)*exp(-0.5*((f-d)/sd)**2)            */
+/*            = exp(-0.5*((f-d)/sd)**2 - 0.5*(log(2*pi*sd)))       */
+/* grad(log(Likelihood)) = ((d-f)/(sd*sd))*df/dp */
+int gradLogLikelihood(double *gll, Rdata experiment, double *func, double *funcSens, size_t m){
+	Rdata data=from_list(experiment,"data measuredData experimentalData");
+	Rdata stdv=from_list(experiment,"stdv standardError standardDeviationOfTheMean");
+	int nt=ncols(data);
+	int n=nrows(data);
+	gsl_vector_view d,s,g,f;
+	gsl_matrix_view Sf;
+	gsl_vector *v=gsl_vector_alloc(n);
+	int i,j;
+	int status = GSL_SUCCESS;
+	g = gsl_vector_view_array(gll,m);
+	gsl_vector_set_zero(&(g.vector));
+	for (j=0;j<nt;j++){
+		d = gsl_vector_view_array(REAL(data)+(j*n),n);
+		s = gsl_vector_view_array(REAL(stdv)+(j*n),n);
+		f = gsl_vector_view_array(func+(j*n),n);
+		Sf = gsl_matrix_view_array(funcSens+(j*n*m),m,n);
+		gsl_vector_memcpy(v,&d.vector);
+		gsl_vector_sub(v,&f.vector);
+		gsl_vector_div(v,&s.vector);
+		gsl_vector_div(v,&s.vector); // v = ((d-f)/(sd*sd))
+		status |= gsl_blas_dgemv(CblasNoTrans, 1.0, &(Sf.matrix), v, 1.0, &(g.vector));
+	}
+	gsl_vector_free(v);
+	return status;
+}
+
+/* experiment: one experiment, with data and standard error        */
+/* f: calculated output function values, from the simulation       */
+/* returns the value of the log-likelihood assuming gaussian noise */
+/* Details:                                                        */
+/* FisherInf = t(Sf)*solve(Sigma)*Sf                               */
+/* for solve(Sigma) == diag(sd**(-2))                              */
+/* with Sf_sd[,j] = Sf[,j]/sd -> FisherInf = t(Sf_sd)*Sf_sd        */
+int FisherInformation(double *FI, Rdata experiment, double *funcSens, size_t m){
+	Rdata data=from_list(experiment,"data measuredData experimentalData");
+	Rdata stdv=from_list(experiment,"stdv standardError standardDeviationOfTheMean");
+	int nt=ncols(data);
+	int n=nrows(data);
+	gsl_vector_view d,s,row;
+	gsl_matrix_view Sf,fi;
+	gsl_matrix *Sf_sd=gsl_matrix_alloc(m,n);
+	int i,j;
+	int status = GSL_SUCCESS;
+	fi = gsl_matrix_view_array(FI,m,m);
+	gsl_matrix_set_zero(&(fi.matrix));
+	for (j=0;j<nt;j++){
+		d = gsl_vector_view_array(REAL(data)+(j*n),n);
+		s = gsl_vector_view_array(REAL(stdv)+(j*n),n);
+		Sf = gsl_matrix_view_array(funcSens+(j*n*m),m,n);
+		gsl_matrix_memcpy(Sf_sd,&Sf.matrix);
+		for (i=0;i<m;i++) {
+			row = gsl_matrix_row(Sf_sd,i);
+			gsl_vector_div(&row.vector,&s.vector);
+		}
+		status |= gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, Sf_sd, Sf_sd, 1.0, &(fi.matrix));
+	}
+	gsl_matrix_free(Sf_sd);
+	return status;
+}
+
+/* This program loads an ODE model, with functions compatible with `gsl_odeiv2`
 	(see odeiv2 documentation on the GSL webpage). It
 	 simulates the model for each entry in a list of named items, each
 	 describing a single initial value problem (`y0`, `t`, parameters `p`, events).
@@ -753,7 +846,7 @@ r_gsl_odeiv2_outer_fi(
 	Rdata yf_list, Y, F, iv, t, cpuSeconds;
 	double t0;
 	clock_t ct0, ct1;
-	const char *yf_names[]={"state","func","stateSensitivity","funcSensitivity","cpuSeconds","FisherInformation","logLikelihood","gradLogLikelihood",NULL};
+	const char *yf_names[]={"state","func","stateSensitivity","funcSensitivity","cpuSeconds","logLikelihood","gradLogLikelihood","FisherInformation",NULL};
 	gsl_vector_view initial_value, time;
 	gsl_matrix_view y;
 	size_t nt;
@@ -762,7 +855,7 @@ r_gsl_odeiv2_outer_fi(
 	gsl_vector_view p;
 	Rdata SY, SF;
 	Rdata sy_k, sf_k;
-
+	Rdata FI, gll, ll;
 	gsl_odeiv2_system sys = load_system(model_name, model_so); /* also sets ODE_*() functions */
 	if (sys.dimension == 0 || ODE_default==NULL || ODE_init==NULL || ODE_func==NULL || ODE_funcJac==NULL || ODE_funcJacp==NULL){
 		fprintf(stderr,"[%s] loading model has failed (system dimension: «%li»).\n",__func__,sys.dimension);
@@ -790,6 +883,9 @@ r_gsl_odeiv2_outer_fi(
 		cpuSeconds=PROTECT(NEW_NUMERIC(M));
 		for (j=0; j<ny*nt*M; j++) REAL(Y)[j]=NA_REAL; /* initialize to NA */
 		F=PROTECT(alloc3DArray(REALSXP,nf,nt,M));
+		FI=PROTECT(alloc3DArray(REALSXP,np,np,M));
+		ll=PROTECT(NEW_NUMERIC(M));
+		gll=PROTECT(allocMatrix(REALSXP,np,M));
 		SY=PROTECT(NEW_LIST(M));
 		SF=PROTECT(NEW_LIST(M));
 		for (j=0;j<nf*nt*M;j++) REAL(F)[j]=NA_REAL;   /* initialize to NA */
@@ -818,17 +914,23 @@ r_gsl_odeiv2_outer_fi(
 					ODE_func(gsl_vector_get(&(time.vector),j),gsl_matrix_ptr(&(y.matrix),j,0),f,sys.params);
 				}
 				sensitivityApproximation(t0,&(time.vector),&(p.vector),&(y.matrix),REAL(sy_k),REAL(sf_k),saMem);
+				REAL(ll)[k]=logLikelihood(VECTOR_ELT(experiments,i),REAL(F)+(k*nf*nt));
+				gradLogLikelihood(REAL(gll)+(k*np),VECTOR_ELT(experiments,i),REAL(F)+(k*nf*nt),REAL(sf_k),np);
+				FisherInformation(REAL(FI)+(k*np*np),VECTOR_ELT(experiments,i),REAL(sf_k),np);
 			}
 			SET_VECTOR_ELT(SY,k,sy_k);
 			SET_VECTOR_ELT(SF,k,sf_k);
-			UNPROTECT(2); // sy_k, sf_k;
+			UNPROTECT(5); // sy_k, sf_k;
 		}
-		yf_list=PROTECT(NEW_LIST(5));
+		yf_list=PROTECT(NEW_LIST(8));
 		SET_VECTOR_ELT(yf_list,0,Y);
 		SET_VECTOR_ELT(yf_list,1,F);
 		SET_VECTOR_ELT(yf_list,2,SY);
 		SET_VECTOR_ELT(yf_list,3,SF);
 		SET_VECTOR_ELT(yf_list,4,cpuSeconds);
+		SET_VECTOR_ELT(yf_list,5,ll);
+		SET_VECTOR_ELT(yf_list,6,gll);
+		SET_VECTOR_ELT(yf_list,7,FI);
 		set_names(yf_list,yf_names);
 		SET_VECTOR_ELT(res_list,i,yf_list);
 		event_free(&ev);
@@ -838,6 +940,7 @@ r_gsl_odeiv2_outer_fi(
 		UNPROTECT(1); /* F */
 		UNPROTECT(1); /* Y */
 		UNPROTECT(1); /* cpuSeconds */
+		UNPROTECT(3); /* ll, gll, FI*/
 #ifdef DEBUG_PRINT
 		if (status!=GSL_SUCCESS){
 			fprintf(stderr,"[%s] parameter set lead to solver errors (%s) in experiment %i/%i, values:\n",__func__,gsl_strerror(status),i,N);

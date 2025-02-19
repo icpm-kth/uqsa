@@ -1,6 +1,44 @@
 # Uncertainty Quantification: run model ordinary differential equation
 # Copyright (C) 2022 Federica Milinanni (fedmil@kth.se)
 
+#' simulates an ode model with extra work
+#'
+#' This function calls a C function which solves an initial value
+#' problem, calculates the sensitivity of the solution, log-likelihood
+#' value `ll`, gradient of `ll` amd Fisher-Information.
+#'
+#' @param name the name of the ODE model to simulate (a shared library of the same name will be dynamically loaded and needs to be created first)
+#' @param experiments a list of `N` simulation experiments (time, parameters, initial value, events)
+#' @param p a matrix of parameters with M columns
+#' @param abs.tol absolute tolerance, real scalar
+#' @param rel.tol relative tolerance, real scalar
+#' @param initial.step.size initial value for the step size; the step size will adapt to a value that observes the tolerances, real scalar
+#' @return a list of the solution trajectories `y(t;p)` for all experiments (named like the experiments), as well as the output functions
+#' @export
+#' @keywords ODE
+#' @useDynLib uqsa r_gsl_odeiv2_outer_fi
+gsl_odeiv2_fi <- function(name,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0){
+	if (is.character(comment(name))){
+		so <- comment(name)
+	} else {
+		so <- paste0("./",name,".so")
+		comment(name)<-so
+	}
+	if (!file.exists(so)){
+            warning(sprintf("[r_gsl_odeiv2_outer] for model name «%s», in directory «%s» file «%s» not found.",name,getwd(),so))
+	}
+	if (!is.matrix(p)) p <- as.matrix(p)
+	y <- .Call(r_gsl_odeiv2_outer_fi, name,experiments,p,abs.tol,rel.tol,initial.step.size,method)
+	for (i in seq_along(experiments)){
+		if ("initialState" %in% names(experiments[[i]])){
+			dimnames(y[[i]]$state) <- list(names(experiments[[i]]$initialState),NULL,NULL)
+		}
+		if ("outputValues" %in% names(experiments[[i]])){
+			dimnames(y[[i]]$func) <- list(names(experiments[[i]]$outputValues),NULL,NULL)
+		}
+	}
+	return(y)
+}
 
 #' This creates a closure that simulates the model
 #'
