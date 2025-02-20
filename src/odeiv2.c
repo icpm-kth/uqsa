@@ -920,7 +920,7 @@ r_gsl_odeiv2_outer_fi(
 			}
 			SET_VECTOR_ELT(SY,k,sy_k);
 			SET_VECTOR_ELT(SF,k,sf_k);
-			UNPROTECT(5); // sy_k, sf_k;
+			UNPROTECT(2); // sy_k, sf_k;
 		}
 		yf_list=PROTECT(NEW_LIST(8));
 		SET_VECTOR_ELT(yf_list,0,Y);

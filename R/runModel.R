@@ -40,6 +40,80 @@ gsl_odeiv2_fi <- function(name,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.s
 	return(y)
 }
 
+#' This creates a closure that simulates the model, similar to simulator.c
+#'
+#' This is a shorter alternative to simulator.c (C backend). It also
+#' returns the log-likelihood, Fisher Information, and the gradient of
+#' the log-likelihood, under the assumption that the measurement error
+#' is Gaussian.
+#'
+#' It returns a closure around:
+#'     - experiments,
+#'     - the model, and
+#'     - parameter mapping
+#'
+#' The returned function depends only on parABC (the sampling
+#' parameters). The simulation will be done suing the rgsl backend.
+#'
+#' This version of the function does not use the parallel package at
+#' all and cannot add noise to the simulations.
+#'
+#' @param experiments a list of experiments to simulate: inital
+#'     values, inputs, time vectors, initial times
+#' @param modelName a string (with optional comment indicating an .so
+#'     file) which points out the model to simulate
+#' @param parABC the parameters for the model, subject to change by
+#'     parMap.
+#' @param parMap the model will be called with parMap(parABC); so any
+#'     parameter transformation can happen there.
+#' @export
+#' @return a closure that returns the model's output for a given
+#'     parameter vector, and approximate sensitivity matrices, for
+#'     each state variable, function, time-point, and parameter
+#'     vector.
+#' @examples
+#'  #  model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
+#'  #  experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
+#'  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
+#'
+#'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
+#'  #  simulate <- simc(experiments, modelName,  parABC)
+#'  #  yf <- simulate(parABC)
+simfi <- function(experiments, modelName, parMap=identity, method = 0){
+	N <- length(experiments)
+	sim <- function(parABC){
+		modelPar <- parMap(parABC)
+		m <- NCOL(parABC)
+		yf <- gsl_odeiv2_fi(modelName, experiments, as.matrix(modelPar), method=method)
+		if (N==length(yf)) {
+			names(yf) <- names(experiments)
+		} else {
+			message(sprintf("experiments(%i) should be the same length as simulations(%i), but isn't.",length(experiments),length(yf)))
+		}
+		for (i in seq(N)){
+			for (j in seq(m)){
+				## state variables
+				l <- is.finite(yf[[i]]$stateSensitivity[[j]])
+				if (any(!l)){
+					message(sprintf("state-sensitivity approximation produced %i erroneous elements. Setting invalid elements to 0.0.",sum(!l)))
+					##print(yf[[i]]$stateSensitivity[[j]])
+					yf[[i]]$stateSensitivity[[j]][!l] <- 0.0
+				}
+				## functions
+				l <- is.finite(yf[[i]]$funcSensitivity[[j]])
+				if (any(!l)){
+					message(sprintf("function-sensitivity approximation produced %i erroneous elements. Setting invalid elements to 0.",sum(!l)))
+					##print(yf[[i]]$funcSensitivity[[j]])
+					yf[[i]]$funcSensitivity[[j]][!l] <- 0.0
+				}
+			}
+		}
+		return(yf)
+	}
+	return(sim)
+}
+
+
 #' This creates a closure that simulates the model
 #'
 #' This is a shorter alternative to the runModel function (C backend).
