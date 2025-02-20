@@ -30,7 +30,7 @@ the [user model](user_model.html) article.
 modelFiles <- uqsa_example("AKAR4",full.names=TRUE)
 SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
 
-# model related functions, in R, e.g. AKAP79_default() parameters
+# model related functions, in R, e.g. AKAR4_default() parameters
 source(uqsa_example("AKAR4",pat='^AKAR4[.]R$'))
 print(AKAR4_default())
 ```
