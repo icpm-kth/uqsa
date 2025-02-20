@@ -55,20 +55,6 @@ cat(C,sep="\n",file=cFile)                 # write sources to that file
 modelName <- uqsa::checkModel(comment(sb),cFile) # this compiles the sources
 ```
 
-```{r, label="test-order-1", eval=FALSE, include=FALSE}
-cat("test",file="test.txt")
-```
-
-```{sh, label="test-order-2", eval=FALSE, include=FALSE}
-cat test.txt
-echo "MODIFICATION" >> test.txt
-```
-
-```{r, label="test-ordre-3", eval=FALSE, include=FALSE}
-l <- readLines("test.txt")
-cat(l,sep="\n")
-```
-
 # Sample via MPI
 
 Here we run a prepared R script from the command line (any POSIX shell will do: bash/zsh/fish/dash)
@@ -95,7 +81,7 @@ Here we check the integrated auto-correlation length (Markov chain
 time)
 
 ```{r uwerr}
-Sample <- readRDS(file="./AKAP79-parameter-sample-for-rank-0.RDS")
+Sample <- readRDS(file="./AKAP79-tempertaure-ordered-smmala-sample-for-rank-0.RDS")
 n <- NROW(Sample)
 l <- attr(Sample,"logLikelihood")
 
@@ -113,7 +99,7 @@ We reduce the sample for plotting purposes, by showing only every \(\tau_{\text{
 X <- Sample[seq(1,n,by=ceiling(res$tauint)),]
 colnames(X) <- rownames(sb$Parameter)
 if (require(hexbin)){
-    hexbin::hexplom(X[,seq(6)])
+    hexbin::hexplom(X[,seq(6)],xbins=16)
 } else {
     pairs(X[,seq(6)])
 }
