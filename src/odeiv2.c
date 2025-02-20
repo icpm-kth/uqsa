@@ -853,8 +853,7 @@ r_gsl_odeiv2_outer_fi(
 	struct event *ev=NULL;
 	double *f;
 	gsl_vector_view p;
-	Rdata SY, SF;
-	Rdata sy_k, sf_k;
+	double *sy_k, *sf_k;
 	Rdata FI, gll, ll;
 	gsl_odeiv2_system sys = load_system(model_name, model_so); /* also sets ODE_*() functions */
 	if (sys.dimension == 0 || ODE_default==NULL || ODE_init==NULL || ODE_func==NULL || ODE_funcJac==NULL || ODE_funcJacp==NULL){
@@ -886,8 +885,8 @@ r_gsl_odeiv2_outer_fi(
 		FI=PROTECT(alloc3DArray(REALSXP,np,np,M));
 		ll=PROTECT(NEW_NUMERIC(M));
 		gll=PROTECT(allocMatrix(REALSXP,np,M));
-		SY=PROTECT(NEW_LIST(M));
-		SF=PROTECT(NEW_LIST(M));
+		sy_k=malloc(sizeof(double)*ny*np*nt);//PROTECT(alloc3DArray(REALSXP,ny,np,nt));
+		sf_k=malloc(sizeof(double)*nf*np*nt);//PROTECT(alloc3DArray(REALSXP,nf,np,nt));
 		for (j=0;j<nf*nt*M;j++) REAL(F)[j]=NA_REAL;   /* initialize to NA */
 		for (k=0;k<M;k++){
 			y=gsl_matrix_view_array(REAL(AS_NUMERIC(Y))+(nt*ny*k),nt,ny);
@@ -905,38 +904,34 @@ r_gsl_odeiv2_outer_fi(
 			);
 			ct1=clock();
 			REAL(cpuSeconds)[k] = sec(ct1-ct0);
-			sy_k=PROTECT(alloc3DArray(REALSXP,ny,np,nt));
-			sf_k=PROTECT(alloc3DArray(REALSXP,nf,np,nt));
 			if (status==GSL_SUCCESS) {
 				p = gsl_matrix_row(P,i);
 				for (j=0;j<nt;j++){
 					f=REAL(F)+(0+j*nf+k*nf*nt);
 					ODE_func(gsl_vector_get(&(time.vector),j),gsl_matrix_ptr(&(y.matrix),j,0),f,sys.params);
 				}
-				sensitivityApproximation(t0,&(time.vector),&(p.vector),&(y.matrix),REAL(sy_k),REAL(sf_k),saMem);
+				sensitivityApproximation(t0,&(time.vector),&(p.vector),&(y.matrix),sy_k,sf_k,saMem);
 				REAL(ll)[k]=logLikelihood(VECTOR_ELT(experiments,i),REAL(F)+(k*nf*nt));
-				gradLogLikelihood(REAL(gll)+(k*np),VECTOR_ELT(experiments,i),REAL(F)+(k*nf*nt),REAL(sf_k),np);
-				FisherInformation(REAL(FI)+(k*np*np),VECTOR_ELT(experiments,i),REAL(sf_k),np);
+				gradLogLikelihood(REAL(gll)+(k*np),VECTOR_ELT(experiments,i),REAL(F)+(k*nf*nt),sf_k,np);
+				FisherInformation(REAL(FI)+(k*np*np),VECTOR_ELT(experiments,i),sf_k,np);
 			}
-			SET_VECTOR_ELT(SY,k,sy_k);
-			SET_VECTOR_ELT(SF,k,sf_k);
-			UNPROTECT(2); // sy_k, sf_k;
 		}
-		yf_list=PROTECT(NEW_LIST(8));
+		free(sy_k);
+		free(sf_k);
+		yf_list=PROTECT(NEW_LIST(6));
 		SET_VECTOR_ELT(yf_list,0,Y);
 		SET_VECTOR_ELT(yf_list,1,F);
-		SET_VECTOR_ELT(yf_list,2,SY);
-		SET_VECTOR_ELT(yf_list,3,SF);
-		SET_VECTOR_ELT(yf_list,4,cpuSeconds);
-		SET_VECTOR_ELT(yf_list,5,ll);
-		SET_VECTOR_ELT(yf_list,6,gll);
-		SET_VECTOR_ELT(yf_list,7,FI);
+		//		SET_VECTOR_ELT(yf_list,2,SY);
+		//		SET_VECTOR_ELT(yf_list,3,SF);
+		SET_VECTOR_ELT(yf_list,2,cpuSeconds);
+		SET_VECTOR_ELT(yf_list,3,ll);
+		SET_VECTOR_ELT(yf_list,4,gll);
+		SET_VECTOR_ELT(yf_list,5,FI);
 		set_names(yf_list,yf_names);
 		SET_VECTOR_ELT(res_list,i,yf_list);
 		event_free(&ev);
 
 		UNPROTECT(1); /* yf_list */
-		UNPROTECT(2); /* SY, SF */
 		UNPROTECT(1); /* F */
 		UNPROTECT(1); /* Y */
 		UNPROTECT(1); /* cpuSeconds */
