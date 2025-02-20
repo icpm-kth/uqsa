@@ -47,7 +47,7 @@ Moreover, to simulate the stochastic reactions with the Gillespie algorithm we n
 ```{r}
 AvoNum <- 6.022e23 #Avogadro constant
 unit <- 1e-6    # unit of measure with respect to m^3 (1e-6 corresponds to micrometers)
-vol <- 4e-15    # volume where the reactions take place
+vol <- 4e-17    # volume where the reactions take place
 Phi <- AvoNum * vol * unit  # parameter used in the simulations
 ```
 
@@ -93,7 +93,7 @@ rprior <- rUniformPrior(ll, ul) # rprior generates random samples from the prior
 
 # Define Number of Samples for the Precalibration (npc) and each ABC-MCMC chain (ns)
 nChains <- 4  # number of ABCMCMC chains to run
-ns <- 100  # no of samples required from each ABC-MCMC chain
+ns <- 1000  # no of samples required from each ABC-MCMC chain
 npc <- 100 # pre-calibration
 
 
@@ -140,7 +140,7 @@ for(j in 1 : nChains){
 
 
 # Run ABC-MCMC Sampling
-The sampling is parallelized on several cores using the `parLapply` function.
+The sampling is parallelized on several cores using the `parLapply` function. Running this code will take approximately 10 minutes on a 8-core laptop.
 
 ```{r}
 cl <- makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
@@ -150,7 +150,7 @@ out_ABCMCMC <- parLapply(
   function(j) {
     tryCatch(
       ABCMCMC(
-       objectiveFunction, startPar[,j], ns, Sigma, delta, dprior, batchSize = 1),
+       objectiveFunction, startPar[,j], ns, Sigma, delta, dprior, batchSize = 10),
        error=function(cond) {message("ABCMCMC crashed"); return(NULL)}
     )
   }
@@ -167,15 +167,21 @@ The parameters in the variable `ABCMCMCoutput` are approximate samples from the 
 
 The sampled three dimensional parameters for the AKAR4 model can be visualized via scatter plots.
 
-```{r}
-pairs(ABCMCMCoutput$draws)
+
+```{r pairs-2, fig.width=12, fig.height=12, dpi=100}
+if (require(hexbin)){
+    hexbin::hexplom(ABCMCMCoutput$draws, xbins = 16)
+} else {
+    pairs(ABCMCMCoutput$draws, pch=20)
+}
 ```
+
 
 The marginal distributions of each parameter in the parameter vector can be visualized via histograms as follows.
 
 ```{r}
 for(i in 1:3){
- hist(ABCMCMCoutput$draws[,i], main=par_names[i], xlab = "Value in log scale")
+ hist(ABCMCMCoutput$draws[,i], breaks = 20, main=par_names[i], xlab = "Value in log scale")
 }
 ```
 
@@ -190,10 +196,11 @@ e <- experiments[[1]]
 
 # Plot the experimental data
 par(bty='n',xaxp=c(80,120,4))
-plot(e$outputTimes, e$outputValues$AKAR4pOUT,ylim=c(90,200), ylab="AKAP79",
+plot(e$outputTimes, e$outputValues$AKAR4pOUT,ylim=c(90,200), ylab="AKAR4p",
      xlab="t",
      main=sprintf("Experiment %i",expInd),
-     lwd=1.5)
+     lwd=1.5,
+     pch=16)
 
 # generate a function (s) that simulates a trajectory given a parameter in input
 s <- simulator.stoch(experiments = experiments, model.tab = SBtab, parMap = parMap, outputFunction = model$func, vol = vol, unit = unit, nStochSim = 3)
