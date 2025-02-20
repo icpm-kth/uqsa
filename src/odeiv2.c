@@ -846,7 +846,7 @@ r_gsl_odeiv2_outer_fi(
 	Rdata yf_list, Y, F, iv, t, cpuSeconds;
 	double t0;
 	clock_t ct0, ct1;
-	const char *yf_names[]={"state","func","stateSensitivity","funcSensitivity","cpuSeconds","logLikelihood","gradLogLikelihood","FisherInformation",NULL};
+	const char *yf_names[]={"state","func","cpuSeconds","logLikelihood","gradLogLikelihood","FisherInformation",NULL};
 	gsl_vector_view initial_value, time;
 	gsl_matrix_view y;
 	size_t nt;
