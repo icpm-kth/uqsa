@@ -90,24 +90,6 @@ simfi <- function(experiments, modelName, parMap=identity, method = 0){
 		} else {
 			message(sprintf("experiments(%i) should be the same length as simulations(%i), but isn't.",length(experiments),length(yf)))
 		}
-		for (i in seq(N)){
-			for (j in seq(m)){
-				## state variables
-				l <- is.finite(yf[[i]]$stateSensitivity[[j]])
-				if (any(!l)){
-					message(sprintf("state-sensitivity approximation produced %i erroneous elements. Setting invalid elements to 0.0.",sum(!l)))
-					##print(yf[[i]]$stateSensitivity[[j]])
-					yf[[i]]$stateSensitivity[[j]][!l] <- 0.0
-				}
-				## functions
-				l <- is.finite(yf[[i]]$funcSensitivity[[j]])
-				if (any(!l)){
-					message(sprintf("function-sensitivity approximation produced %i erroneous elements. Setting invalid elements to 0.",sum(!l)))
-					##print(yf[[i]]$funcSensitivity[[j]])
-					yf[[i]]$funcSensitivity[[j]][!l] <- 0.0
-				}
-			}
-		}
 		return(yf)
 	}
 	return(sim)
