@@ -81,7 +81,7 @@ Here we check the integrated auto-correlation length (Markov chain
 time)
 
 ```{r uwerr}
-Sample <- readRDS(file="./AKAP79-tempertaure-ordered-smmala-sample-for-rank-0.RDS")
+Sample <- readRDS(file="./AKAP79-temperature-ordered-smmala-sample-for-rank-0.RDS")
 n <- NROW(Sample)
 l <- attr(Sample,"logLikelihood")
 

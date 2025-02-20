@@ -106,7 +106,7 @@ for (i in seq(30)){
 	a <- attr(s,"acceptanceRate")
 	h <- h*A(a)                # adjust h up or down
 	x <- attr(s,"lastPoint")   # start next iteration from last point
-	cat(sprintf("%10i  %12i %16.4f %16.4f\n",r,i,a,h)) # cat(sprintf("rank: %02i; iteration: %02i; a: %f; h: %g\n",r,i,a,h))
+	cat(sprintf("%10i  %12i %16.4f %16.4g\n",r,i,a,h)) # cat(sprintf("rank: %02i; iteration: %02i; a: %f; h: %g\n",r,i,a,h))
 }
 saveRDS(s,file=sprintf("smmala-last-adaptation-sample-for-rank-%i.RDS",r))
 pbdMPI::barrier()
@@ -118,7 +118,7 @@ saveRDS(s,file=sprintf("AKAP79-smmala-sample-rank-%i.RDS",r))
 pbdMPI::barrier()
 f <- dir(pattern='^AKAP79-smmala-sample-rank-.*RDS$')
 X <- uqsa::gatherSample(f,beta)
-saveRDS(X,file=sprintf("AKAP79-tempertaure-ordered-smmala-sample-for-rank-%i.RDS",r))
+saveRDS(X,file=sprintf("AKAP79-temperature-ordered-smmala-sample-for-rank-%i.RDS",r))
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)
 
