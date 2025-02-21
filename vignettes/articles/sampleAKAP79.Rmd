@@ -66,7 +66,7 @@ echo "We will use $N cores with $nm"
 
 start_time=$((`date +%s`))
 date
-mpirun -H localhost:$N ./pt-smmala-akap79.R
+mpirun -H localhost:$N ./pt-smmala-akap79.R 100000
 date
 end_time=$((`date +%s`))
 echo "Time spent sampling: $((end_time - start_time)) seconds ($(( (end_time - start_time)/60 )) minutes)."
@@ -85,12 +85,11 @@ Sample <- readRDS(file="./AKAP79-temperature-ordered-smmala-sample-for-rank-0.RD
 n <- NROW(Sample)
 l <- attr(Sample,"logLikelihood")
 
+plot(l,type="l",xlab="mcmc index",ylab="log-likelihood")
+
 if (require(hadron)){
     res <- hadron::uwerr(data=l,pl=TRUE)
-} else {
-    plot(l,type="l",xlab="mcmc index",ylab="log-likelihood")
 }
-
 ```
 
 We reduce the sample for plotting purposes, by showing only every \(\tau_{\text{int.}}\)-th point and create a pairs plot for the first 6 parameters:
@@ -99,7 +98,7 @@ We reduce the sample for plotting purposes, by showing only every \(\tau_{\text{
 X <- Sample[seq(1,n,by=ceiling(res$tauint)),]
 colnames(X) <- rownames(sb$Parameter)
 if (require(hexbin)){
-    hexbin::hexplom(X[,seq(6)],xbins=16)
+    hexbin::hexplom(X[,seq(6)],xbins=12)
 } else {
     pairs(X[,seq(6)])
 }
