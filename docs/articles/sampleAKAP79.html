@@ -151,7 +151,7 @@ load the coimpleted results of this:</p>
 <code class="sourceCode R"><span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/generateCode.html">generateCode</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
 <span><span class="va">cFile</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"./%s_gvf.c"</span>,<span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span><span class="op">)</span> <span class="co"># GSL Vector Field file name</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">C</span>,sep<span class="op">=</span><span class="st">"\n"</span>,file<span class="op">=</span><span class="va">cFile</span><span class="op">)</span>                 <span class="co"># write sources to that file</span></span>
-<span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,<span class="va">cFile</span><span class="op">)</span> <span class="co"># this compiles the sources</span></span>
+<span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,<span class="va">cFile</span><span class="op">)</span> <span class="co"># this compiles the sources</span></span>
 <span><span class="co">#&gt; building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).</span></span>
 <span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './AKAP79.so' './AKAP79_gvf.c' `pkg-config --libs gsl`</span></span></code></pre></div>
 </div>
@@ -164,12 +164,274 @@ shell will do: bash/zsh/fish/dash)</p>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-e</span> <span class="st">'/proc/cpuinfo'</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="va">N</span><span class="op">=</span><span class="va">$((</span><span class="kw">`</span><span class="fu">grep</span> <span class="at">-c</span> processor /proc/cpuinfo<span class="kw">`</span><span class="va">))</span> <span class="kw">&amp;&amp;</span> <span class="va">nm</span><span class="op">=</span><span class="st">"</span><span class="kw">`</span><span class="fu">grep</span> <span class="at">-m1</span> <span class="st">'model name'</span> /proc/cpuinfo<span class="kw">`</span><span class="st">"</span></span>
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"We will use </span><span class="va">$N</span><span class="st"> cores with </span><span class="va">$nm</span><span class="st">"</span></span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="fu">date</span></span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="ex">mpirun</span> <span class="at">-H</span> localhost:<span class="va">$N</span> ./pt-mh-akap79.R</span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="fu">date</span></span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; We will use 8 cores with model name  : Intel(R) Core(TM) i7-4700MQ CPU @ 2.40GHz</span></span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; Fri Feb 14 04:17:48 PM CET 2025</span></span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; Fri Feb 14 04:17:48 PM CET 2025</span></span></code></pre></div>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="va">start_time</span><span class="op">=</span><span class="va">$((</span><span class="kw">`</span><span class="fu">date</span> +%s<span class="kw">`</span><span class="va">))</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="fu">date</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="ex">mpirun</span> <span class="at">-H</span> localhost:<span class="va">$N</span> ./pt-smmala-akap79.R 60000</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="fu">date</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="va">end_time</span><span class="op">=</span><span class="va">$((</span><span class="kw">`</span><span class="fu">date</span> +%s<span class="kw">`</span><span class="va">))</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Time spent sampling: </span><span class="va">$((end_time</span> <span class="op">-</span> <span class="va">start_time))</span><span class="st"> seconds (</span><span class="va">$((</span> (<span class="va">end_time</span> <span class="op">-</span> <span class="va">start_time</span>)<span class="op">/</span><span class="dv">60</span> <span class="va">))</span><span class="st"> minutes)."</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; We will use 8 cores with model name  : Intel(R) Core(TM) i7-4700MQ CPU @ 2.40GHz</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt; Thu Feb 20 08:30:07 PM CET 2025</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt;       rank     iteration       acceptance        step size</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt;       ----     ---------       ----------        ---------</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt;          7             1           0.1700         0.004112</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt;          0             1           0.4700        1.232e-06</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt;          2             1           0.2100        3.688e-05</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt;          5             1           0.0600        0.0009937</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt;          6             1           0.0550         0.002004</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co">#&gt;          1             1           0.3500        9.211e-06</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt;          3             1           0.1200        0.0001145</span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt;          4             1           0.1000        0.0003873</span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt;          7             2           0.2550         0.004194</span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co">#&gt;          0             2           0.4350        1.727e-06</span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt;          1             2           0.2800        1.024e-05</span></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co">#&gt;          2             2           0.2450        3.614e-05</span></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="co">#&gt;          3             2           0.1950        8.822e-05</span></span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a><span class="co">#&gt;          5             2           0.1350        0.0005748</span></span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">#&gt;          6             2           0.1700         0.001355</span></span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="co">#&gt;          4             2           0.1700        0.0002619</span></span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="co">#&gt;          7             3           0.1800         0.002985</span></span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a><span class="co">#&gt;          0             3           0.4450        2.433e-06</span></span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a><span class="co">#&gt;          1             3           0.2000        8.093e-06</span></span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a><span class="co">#&gt;          3             3           0.1950        6.794e-05</span></span>
+<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a><span class="co">#&gt;          2             3           0.1800        2.572e-05</span></span>
+<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a><span class="co">#&gt;          5             3           0.1450        0.0003458</span></span>
+<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a><span class="co">#&gt;          6             3           0.2050         0.001099</span></span>
+<span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a><span class="co">#&gt;          4             3           0.2250        0.0002347</span></span>
+<span id="cb6-39"><a href="#cb6-39" tabindex="-1"></a><span class="co">#&gt;          7             4           0.1700         0.002018</span></span>
+<span id="cb6-40"><a href="#cb6-40" tabindex="-1"></a><span class="co">#&gt;          0             4           0.3850        3.283e-06</span></span>
+<span id="cb6-41"><a href="#cb6-41" tabindex="-1"></a><span class="co">#&gt;          1             4           0.2600         8.41e-06</span></span>
+<span id="cb6-42"><a href="#cb6-42" tabindex="-1"></a><span class="co">#&gt;          3             4           0.2550        6.928e-05</span></span>
+<span id="cb6-43"><a href="#cb6-43" tabindex="-1"></a><span class="co">#&gt;          2             4           0.2800        2.859e-05</span></span>
+<span id="cb6-44"><a href="#cb6-44" tabindex="-1"></a><span class="co">#&gt;          5             4           0.2000        0.0002734</span></span>
+<span id="cb6-45"><a href="#cb6-45" tabindex="-1"></a><span class="co">#&gt;          4             4           0.2150        0.0002003</span></span>
+<span id="cb6-46"><a href="#cb6-46" tabindex="-1"></a><span class="co">#&gt;          6             4           0.3000         0.001291</span></span>
+<span id="cb6-47"><a href="#cb6-47" tabindex="-1"></a><span class="co">#&gt;          7             5           0.2900         0.002309</span></span>
+<span id="cb6-48"><a href="#cb6-48" tabindex="-1"></a><span class="co">#&gt;          0             5           0.4050        4.508e-06</span></span>
+<span id="cb6-49"><a href="#cb6-49" tabindex="-1"></a><span class="co">#&gt;          1             5           0.2800        9.347e-06</span></span>
+<span id="cb6-50"><a href="#cb6-50" tabindex="-1"></a><span class="co">#&gt;          3             5           0.2450        6.788e-05</span></span>
+<span id="cb6-51"><a href="#cb6-51" tabindex="-1"></a><span class="co">#&gt;          2             5           0.2300        2.623e-05</span></span>
+<span id="cb6-52"><a href="#cb6-52" tabindex="-1"></a><span class="co">#&gt;          5             5           0.2100        0.0002276</span></span>
+<span id="cb6-53"><a href="#cb6-53" tabindex="-1"></a><span class="co">#&gt;          4             5           0.2250        0.0001795</span></span>
+<span id="cb6-54"><a href="#cb6-54" tabindex="-1"></a><span class="co">#&gt;          6             5           0.2800         0.001435</span></span>
+<span id="cb6-55"><a href="#cb6-55" tabindex="-1"></a><span class="co">#&gt;          0             6           0.2800         5.01e-06</span></span>
+<span id="cb6-56"><a href="#cb6-56" tabindex="-1"></a><span class="co">#&gt;          7             6           0.3900          0.00313</span></span>
+<span id="cb6-57"><a href="#cb6-57" tabindex="-1"></a><span class="co">#&gt;          1             6           0.2800        1.039e-05</span></span>
+<span id="cb6-58"><a href="#cb6-58" tabindex="-1"></a><span class="co">#&gt;          3             6           0.2550        6.923e-05</span></span>
+<span id="cb6-59"><a href="#cb6-59" tabindex="-1"></a><span class="co">#&gt;          2             6           0.2550        2.675e-05</span></span>
+<span id="cb6-60"><a href="#cb6-60" tabindex="-1"></a><span class="co">#&gt;          5             6           0.2750         0.000249</span></span>
+<span id="cb6-61"><a href="#cb6-61" tabindex="-1"></a><span class="co">#&gt;          4             6           0.1900        0.0001347</span></span>
+<span id="cb6-62"><a href="#cb6-62" tabindex="-1"></a><span class="co">#&gt;          6             6           0.4500         0.002028</span></span>
+<span id="cb6-63"><a href="#cb6-63" tabindex="-1"></a><span class="co">#&gt;          0             7           0.2600        5.206e-06</span></span>
+<span id="cb6-64"><a href="#cb6-64" tabindex="-1"></a><span class="co">#&gt;          1             7           0.2850        1.172e-05</span></span>
+<span id="cb6-65"><a href="#cb6-65" tabindex="-1"></a><span class="co">#&gt;          7             7           0.2900         0.003582</span></span>
+<span id="cb6-66"><a href="#cb6-66" tabindex="-1"></a><span class="co">#&gt;          3             7           0.2150        5.909e-05</span></span>
+<span id="cb6-67"><a href="#cb6-67" tabindex="-1"></a><span class="co">#&gt;          2             7           0.2300        2.454e-05</span></span>
+<span id="cb6-68"><a href="#cb6-68" tabindex="-1"></a><span class="co">#&gt;          5             7           0.2900        0.0002849</span></span>
+<span id="cb6-69"><a href="#cb6-69" tabindex="-1"></a><span class="co">#&gt;          4             7           0.2650        0.0001425</span></span>
+<span id="cb6-70"><a href="#cb6-70" tabindex="-1"></a><span class="co">#&gt;          6             7           0.3800         0.002722</span></span>
+<span id="cb6-71"><a href="#cb6-71" tabindex="-1"></a><span class="co">#&gt;          0             8           0.2350        4.886e-06</span></span>
+<span id="cb6-72"><a href="#cb6-72" tabindex="-1"></a><span class="co">#&gt;          1             8           0.2350          1.1e-05</span></span>
+<span id="cb6-73"><a href="#cb6-73" tabindex="-1"></a><span class="co">#&gt;          2             8           0.3250        3.044e-05</span></span>
+<span id="cb6-74"><a href="#cb6-74" tabindex="-1"></a><span class="co">#&gt;          3             8           0.2150        5.044e-05</span></span>
+<span id="cb6-75"><a href="#cb6-75" tabindex="-1"></a><span class="co">#&gt;          7             8           0.2100         0.002982</span></span>
+<span id="cb6-76"><a href="#cb6-76" tabindex="-1"></a><span class="co">#&gt;          5             8           0.2850        0.0003214</span></span>
+<span id="cb6-77"><a href="#cb6-77" tabindex="-1"></a><span class="co">#&gt;          4             8           0.2450        0.0001396</span></span>
+<span id="cb6-78"><a href="#cb6-78" tabindex="-1"></a><span class="co">#&gt;          6             8           0.3950         0.003706</span></span>
+<span id="cb6-79"><a href="#cb6-79" tabindex="-1"></a><span class="co">#&gt;          0             9           0.2950        5.666e-06</span></span>
+<span id="cb6-80"><a href="#cb6-80" tabindex="-1"></a><span class="co">#&gt;          1             9           0.2950        1.275e-05</span></span>
+<span id="cb6-81"><a href="#cb6-81" tabindex="-1"></a><span class="co">#&gt;          2             9           0.2450        2.983e-05</span></span>
+<span id="cb6-82"><a href="#cb6-82" tabindex="-1"></a><span class="co">#&gt;          3             9           0.2700        5.429e-05</span></span>
+<span id="cb6-83"><a href="#cb6-83" tabindex="-1"></a><span class="co">#&gt;          5             9           0.2050        0.0002608</span></span>
+<span id="cb6-84"><a href="#cb6-84" tabindex="-1"></a><span class="co">#&gt;          7             9           0.2450         0.002921</span></span>
+<span id="cb6-85"><a href="#cb6-85" tabindex="-1"></a><span class="co">#&gt;          4             9           0.2750        0.0001528</span></span>
+<span id="cb6-86"><a href="#cb6-86" tabindex="-1"></a><span class="co">#&gt;          6             9           0.3300         0.004641</span></span>
+<span id="cb6-87"><a href="#cb6-87" tabindex="-1"></a><span class="co">#&gt;          0            10           0.3250         7.03e-06</span></span>
+<span id="cb6-88"><a href="#cb6-88" tabindex="-1"></a><span class="co">#&gt;          1            10           0.3000        1.498e-05</span></span>
+<span id="cb6-89"><a href="#cb6-89" tabindex="-1"></a><span class="co">#&gt;          2            10           0.2400        2.861e-05</span></span>
+<span id="cb6-90"><a href="#cb6-90" tabindex="-1"></a><span class="co">#&gt;          3            10           0.2350        5.095e-05</span></span>
+<span id="cb6-91"><a href="#cb6-91" tabindex="-1"></a><span class="co">#&gt;          5            10           0.2900        0.0002984</span></span>
+<span id="cb6-92"><a href="#cb6-92" tabindex="-1"></a><span class="co">#&gt;          7            10           0.3400         0.003721</span></span>
+<span id="cb6-93"><a href="#cb6-93" tabindex="-1"></a><span class="co">#&gt;          4            10           0.2600        0.0001587</span></span>
+<span id="cb6-94"><a href="#cb6-94" tabindex="-1"></a><span class="co">#&gt;          6            10           0.2100         0.003863</span></span>
+<span id="cb6-95"><a href="#cb6-95" tabindex="-1"></a><span class="co">#&gt;          0            11           0.2300        6.449e-06</span></span>
+<span id="cb6-96"><a href="#cb6-96" tabindex="-1"></a><span class="co">#&gt;          1            11           0.3050        1.781e-05</span></span>
+<span id="cb6-97"><a href="#cb6-97" tabindex="-1"></a><span class="co">#&gt;          2            11           0.3000        3.361e-05</span></span>
+<span id="cb6-98"><a href="#cb6-98" tabindex="-1"></a><span class="co">#&gt;          3            11           0.2700        5.484e-05</span></span>
+<span id="cb6-99"><a href="#cb6-99" tabindex="-1"></a><span class="co">#&gt;          5            11           0.2450        0.0002923</span></span>
+<span id="cb6-100"><a href="#cb6-100" tabindex="-1"></a><span class="co">#&gt;          7            11           0.1700         0.002516</span></span>
+<span id="cb6-101"><a href="#cb6-101" tabindex="-1"></a><span class="co">#&gt;          4            11           0.2900        0.0001816</span></span>
+<span id="cb6-102"><a href="#cb6-102" tabindex="-1"></a><span class="co">#&gt;          6            11           0.1900         0.002898</span></span>
+<span id="cb6-103"><a href="#cb6-103" tabindex="-1"></a><span class="co">#&gt;          0            12           0.3150        7.842e-06</span></span>
+<span id="cb6-104"><a href="#cb6-104" tabindex="-1"></a><span class="co">#&gt;          1            12           0.2300        1.634e-05</span></span>
+<span id="cb6-105"><a href="#cb6-105" tabindex="-1"></a><span class="co">#&gt;          2            12           0.2950        3.898e-05</span></span>
+<span id="cb6-106"><a href="#cb6-106" tabindex="-1"></a><span class="co">#&gt;          3            12           0.2650        5.802e-05</span></span>
+<span id="cb6-107"><a href="#cb6-107" tabindex="-1"></a><span class="co">#&gt;          5            12           0.2650        0.0003093</span></span>
+<span id="cb6-108"><a href="#cb6-108" tabindex="-1"></a><span class="co">#&gt;          7            12           0.3200         0.003091</span></span>
+<span id="cb6-109"><a href="#cb6-109" tabindex="-1"></a><span class="co">#&gt;          4            12           0.2050        0.0001474</span></span>
+<span id="cb6-110"><a href="#cb6-110" tabindex="-1"></a><span class="co">#&gt;          0            13           0.1700        5.302e-06</span></span>
+<span id="cb6-111"><a href="#cb6-111" tabindex="-1"></a><span class="co">#&gt;          1            13           0.2950        1.895e-05</span></span>
+<span id="cb6-112"><a href="#cb6-112" tabindex="-1"></a><span class="co">#&gt;          2            13           0.2600         4.05e-05</span></span>
+<span id="cb6-113"><a href="#cb6-113" tabindex="-1"></a><span class="co">#&gt;          3            13           0.2250          5.2e-05</span></span>
+<span id="cb6-114"><a href="#cb6-114" tabindex="-1"></a><span class="co">#&gt;          6            12           0.3000         0.003404</span></span>
+<span id="cb6-115"><a href="#cb6-115" tabindex="-1"></a><span class="co">#&gt;          5            13           0.2100        0.0002575</span></span>
+<span id="cb6-116"><a href="#cb6-116" tabindex="-1"></a><span class="co">#&gt;          7            13           0.2500         0.003091</span></span>
+<span id="cb6-117"><a href="#cb6-117" tabindex="-1"></a><span class="co">#&gt;          4            13           0.3000        0.0001731</span></span>
+<span id="cb6-118"><a href="#cb6-118" tabindex="-1"></a><span class="co">#&gt;          0            14           0.2700        5.707e-06</span></span>
+<span id="cb6-119"><a href="#cb6-119" tabindex="-1"></a><span class="co">#&gt;          1            14           0.2550        1.933e-05</span></span>
+<span id="cb6-120"><a href="#cb6-120" tabindex="-1"></a><span class="co">#&gt;          3            14           0.2200        4.549e-05</span></span>
+<span id="cb6-121"><a href="#cb6-121" tabindex="-1"></a><span class="co">#&gt;          2            14           0.1850        2.959e-05</span></span>
+<span id="cb6-122"><a href="#cb6-122" tabindex="-1"></a><span class="co">#&gt;          6            13           0.2900         0.003895</span></span>
+<span id="cb6-123"><a href="#cb6-123" tabindex="-1"></a><span class="co">#&gt;          5            14           0.3000        0.0003024</span></span>
+<span id="cb6-124"><a href="#cb6-124" tabindex="-1"></a><span class="co">#&gt;          7            14           0.1450          0.00186</span></span>
+<span id="cb6-125"><a href="#cb6-125" tabindex="-1"></a><span class="co">#&gt;          4            14           0.2700        0.0001863</span></span>
+<span id="cb6-126"><a href="#cb6-126" tabindex="-1"></a><span class="co">#&gt;          0            15           0.2300        5.235e-06</span></span>
+<span id="cb6-127"><a href="#cb6-127" tabindex="-1"></a><span class="co">#&gt;          1            15           0.2200        1.691e-05</span></span>
+<span id="cb6-128"><a href="#cb6-128" tabindex="-1"></a><span class="co">#&gt;          3            15           0.2550        4.639e-05</span></span>
+<span id="cb6-129"><a href="#cb6-129" tabindex="-1"></a><span class="co">#&gt;          2            15           0.2250        2.652e-05</span></span>
+<span id="cb6-130"><a href="#cb6-130" tabindex="-1"></a><span class="co">#&gt;          5            15           0.2300        0.0002774</span></span>
+<span id="cb6-131"><a href="#cb6-131" tabindex="-1"></a><span class="co">#&gt;          6            14           0.2050          0.00316</span></span>
+<span id="cb6-132"><a href="#cb6-132" tabindex="-1"></a><span class="co">#&gt;          7            15           0.1450         0.001119</span></span>
+<span id="cb6-133"><a href="#cb6-133" tabindex="-1"></a><span class="co">#&gt;          0            16           0.2500        5.235e-06</span></span>
+<span id="cb6-134"><a href="#cb6-134" tabindex="-1"></a><span class="co">#&gt;          1            16           0.2800        1.879e-05</span></span>
+<span id="cb6-135"><a href="#cb6-135" tabindex="-1"></a><span class="co">#&gt;          4            15           0.3200        0.0002289</span></span>
+<span id="cb6-136"><a href="#cb6-136" tabindex="-1"></a><span class="co">#&gt;          3            16           0.1950        3.573e-05</span></span>
+<span id="cb6-137"><a href="#cb6-137" tabindex="-1"></a><span class="co">#&gt;          2            16           0.2400        2.544e-05</span></span>
+<span id="cb6-138"><a href="#cb6-138" tabindex="-1"></a><span class="co">#&gt;          5            16           0.2850         0.000313</span></span>
+<span id="cb6-139"><a href="#cb6-139" tabindex="-1"></a><span class="co">#&gt;          7            16           0.2900          0.00128</span></span>
+<span id="cb6-140"><a href="#cb6-140" tabindex="-1"></a><span class="co">#&gt;          6            15           0.1350         0.001828</span></span>
+<span id="cb6-141"><a href="#cb6-141" tabindex="-1"></a><span class="co">#&gt;          0            17           0.2700        5.635e-06</span></span>
+<span id="cb6-142"><a href="#cb6-142" tabindex="-1"></a><span class="co">#&gt;          1            17           0.1950        1.447e-05</span></span>
+<span id="cb6-143"><a href="#cb6-143" tabindex="-1"></a><span class="co">#&gt;          3            17           0.3350        4.514e-05</span></span>
+<span id="cb6-144"><a href="#cb6-144" tabindex="-1"></a><span class="co">#&gt;          4            16           0.3250         0.000284</span></span>
+<span id="cb6-145"><a href="#cb6-145" tabindex="-1"></a><span class="co">#&gt;          2            17           0.2650        2.692e-05</span></span>
+<span id="cb6-146"><a href="#cb6-146" tabindex="-1"></a><span class="co">#&gt;          5            17           0.3400        0.0003987</span></span>
+<span id="cb6-147"><a href="#cb6-147" tabindex="-1"></a><span class="co">#&gt;          7            17           0.2600          0.00133</span></span>
+<span id="cb6-148"><a href="#cb6-148" tabindex="-1"></a><span class="co">#&gt;          6            16           0.1400         0.001077</span></span>
+<span id="cb6-149"><a href="#cb6-149" tabindex="-1"></a><span class="co">#&gt;          1            18           0.3150         1.76e-05</span></span>
+<span id="cb6-150"><a href="#cb6-150" tabindex="-1"></a><span class="co">#&gt;          0            18           0.2750        6.166e-06</span></span>
+<span id="cb6-151"><a href="#cb6-151" tabindex="-1"></a><span class="co">#&gt;          3            18           0.3050        5.367e-05</span></span>
+<span id="cb6-152"><a href="#cb6-152" tabindex="-1"></a><span class="co">#&gt;          2            18           0.3150        3.273e-05</span></span>
+<span id="cb6-153"><a href="#cb6-153" tabindex="-1"></a><span class="co">#&gt;          4            17           0.3150        0.0003453</span></span>
+<span id="cb6-154"><a href="#cb6-154" tabindex="-1"></a><span class="co">#&gt;          5            18           0.2850        0.0004498</span></span>
+<span id="cb6-155"><a href="#cb6-155" tabindex="-1"></a><span class="co">#&gt;          7            18           0.3550         0.001733</span></span>
+<span id="cb6-156"><a href="#cb6-156" tabindex="-1"></a><span class="co">#&gt;          1            19           0.1650        1.161e-05</span></span>
+<span id="cb6-157"><a href="#cb6-157" tabindex="-1"></a><span class="co">#&gt;          0            19           0.2150        5.263e-06</span></span>
+<span id="cb6-158"><a href="#cb6-158" tabindex="-1"></a><span class="co">#&gt;          3            19           0.2350        5.036e-05</span></span>
+<span id="cb6-159"><a href="#cb6-159" tabindex="-1"></a><span class="co">#&gt;          6            17           0.1500        0.0006624</span></span>
+<span id="cb6-160"><a href="#cb6-160" tabindex="-1"></a><span class="co">#&gt;          2            19           0.2750        3.581e-05</span></span>
+<span id="cb6-161"><a href="#cb6-161" tabindex="-1"></a><span class="co">#&gt;          4            18           0.2500        0.0003453</span></span>
+<span id="cb6-162"><a href="#cb6-162" tabindex="-1"></a><span class="co">#&gt;          5            19           0.3200        0.0005526</span></span>
+<span id="cb6-163"><a href="#cb6-163" tabindex="-1"></a><span class="co">#&gt;          7            19           0.2400         0.001663</span></span>
+<span id="cb6-164"><a href="#cb6-164" tabindex="-1"></a><span class="co">#&gt;          1            20           0.2400        1.113e-05</span></span>
+<span id="cb6-165"><a href="#cb6-165" tabindex="-1"></a><span class="co">#&gt;          0            20           0.3150          6.4e-06</span></span>
+<span id="cb6-166"><a href="#cb6-166" tabindex="-1"></a><span class="co">#&gt;          3            20           0.3000        5.916e-05</span></span>
+<span id="cb6-167"><a href="#cb6-167" tabindex="-1"></a><span class="co">#&gt;          2            20           0.2250        3.209e-05</span></span>
+<span id="cb6-168"><a href="#cb6-168" tabindex="-1"></a><span class="co">#&gt;          6            18           0.1850         0.000484</span></span>
+<span id="cb6-169"><a href="#cb6-169" tabindex="-1"></a><span class="co">#&gt;          4            19           0.2800        0.0003838</span></span>
+<span id="cb6-170"><a href="#cb6-170" tabindex="-1"></a><span class="co">#&gt;          5            20           0.3250        0.0006855</span></span>
+<span id="cb6-171"><a href="#cb6-171" tabindex="-1"></a><span class="co">#&gt;          7            20           0.4350          0.00233</span></span>
+<span id="cb6-172"><a href="#cb6-172" tabindex="-1"></a><span class="co">#&gt;          1            21           0.2500        1.113e-05</span></span>
+<span id="cb6-173"><a href="#cb6-173" tabindex="-1"></a><span class="co">#&gt;          0            21           0.2750        7.002e-06</span></span>
+<span id="cb6-174"><a href="#cb6-174" tabindex="-1"></a><span class="co">#&gt;          3            21           0.2400        5.675e-05</span></span>
+<span id="cb6-175"><a href="#cb6-175" tabindex="-1"></a><span class="co">#&gt;          2            21           0.2350        3.012e-05</span></span>
+<span id="cb6-176"><a href="#cb6-176" tabindex="-1"></a><span class="co">#&gt;          6            19           0.1850        0.0003536</span></span>
+<span id="cb6-177"><a href="#cb6-177" tabindex="-1"></a><span class="co">#&gt;          4            20           0.2750          0.00042</span></span>
+<span id="cb6-178"><a href="#cb6-178" tabindex="-1"></a><span class="co">#&gt;          7            21           0.5050         0.003363</span></span>
+<span id="cb6-179"><a href="#cb6-179" tabindex="-1"></a><span class="co">#&gt;          5            21           0.2850        0.0007734</span></span>
+<span id="cb6-180"><a href="#cb6-180" tabindex="-1"></a><span class="co">#&gt;          1            22           0.3000        1.308e-05</span></span>
+<span id="cb6-181"><a href="#cb6-181" tabindex="-1"></a><span class="co">#&gt;          0            22           0.2900        8.012e-06</span></span>
+<span id="cb6-182"><a href="#cb6-182" tabindex="-1"></a><span class="co">#&gt;          3            22           0.2700        6.108e-05</span></span>
+<span id="cb6-183"><a href="#cb6-183" tabindex="-1"></a><span class="co">#&gt;          2            22           0.1900        2.259e-05</span></span>
+<span id="cb6-184"><a href="#cb6-184" tabindex="-1"></a><span class="co">#&gt;          6            20           0.2750        0.0003869</span></span>
+<span id="cb6-185"><a href="#cb6-185" tabindex="-1"></a><span class="co">#&gt;          4            21           0.2500          0.00042</span></span>
+<span id="cb6-186"><a href="#cb6-186" tabindex="-1"></a><span class="co">#&gt;          7            22           0.3050         0.003999</span></span>
+<span id="cb6-187"><a href="#cb6-187" tabindex="-1"></a><span class="co">#&gt;          1            23           0.2800        1.454e-05</span></span>
+<span id="cb6-188"><a href="#cb6-188" tabindex="-1"></a><span class="co">#&gt;          5            22           0.2050        0.0006275</span></span>
+<span id="cb6-189"><a href="#cb6-189" tabindex="-1"></a><span class="co">#&gt;          0            23           0.2500        8.012e-06</span></span>
+<span id="cb6-190"><a href="#cb6-190" tabindex="-1"></a><span class="co">#&gt;          3            23           0.1900        4.582e-05</span></span>
+<span id="cb6-191"><a href="#cb6-191" tabindex="-1"></a><span class="co">#&gt;          2            23           0.2500        2.259e-05</span></span>
+<span id="cb6-192"><a href="#cb6-192" tabindex="-1"></a><span class="co">#&gt;          7            23           0.1250         0.002235</span></span>
+<span id="cb6-193"><a href="#cb6-193" tabindex="-1"></a><span class="co">#&gt;          4            22           0.2200        0.0003674</span></span>
+<span id="cb6-194"><a href="#cb6-194" tabindex="-1"></a><span class="co">#&gt;          6            21           0.3250        0.0004801</span></span>
+<span id="cb6-195"><a href="#cb6-195" tabindex="-1"></a><span class="co">#&gt;          1            24           0.2500        1.454e-05</span></span>
+<span id="cb6-196"><a href="#cb6-196" tabindex="-1"></a><span class="co">#&gt;          0            24           0.2900        9.168e-06</span></span>
+<span id="cb6-197"><a href="#cb6-197" tabindex="-1"></a><span class="co">#&gt;          5            23           0.1900        0.0004707</span></span>
+<span id="cb6-198"><a href="#cb6-198" tabindex="-1"></a><span class="co">#&gt;          3            24           0.3300        5.738e-05</span></span>
+<span id="cb6-199"><a href="#cb6-199" tabindex="-1"></a><span class="co">#&gt;          2            24           0.2800        2.511e-05</span></span>
+<span id="cb6-200"><a href="#cb6-200" tabindex="-1"></a><span class="co">#&gt;          7            24           0.2150         0.001908</span></span>
+<span id="cb6-201"><a href="#cb6-201" tabindex="-1"></a><span class="co">#&gt;          4            23           0.2650        0.0003887</span></span>
+<span id="cb6-202"><a href="#cb6-202" tabindex="-1"></a><span class="co">#&gt;          1            25           0.2250        1.303e-05</span></span>
+<span id="cb6-203"><a href="#cb6-203" tabindex="-1"></a><span class="co">#&gt;          0            25           0.2200        8.021e-06</span></span>
+<span id="cb6-204"><a href="#cb6-204" tabindex="-1"></a><span class="co">#&gt;          3            25           0.1900        4.304e-05</span></span>
+<span id="cb6-205"><a href="#cb6-205" tabindex="-1"></a><span class="co">#&gt;          6            22           0.3300        0.0006012</span></span>
+<span id="cb6-206"><a href="#cb6-206" tabindex="-1"></a><span class="co">#&gt;          2            25           0.2350        2.357e-05</span></span>
+<span id="cb6-207"><a href="#cb6-207" tabindex="-1"></a><span class="co">#&gt;          5            24           0.1950        0.0003625</span></span>
+<span id="cb6-208"><a href="#cb6-208" tabindex="-1"></a><span class="co">#&gt;          7            25           0.3050         0.002268</span></span>
+<span id="cb6-209"><a href="#cb6-209" tabindex="-1"></a><span class="co">#&gt;          1            26           0.2550        1.328e-05</span></span>
+<span id="cb6-210"><a href="#cb6-210" tabindex="-1"></a><span class="co">#&gt;          0            26           0.1850        5.861e-06</span></span>
+<span id="cb6-211"><a href="#cb6-211" tabindex="-1"></a><span class="co">#&gt;          4            24           0.2850        0.0004385</span></span>
+<span id="cb6-212"><a href="#cb6-212" tabindex="-1"></a><span class="co">#&gt;          3            26           0.3100        5.177e-05</span></span>
+<span id="cb6-213"><a href="#cb6-213" tabindex="-1"></a><span class="co">#&gt;          2            26           0.2400        2.261e-05</span></span>
+<span id="cb6-214"><a href="#cb6-214" tabindex="-1"></a><span class="co">#&gt;          5            25           0.1850        0.0002649</span></span>
+<span id="cb6-215"><a href="#cb6-215" tabindex="-1"></a><span class="co">#&gt;          6            23           0.3500        0.0007776</span></span>
+<span id="cb6-216"><a href="#cb6-216" tabindex="-1"></a><span class="co">#&gt;          7            26           0.2400         0.002176</span></span>
+<span id="cb6-217"><a href="#cb6-217" tabindex="-1"></a><span class="co">#&gt;          0            27           0.1500        3.603e-06</span></span>
+<span id="cb6-218"><a href="#cb6-218" tabindex="-1"></a><span class="co">#&gt;          1            27           0.2450        1.302e-05</span></span>
+<span id="cb6-219"><a href="#cb6-219" tabindex="-1"></a><span class="co">#&gt;          3            27           0.2900        5.924e-05</span></span>
+<span id="cb6-220"><a href="#cb6-220" tabindex="-1"></a><span class="co">#&gt;          4            25           0.2750        0.0004798</span></span>
+<span id="cb6-221"><a href="#cb6-221" tabindex="-1"></a><span class="co">#&gt;          2            27           0.2950        2.622e-05</span></span>
+<span id="cb6-222"><a href="#cb6-222" tabindex="-1"></a><span class="co">#&gt;          5            26           0.1650        0.0001747</span></span>
+<span id="cb6-223"><a href="#cb6-223" tabindex="-1"></a><span class="co">#&gt;          6            24           0.4800         0.001113</span></span>
+<span id="cb6-224"><a href="#cb6-224" tabindex="-1"></a><span class="co">#&gt;          7            27           0.5150         0.003149</span></span>
+<span id="cb6-225"><a href="#cb6-225" tabindex="-1"></a><span class="co">#&gt;          0            28           0.3700        4.783e-06</span></span>
+<span id="cb6-226"><a href="#cb6-226" tabindex="-1"></a><span class="co">#&gt;          1            28           0.2900        1.489e-05</span></span>
+<span id="cb6-227"><a href="#cb6-227" tabindex="-1"></a><span class="co">#&gt;          3            28           0.3000        6.958e-05</span></span>
+<span id="cb6-228"><a href="#cb6-228" tabindex="-1"></a><span class="co">#&gt;          4            26           0.2400        0.0004603</span></span>
+<span id="cb6-229"><a href="#cb6-229" tabindex="-1"></a><span class="co">#&gt;          2            28           0.2350         2.46e-05</span></span>
+<span id="cb6-230"><a href="#cb6-230" tabindex="-1"></a><span class="co">#&gt;          5            27           0.2450        0.0001712</span></span>
+<span id="cb6-231"><a href="#cb6-231" tabindex="-1"></a><span class="co">#&gt;          6            25           0.5000         0.001604</span></span>
+<span id="cb6-232"><a href="#cb6-232" tabindex="-1"></a><span class="co">#&gt;          7            28           0.3200         0.003869</span></span>
+<span id="cb6-233"><a href="#cb6-233" tabindex="-1"></a><span class="co">#&gt;          0            29           0.3200        5.876e-06</span></span>
+<span id="cb6-234"><a href="#cb6-234" tabindex="-1"></a><span class="co">#&gt;          1            29           0.2200        1.303e-05</span></span>
+<span id="cb6-235"><a href="#cb6-235" tabindex="-1"></a><span class="co">#&gt;          3            29           0.2550        7.096e-05</span></span>
+<span id="cb6-236"><a href="#cb6-236" tabindex="-1"></a><span class="co">#&gt;          4            27           0.1800        0.0003276</span></span>
+<span id="cb6-237"><a href="#cb6-237" tabindex="-1"></a><span class="co">#&gt;          2            29           0.2550        2.509e-05</span></span>
+<span id="cb6-238"><a href="#cb6-238" tabindex="-1"></a><span class="co">#&gt;          5            28           0.2400        0.0001642</span></span>
+<span id="cb6-239"><a href="#cb6-239" tabindex="-1"></a><span class="co">#&gt;          7            29           0.2400         0.003711</span></span>
+<span id="cb6-240"><a href="#cb6-240" tabindex="-1"></a><span class="co">#&gt;          6            26           0.5100         0.002319</span></span>
+<span id="cb6-241"><a href="#cb6-241" tabindex="-1"></a><span class="co">#&gt;          0            30           0.2850        6.629e-06</span></span>
+<span id="cb6-242"><a href="#cb6-242" tabindex="-1"></a><span class="co">#&gt;          1            30           0.2300        1.195e-05</span></span>
+<span id="cb6-243"><a href="#cb6-243" tabindex="-1"></a><span class="co">#&gt;          3            30           0.2200        6.208e-05</span></span>
+<span id="cb6-244"><a href="#cb6-244" tabindex="-1"></a><span class="co">#&gt;          2            30           0.2500        2.509e-05</span></span>
+<span id="cb6-245"><a href="#cb6-245" tabindex="-1"></a><span class="co">#&gt;          4            28           0.2750        0.0003585</span></span>
+<span id="cb6-246"><a href="#cb6-246" tabindex="-1"></a><span class="co">#&gt;          5            29           0.2800        0.0001825</span></span>
+<span id="cb6-247"><a href="#cb6-247" tabindex="-1"></a><span class="co">#&gt;          7            30           0.4600         0.005269</span></span>
+<span id="cb6-248"><a href="#cb6-248" tabindex="-1"></a><span class="co">#&gt;          6            27           0.3350         0.002929</span></span>
+<span id="cb6-249"><a href="#cb6-249" tabindex="-1"></a><span class="co">#&gt;          4            29           0.2850        0.0004044</span></span>
+<span id="cb6-250"><a href="#cb6-250" tabindex="-1"></a><span class="co">#&gt;          5            30           0.2350        0.0001713</span></span>
+<span id="cb6-251"><a href="#cb6-251" tabindex="-1"></a><span class="co">#&gt;          4            30           0.3150        0.0004917</span></span>
+<span id="cb6-252"><a href="#cb6-252" tabindex="-1"></a><span class="co">#&gt;          6            28           0.2600         0.003044</span></span>
+<span id="cb6-253"><a href="#cb6-253" tabindex="-1"></a><span class="co">#&gt;          6            29           0.2800         0.003383</span></span>
+<span id="cb6-254"><a href="#cb6-254" tabindex="-1"></a><span class="co">#&gt;          6            30           0.3000         0.003974</span></span>
+<span id="cb6-255"><a href="#cb6-255" tabindex="-1"></a><span class="co">#&gt; Time difference of 313.3139 mins</span></span>
+<span id="cb6-256"><a href="#cb6-256" tabindex="-1"></a><span class="co">#&gt; rank 03 of 08 finished with an acceptance rate of 0.000033 % and swap rate of 0.215783.</span></span>
+<span id="cb6-257"><a href="#cb6-257" tabindex="-1"></a><span class="co">#&gt; Time difference of 313.3143 mins</span></span>
+<span id="cb6-258"><a href="#cb6-258" tabindex="-1"></a><span class="co">#&gt; rank 02 of 08 finished with an acceptance rate of 0.000017 % and swap rate of 0.188667.</span></span>
+<span id="cb6-259"><a href="#cb6-259" tabindex="-1"></a><span class="co">#&gt; Time difference of 313.3144 mins</span></span>
+<span id="cb6-260"><a href="#cb6-260" tabindex="-1"></a><span class="co">#&gt; rank 00 of 08 finished with an acceptance rate of 0.000200 % and swap rate of 0.184400.</span></span>
+<span id="cb6-261"><a href="#cb6-261" tabindex="-1"></a><span class="co">#&gt; Time difference of 313.3148 mins</span></span>
+<span id="cb6-262"><a href="#cb6-262" tabindex="-1"></a><span class="co">#&gt; rank 04 of 08 finished with an acceptance rate of 0.032867 % and swap rate of 0.195183.</span></span>
+<span id="cb6-263"><a href="#cb6-263" tabindex="-1"></a><span class="co">#&gt; Time difference of 313.3152 mins</span></span>
+<span id="cb6-264"><a href="#cb6-264" tabindex="-1"></a><span class="co">#&gt; rank 01 of 08 finished with an acceptance rate of 0.000000 % and swap rate of 0.186200.</span></span>
+<span id="cb6-265"><a href="#cb6-265" tabindex="-1"></a><span class="co">#&gt; Time difference of 313.3154 mins</span></span>
+<span id="cb6-266"><a href="#cb6-266" tabindex="-1"></a><span class="co">#&gt; rank 06 of 08 finished with an acceptance rate of 0.000300 % and swap rate of 0.290017.</span></span>
+<span id="cb6-267"><a href="#cb6-267" tabindex="-1"></a><span class="co">#&gt; Time difference of 313.3156 mins</span></span>
+<span id="cb6-268"><a href="#cb6-268" tabindex="-1"></a><span class="co">#&gt; rank 07 of 08 finished with an acceptance rate of 0.040000 % and swap rate of 0.455400.</span></span>
+<span id="cb6-269"><a href="#cb6-269" tabindex="-1"></a><span class="co">#&gt; Time difference of 313.3165 mins</span></span>
+<span id="cb6-270"><a href="#cb6-270" tabindex="-1"></a><span class="co">#&gt; rank 05 of 08 finished with an acceptance rate of 0.007717 % and swap rate of 0.126383.</span></span>
+<span id="cb6-271"><a href="#cb6-271" tabindex="-1"></a><span class="co">#&gt; Fri Feb 21 01:43:29 AM CET 2025</span></span>
+<span id="cb6-272"><a href="#cb6-272" tabindex="-1"></a><span class="co">#&gt; Time spent sampling: 18802 seconds (313 minutes).</span></span></code></pre></div>
 <p>On a high performance computing (hpc) cluster, the above would be in
 a slurm script or similar workload manager.</p>
 </div>
@@ -179,14 +441,16 @@ a slurm script or similar workload manager.</p>
 <p>Here we check the integrated auto-correlation length (Markov chain
 time)</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file<span class="op">=</span><span class="st">"./AKAP79-parameter-sample-for-rank-0.RDS"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">Sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file<span class="op">=</span><span class="st">"./AKAP79-temperature-ordered-smmala-sample-for-rank-0.RDS"</span><span class="op">)</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">NROW</a></span><span class="op">(</span><span class="va">Sample</span><span class="op">)</span></span>
 <span><span class="va">l</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">Sample</span>,<span class="st">"logLikelihood"</span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">l</span>,type<span class="op">=</span><span class="st">"l"</span>,xlab<span class="op">=</span><span class="st">"mcmc index"</span>,ylab<span class="op">=</span><span class="st">"log-likelihood"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="sampleAKAP79_files/figure-html/uwerr-1.png" width="700"></p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/HISKP-LQCD/hadron" class="external-link">hadron</a></span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">hadron</span><span class="fu">::</span><span class="fu">uwerr</span><span class="op">(</span>data<span class="op">=</span><span class="va">l</span>,pl<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">l</span>,type<span class="op">=</span><span class="st">"l"</span>,xlab<span class="op">=</span><span class="st">"mcmc index"</span>,ylab<span class="op">=</span><span class="st">"log-likelihood"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="co">#&gt; Loading required package: hadron</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -194,7 +458,7 @@ time)</p>
 <span><span class="co">#&gt; The following object is masked from 'package:base':</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     kappa</span></span></code></pre></div>
-<p><img src="sampleAKAP79_files/figure-html/uwerr-1.png" width="700"><img src="sampleAKAP79_files/figure-html/uwerr-2.png" width="700"></p>
+<p><img src="sampleAKAP79_files/figure-html/uwerr-2.png" width="700"><img src="sampleAKAP79_files/figure-html/uwerr-3.png" width="700"></p>
 <pre><code><span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
 <span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
 <span></span>
@@ -253,520 +517,16 @@ time)</p>
 <span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
 <span></span>
 <span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
-<span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in arrows(c(2:Wmax), ti[2:Wmax] - dti[2:Wmax], c(2:Wmax), ti[2:Wmax] +</span></span>
 <span><span class="co">#&gt; : zero-length arrow is of indeterminate angle and so skipped</span></span></code></pre>
-<p><img src="sampleAKAP79_files/figure-html/uwerr-3.png" width="700"></p>
+<p><img src="sampleAKAP79_files/figure-html/uwerr-4.png" width="700"></p>
 <p>We reduce the sample for plotting purposes, by showing only every
 <span class="math inline">\(\tau_{\text{int.}}\)</span>-th point and
 create a pairs plot for the first 6 parameters:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="va">Sample</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>,<span class="va">n</span>,by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">ceiling</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">tauint</span><span class="op">)</span><span class="op">)</span>,<span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/edzer/hexbin" class="external-link">hexbin</a></span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="fu">hexbin</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/hexbin/man/hexplom.html" class="external-link">hexplom</a></span><span class="op">(</span><span class="va">X</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="fu">hexbin</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/hexbin/man/hexplom.html" class="external-link">hexplom</a></span><span class="op">(</span><span class="va">X</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span><span class="op">]</span>,xbins<span class="op">=</span><span class="fl">12</span><span class="op">)</span></span>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html" class="external-link">pairs</a></span><span class="op">(</span><span class="va">X</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>

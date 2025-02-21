@@ -16,7 +16,12 @@ stepSize <- function(beta){
 	return(7e-3*exp(-9*beta))
 }
 
-N <- 6000                 # default sample size
+a <- commandArgs(trailingOnly=TRUE)
+if (length(a)>0){
+	N <- as.integer(a[1])
+} else {
+	N <- 5000             # default sample size
+}
 h <- stepSize(beta)       # step size
 modelName <- "AKAP79"
 comment(modelName) <- "./AKAP79.so"
