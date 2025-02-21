@@ -91,9 +91,9 @@ mcmcInit <- function(beta,parMCMC,simulate,logLikelihood,dprior,gradLogLikelihoo
 #' This function is useful if `mpi.send()` and `mpi.recv()` are used.
 #'
 #' @param b1 the inverse temperature of chain 1
-#' @param ll1 the log-liklihood of chain 1
+#' @param ll1 the log-likelihood of chain 1
 #' @param b2 the inverse temperature of chain 2
-#' @param ll2 the log-lilihood of chain 2
+#' @param ll2 the log-likelihood of chain 2
 #' @return TRUE is the chains should swap their temperatures
 #' @export
 change_temperature <- function(b1,ll1,b2,ll2){
@@ -116,6 +116,7 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #'     `attr(parMCMC[[i]],"beta")`
 #' @return a list with some members swapped
 swap_points_locally <- function(parMCMC){
+	nChains <- length(parMCMC)
 	for (j in seq(1,nChains-1)){
 		L1 <- attr(parMCMC[[j  ]],"logLikelihood")
 		L2 <- attr(parMCMC[[j+1]],"logLikelihood")
@@ -268,7 +269,7 @@ pbdMPI_swap_temperatures <- function(i, B, LL, H, r, comm, cs){
 #' Using this function, at most two ranks will swap.
 #'
 #' Given a current log-likelihood, temperature and step-size, this
-#' funcion will broadcast a log-likelihood value to all other ranks
+#' function will broadcast a log-likelihood value to all other ranks
 #' and they can each decide to swap temperatures with the root
 #' process. Root is cycled around all ranks (round-robin).
 #'
@@ -359,6 +360,7 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 		attr(sample,"stepSize") <- eps
 		return(sample)
 	}
+	comment(M) <- "function(parMCMC, N=1000, eps=1e-4) where eps is the step size"
 	return(M)
 }
 
