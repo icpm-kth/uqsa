@@ -177,7 +177,8 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 }
 
 plotTimeSeriesBase <- function(simulations, experiments, nmax=NULL){
-	par(mfrow=c(3,3))
+	nf <- dim(simulations[[1]]$func)[1]
+	par(mfrow=c(nf,length(experiments)))
 	for (i in seq(length(experiments))){
 		time <- experiments[[i]]$outputTimes
 		n <- dim(simulations[[i]]$func)
