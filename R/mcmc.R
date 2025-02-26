@@ -175,6 +175,8 @@ mcmc <- function(update){
 		attr(sample,"stepSize") <- eps
 		return(sample)
 	}
+	comment(M) <- "function(parMCMC,N=1000,eps=1e-4) where eps is the step-size (numeric scalar)"
+	return(M)
 }
 
 #' Communicate with other ranks and swap beta
