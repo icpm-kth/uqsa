@@ -27,7 +27,7 @@ files. We do this step only once and have the MPI part of the process
 load the coimpleted results of this:
 
 ```{r SBtab}
-f <- uqsa::uqsa_example("AKAP79")
+f <- uqsa::uqsa_example("AKAP79tc")
 sb <- SBtabVFGEN::sbtab_from_tsv(f)
 ```
 
@@ -41,8 +41,8 @@ m <- SBtabVFGEN::sbtab_to_vfgen(sb)
 
 ```{r experiments}
 ex <- SBtabVFGEN::sbtab.data(sb,m$conservationLaws)
-saveRDS(sb,file="AKAP79-sb.RDS")
-saveRDS(ex,file="AKAP79-ex.RDS")
+saveRDS(sb,file="AKAP79tc-sb.RDS")
+saveRDS(ex,file="AKAP79tc-ex.RDS")
 ```
 
 The next step is to generate the code, write it into a file ending in
@@ -66,7 +66,7 @@ echo "We will use $N cores with $nm"
 
 start_time=$((`date +%s`))
 date
-mpirun -H localhost:$N ./pt-smmala-akap79.R 100000
+mpirun -H localhost:$N ./pt-smmala-akap79.R $((2**16))
 date
 end_time=$((`date +%s`))
 echo "Time spent sampling: $((end_time - start_time)) seconds ($(( (end_time - start_time)/60 )) minutes)."
@@ -81,7 +81,7 @@ Here we check the integrated auto-correlation length (Markov chain
 time)
 
 ```{r uwerr}
-Sample <- readRDS(file="./AKAP79-temperature-ordered-smmala-sample-for-rank-0.RDS")
+Sample <- readRDS(file="AKAP79-temperature-ordered-smmala-sample-2-for-rank-0.RDS")
 n <- NROW(Sample)
 l <- attr(Sample,"logLikelihood")
 
