@@ -36,7 +36,7 @@ parse.formula <- function(reactionFormula){
 match.coefficients <- function(chrv){
 	cf <- numeric(length(chrv))
 	l <- grepl("^[0-9]+",chrv) # leading numbers exist
-	cf[l] <- as.numeric(sub("^([0-9]+)\\b","\\1",chrv[l]))
+	cf[l] <- as.numeric(sub("^([0-9]+)\\b.*","\\1",chrv[l]))
 	cf[!l] <- 1
 	return(cf)
 }
@@ -98,43 +98,6 @@ parse.kinetic <- function(reactionKinetic){
 	return(rates)
 }
 
-#' Convert ODE parameter to Gillespie parameter
-#'
-#' ODE parameters usually have a different unit of measurement than
-#' the parameters we need for stochastic simulators.  ODEs have
-#' fluxes, which are in multiples of `M/s` (M is mol/liter), same unit
-#' as the first derivative of the state variables.
-#'
-#' The reaction rate coefficients of mass action kinetics, kf and kb
-#' have units that are compatible with the flux units, depending on
-#' the order of the reaction (the order is related to the reaction's
-#' stoichiometry).
-#'
-#' @param k the ODE reaction rate coefficient (mandatory)
-#' @param n multiplicity of each reactant, if any (order > 0); omit for zero-order
-#' @param LV `L*V` -- product of _Avogadro's number_ and _volume_ [defaults to 6.02214076e+8]
-#' @return rescaled parameter for stochastic simulation with a comment of how to re-scale it
-#' @examples # reaction: "2 A + B -> C"
-#' k <- 1.0
-#' attr(k,'unit') <- "µM/s"
-#' n <- c(2,1)
-#' reactants <- c('A','B')
-#' uqsa:::convert.parameter(k,n)
-convert.parameter <- function(k, n=0, LV=6.02214076e+8){
-	order <- sum(n)
-	if (!is.null(attr(k,'unit'))){
-		unit <- SBtabVFGEN::unit.from.string(attr(k,'unit'))
-		unit.conversion <- 10^sum(unit$scale*unit$exponent)
-	} else {
-		unit.conversion <- 1
-	}
-	order.conversion <- LV^(1-order)
-	c <- unit.conversion*order.conversion
-	if (order==2 && length(n)==1) c<-2*c
-	propensity.coefficient <- k*c
-	attr(propensity.coefficient,'conversion') <- c
-	return(propensity.coefficient)
-}
 
 #' Attempt to find multiplicative reaction rate coefficients
 #'
@@ -203,7 +166,8 @@ propensity <- function(conv.coeff,kinetic.law,rExpressions){
 	return(p)
 }
 
-#' Create a list of reactions for GillespieSSA2
+
+#' Create a list of reactions for Stochastic Simulations
 #'
 #' This function takes a series of SBtab tables, as returned by
 #' `SBtabVFGEN::sbtab_from_tsv()` and creates GillespieSSA2 reactions
@@ -224,7 +188,7 @@ propensity <- function(conv.coeff,kinetic.law,rExpressions){
 #'  # reactions <- makeGillespieModel(model.sbtab)
 #'  # l <- is.null(reactions)
 #'  # model.ssa2 <- reactions[!l]
-makeGillespieModel <- function(SBtab,LV=NULL,strip.null=TRUE){
+GillespieModelList <- function(SBtab,LV=NULL){
 	stopifnot("Reaction" %in% names(SBtab))
 	stopifnot("Compound" %in% names(SBtab))
 	dR <- dim(SBtab$Reaction)
@@ -244,7 +208,7 @@ makeGillespieModel <- function(SBtab,LV=NULL,strip.null=TRUE){
 	compoundNames <- row.names(SBtab$Compound)
 	reactionNames <- row.names(SBtab$Reaction)
 	isReversible <- as.logical(SBtab$Reaction[["!IsReversible"]])
-	SSA2reactions <- vector(mode="list",length=2*n)
+	ret <- vector(mode="list",length=2*n)
 	if ("Expression" %in% names(SBtab)){
 		expressionNames <- row.names(SBtab$Expression)
 		expressionFormula <- SBtab$Expression[["!Formula"]]
@@ -274,17 +238,13 @@ makeGillespieModel <- function(SBtab,LV=NULL,strip.null=TRUE){
 		pb <- convert.parameter(kb,cf$pr,LV=LV)
 		plain.reaction.name <- sprintf("%s_%s",sub("[^a-zA-Z0-9_]","_",reactionNames[i]),c('forward','backward'))
 		propFormula <- list(f=propensity(attr(pf,'conversion'),ktc[1],rExpressions),b=propensity(attr(pb,'conversion'),ktc[2],rExpressions))
-		SSA2reactions[[2*(i-1)+1]] <-  GillespieSSA2::reaction(propFormula$f,effect,plain.reaction.name[1])
+		ret[[2*(i-1)+1]] <-  list(propensity=propFormula$f,effect=effect,name=plain.reaction.name[1])
 		if (isReversible[i]) {
-			SSA2reactions[[2*(i-1)+2]] <-  GillespieSSA2::reaction(propFormula$b,-1*effect,plain.reaction.name[2])
+			ret[[2*(i-1)+2]] <- list(propensity=propFormula$b,effect=-1*effect,name=plain.reaction.name[2])# GillespieSSA2::reaction(propFormula$b,-1*effect,plain.reaction.name[2])
 		}
 	}
-	l <- sapply(SSA2reactions,is.null)
-	if (strip.null){
-		return(SSA2reactions[!l])
-	} else {
-		return(SSA2reactions)
-	}
+	l <- sapply(ret,is.null)
+	return(ret[!l])
 }
 
 

@@ -26,7 +26,7 @@ Using this function, at most two ranks will swap.
 }
 \details{
 Given a current log-likelihood, temperature and step-size, this
-funcion will broadcast a log-likelihood value to all other ranks
+function will broadcast a log-likelihood value to all other ranks
 and they can each decide to swap temperatures with the root
 process. Root is cycled around all ranks (round-robin).
 

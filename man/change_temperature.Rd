@@ -9,11 +9,11 @@ change_temperature(b1, ll1, b2, ll2)
 \arguments{
 \item{b1}{the inverse temperature of chain 1}
 
-\item{ll1}{the log-liklihood of chain 1}
+\item{ll1}{the log-likelihood of chain 1}
 
 \item{b2}{the inverse temperature of chain 2}
 
-\item{ll2}{the log-lilihood of chain 2}
+\item{ll2}{the log-likelihood of chain 2}
 }
 \value{
 TRUE is the chains should swap their temperatures
