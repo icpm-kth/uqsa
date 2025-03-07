@@ -19,16 +19,23 @@ library(ggplot2)
 This article provides code do perform global sensitivity analysis with the  Sobol-Saltelli method and the with the binning-approach.
 
 Load the SBtab files, create ODE model code and load examples similar to the *simulate the AKAR4 model deterministically* example
+
 ```{r}
-modelFiles <- uqsa_example("AKAR4",full.names=TRUE)
+modelFiles  <- uqsa::uqsa_example("AKAR4") 
 SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
-modelName <- checkModel("AKAR4",uqsa_example("AKAR4",pat="_gvf[.]c$"))
-source(uqsa_example("AKAR4",pat='^AKAR4[.]R$')) #loads the R-code to run the ODE-model
-experiments <- sbtab.data(SBtab)
-nInput <- length(experiments[[1]]$input)
-p <- AKAR4_default()
-nPars <- length(p)
-nStates<-length(AKAR4_init())
+model  <- SBtabVFGEN::sbtab_to_vfgen(SBtab, cla=FALSE)
+experiments <- SBtabVFGEN::sbtab.data(SBtab)
+C <- uqsa::generateCode(model)
+cat(C,sep="\n",file="./AKAR4_gvf.c")
+modelName <- checkModel("AKAR4",modelFile="./AKAR4_gvf.c")
+```
+##Create simulator
+We construct a simulator function and and test it on default parameter values.
+```{r test}
+s <- simcf(experiments,modelName,parMap=log10ParMap) # or simulator.c
+p <- log10(SBtab$Parameter[["!DefaultValue"]])
+names(p) <- rownames(SBtab$Parameter)
+y <- s(p) # here the simulation happens
 ```
 
 Set meta-parameters for the global sensitivity simulation
@@ -40,7 +47,8 @@ nSamples corresponds to the number of samples in M1 (or M2) of the Soboll-Saltel
 
 Construct parameter prior samples according to Sobol-Saltelli (M1, M2, N).
 ```{r}
-rprior <- rNormalPrior(log10(p), array(1, nPars))
+nPars <- length(p)
+rprior <- rNormalPrior(p, array(1, nPars))
 prior <- shs_prior(nSamples, rprior)
 names(prior)
 ```
@@ -57,11 +65,16 @@ Set up simulator considering one experiment
 ```{r}
 expIdx <- 2 #experiment to look at
 s <- simcf(experiments[expIdx],modelName,parMap=log10ParMap)
+#Test by simulting the default parameter set:
+p <- log10(SBtab$Parameter[["!DefaultValue"]])
+names(p) <- rownames(SBtab$Parameter)
+y <- s(p) # here the simulation happens
 ```
 
 Use states (compound concentrations) as output and look at one time point alone
 ```{r}
 T <-5 #timepoint to investigate
+nStates <- dim(y[[1]]$state)[1]
 fM1 <- t(s(t(prior$M1))[[1]]$state[,T,])
 fM2 <- t(s(t(prior$M2))[[1]]$state[,T,])
 fN <- array(NA, dim=c(nSamples,nStates, nPars))
@@ -77,27 +90,28 @@ SA <- shs_gsa(fM1,fM2,fN)
 ```
 #Plot first (SI) and total-order (SIT) sensitivity indexes for sobol-saltelli
 ```{r}
-cols=rainbow(27)
-par(mfrow = c(1, 3))
+cols=rainbow(3)
+par(mfrow = c(1, 2))
 barplot(t(SA$SI[,]), 
         col=cols,
         border="white", 
         space=0.04, 
         cex.axis=1,
+        names.arg=dimnames(y[[1]]$state)[[1]],
+        cex.names = 0.7,
+        las = 2,
         xlab="SI",  las=2, cex.main=0.9)
 barplot(t(SA$SIT[,]), 
         col=cols, 
         border="white", 
         space=0.04, 
         cex.axis=1,
-        xlab="SIT")
-barplot(c(0), 
-        axes=FALSE,
-        col=cols, 
-        border="white", 
-        space=0.04, 
-        cex.axis=1,
-        legend.text=SBtab$Parameter[,1])
+        names.arg=dimnames(y[[1]]$state)[[1]],
+        cex.names = 0.7,
+        las = 2,
+        xlab="SIT",
+        legend.text=SBtab$Parameter[,1],
+        args.legend = list(x = "topright", inset=c(0, 0.1), cex=0.7))
 ```
 
 
@@ -107,8 +121,8 @@ allTimesSample=s(t(prior$M2))[[1]]$state
 par(mfrow = c(2, 2))
 for (i in 1:4) {
 matplot(experiments[[1]]$outputTime,allTimesSample[i,,1:500] , type = "l", lty = 1, 
-        col = c("red", "blue", "green"), xlab = "X", 
-        ylab = "Y", main = names(AKAR4_init())[i])
+        col = c("red", "blue", "green"), 
+        ylab = "Y", xlab= dimnames(allTimesSample)[[1]][i])
 }
 ```
 
@@ -128,13 +142,18 @@ barplot(t(SA$SI[,]),
         border="white", 
         space=0.04, 
         cex.axis=1,
-        xlab="SI Sobol-Homma-Saltelli")
+        names.arg=dimnames(y[[1]]$state)[[1]],
+        cex.names = 0.7,
+        las = 2,
+        main="SI Sobol-Homma-Saltelli")
 barplot(t(SIappr), 
         col=cols, 
         border="white", 
         space=0.04, 
         cex.axis=1,
-        xlab="SI approximativt ")
+        cex.names = 0.7,
+        las = 2,
+        main="SI approximativt ")
 barplot(c(0), 
         axes=FALSE,
         col=cols, 
@@ -143,5 +162,5 @@ barplot(c(0),
         font.axis=2, 
         legend.text=SBtab$Parameter[,1])
 
-mtext(paste("Comparision GSA methods, sample size=",as.character(2*nSamples)), side = 3, line = -2, outer = TRUE)
+mtext(paste("Comparision GSA methods, sample size=",as.character(2*nSamples)), side = 3, line = -1.2, outer = TRUE)
 ```
