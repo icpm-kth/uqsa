@@ -30,22 +30,29 @@ sb <- readRDS(file="AKAP79-sb.RDS")
 ex <- readRDS(file="AKAP79-ex.RDS")
 
 for (i in seq_along(ex)){
+	t_ <- ex[[i]]$outputTimes
+	nt <- length(t_)
+	BY <- 10 # take every BYth point
 	D <- t(ex[[i]]$outputValues)
-	SD <- t(ex[[i]]$errorValues)
 	D[is.na(D)] <- 0.0
-	ex[[i]]$data <- D
-	ex[[i]]$stdv <- D*0.05+apply(D,1,FUN=max,na.rm=TRUE)*0.05
-	ex[[i]]$stdv[is.na(SD)] <- Inf
+	SD <- D*0.05+apply(D,1,FUN=max,na.rm=TRUE)*0.05 #t(ex[[i]]$errorValues)
+	SD[is.na(SD)] <- Inf
+	ex[[i]]$time <- t_[seq(1,nt,by=BY)]
+	ex[[i]]$data <- D[,seq(1,nt,by=BY),drop=FALSE]
+	ex[[i]]$stdv <- SD[,seq(1,nt,by=BY),drop=FALSE]
 }
 
 parMCMC <- log10(sb$Parameter[["!DefaultValue"]])
 stopifnot("!Max" %in% names(sb$Parameter))
 stopifnot("!Min" %in% names(sb$Parameter))
+mu <- 0.5*(log10(sb$Parameter[["!Max"]])+log10(sb$Parameter[["!Min"]]))
 stdv <- 0.5*(log10(sb$Parameter[["!Max"]])-log10(sb$Parameter[["!Min"]]))
-stopifnot(length(parMCMC)==length(stdv))
+stopifnot(length(mu)==length(stdv))
+stopifnot(length(parMCMC)==length(mu))
 
-dprior <- dNormalPrior(mean=parMCMC,sd=stdv)
-rprior <- rNormalPrior(mean=parMCMC,sd=stdv)
+dprior <- dNormalPrior(mean=mu,sd=stdv)
+rprior <- rNormalPrior(mean=mu,sd=stdv)
+
 gprior <- \(p) {return(-1.0*(p-parMCMC)/stdv^2)}
 ## ----simulate-----------------------------------------------------------------
 sim <- simfi(ex,modelName,log10ParMap) # or simulator.c
@@ -117,16 +124,15 @@ for (j in seq(2)){
 		x <- attr(s,"lastPoint")   # start next iteration from last point
 		cat(sprintf("%10i  %12i %16.4f %16.4g\n",r,i,a,h)) # cat(sprintf("rank: %02i; iteration: %02i; a: %f; h: %g\n",r,i,a,h))
 	}
-	saveRDS(s,file=sprintf("smmala-last-adaptation-sample-for-rank-%i.RDS",r))
 	pbdMPI::barrier()
 	## ---- here, the sampling happens
 	s <- ptSMMALA(x,N,h) # the main amount of work is done here
-	saveRDS(s,file=sprintf("AKAP79-smmala-sample-%i-rank-%i.RDS",j,r))
+	saveRDS(s,file=sprintf("AKAP79-pt-smmala-sample-%i-rank-%i.RDS",j,r))
 	## ---- when all are done, we load the sampled points from the files but only for the right temperature:
 	pbdMPI::barrier()
-	f <- dir(pattern=sprintf("^AKAP79-smmala-sample-%i-rank-.*RDS$",j))
+	f <- dir(pattern=sprintf("^AKAP79-pt-smmala-sample-%i-rank-.*RDS$",j))
 	X <- uqsa::gatherSample(f,beta)
-	saveRDS(X,file=sprintf("AKAP79-temperature-ordered-smmala-sample-%i-for-rank-%i.RDS",j,r))
+	saveRDS(X,file=sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.RDS",j,r))
 	x <- mcmcInit(
 		beta,
 		as.numeric(tail(X,1)), # last row
