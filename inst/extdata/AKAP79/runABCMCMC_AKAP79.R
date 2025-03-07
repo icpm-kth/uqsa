@@ -40,6 +40,7 @@ parMap <- function(parABC){
 defRange <- 1000
 
 # Define Lower and Upper Limits for logUniform prior distribution for the parameters
+
 ll <- c(parVal[1:19]/defRange, parVal[20]/1.9, parVal[21]/defRange, parVal[22:24]/1.25, parVal[25:26]/1.5, parVal[27]/2)
 ul <- c(parVal[1:19]*defRange, parVal[20]*1.9, parVal[21]*defRange, parVal[22:24]*1.25, parVal[25:26]*1.5, parVal[27]*2)
 ll = log10(ll) # log10-scale

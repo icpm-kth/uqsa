@@ -1,6 +1,7 @@
 url: https://icpm-kth.github.io/uqsa/
 template:
   bootstrap: 5
+  math-rendering: mathjax
 navbar:
   structure:
     left:  [intro, installation, articles, tutorials, reference, news]

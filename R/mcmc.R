@@ -338,6 +338,7 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 		b <- numeric(N)
 		a <- 0
 		swaps <- 0
+		h <- numeric(N)
 		for (i in seq(N)){
 			parMCMC <- update(parMCMC,eps)
 			sample[i,] <- parMCMC
@@ -346,6 +347,7 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 			a <- a + as.numeric(attr(parMCMC,"accepted"))
 			ll[i] <- LL
 			b[i]  <- B
+			h[i] <- eps
 			if (i %% D == 0){ # e.g. i = 3,6,9, or i = 5,10,15
 				res <- swapFunc(i,B,LL,eps,r,comm,cs)
 				if (res$B != B) swaps <- swaps+1
@@ -359,7 +361,7 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 		attr(sample,"lastPoint") <- parMCMC
 		attr(sample,"beta") <- b
 		attr(sample,"swapRate") <- swaps/N
-		attr(sample,"stepSize") <- eps
+		attr(sample,"stepSize") <- h
 		return(sample)
 	}
 	comment(M) <- "function(parMCMC, N=1000, eps=1e-4) where eps is the step size"
@@ -465,19 +467,26 @@ loadSubSample_mpi <- function(files,size=NA,selection=NA,mc.cores=parallel::dete
 gatherSample <- function(files,beta=1.0,size=NA){
 	x <- numeric(0)
 	lL <- numeric(0)
+	H <- numeric(0)
 	for (f in files){
 		s <- readRDS(f)
 		b <- attr(s,"beta")
 		l <- attr(s,"logLikelihood")
+		h <- attr(s,"stepSize")
 		i <- which(abs(b - beta) <= 1e-9*beta)
 		s <- s[i,,drop=FALSE]
 		l <- l[i]
+		if (!is.null(h) && length(h) == length(b)) {
+			h <- h[i]
+		}
 		x <- rbind(x,s)
 		lL <- c(lL,l)
+		H <- c(H,h)
 		if (!any(is.na(size)) && NROW(x)>=size) break
 	}
 	attr(x,"beta") <- beta
 	attr(x,"logLikelihood") <- lL
+	attr(x,"stepSize") <- H
 	return(x)
 }
 

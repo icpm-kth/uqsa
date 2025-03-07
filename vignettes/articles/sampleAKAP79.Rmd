@@ -27,7 +27,7 @@ files. We do this step only once and have the MPI part of the process
 load the coimpleted results of this:
 
 ```{r SBtab}
-f <- uqsa::uqsa_example("AKAP79tc")
+f <- uqsa::uqsa_example("AKAP79")
 sb <- SBtabVFGEN::sbtab_from_tsv(f)
 ```
 
@@ -89,13 +89,14 @@ plot(l,type="l",xlab="mcmc index",ylab="log-likelihood")
 
 if (require(hadron)){
     res <- hadron::uwerr(data=l,pl=TRUE)
+    tau <- ceiling(res$tauint + res$dtauint) # upper bound
 }
 ```
 
 We reduce the sample for plotting purposes, by showing only every \(\tau_{\text{int.}}\)-th point and create a pairs plot for the first 6 parameters:
 
 ```{r pairs, fig.width=12, fig.height=12, fig.fullwidth=TRUE, dpi=100}
-X <- Sample[seq(1,n,by=ceiling(res$tauint)),]
+X <- Sample[seq(1,n,by=tau),]
 colnames(X) <- rownames(sb$Parameter)
 if (require(hexbin)){
     hexbin::hexplom(X[,seq(6)],xbins=12)

@@ -1,30 +1,29 @@
-!!SBtab	Document='AKAP79' SBtabVersion='1.0'	TableName='Parameter' TableTitle='Parameters in AKAP79 Model'  TableType='Quantity'				
-!ID	!Name	!DefaultValue	!Std	!PriorDistribution	!Scale	!Unit
-kf_Rii_C__RiiP_C	kf_Rii_C__RiiP_C	33		Normal distribution	linear	1/second
-kf_RiiP_CxcAMP__RiiP_C_cAMP	kf_RiiP_CxcAMP__RiiP_C_cAMP	0.496		Normal distribution	linear	1/(micromolarity*second)
-%kb_RiiP_CxcAMP__RiiP_C_cAMP	kb_RiiP_CxcAMP__RiiP_C_cAMP	1.413		Normal distribution	linear	1/second
-kf_RiiP_cAMPxC__RiiP_C_cAMP	kf_RiiP_cAMPxC__RiiP_C_cAMP	0.00545		Normal distribution	linear	1/(micromolarity*second)
-kb_RiiP_cAMPxC__RiiP_C_cAMP	kb_RiiP_cAMPxC__RiiP_C_cAMP	0.0156		Normal distribution	linear	1/second
-kb_RiiPXcAMP__RiiP_cAMP	kb_RiiPXcAMP__RiiP_cAMP	0.0016		Normal distribution	linear	1/second
-kf_RiiPXcAMP__RiiP_cAMP	kf_RiiPXcAMP__RiiP_cAMP	0.015		Normal distribution	linear	1/(micromolarity*second)
-kf_RiiPxC__RiiP_C	kf_RiiPxC__RiiP_C	0.038		Normal distribution	linear	1/(micromolarity*second)
-kb_RiiPxC__RiiP_C	kb_RiiPxC__RiiP_C	0.0026		Normal distribution	linear	1/second
-kf_cAMPxRii__Rii_cAMP	kf_cAMPxRii__Rii_cAMP	0.015		Normal distribution	linear	1/(micromolarity*second)
-kb_cAMPxRii__Rii_cAMP	kb_cAMPxRii__Rii_cAMP	0.0016		Normal distribution	linear	1/second
-kf_Rii_CxcAMP__Rii_C_cAMP	kf_Rii_CxcAMP__Rii_C_cAMP	0.496		Normal distribution	linear	1/(micromolarity*second)
-kb_Rii_CxcAMP__Rii_C_cAMP	kb_Rii_CxcAMP__Rii_C_cAMP	1.413		Normal distribution	linear	1/second
-kf_RiixC__Rii_C	kf_RiixC__Rii_C	2.1		Normal distribution	linear	1/(micromolarity*second)
-kf_Rii_cAMPxC__Rii_C_cAMP	kf_Rii_cAMPxC__Rii_C_cAMP	0.2984		Normal distribution	linear	1/(micromolarity*second)
-kb_Rii_cAMPxC__Rii_C_cAMP	kb_Rii_cAMPxC__Rii_C_cAMP	0.018		Normal distribution	linear	1/second
-kf_Rii_C_cAMP__RiiP_C_cAMP	kf_Rii_C_cAMP__RiiP_C_cAMP	33		Normal distribution	linear	1/second
-kb_RiixC__Rii_C	kb_RiixC__Rii_C	0.0003		Normal distribution	linear	1/second
-AKAPoff_1	AKAPoff_1	2.6		Normal distribution	linear	1/second
-AKAPoff_3	AKAPoff_3	20		Normal distribution	linear	1/second
-AKAPon_1	AKAPon_1	0.45		Normal distribution	linear	1/second
-AKAPon_3	AKAPon_3	2		Normal distribution	linear	1/second
-kf_C_AKAR4	kf_C_AKAR4	0.018		Normal distribution	linear	1/(micromolarity*second)
-kb_C_AKAR4	kb_C_AKAR4	0.106		Normal distribution	linear	1/second
-kcat_AKARp	kcat_AKARp	10.2		Normal distribution	linear	1/second
-kmOFF	kmOFF	100		Normal distribution	linear	micromolarity
-kmON	kmON	1		Normal distribution	linear	micromolarity
-KD_T	KD_T	0.7		Normal distribution	linear	micromolarity
+!!SBtab	Document='AKAP79' SBtabVersion='1.0'	TableName='Parameter' TableTitle='Parameters in AKAP79 Model'  TableType='Quantity'					
+!ID	index	!DefaultValue	!Min	!Max	!PriorDistribution	!Scale	!Unit
+kf_Rii_C__RiiP_C	1	33	0.033	33000	Normal distribution	linear	1/second
+kf_RiiP_CxcAMP__RiiP_C_cAMP	2	0.496	0.000496	496	Normal distribution	linear	1/(micromolarity*second)
+kf_RiiP_cAMPxC__RiiP_C_cAMP	3	0.00545	0.00000545	5.45	Normal distribution	linear	1/(micromolarity*second)
+kb_RiiP_cAMPxC__RiiP_C_cAMP	4	0.0156	0.0000156	15.6	Normal distribution	linear	1/second
+kb_RiiPXcAMP__RiiP_cAMP	5	0.0016	0.0000016	1.6	Normal distribution	linear	1/second
+kf_RiiPXcAMP__RiiP_cAMP	6	0.015	0.000015	15	Normal distribution	linear	1/(micromolarity*second)
+kf_RiiPxC__RiiP_C	7	0.038	0.000038	38	Normal distribution	linear	1/(micromolarity*second)
+kb_RiiPxC__RiiP_C	8	0.0026	0.0000026	2.6	Normal distribution	linear	1/second
+kf_cAMPxRii__Rii_cAMP	9	0.015	0.000015	15	Normal distribution	linear	1/(micromolarity*second)
+kb_cAMPxRii__Rii_cAMP	10	0.0016	0.0000016	1.6	Normal distribution	linear	1/second
+kf_Rii_CxcAMP__Rii_C_cAMP	11	0.496	0.000496	496	Normal distribution	linear	1/(micromolarity*second)
+kb_Rii_CxcAMP__Rii_C_cAMP	12	1.413	0.001413	1413	Normal distribution	linear	1/second
+kf_RiixC__Rii_C	13	2.1	0.0021	2100	Normal distribution	linear	1/(micromolarity*second)
+kf_Rii_cAMPxC__Rii_C_cAMP	14	0.2984	0.0002984	298.4	Normal distribution	linear	1/(micromolarity*second)
+kb_Rii_cAMPxC__Rii_C_cAMP	15	0.018	0.000018	18	Normal distribution	linear	1/second
+kf_Rii_C_cAMP__RiiP_C_cAMP	16	33	0.033	33000	Normal distribution	linear	1/second
+kb_RiixC__Rii_C	17	0.0003	0.0000003	0.3	Normal distribution	linear	1/second
+AKAPoff_1	18	2.6	0.0026	2600	Normal distribution	linear	1/second
+AKAPoff_3	19	20	0.02	20000	Normal distribution	linear	1/second
+AKAPon_1	20	0.45	0.236842105263158	0.855	Normal distribution	linear	1/second
+AKAPon_3	21	2	0.002	2000	Normal distribution	linear	1/second
+kf_C_AKAR4	22	0.018	0.0144	0.0225	Normal distribution	linear	1/(micromolarity*second)
+kb_C_AKAR4	23	0.106	0.0848	0.1325	Normal distribution	linear	1/second
+kcat_AKARp	24	10.2	8.16	12.75	Normal distribution	linear	1/second
+kmOFF	25	100	66.6666666666667	150	Normal distribution	linear	micromolarity
+kmON	26	1	0.666666666666667	1.5	Normal distribution	linear	micromolarity
+KD_T	27	0.7	0.35	1.4	Normal distribution	linear	micromolarity

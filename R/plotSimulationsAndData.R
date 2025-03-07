@@ -176,22 +176,45 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 	return(gridExtra::marrangeGrob(grobs=p,ncol=m,nrow=n))
 }
 
-plotTimeSeriesBase <- function(simulations, experiments, nmax=NULL){
+
+#' plot function for experiments
+#'
+#' This function does not use ggplot2, only base plot functions like
+#' lines() and arrows().
+#'
+#' @param simulations simulation results (a list)
+#' @param experiments experiment setup (a list)
+#' @param nmax maximum index of lines to plot from sample, between 1 and size of sample
+#' @param by skip this many sampled lines in between plotted lines
+#' @param ylimit y-axis limits
+#' @return plot object
+#' @export
+plotTimeSeriesBase <- function(simulations, experiments, nmax=NULL, by=1, ylimit=NULL){
 	nf <- dim(simulations[[1]]$func)[1]
 	par(mfrow=c(nf,length(experiments)))
-	for (i in seq(length(experiments))){
+	for (i in seq_along(experiments)){
 		time <- experiments[[i]]$outputTimes
 		n <- dim(simulations[[i]]$func)
 		if (is.null(nmax)) nmax=n[3]
-		Names <- names(experiments[[i]]$outputValues)
+		oNames <- names(experiments[[i]]$outputValues)
 		for (j in seq(n[1])){
-			plot(time,experiments[[i]]$outputValues[[j]],type='p',)
-			for (k in seq(nmax)){
+			o <- experiments[[i]]$data[j,] %otherwise% experiments[[i]]$outputValues[[j]]
+			e <- experiments[[i]]$stdv[j,] %otherwise% experiments[[i]]$errorValues[[j]]
+			if (is.null(ylimit) || length(ylimit)<j || any(is.na(ylimit[[j]])) || !all(is.finite(ylimit[[j]]))){
+				yl <- c(min(o-e),max(o+e))
+			} else {
+				yl <- ylimit[[j]]
+			}
+			p <- plot(time,o,type='p',ylim=yl,title=names(experiments)[i],ylab=oNames[j])
+			arrows(time,o,time,o+e,angle=90,length=0.01)
+			arrows(time,o,time,o-e,angle=90,length=0.01)
+			for (k in seq(1,nmax,by=by)){
 				y<-as.numeric(simulations[[i]]$func[j,,k])
 				lines(time,y,col=rgb(0.3,0.6,0.9,0.4));
 			}
 		}
 	}
+	return(p)
 }
 
 
@@ -266,7 +289,7 @@ getDose <- function(experiments){
 #' @param show.plot boolean variable. Set `show.plot=TRUE` to display plots
 #'      when running the funcion, `FALSE` otherwise
 #' @return plot with simulations and experimental data
-plotDoseResponse <- function(simulations, experiments, dose, show.plot = TRUE){
+ggplotDoseResponse <- function(simulations, experiments, dose, show.plot = TRUE){
   num.experiments <- length(simulations)
   stopifnot(num.experiments == length(experiments))
   num.simulations <- dim(simulations[[1]]$func)[3]

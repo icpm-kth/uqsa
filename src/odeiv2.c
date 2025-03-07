@@ -18,6 +18,8 @@
 #define MATCH 0
 #define NO_DIFFERENCE 0
 #define RCOND_LIMIT 1e-10
+#define ODE_TIME_LIMIT_SECONDS 10
+#define TIME_LIMIT_ERROR 1<<11
 /* SEXP stands for S-Expression, and it can be any R data object (or
  * function) in this program, we'll only use data from R. However SEXP is
  * a bad type name; I am compelled to pronounce it in my head ...
@@ -409,6 +411,9 @@ void check_status(
 	double t=current_t;
 	double tf=target_t;
 	switch (status){
+	case TIME_LIMIT_ERROR:
+		error("[%s] time limit (%s seconds) reached on time point %i (%g/%g)\n",__func__,ODE_TIME_LIMIT_SECONDS,j,t,tf);
+		break;
 	case GSL_EMAXITER:
 		error("[%s] time_point %i: maximum number of steps reached.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
 		break;
@@ -445,6 +450,8 @@ simulate_timeseries(const gsl_odeiv2_system sys, /* the system to integrate */
 	int status=GSL_SUCCESS;
 	double dose=0;
 	int label=0;
+	clock_t ct0=clock();
+	double elapsed_sec;
 	/* initialize t0 values */
 	gsl_vector_memcpy(y,y0);
 
@@ -457,6 +464,8 @@ simulate_timeseries(const gsl_odeiv2_system sys, /* the system to integrate */
 #ifdef DEBUG_PRINT
 				fprintf(stderr,"[%s] before event %i gsl_odeiv2_driver_apply produced an error: %s.\n",__func__,i,gsl_strerror(status));
 #endif
+				gsl_vector_free(y);
+				gsl_odeiv2_driver_reset(driver);
 				return(status);
 			}
 			//fprintf(stderr,"[%s] event type: %i.\n",__func__,event->type);
@@ -478,25 +487,29 @@ simulate_timeseries(const gsl_odeiv2_system sys, /* the system to integrate */
 #ifdef DEBUG_PRINT
 				fprintf(stderr,"[%s] resetting the system after event %i produced an error: %s.\n",__func__,i,gsl_strerror(status));
 #endif
+				gsl_vector_free(y);
+				gsl_odeiv2_driver_reset(driver);
 				return(status);
 			}
 			i++;
 		}
 		if (tf>t) status=gsl_odeiv2_driver_apply(driver, &t, tf, y->data);
-		//report any error codes to the R user
+		elapsed_sec = sec(clock()-ct0);
+		/*if (elapsed_sec > ODE_TIME_LIMIT_SECONDS){
+			status = TIME_LIMIT_ERROR;
+			}*/
 		check_status(status,t,tf,j);
 		if(status==GSL_SUCCESS){
 			Yout_row = gsl_matrix_row(Yout,j);
 			gsl_vector_memcpy(&(Yout_row.vector),y);
 		} else {
-			return(status);
+			break;
 		}
 	}
 	gsl_vector_free(y);
 	gsl_odeiv2_driver_reset(driver);
 	return status;
 }
-
 
 // allocates a matrix of parameters, onw row per experiment;
 gsl_matrix* params_alloc(Rdata experiments){
@@ -725,11 +738,12 @@ double logLikelihood(Rdata experiment, double *f){
 	/* these two are supposed to be matrices, without missing values */
   Rdata data=from_list(experiment,"data measuredData experimentalData");
 	Rdata stdv=from_list(experiment,"stdv standardError standardDeviationOfTheMean");
+	Rdata time=from_list(experiment,"time outputTimes");
 	double ll=0;
 	double d,s;
 	int i,j;
-	int nt=ncols(data);
-	int n=nrows(data);
+	int nt=length(time);
+	int n=ODE_func(0,NULL,NULL,NULL);
 	double C;
 	for (i=0;i<n*nt;i++){
 		d = REAL(data)[i];
@@ -747,18 +761,20 @@ double logLikelihood(Rdata experiment, double *f){
 /* Likelihood = 1/sqrt(2*pi*sd)*exp(-0.5*((f-d)/sd)**2)            */
 /*            = exp(-0.5*((f-d)/sd)**2 - 0.5*(log(2*pi*sd)))       */
 /* grad(log(Likelihood)) = ((d-f)/(sd*sd))*df/dp */
-int gradLogLikelihood(double *gll, Rdata experiment, double *func, double *funcSens, size_t m){
+int gradLogLikelihood(double *gll, Rdata experiment, double *func, double *funcSens, size_t m, gsl_vector *v){
 	Rdata data=from_list(experiment,"data measuredData experimentalData");
 	Rdata stdv=from_list(experiment,"stdv standardError standardDeviationOfTheMean");
-	int nt=ncols(data);
-	int n=nrows(data);
+	Rdata time=from_list(experiment,"time outputTimes");
+	int nt=length(time);
+	int n=v->size;
 	gsl_vector_view d,s,g,f;
 	gsl_matrix_view Sf;
-	gsl_vector *v=gsl_vector_alloc(n);
+	//gsl_vector *v=gsl_vector_alloc(n);
 	int i,j;
 	int status = GSL_SUCCESS;
 	g = gsl_vector_view_array(gll,m);
 	gsl_vector_set_zero(&(g.vector));
+	//gsl_vector_set_zero(v);
 	for (j=0;j<nt;j++){
 		d = gsl_vector_view_array(REAL(data)+(j*n),n);
 		s = gsl_vector_view_array(REAL(stdv)+(j*n),n);
@@ -770,7 +786,7 @@ int gradLogLikelihood(double *gll, Rdata experiment, double *func, double *funcS
 		gsl_vector_div(v,&s.vector); // v = ((d-f)/(sd*sd))
 		status |= gsl_blas_dgemv(CblasNoTrans, 1.0, &(Sf.matrix), v, 1.0, &(g.vector));
 	}
-	gsl_vector_free(v);
+	//gsl_vector_free(v);
 	return status;
 }
 
@@ -781,30 +797,38 @@ int gradLogLikelihood(double *gll, Rdata experiment, double *func, double *funcS
 /* FisherInf = t(Sf)*solve(Sigma)*Sf                               */
 /* for solve(Sigma) == diag(sd**(-2))                              */
 /* with Sf_sd[,j] = Sf[,j]/sd -> FisherInf = t(Sf_sd)*Sf_sd        */
-int FisherInformation(double *FI, Rdata experiment, double *funcSens, size_t m){
+int FisherInformation(double *FI, Rdata experiment, double *funcSens, gsl_matrix *Sf_sd){
 	Rdata data=from_list(experiment,"data measuredData experimentalData");
 	Rdata stdv=from_list(experiment,"stdv standardError standardDeviationOfTheMean");
-	int nt=ncols(data);
-	int n=nrows(data);
+	Rdata time=from_list(experiment,"time OutputTimes");
+	int nt=length(time);
+	int n=Sf_sd->size2; //ODE_func(0,NULL,NULL,NULL);
+	int m=Sf_sd->size1;
 	gsl_vector_view d,s,row;
 	gsl_matrix_view Sf,fi;
-	gsl_matrix *Sf_sd=gsl_matrix_alloc(m,n);
+	//gsl_matrix *Sf_sd=gsl_matrix_alloc(m,n);
 	int i,j;
 	int status = GSL_SUCCESS;
+	//gsl_matrix_set_zero(Sf_sd);
 	fi = gsl_matrix_view_array(FI,m,m);
 	gsl_matrix_set_zero(&(fi.matrix));
 	for (j=0;j<nt;j++){
 		d = gsl_vector_view_array(REAL(data)+(j*n),n);
 		s = gsl_vector_view_array(REAL(stdv)+(j*n),n);
 		Sf = gsl_matrix_view_array(funcSens+(j*n*m),m,n);
-		gsl_matrix_memcpy(Sf_sd,&Sf.matrix);
+		if (gsl_matrix_memcpy(Sf_sd,&Sf.matrix) != GSL_SUCCESS){
+			fprintf(stderr,"[%s] memcpy didn't work\nSf.matrix(%li,%li):",__func__,(&Sf.matrix)->size1,(&Sf.matrix)->size2);
+			gsl_matrix_fprintf(stderr,&Sf.matrix,"%g,");
+			fprintf(stderr,"[%s] Sf_sd (%li,%li) matrix:",__func__,Sf_sd->size1,Sf_sd->size2);
+			gsl_matrix_fprintf(stderr,Sf_sd,"%g,");
+		}
 		for (i=0;i<m;i++) {
 			row = gsl_matrix_row(Sf_sd,i);
 			gsl_vector_div(&row.vector,&s.vector);
 		}
 		status |= gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, Sf_sd, Sf_sd, 1.0, &(fi.matrix));
 	}
-	gsl_matrix_free(Sf_sd);
+	//gsl_matrix_free(Sf_sd);
 	return status;
 }
 
@@ -866,6 +890,8 @@ r_gsl_odeiv2_outer_fi(
 	int nf = ODE_func(0,NULL,NULL,NULL);
 	int ny = sys.dimension;
 	int np = P->size2;
+	gsl_matrix *Sf_sd=gsl_matrix_alloc(np,nf);
+	gsl_vector *v=gsl_vector_alloc(nf);
 	struct sensApproxMem saMem = sensApproxMemAlloc(ny,np,nf);
 	gsl_odeiv2_driver *driver = gsl_odeiv2_driver_alloc_y_new(&sys,T,h,abs_tol,rel_tol);
 	for (i=0; i<N; i++){
@@ -893,7 +919,7 @@ r_gsl_odeiv2_outer_fi(
 			memcpy((double*) sys.params, REAL(AS_NUMERIC(parameters))+nrows(parameters)*k, nrows(parameters)*sizeof(double));
 			update_initial_values(&initial_value.vector,sys,iv);
 			ct0=clock();
-			status|=simulate_timeseries(
+			status=simulate_timeseries(
 				sys,
 				driver,
 				t0,
@@ -912,8 +938,13 @@ r_gsl_odeiv2_outer_fi(
 				}
 				sensitivityApproximation(t0,&(time.vector),&(p.vector),&(y.matrix),sy_k,sf_k,saMem);
 				REAL(ll)[k]=logLikelihood(VECTOR_ELT(experiments,i),REAL(F)+(k*nf*nt));
-				gradLogLikelihood(REAL(gll)+(k*np),VECTOR_ELT(experiments,i),REAL(F)+(k*nf*nt),sf_k,np);
-				FisherInformation(REAL(FI)+(k*np*np),VECTOR_ELT(experiments,i),sf_k,np);
+				gradLogLikelihood(REAL(gll)+(k*np),VECTOR_ELT(experiments,i),REAL(F)+(k*nf*nt),sf_k,np,v);
+				FisherInformation(REAL(FI)+(k*np*np),VECTOR_ELT(experiments,i),sf_k,Sf_sd);
+			} else {
+				REAL(ll)[k] = -INFINITY;
+				memset(REAL(gll)+(k*np),0,sizeof(double)*np);
+				memset(REAL(FI)+(k*np*np),0,sizeof(double)*np*np);
+				//fprintf(stderr,"[%s] simulation of provided parameters failed for experiment %i with error %i: %s\n",__func__,i,status,gsl_strerror (status));
 			}
 		}
 		free(sy_k);
@@ -948,5 +979,7 @@ r_gsl_odeiv2_outer_fi(
 	gsl_odeiv2_driver_free(driver);
 	gsl_matrix_free(P);
 	gsl_matrix_free(Y0);
+	gsl_matrix_free(Sf_sd);
+	gsl_vector_free(v);
 	return res_list;
 }
