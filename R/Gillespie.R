@@ -147,7 +147,7 @@ simpleConversion <- function(v,unit,LV=6.02214076e+8){
 }
 
 
-#' stochasticModel interprets the provided SBtab file as a stochastic model
+#' makeGillespieModel interprets the provided SBtab file as a stochastic model
 #'
 #' The SBtab file is assumed to describe a reaction network.  The
 #' systems biology information is assumed to be concentrations and

@@ -2,7 +2,7 @@
 % Please edit documentation in R/Gillespie.R
 \name{makeGillespieModel}
 \alias{makeGillespieModel}
-\title{stochasticModel interprets the provided SBtab file as a stochastic model}
+\title{makeGillespieModel interprets the provided SBtab file as a stochastic model}
 \usage{
 makeGillespieModel(sb, LV = 602214076)
 }

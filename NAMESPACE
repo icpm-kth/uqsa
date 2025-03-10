@@ -3,7 +3,6 @@
 export("%has%")
 export("%otherwise%")
 export(ABCMCMC)
-export(GillespieModelList)
 export(Rmpi_swap_temperatures)
 export(ccc)
 export(change_temperature)
