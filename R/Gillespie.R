@@ -244,6 +244,18 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	sprintf("\tdouble %s = x[_%s];",rownames(sb$Compound),rownames(sb$Compound)),
 	sprintf("\tdouble %s = %s;",rownames(sb$Expression),sb$Expression[["!Formula"]])
 	)
+	FuncDefinitions <- c(
+	"\t/* forward parameters */",
+	sprintf("\tdouble %s = %g * c[_%s]; // per second",names(sm$cvf),sm$cvf,names(sm$cvf)),
+	"\t/* backward parameters */",
+	sprintf("\tdouble %s = %g * c[_%s]; // per second",names(sm$cvb),sm$cvb,names(sm$cvb)),
+	"\t/* parameters that do not appear in kinetric laws */",
+	sprintf("\tdouble %s = %g * c[_%s]; // per second",names(sm$scv),sm$scv,names(sm$scv)),
+	"\t/*state variables */",
+	sprintf("\tdouble %s = x[_%s]/%g; /* %s */",rownames(sb$Compound),rownames(sb$Compound),ccc(sb,LV),sb$Compound[["!Unit"]]),
+	sprintf("\tdouble %s = %s;",rownames(sb$Expression),sb$Expression[["!Formula"]])
+	)
+
 	C <- c(
 	"#include <stdlib.h>",
 	"#include <math.h>",
@@ -278,7 +290,7 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"}",
 	"int model_func(double t, int *x, double *c, double *func){",
 	"\tif(!func) return numFunctions;",
-	Definitions,
+	FuncDefinitions,
 	sprintf("\tfunc[_%s] = %s;",rownames(sb$Output),sb$Output[["!Formula"]]),
 	"\treturn 0;",
 	"}",
