@@ -9,13 +9,21 @@ knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
 )
 ```
 
-
-
 # Prerequisits
 
+The simulators (ODE solvers) we use need the GNU Scientific library
+(GSL) to be installed in your system.
 
-The model building part of UQSA (transfering the SBtab network model to a mathematical model in C or R) requires that you have a C compiler (e.g. [gcc](https://gcc.gnu.org)), the GNU Scientific Library [(gsl)](https://www.gnu.org/software/gsl/) and [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/).
-These can be installed all at once with the following command (that you have to write in the terminal window).
+The model building part of UQSA (transfering the SBtab network model
+to a mathematical model in C or R) also requires that you have a C
+compiler (e.g. [gcc](https://gcc.gnu.org)), in addition to the GNU
+Scientific Library [(gsl)](https://www.gnu.org/software/gsl/).
+
+On some systems the GSL may be installed in an unexpected location (on
+clusters this will almost certainly be the case). So, we rely on
+[pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) to
+find this location.  These can be installed all at once with the
+following command (that you have to write in a terminal window).
 
 ## On macOS
 
@@ -42,18 +50,20 @@ sudo apt install pkg-config gcc libgsl-dev
 Other distributions have some version of this:
 
 ```
-zypper install  # OpenSuSE, SLES
-apk add         # Alpine
-guix install    # GNU Guix
+sudo apk add gsl pkgconf            # Alpine
+sudo guix install gsl pkg-config    # GNU Guix
+sudo pacman -S gsl pkgconf          # Arch, btw.
+sudo zypper install gsl pkg-config  # OpenSuSE, SLES
 ```
 
-... and many more. 
+... and many [more](articles/installExplanations.html).
 
 # Installation of the R packages
 
 In order to use UQSA you (obviously) need the [R language](https://www.r-project.org/) (and maybe a graphical interface to it like [R-studio](https://posit.co/download/rstudio-desktop/)). We will assume that you already have R.
 
 To auto-generate model-code in R, you need install the package [Ryacas](https://cran.r-project.org/web/packages/Ryacas/index.html):
+
 ```{sh Ryacas, eval=FALSE}
 install.packages("Ryacas")
 ```
@@ -63,8 +73,6 @@ You can now install the packages developed by the uqsa team:
 ```{r remotes, eval=FALSE}
 # requires the 'remotes' package
 if (!require(remotes)) install.packages("remotes")
-remotes::install_github("icpm-kth/SBtabVFGEN",dependencies=TRUE)
-remotes::install_github("icpm-kth/rgsl",dependencies=TRUE)
 remotes::install_github("icpm-kth/uqsa",dependencies=TRUE)
 ```
 

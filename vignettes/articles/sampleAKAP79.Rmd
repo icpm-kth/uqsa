@@ -1,9 +1,9 @@
 ---
-title: "sampleAKAP79"
+title: "Sample AKAP79"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache=FALSE, eval=TRUE,
+knitr::opts_chunk$set(cache=TRUE, eval=TRUE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -66,7 +66,7 @@ echo "We will use $N cores with $nm"
 
 start_time=$((`date +%s`))
 date
-mpirun -H localhost:$N ./pt-smmala-akap79.R 16000
+mpirun -H localhost:$N ./pt-smmala-akap79.R 16000 > akap79.log
 date
 end_time=$((`date +%s`))
 echo "Time spent sampling: $((end_time - start_time)) seconds ($(( (end_time - start_time)/60 )) minutes)."
@@ -81,7 +81,7 @@ Here we check the integrated auto-correlation length (Markov chain
 time)
 
 ```{r uwerr}
-Sample <- readRDS(file="AKAP79-temperature-ordered-smmala-sample-2-for-rank-0.RDS")
+Sample <- readRDS(file="AKAP79-temperature-ordered-pt-smmala-sample-2-for-rank-0.RDS")
 n <- NROW(Sample)
 l <- attr(Sample,"logLikelihood")
 

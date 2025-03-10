@@ -17,10 +17,6 @@ navbar:
     articles:
       text: Documentation
       menu:
-      - text: Uncertainty Quantification
-        href: articles/uq.html
-      - text: Sensitivity Analysis
-        href: articles/sa.html
       - text: SBtab
         href: articles/SBtab.html
       - text: Importing Models
@@ -41,6 +37,10 @@ navbar:
         href: articles/simulate.html
       - text: Global Sensitivity Analysis
         href: articles/GSA.html
+      - text: Uncertainty Quantification
+        href: articles/UQ.html
+      - text: Sensitivity Analysis
+        href: articles/sa.html
     tutorials:
         text: Examples
         menu:
@@ -64,6 +64,8 @@ navbar:
           href: articles/UQSA_AKAR4.html
         - text: -------
         - text: AKAP79
+        - text: Sample AKAP79
+          href: articles/sampleAKAP79.html
         - text: Multiple chains via MPI
           href: articles/mpi.html
         - text: -------
@@ -132,10 +134,27 @@ reference:
   - simc
   - yacasMath
   - yJacobian
+- title: "SMMALA specific functions"
+  desc: "helper functions"
+  contents:
+  - simfi
+  - simfiGaussianLogLikelihood
+  - simfiGaussianGradLogLikelihood
+  - simfiGaussianFILL
+  - gsl_odeiv2_fi
+- title: "Experimental functions"
+  desc: "for the stochastic solver (wip)"
+  contents:
+  - makeGillespieModel
+  - ccc
+  - generateGillespieCode
+  - onlyCoefficients
+  - onlyNames
+  - parameterConversion
+  - stoichiometry
 - title: "Internal Functions"
   desc: "not exported functions"
   contents:
-  - convert.parameter
   - generateCodeFromFile
   - match.coefficients
   - match.names
@@ -147,7 +166,6 @@ reference:
   - sum.of.bin.variance
   - uqsa-package
   - getDose
-  - plotDoseResponse
   - plotTimeSeries
   - Rmpi_swap_temperatures
   - fisherInformationFromGSA
@@ -166,3 +184,5 @@ reference:
   - simcf
   - swap_points_locally
   - writeCFunction
+  - ggplotDoseResponse
+  - plotTimeSeriesBase

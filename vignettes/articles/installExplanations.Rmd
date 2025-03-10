@@ -37,7 +37,7 @@ sudo apk add gcc gsl pkgconf R         # should suffice
 ```
 
 The following material is the long explanation on a few example
-systems (it is impossible to list all of them). 
+systems (it is impossible to list all of them).
 
 # Motivation
 

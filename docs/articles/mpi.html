@@ -7,13 +7,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="description" content="uqsa">
 <title>Parallel chains with MPI • uqsa</title>
-<script src="../deps/jquery-3.6.1/jquery-3.6.1.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Parallel chains with MPI">
+<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js" integrity="sha512-7O5pXpc0oCRrxk8RUfDYFgn0nO1t+jLuIOQdOMRp4APB7uZ4vSjspzp5y6YDtDs4VzUSTbWzBFZ/LKJhnyFOKw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Parallel chains with MPI">
 <meta property="og:description" content="uqsa">
-<!-- mathjax --><script src="file:///usr/share/javascript/mathjax/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
+<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
+<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
@@ -21,7 +22,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light" data-bs-theme="light"><div class="container">
     
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
@@ -47,8 +48,6 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
-    <a class="dropdown-item" href="../articles/uq.html">Uncertainty Quantification</a>
-    <a class="dropdown-item" href="../articles/sa.html">Sensitivity Analysis</a>
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
@@ -59,6 +58,8 @@
     <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
     <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
+    <a class="dropdown-item" href="../articles/UQ.html">Uncertainty Quantification</a>
+    <a class="dropdown-item" href="../articles/sa.html">Sensitivity Analysis</a>
   </div>
 </li>
 <li class="active nav-item dropdown">
@@ -76,6 +77,7 @@
     <a class="dropdown-item" href="../articles/UQSA_AKAR4.html">UQ and SA on AKAR4</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAP79</h6>
+    <a class="dropdown-item" href="../articles/sampleAKAP79.html">Sample AKAP79</a>
     <a class="dropdown-item" href="../articles/mpi.html">Multiple chains via MPI</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>CaMKII</h6>
@@ -117,6 +119,50 @@
 
     
     
+<p>This article explains how to combine SMMALA with the technique of
+parallel tempering used in the previous article: <a href="articles/sampleAKAP79.html">Sample AKAP79</a>. AKAP79 is a fairly
+big model. This makes it worthwhile to use SMMALA and also parallel
+tempering which both speed up convergence to the target distribution.
+Here we explain which model properties have influenced our decisions and
+which modifications we made to the model to make the job easier.</p>
+<p>UQSA includes a special ODE solver, which calculates a crude estimate
+of the Fisher information <span class="math inline">\(G\)</span> and the
+gradient of the log-likelihood <span class="math inline">\(\nabla_\theta
+l(\theta;D)\)</span>. Both are required in SMMALA. We cannot calculate
+the exact <span class="math inline">\(G\)</span> an dgradient. This
+lowers the algorithms performance compared to the ideal case. But the
+algorithm remains exact.</p>
+<p>This special solver is called <code><a href="../reference/simfi.html">uqsa::simfi()</a></code> (same
+interface as the solvers in <code>rgsl</code>). In the R script shown at
+the end of this article we have included functions that extract the
+Fisher information and gradient from the simulation result. These
+simulation results are always attached to the current position of the
+Markov chain as attributes.</p>
+<p>The Fisher information is also linearly transformed by the Jacobian
+of the parameter mapping (the map between the Markov chain variable
+<span class="math inline">\(\theta\)</span> and the model’s kinetic
+parameters <span class="math inline">\(\rho\)</span>). We use the
+mapping: <span class="math inline">\(\rho = 10^\theta\)</span>.</p>
+<p>In addition, it is easier to work with matrices in C, rather than
+data-frames, so we transform all data-sets into equivalent matrices, and
+replace all <code>NA</code> values with values that have the same effect
+as <code>na.rm=TRUE</code>. missing data values can be replaced by any
+number, missing standard errors are replaced with infinities (a missing
+value has infinite error). The infinite values are disregarded when the
+normalising factors a re computed (i.e.:
+<code>1/sqrt(2*pi*sigma^2)</code>).</p>
+<p>If the liklihood function is not derived from a Gaussian, then the
+user has to provide a different set of functions to approximate gradient
+and Fisher information, or use a different solver.</p>
+<p>This particular model has a very dense data-set, which we will
+down-sample to fewer points. We do this to reduce memory consumption and
+speed up the process (and to show how one can do such a thing). Not much
+information is lost that way.</p>
+<p>The standard errors of the (real) data-sets are very uneven. To make
+the job easier for the sampler, we replace the real standard errors with
+even 5% errors (bigger than the real ones). If we were to try for a very
+big sample (millions of sampled points), we coudl use the real errors
+instead. For a small sample, even errors work better.</p>
 <div class="section level2">
 <h2 id="motivation">Motivation<a class="anchor" aria-label="anchor" href="#motivation"></a>
 </h2>
@@ -141,12 +187,12 @@ faster than the Markov chain algorithm by itself would allow.</p>
 without MPI, we now have several experiments to simulate on many
 parallel chains, for AKAP79 this is 20 experiments and e.g. 32 chains.
 At this point, it becomes benefitial to do the simulations on more than
-one machine (mine has 16 cores). The <em>high performance computing</em>
-cluster at KTH (Parallel Dator Center, Dardel cluster) has 128 cores per
-node. This means that we can simulate 6 chains per node and still
-process all experiments at the same time (using <code>parLapply</code>
-or <code>mclapply</code>), but also start 24 chains distributed accross
-3 nodes.</p>
+one machine (mine has 16 cores, which isn’t much for a problem of this
+size). The <em>high performance computing</em> cluster at KTH (Parallel
+Dator Center, Dardel cluster) has 128 cores per node. This means that we
+can simulate 6 chains per node and still process all experiments at the
+same time (using <code>parLapply</code> or <code>mclapply</code>), but
+also start 24 chains distributed accross 3 nodes.</p>
 <p>The distribution requires message passing between nodes, for this
 prupose we use <a href="https://cran.r-project.org/package=pbdMPI" class="external-link">pbdMPI</a></p>
 <p>MPI code is difficult to understand, write, test, and debug. So, the
@@ -155,7 +201,7 @@ below instructions may not work for everyone.</p>
 <div class="section level2">
 <h2 id="akap79">AKAP79<a class="anchor" aria-label="anchor" href="#akap79"></a>
 </h2>
-<p>MPI has several mechanisms to launch worker processes, one ow which
+<p>MPI has several mechanisms to launch worker processes, one of which
 is the <code>spawn</code> method (<code>MPI_Comm_spawn</code>). We don’t
 use this here.</p>
 <p>Instead we launch an Rscript via <code>mpirun</code> (and the
@@ -170,20 +216,20 @@ the worker obtains.</p>
 <code>mpirun</code> command, if you have some mpi library installed:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># find number of cores on GNU/linux</span></span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="ex">N</span> = <span class="va">$((</span> <span class="kw">`</span><span class="fu">grep</span> <span class="at">-c</span> processor /proc/cpuinfo<span class="kw">`</span> <span class="va">))</span> <span class="co"># or just type the right number</span></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="ex">mpirun</span> <span class="at">-H</span> localhost:<span class="va">$N</span> <span class="at">-N</span> <span class="va">$N</span> ./AKAP79.R 5000</span></code></pre></div>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="ex">mpirun</span> <span class="at">-H</span> localhost:<span class="va">$N</span> <span class="at">-N</span> <span class="va">$N</span> ./pt-smmala-akap79.R 5000</span></code></pre></div>
 <p>For this to work, <code>AKAP79.R</code> starts with the line:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co">#!/usr/bin/env Rscript</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">## ^^^^^^^^^^^^^^^^^^^ </span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">## ^^^^^^^^^^^^^^^^^^^</span></span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">## The above has to be the first line.</span></span>
 <span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">## Nothing may be written before that.</span></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="ex">[...]</span></span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="ex">R</span> code follows below</span></code></pre></div>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="ex">[...]</span></span></code></pre></div>
 <p>So, Rscript will be found and used to process the rest.</p>
 <p>If you want to call <code>Rscript</code> explicitly, then:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">mpirun</span> <span class="at">-H</span> localhost:<span class="va">$N</span> <span class="at">-N</span> <span class="va">$N</span> Rscript ./AKAP79.R 5000</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">mpirun</span> <span class="at">-H</span> localhost:<span class="va">$N</span> <span class="at">-N</span> <span class="va">$N</span> Rscript ./pt-smmala-akap79.R 5000</span></code></pre></div>
 <p>On the cluster the <code>-H</code> option is not necessary, because a
-queue system like slurm will determine which machines to use.</p>
+queue system like slurm will determine which machines to use. The
+program <code>mpirun</code> may have a different name on a cluster
+(e.g. <code>srun</code>).</p>
 <p>The argument <code>5000</code> (the sample size) is passed to the R
 program <code>AKAP79.R</code>, it’s not an <code>mpirun</code>
 option.</p>
@@ -192,7 +238,7 @@ node (node means the same as machine or host). We have one node
 (localhost), the <code>-H localhost:$SLOTS</code> option determines the
 maximum number of jobs per node.</p>
 <p>If you have 16 cores:</p>
-<pre><code>mpirun -H localhost:$16 -N 16 Rscript ./AKAP79.R 5000</code></pre>
+<pre><code>mpirun -H localhost:$16 -N 16 Rscript ./pt-smmala-akap79.R 5000</code></pre>
 <p>In this example, we use the MPI chains for parallel chains on
 different temperatures. But, this is not mandatory. It is possible to
 run <code>$N</code> chains on the same temperature, or split the work in
@@ -201,16 +247,13 @@ some other way.</p>
 <div class="section level2">
 <h2 id="mpi-script-template">MPI Script Template<a class="anchor" aria-label="anchor" href="#mpi-script-template"></a>
 </h2>
-<p>This is an example that will sample a model using the Metropolis
+<p>This is an example that will sample a model using the SMMALA
 algorithm, using <a href="https://cran.r-project.org/package=pbdMPI" class="external-link"><code>pbdMPI</code></a>
 and the parallel tempering technique.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#!/usr/bin/env Rscript</span></span>
-<span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">rgsl</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SBtabVFGEN</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">parallel</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pbdr.org/" class="external-link">pbdMPI</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">start_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -218,99 +261,147 @@ and the parallel tempering technique.</p>
 <span><span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">init</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">comm.rank</a></span><span class="op">(</span>comm<span class="op">=</span><span class="va">comm</span><span class="op">)</span></span>
 <span><span class="va">cs</span> <span class="op">&lt;-</span> <span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">comm.size</a></span><span class="op">(</span>comm<span class="op">=</span><span class="va">comm</span><span class="op">)</span></span>
-<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">comm</span>,<span class="st">"rank"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">r</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">comm</span>,<span class="st">"size"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">cs</span></span>
-<span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">10000</span>                 <span class="co"># default sample size</span></span>
-<span><span class="va">h</span> <span class="op">&lt;-</span> <span class="fl">1e-2</span>                  <span class="co"># step size</span></span>
-<span></span>
 <span><span class="va">beta</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1.0</span> <span class="op">-</span> <span class="op">(</span><span class="va">r</span><span class="op">/</span><span class="va">cs</span><span class="op">)</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span>   <span class="co"># PT: inverse temperature</span></span>
 <span></span>
-<span><span class="co">## ----label="SBtab content"----------------------------------------------------</span></span>
-<span></span>
-<span><span class="va">modelFiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span><span class="st">".."</span>,pattern<span class="op">=</span><span class="st">"[.]tsv$"</span>,full.names<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">modelFiles</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"./%s_gvc.c"</span>,<span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## ----ConservationLaws----------------------------------------------------------</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="st">"../ConservationLaws.RDS"</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">ConLaw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"../ConservationLaws.RData"</span><span class="op">)</span></span>
+<span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/commandArgs.html" class="external-link">commandArgs</a></span><span class="op">(</span>trailingOnly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">a</span><span class="op">)</span><span class="op">&gt;</span><span class="fl">0</span><span class="op">)</span><span class="op">{</span></span>
+<span>      <span class="va">N</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">a</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>    <span class="va">ConLaw</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
-<span><span class="op">}</span></span>
-<span><span class="va">experiments</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">sb</span>,<span class="va">ConLaw</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## ----default------------------------------------------------------------------</span></span>
-<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span><span class="op">)</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="va">n</span><span class="op">&gt;</span><span class="fl">0</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">parMCMC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">model</span><span class="op">$</span><span class="fu">par</span><span class="op">(</span><span class="op">)</span>,<span class="op">-</span><span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>    <span class="va">parMCMC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">model</span><span class="op">$</span><span class="fu">par</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>      <span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">50000</span>           <span class="co"># default sample size</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="co">## ----range--------------------------------------------------------------------</span></span>
-<span><span class="va">stdv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!Std"</span><span class="op">]</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">stdv</span><span class="op">)</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">stdv</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">{</span> <span class="co"># some alternative default value</span></span>
-<span>    <span class="va">stdv</span> <span class="op">&lt;-</span> <span class="va">parMCMC</span><span class="op">*</span><span class="fl">0.05</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span><span class="op">*</span><span class="fl">0.05</span> <span class="op">+</span> <span class="fl">1e-2</span> </span>
-<span><span class="op">}</span></span>
-<span><span class="va">dprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dNormalPrior.html">dNormalPrior</a></span><span class="op">(</span>mean<span class="op">=</span><span class="va">parMCMC</span>,sd<span class="op">=</span><span class="va">stdv</span><span class="op">)</span></span>
-<span><span class="va">rprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rNormalPrior.html">rNormalPrior</a></span><span class="op">(</span>mean<span class="op">=</span><span class="va">parMCMC</span>,sd<span class="op">=</span><span class="va">stdv</span><span class="op">)</span></span>
+<span><span class="va">h</span> <span class="op">&lt;-</span> <span class="fl">0.01</span>                  <span class="co"># step size</span></span>
+<span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="st">"AKAP79"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">modelName</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"./AKAP79.so"</span></span>
+<span><span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file<span class="op">=</span><span class="st">"AKAP79-sb.RDS"</span><span class="op">)</span></span>
+<span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file<span class="op">=</span><span class="st">"AKAP79-ex.RDS"</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co">## In the C backend of simfi, we calculate the Fisher information</span></span>
+<span><span class="co">## and log-likelihood gradient for Gaussian liklihoods.</span></span>
+<span><span class="co">## For this to work at all, we convert the data-frames to simple matrices.</span></span>
+<span><span class="co">## The names 'time', 'data', and 'stdv' have a highest precedence in the solver code.</span></span>
+<span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">t_</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span></span>
+<span>    <span class="va">nt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">t_</span><span class="op">)</span></span>
+<span>    <span class="va">BY</span> <span class="op">&lt;-</span> <span class="fl">10</span> <span class="co"># take every BYth point</span></span>
+<span>    <span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">)</span></span>
+<span>    <span class="va">D</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0.0</span></span>
+<span>    <span class="va">SD</span> <span class="op">&lt;-</span> <span class="va">D</span><span class="op">*</span><span class="fl">0.05</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">D</span>,<span class="fl">1</span>,FUN<span class="op">=</span><span class="va">max</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">*</span><span class="fl">0.05</span>  <span class="co">#t(ex[[i]]$errorValues)</span></span>
+<span>    <span class="va">SD</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">SD</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">Inf</span></span>
+<span>    <span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;-</span> <span class="va">t_</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>,<span class="va">nt</span>,by<span class="op">=</span><span class="va">BY</span><span class="op">)</span><span class="op">]</span>              <span class="co"># The solvers behind</span></span>
+<span>    <span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">D</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>,<span class="va">nt</span>,by<span class="op">=</span><span class="va">BY</span><span class="op">)</span>,drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span>   <span class="co"># simfi() will use these</span></span>
+<span>    <span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">stdv</span> <span class="op">&lt;-</span> <span class="va">SD</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>,<span class="va">nt</span>,by<span class="op">=</span><span class="va">BY</span><span class="op">)</span>,drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span>  <span class="co"># instead of outputValues</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">parMCMC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!DefaultValue"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="st">"!Max"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="st">"!Min"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">mu</span> <span class="op">&lt;-</span> <span class="fl">0.5</span><span class="op">*</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!Max"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!Min"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">stdv</span> <span class="op">&lt;-</span> <span class="fl">0.5</span><span class="op">*</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!Max"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!Min"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">mu</span><span class="op">)</span><span class="op">==</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">stdv</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span><span class="op">==</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">mu</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">dprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dNormalPrior.html">dNormalPrior</a></span><span class="op">(</span>mean<span class="op">=</span><span class="va">mu</span>,sd<span class="op">=</span><span class="va">stdv</span><span class="op">)</span></span>
+<span><span class="va">rprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rNormalPrior.html">rNormalPrior</a></span><span class="op">(</span>mean<span class="op">=</span><span class="va">mu</span>,sd<span class="op">=</span><span class="va">stdv</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">gprior</span> <span class="op">&lt;-</span> \<span class="op">(</span><span class="va">p</span><span class="op">)</span> <span class="op">{</span><span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1.0</span><span class="op">*</span><span class="op">(</span><span class="va">p</span><span class="op">-</span><span class="va">parMCMC</span><span class="op">)</span><span class="op">/</span><span class="va">stdv</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">}</span></span>
 <span><span class="co">## ----simulate-----------------------------------------------------------------</span></span>
-<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">experiments</span>,<span class="va">modelName</span>,<span class="va">log10ParMap</span><span class="op">)</span></span>
+<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simfi.html">simfi</a></span><span class="op">(</span><span class="va">ex</span>,<span class="va">modelName</span>,<span class="va">log10ParMap</span><span class="op">)</span> <span class="co"># or simulator.c</span></span>
 <span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">sim</span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span> <span class="co">## little test</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">is.list</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">==</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"state"</span>,<span class="st">"func"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">y</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## ----likelihood---------------------------------------------------------------</span></span>
-<span><span class="va">logLH</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>,<span class="va">h</span>,<span class="va">stdv</span>,<span class="va">name</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">stdv</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">llf_const</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">stdv</span><span class="op">)</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.5</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">*</span><span class="va">pi</span><span class="op">)</span><span class="op">*</span><span class="va">n</span></span>
-<span>    <span class="va">llf_sq</span> <span class="op">&lt;-</span> <span class="fl">0.5</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">(</span><span class="op">(</span><span class="va">y</span> <span class="op">-</span> <span class="va">h</span><span class="op">)</span><span class="op">/</span><span class="va">stdv</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="op">-</span><span class="va">llf_const</span><span class="op">-</span><span class="va">llf_sq</span><span class="op">)</span></span>
+<span><span class="co">## log-likelihood</span></span>
+<span><span class="va">llf</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span></span>
+<span>    <span class="va">J</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/log10ParMapJac.html">log10ParMapJac</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">a</span>,<span class="va">b</span><span class="op">)</span> <span class="va">a</span> <span class="op">+</span> <span class="va">b</span><span class="op">$</span><span class="va">logLikelihood</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">parMCMC</span>,<span class="st">"simulations"</span><span class="op">)</span>, init <span class="op">=</span> <span class="fl">0.0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">llf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/logLikelihoodFunc.html">logLikelihoodFunc</a></span><span class="op">(</span><span class="va">experiments</span>,simpleUserLLF<span class="op">=</span><span class="va">logLH</span><span class="op">)</span></span>
+<span><span class="co">## gradient of the log-likelihood</span></span>
+<span><span class="va">gllf</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span></span>
+<span>    <span class="va">J</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/log10ParMapJac.html">log10ParMapJac</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">a</span>,<span class="va">b</span><span class="op">)</span> <span class="va">a</span> <span class="op">+</span> <span class="va">b</span><span class="op">$</span><span class="va">gradLogLikelihood</span><span class="op">[</span><span class="va">i</span>,<span class="fl">1</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">parMCMC</span>,<span class="st">"simulations"</span><span class="op">)</span>, init <span class="op">=</span> <span class="fl">0.0</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">J</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co">## Fisher Information</span></span>
+<span><span class="va">fi</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span></span>
+<span>    <span class="va">J</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/log10ParMapJac.html">log10ParMapJac</a></span><span class="op">(</span><span class="va">parMCMC</span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">J</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">a</span>,<span class="va">b</span><span class="op">)</span> <span class="va">a</span> <span class="op">+</span> <span class="va">b</span><span class="op">$</span><span class="va">FisherInformation</span><span class="op">[</span><span class="va">i</span>,<span class="va">i</span>,<span class="fl">1</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">parMCMC</span>,<span class="st">"simulations"</span><span class="op">)</span>, init <span class="op">=</span> <span class="fl">0.0</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">J</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
 <span></span>
 <span><span class="co">## ----update-------------------------------------------------------------------</span></span>
-<span><span class="va">metropolis</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mcmcUpdate.html">mcmcUpdate</a></span><span class="op">(</span>simulate<span class="op">=</span><span class="va">sim</span>,</span>
-<span>    experiments<span class="op">=</span><span class="va">experiments</span>,</span>
-<span>    model<span class="op">=</span><span class="va">model</span>,</span>
-<span>    logLikelihood<span class="op">=</span><span class="va">llf</span>,</span>
-<span>    dprior<span class="op">=</span><span class="va">dprior</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## ----init---------------------------------------------------------------------</span></span>
-<span><span class="va">ptMetropolis</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mcmc_mpi.html">mcmc_mpi</a></span><span class="op">(</span><span class="va">metropolis</span>,comm<span class="op">=</span><span class="va">comm</span>,swapDelay<span class="op">=</span><span class="fl">0</span>,swapFunc<span class="op">=</span><span class="va">pbdMPI_bcast_reduce_temperatures</span><span class="op">)</span></span>
-<span><span class="co">## ----sample-------------------------------------------------------------------</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mcmcInit.html">mcmcInit</a></span><span class="op">(</span></span>
-<span>    <span class="va">beta</span>,</span>
-<span>    <span class="va">parMCMC</span>,</span>
+<span><span class="va">smmala</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mcmcUpdate.html">mcmcUpdate</a></span><span class="op">(</span></span>
 <span>    simulate<span class="op">=</span><span class="va">sim</span>,</span>
+<span>    experiments<span class="op">=</span><span class="va">ex</span>,</span>
 <span>    logLikelihood<span class="op">=</span><span class="va">llf</span>,</span>
-<span>    <span class="va">dprior</span><span class="op">)</span></span>
-<span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu">ptMetropolis</span><span class="op">(</span><span class="va">x</span>,<span class="va">N</span>,<span class="va">h</span><span class="op">)</span> <span class="co"># the main amount of work is done here</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">s</span>,file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"sample-rank-%i.RDS"</span>,<span class="va">r</span><span class="op">)</span><span class="op">)</span></span>
+<span>    dprior<span class="op">=</span><span class="va">dprior</span>,</span>
+<span>    gradLogLikelihood<span class="op">=</span><span class="va">gllf</span>,</span>
+<span>    <span class="va">gprior</span>,</span>
+<span>    fisherInformation<span class="op">=</span><span class="va">fi</span>,</span>
+<span>    fisherInformationPrior<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fl">1.0</span><span class="op">/</span><span class="va">stdv</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># ---- when all are done, we load the sampled points from the files but only for the right temperature:</span></span>
-<span><span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">barrier</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span>pattern<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'sample-rank-.*RDS$'</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span> <span class="op">==</span> <span class="va">cs</span><span class="op">)</span>                                          <span class="co"># MPI comm size</span></span>
-<span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/gatherSample.html">gatherSample</a></span><span class="op">(</span><span class="va">f</span>,<span class="va">beta</span>,size<span class="op">=</span><span class="va">N</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">## ----mcmc-method--------------------------------------------------------------</span></span>
+<span><span class="va">MC</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mcmc.html">mcmc</a></span><span class="op">(</span><span class="va">smmala</span><span class="op">)</span></span>
+<span><span class="va">ptSMMALA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mcmc_mpi.html">mcmc_mpi</a></span><span class="op">(</span><span class="va">smmala</span>,comm<span class="op">=</span><span class="va">comm</span>,swapDelay<span class="op">=</span><span class="fl">0</span>,swapFunc<span class="op">=</span><span class="va">pbdMPI_bcast_reduce_temperatures</span><span class="op">)</span></span>
+<span><span class="co">## ----init---------------------------------------------------------------------</span></span>
+<span>    <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mcmcInit.html">mcmcInit</a></span><span class="op">(</span></span>
+<span>        <span class="va">beta</span>,</span>
+<span>        <span class="va">parMCMC</span>,</span>
+<span>        simulate<span class="op">=</span><span class="va">sim</span>,</span>
+<span>        logLikelihood<span class="op">=</span><span class="va">llf</span>,</span>
+<span>        <span class="va">dprior</span>,</span>
+<span>        <span class="va">gllf</span>,</span>
+<span>        <span class="va">gprior</span>,</span>
+<span>        <span class="va">fi</span></span>
+<span>    <span class="op">)</span></span>
 <span></span>
-<span><span class="va">Copula</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitCopula.html">fitCopula</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span></span>
-<span><span class="va">dprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dCopulaPrior.html">dCopulaPrior</a></span><span class="op">(</span><span class="va">Copula</span><span class="op">)</span></span>
-<span><span class="va">rprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rCopulaPrior.html">rCopulaPrior</a></span><span class="op">(</span><span class="va">Copula</span><span class="op">)</span></span>
-<span><span class="va">parMCMC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">X</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">Copula</span>,<span class="st">"beta"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">beta</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">X</span>,<span class="st">"beta"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">beta</span></span>
+<span><span class="co">## beta,parMCMC,simulate,logLikelihood,dprior,gradLogLikelihood=NULL,gprior=NULL,fisherInformation=NULL</span></span>
+<span><span class="va">A</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">a</span><span class="op">)</span> <span class="op">{</span> <span class="co"># step-size adjuster</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fl">0.5</span> <span class="op">+</span> <span class="va">a</span><span class="op">^</span><span class="fl">4</span><span class="op">/</span><span class="op">(</span><span class="fl">0.25</span><span class="op">^</span><span class="fl">4</span> <span class="op">+</span> <span class="va">a</span><span class="op">^</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">Copula</span>,file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Copula-for-beta-%i-l10b-%i.RDS"</span>,<span class="va">r</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">beta</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">X</span>,file<span class="op">=</span><span class="st">"parameter-sample-for-beta-%i-l10b-%i.RDS"</span>,<span class="va">r</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">beta</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">## ----converge-and-adapt-------------------------------------------------------</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="va">r</span><span class="op">==</span><span class="fl">0</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%10s  %12s %16s %16s\n"</span>,<span class="st">"rank"</span>,<span class="st">"iteration"</span>,<span class="st">"acceptance"</span>,<span class="st">"step size"</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%10s  %12s %16s %16s\n"</span>,<span class="st">"----"</span>,<span class="st">"---------"</span>,<span class="st">"----------"</span>,<span class="st">"---------"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
 <span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>        <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu">MC</span><span class="op">(</span><span class="va">x</span>,<span class="fl">100</span>,<span class="va">h</span><span class="op">)</span>           <span class="co"># evaluate rate of acceptance</span></span>
+<span>        <span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">s</span>,<span class="st">"acceptanceRate"</span><span class="op">)</span></span>
+<span>        <span class="va">h</span> <span class="op">&lt;-</span> <span class="va">h</span><span class="op">*</span><span class="fu">A</span><span class="op">(</span><span class="va">a</span><span class="op">)</span>                <span class="co"># adjust h up or down</span></span>
+<span>        <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">s</span>,<span class="st">"lastPoint"</span><span class="op">)</span>   <span class="co"># start next iteration from last point</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%10i  %12i %16.4f %16.4g\n"</span>,<span class="va">r</span>,<span class="va">i</span>,<span class="va">a</span>,<span class="va">h</span><span class="op">)</span><span class="op">)</span> <span class="co"># cat(sprintf("rank: %02i; iteration: %02i; a: %f; h: %g\n",r,i,a,h))</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">barrier</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    <span class="co">## ---- here, the sampling happens</span></span>
+<span>    <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu">ptSMMALA</span><span class="op">(</span><span class="va">x</span>,<span class="va">N</span>,<span class="va">h</span><span class="op">)</span> <span class="co"># the main amount of work is done here</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">s</span>,file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"AKAP79-pt-smmala-sample-%i-rank-%i.RDS"</span>,<span class="va">j</span>,<span class="va">r</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="co">## ---- when all are done, we load the sampled points from the files but only for the right temperature:</span></span>
+<span>    <span class="fu">pbdMPI</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">barrier</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    <span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span>pattern<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"^AKAP79-pt-smmala-sample-%i-rank-.*RDS$"</span>,<span class="va">j</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">X</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/gatherSample.html">gatherSample</a></span><span class="op">(</span><span class="va">f</span>,<span class="va">beta</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">X</span>,file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.RDS"</span>,<span class="va">j</span>,<span class="va">r</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mcmcInit.html">mcmcInit</a></span><span class="op">(</span></span>
+<span>        <span class="va">beta</span>,</span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">X</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>, <span class="co"># last row</span></span>
+<span>        simulate<span class="op">=</span><span class="va">sim</span>,</span>
+<span>        logLikelihood<span class="op">=</span><span class="va">llf</span>,</span>
+<span>        <span class="va">dprior</span>,</span>
+<span>        <span class="va">gllf</span>,</span>
+<span>        <span class="va">gprior</span>,</span>
+<span>        <span class="va">fi</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="op">}</span></span>
 <span><span class="va">time_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/difftime.html" class="external-link">difftime</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span>,<span class="va">start_time</span>,units<span class="op">=</span><span class="st">"min"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">time_</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"rank %02i of %02i finished with an acceptance rate of %f and swap rate of %f.\n"</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">cs</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">s</span>,<span class="st">"acceptanceRate"</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">s</span>,<span class="st">"swapRate"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/pbdMPI/man/cc_comm.html" class="external-link">finalize</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -320,13 +411,11 @@ and the parallel tempering technique.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p>
-<p>Developed by Alexandra Jauhiainen, Olivia Eriksson, Federica Milinanni, Andrei Kramer.</p>
+  <p>Developed by Alexandra Jauhiainen, Olivia Eriksson, Federica Milinanni, Andrei Kramer.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
 </div>
 
     </footer>

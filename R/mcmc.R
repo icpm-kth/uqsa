@@ -1033,3 +1033,68 @@ gradLogLikelihoodFunc <- function(experiments,parMap=identity,parMapJac=function
 	}
 	return(gradLL)
 }
+
+#' [SMMALA] The default Extractor of the log-likelihood computed bu the simfi solver
+#'
+#' This function will only extract the log-likelihood value from the
+#' solution via simfi. Simfi returns the likelihhod value based on the
+#' assumption that the data provided in the list of experiments has a
+#' Gaussian standard error. The value includes the normalising factor 1/sqrt(2*pi*sigma^2)
+#' for each measured value (the logarithm).
+#'
+#' @param init a base value that will be added to the log-likelihood
+#' @export
+#' @return a log-likelihood value for the set of experiments the
+#'     solver was set up with.
+simfiGaussianLogLikelihood <- function(init = 0.0){
+	llf <- function(parMCMC){
+		i <- seq_along(parMCMC)
+		return(Reduce(\(a,b) a + b$logLikelihood[1], attr(parMCMC,"simulations")))
+	}
+	return(llf)
+}
+
+#' [SMMALA] Extract the gradient of the log-likelihood from the simfi solver's return value
+#'
+#' This function extracts the approximate gradient of the log-likelihood and
+#' transforms the gradient using the Jacobian of the parameter map
+#' between Markov chain variables and model parameters.
+#'
+#' The simfi() gradient is with respect to the raw model parameters
+#'
+#' @param ParMapJac Jacobian of the parMap function
+#' @export
+#' @return the gradient of the Gaussian log-likelihood with respect to
+#'     the MCMC variable
+simfiGaussianGradLogLikelihood <- function(ParMapJac=function (x) {diag(1,length(x))}){
+	gllf <- function(parMCMC){
+		i <- seq_along(parMCMC)
+		J <- ParMapJac(parMCMC)
+		return(as.numeric(Reduce(\(a,b) a + b$gradLogLikelihood[i,1], attr(parMCMC,"simulations"), init = 0.0) %*% J))
+	}
+	return(gllf)
+}
+
+#' [SMMALA] Extract the approximate Fisher infomration from the simfi results
+#'
+#' This function extracts the approximate Fisher information matrix G
+#' of the log-likelihood and transforms it using the
+#' Jacobian of the parameter map between Markov chain variables and
+#' model parameters.
+#'
+#' The simfi() values are with respect to the raw model parameters,
+#' while this function rephrases them in terms of the Markov chain's
+#' position.
+#'
+#' @param ParMapJac Jacobian of the parMap function
+#' @export
+#' @return the approximate Fisher information of the Gaussian log-likelihood with respect to
+#'     the MCMC variable, useful for SMMALA
+simfiGaussianFILL <- function(ParMapJac=function (x) {diag(1,length(x))}){
+	fi <- function(parMCMC){
+		i <- seq_along(parMCMC)
+		J <- ParMapJac(parMCMC)
+		return(t(J) %*% Reduce(\(a,b) a + b$FisherInformation[i,i,1], attr(parMCMC,"simulations"), init = 0.0) %*% J)
+	}
+	return(fi)
+}

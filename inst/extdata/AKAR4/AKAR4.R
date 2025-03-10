@@ -1,4 +1,4 @@
-require("deSolve")
+# require("deSolve")
 
 # ode vector field: y'=f(t,y;p)
 AKAR4_vf <- function(t, state, parameters)

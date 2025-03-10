@@ -1,0 +1,94 @@
+---
+title: "Bayesian Uncertainty Quantification"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(uqsa)
+```
+
+Baysian uncertainty quantification aims to establish the amount of knowledge we have (or indeed lack) about the possible values of model parameters. Sometimes this is described as our belief in different parameter values. The knowledge or belief is expressed in the
+form of a probability distribution[^footnote1] over the parameters: the *posterior distribution* in the Bayesian setting. The posterior distribution is obtained by updating prior information we have on the parameters (described by the *prior distribution*), using information from the observed data and the model structure (specified through the *likelihood function*). The posterior distribution can be calculated with Bayes formula as:
+
+
+\(p(\theta|D) = \frac{ p(D|\theta)p(\theta) }{p(D)} \)
+
+where \(p(\theta|D)\) denotes the posterior density of the parameter \( \theta\) given the observed data \(D\), \(p(D|\theta)\) is the likelihood function, \(p(\theta)\) the prior density, and \(p(D)\) the evidence, a normalizing constant that are not needed during the sampling we perform here.
+
+To sample from the posterior distribution we rely on *Markov Chain Monte Carlo* (MCMC) methods. These only require the numerator in the previous equation (i.e., prior and likelihood) as \(p(D)\) cancels out in the calculations. We have implemented different types of MCMC methods within UQSA, adequate for different situations. 
+
+Standard MCMC methods require the likelihood function can be formulated explicitly (*likelihood-based* methods).This is, however, not always the case and then one has to work with *likelihood-free* methods,  like *Approximate Bayesian Computation (ABC)*. In UQSA we have implemented both likelihood-based and likelihood-free methods.
+
+Biochemical reaction network models can be formulated either as deterministic (ODE) or stochastic systems. For the deterministic formulation we can easily formulate the likelihood function (e.g. by assuming Gaussian noise), for the stochastic formulation this is more difficult and we need to use ABC. 
+
+[^footnote1]: Even though the parameters, as such, are not *random variables*. In this case the probability is related to the randomness within the observed of data: the measurement
+noise. The noise has direct implications for the possible parameters:
+parameters with high probability density values can easily explain the
+data, while unlikely parameters require the random noise to have had
+uncharacteristically large values for the given measurements
+
+
+# Likelihood-based
+When the likelihood is available, we recommend the use of likelihood-based MCMC algorithms, such as SMMALA and Random Walk Metropolis (RWM). These requires three main steps as described below. The details are described in the [AKAR4](sampleAKAR4.html) (RWM), AKAP79 and [CaMKII](smmala.html) (SMMALA) examples.
+
+**1. Define a prior distribution**
+In UQSA, we have implemented functions to easily create a probability density function (`dCopulaPrior()`, `dNormalPrior()`, `dUniformPrior()`; “d” stands for density) and functions that provide samples from such distributions (`rCopulaPrior()`, `rNormalPrior()`, `rUniformPrior()`; “r” stands for random). The user can also define new R functions with customized prior density functions and corresponding functions to sample from these distributions.
+
+
+**2. Define a likelihood function** 
+To use likelihood-based MCMC methods, the likelihood function must be specified. In UQSA, this can be done using function `loglikelihoodFunc()`. Within the loglikelihood function (for these ODE models) simulated data points are compared to experimental data points taking an error model into account (usually, a normally distributed measurement error is assumed).
+
+
+**3. Run MCMC**
+The likelihood-based MCMC methods available in UQSA are the *Random Walk Metropolis* (RWM) algorithm and *SMMALA*. 
+
+* **RWM**  can be used to sample from essentially any posterior distribution (when the likelihood function is available). This MCMC algorithm is based on proposing a parameter for the next state of the chain by sampling from a multivariate normal distribution; the proposal is then accepted or rejected according to the Metropolis-Hasting acceptance probability. 
+
+
+* **SMMALA** is a more efficient MCMC method, but at a cost: the gradient of the posterior distribution is required. 
+
+There are three main functions that are used to set up and run the MCMC simulation.
+`mcmcInit()`, `mcmcUpdate()`, and `mcmc()`.
+
+## Parallel tempering 
+The likelihood-based methods can also be run in a [parallel tempering](https://en.wikipedia.org/wiki/Parallel_tempering) setting, where several MCMC chains are started at the same time, but at different temperatures (levels of relaxation). More details can be found in the [Multiple chains via MPI](mpi.html) example.
+
+# Likelihood-free (ABC)
+If it is not possible to write an explicit function for the likelihood we can use the ABC approach. Here we also simulate data from the (stochastic) model (for a given parameter vector) and compare this to the experimental data. If the simulated data are “close” (based on some distance measure) to the experimental data (observations), then we consider it “likely” that the observed data have been generated by the model with the given parameters. Otherwise, if the simulated data are “far” from the observations, we consider this “unlikely”, and discard the parameter vector (it will not be part of the posterior sample). We use a sharp threshold to decide if the parameters should be accepted or not.
+
+There are three major steps when running ABC:
+
+**1. Define a prior distribution**
+This is done in the same way as for the likelihood based approch described above.
+
+
+**2. Define an objective function**
+Objective functions for ABC can be defined with `makeObjective()` and `makeObjectiveSSA()`. The former is used with deterministic models[^footnote2], and the latter with stochastic models, where the “Stochastic Simulation Algorithm” is used to simulate from the model (hence, “SSA” in the function name). The objective function: 1. Take a parameter vector as input, 2. Simulate data from the model given this parameter and 3. Return the distance between simulated and observed data.
+
+[^footnote2]: We sometimes use ABC on deterministic models, because it is a robust method. In these cases we add noise to the simulations, as ABC is designed for stochastic models. See this [AKAP79](simAKAP79.html) example.
+
+
+**3. Run MCMC**
+The likelihood-free algorithm that we implemented in UQSA is ABC-MCMC. At each iteration of ABC-MCMC, a parameter is proposed by sampling from a multivariate normal distribution (as in RWM). However, the Metropolis-Hastings acceptance probability cannot be computed, because it depends on the likelihood function. Instead, the simulation approach described before is used (data are simulated and compared with observed data).
+
+This algorithm can be run in UQSA using function `ABCMCMC()`.
+
+## PreCalibration
+Before running the MCMC algorithms with the ABC approach, it is useful to run a precalibration to determine good starting values for the MCMC chains, and obtain further information, such as a crude estimate of the parameter covariances. Precalibration can be performed in UQSA using function `preCalibration()`.
+
+# Mapping between model parameters and MCMC parameters
+The parameters \(\theta\) on which we perform UQ may be a function of some physical parameter \(\rho\), for example, \(\theta = \log(\rho)\). We therefore need a function that maps Markov chain parameters \(\theta\) into the model parameters \(\rho\). We usually call this function “parMap”. This function is required in the input list of some UQSA functions.
+
+For biochemical reaction network models, the internal parameters $\rho$
+are typically quantities like reaction rate coefficients
+$k_{\{f,b\}}$, dissociation constants (equilibrium constants) $K_{D}$,
+Hill exponents $m$, and other parameters that relate to gene expression,
+enzyme-substrate interaction, or other biochemical processes.
+
+

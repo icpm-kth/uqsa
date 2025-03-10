@@ -10,6 +10,56 @@ knitr::opts_chunk$set(eval = FALSE,
 )
 ```
 
+This article explains how to combine SMMALA with the technique of
+parallel tempering used in the previous article: [Sample
+AKAP79](articles/sampleAKAP79.html). AKAP79 is a fairly big
+model. This makes it worthwhile to use SMMALA and also parallel
+tempering which both speed up convergence to the target distribution.
+Here we explain which model properties have influenced our decisions
+and which modifications we made to the model to make the job easier.
+
+UQSA includes a special ODE solver, which calculates a crude estimate
+of the Fisher information $G$ and the gradient of the log-likelihood
+$\nabla_\theta l(\theta;D)$. Both are required in SMMALA. We cannot
+calculate the exact $G$ an dgradient. This lowers the algorithms
+performance compared to the ideal case. But the algorithm remains
+exact.
+
+This special solver is called `uqsa::simfi()` (same interface as the
+solvers in `rgsl`). In the R script shown at the end of this article
+we have included functions that extract the Fisher information and
+gradient from the simulation result. These simulation results are
+always attached to the current position of the Markov chain as
+attributes.
+
+The Fisher information is also linearly transformed by the
+Jacobian of the parameter mapping (the map between the Markov chain
+variable $\theta$ and the model's kinetic parameters $\rho$). We use
+the mapping: $\rho = 10^\theta$.
+
+In addition, it is easier to work with matrices in C, rather than
+data-frames, so we transform all data-sets into equivalent matrices,
+and replace all `NA` values with values that have the same effect as
+`na.rm=TRUE`. missing data values can be replaced by any number,
+missing standard errors are replaced with infinities (a missing value
+has infinite error). The infinite values are disregarded when the
+normalising factors a re computed (i.e.: `1/sqrt(2*pi*sigma^2)`).
+
+If the liklihood function is not derived from a Gaussian, then the
+user has to provide a different set of functions to approximate
+gradient and Fisher information, or use a different solver.
+
+This particular model has a very dense data-set, which we will
+down-sample to fewer points. We do this to reduce memory consumption
+and speed up the process (and to show how one can do such a
+thing). Not much information is lost that way.
+
+The standard errors of the (real) data-sets are very uneven. To make
+the job easier for the sampler, we replace the real standard errors
+with even 5% errors (bigger than the real ones). If we were to try for
+a very big sample (millions of sampled points), we coudl use the real
+errors instead. For a small sample, even errors work better.
+
 # Motivation
 
 Markov chain Monte Carlo scales exponentially with the problem
@@ -39,11 +89,12 @@ Even though the implementation of Parallel Tempering is possible
 without MPI, we now have several experiments to simulate on many
 parallel chains, for AKAP79 this is 20 experiments and e.g. 32
 chains. At this point, it becomes benefitial to do the simulations on
-more than one machine (mine has 16 cores). The _high performance
-computing_ cluster at KTH (Parallel Dator Center, Dardel cluster) has
-128 cores per node. This means that we can simulate 6 chains per node
-and still process all experiments at the same time (using
-`parLapply` or `mclapply`), but also start 24 chains distributed accross 3 nodes.
+more than one machine (mine has 16 cores, which isn't much for a
+problem of this size). The _high performance computing_ cluster at KTH
+(Parallel Dator Center, Dardel cluster) has 128 cores per node. This
+means that we can simulate 6 chains per node and still process all
+experiments at the same time (using `parLapply` or `mclapply`), but
+also start 24 chains distributed accross 3 nodes.
 
 The distribution requires message passing between nodes, for this
 prupose we use [pbdMPI](https://cran.r-project.org/package=pbdMPI)
@@ -53,7 +104,7 @@ below instructions may not work for everyone.
 
 # AKAP79
 
-MPI has several mechanisms to launch worker processes, one ow which is
+MPI has several mechanisms to launch worker processes, one of which is
 the `spawn` method (`MPI_Comm_spawn`). We don't use this here.
 
 Instead we launch an Rscript via `mpirun` (and the `send` and
@@ -71,7 +122,7 @@ Locally (on your machine) you can test the MPI script using the
 ```{sh, eval=FALSE, label="mpirun"}
 # find number of cores on GNU/linux
 N = $(( `grep -c processor /proc/cpuinfo` )) # or just type the right number
-mpirun -H localhost:$N -N $N ./AKAP79.R 5000
+mpirun -H localhost:$N -N $N ./pt-smmala-akap79.R 5000
 ```
 
 For this to work, `AKAP79.R` starts with the line:
@@ -82,8 +133,6 @@ For this to work, `AKAP79.R` starts with the line:
 ## The above has to be the first line.
 ## Nothing may be written before that.
 [...]
-
-R code follows below
 ```
 
 So, Rscript will be found and used to process the rest.
@@ -91,11 +140,12 @@ So, Rscript will be found and used to process the rest.
 If you want to call `Rscript` explicitly, then:
 
 ```{sh, eval=FALSE, label="Rscript"}
-mpirun -H localhost:$N -N $N Rscript ./AKAP79.R 5000
+mpirun -H localhost:$N -N $N Rscript ./pt-smmala-akap79.R 5000
 ```
 
 On the cluster the `-H` option is not necessary, because a queue
-system like slurm will determine which machines to use.
+system like slurm will determine which machines to use. The program
+`mpirun` may have a different name on a cluster (e.g. `srun`).
 
 The argument `5000` (the sample size) is passed to
 the R program `AKAP79.R`, it's not an `mpirun` option.
@@ -108,7 +158,7 @@ node.
 If you have 16 cores:
 
 ```
-mpirun -H localhost:$16 -N 16 Rscript ./AKAP79.R 5000
+mpirun -H localhost:$16 -N 16 Rscript ./pt-smmala-akap79.R 5000
 ```
 
 In this example, we use the MPI chains for parallel chains on
@@ -118,17 +168,14 @@ way.
 
 # MPI Script Template
 
-This is an example that will sample a model using the Metropolis
+This is an example that will sample a model using the SMMALA
 algorithm, using [`pbdMPI`](https://cran.r-project.org/package=pbdMPI)
 and the parallel tempering technique.
 
-```{r, eval=FALSE, label="mpi-pt-sampling.R"}
+```{r, eval=FALSE, label="pt-smmala-akap79.R"}
 #!/usr/bin/env Rscript
-
 library(rgsl)
-library(SBtabVFGEN)
 library(uqsa)
-library(parallel)
 library(pbdMPI)
 
 start_time <- Sys.time()
@@ -136,98 +183,146 @@ comm  <- 0
 pbdMPI::init()
 r <- pbdMPI::comm.rank(comm=comm)
 cs <- pbdMPI::comm.size(comm=comm)
-
 attr(comm,"rank") <- r
 attr(comm,"size") <- cs
-N <- 10000                 # default sample size
-h <- 1e-2                  # step size
-
 beta <- (1.0 - (r/cs))^2   # PT: inverse temperature
 
-## ----label="SBtab content"----------------------------------------------------
-
-modelFiles <- dir("..",pattern="[.]tsv$",full.names=TRUE)
-sb <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
-
-modelName <- checkModel(comment(sb),sprintf("./%s_gvc.c",comment(sb)))
-
-## ----ConservationLaws----------------------------------------------------------
-if (file.exists("../ConservationLaws.RDS")){
-	ConLaw <- readRDS("../ConservationLaws.RData")
+a <- commandArgs(trailingOnly=TRUE)
+if (length(a)>0){
+      N <- as.integer(a[1])
 } else {
-	ConLaw <- NULL
-}
-experiments <- sbtab.data(sb,ConLaw)
-
-## ----default------------------------------------------------------------------
-n <- length(experiments[[1]]$input)
-if (n>0){
-	parMCMC <- log10(head(model$par(),-n))
-} else {
-	parMCMC <- log10(model$par())
+      N <- 50000           # default sample size
 }
 
-## ----range--------------------------------------------------------------------
-stdv <- head(sb$Parameter[["!Std"]],length(parMCMC))
-if (is.null(stdv) || any(is.na(stdv))){ # some alternative default value
-	stdv <- parMCMC*0.05 + max(parMCMC)*0.05 + 1e-2
-}
-dprior <- dNormalPrior(mean=parMCMC,sd=stdv)
-rprior <- rNormalPrior(mean=parMCMC,sd=stdv)
+h <- 0.01                  # step size
+modelName <- "AKAP79"
+comment(modelName) <- "./AKAP79.so"
+sb <- readRDS(file="AKAP79-sb.RDS")
+ex <- readRDS(file="AKAP79-ex.RDS")
 
+## In the C backend of simfi, we calculate the Fisher information
+## and log-likelihood gradient for Gaussian liklihoods.
+## For this to work at all, we convert the data-frames to simple matrices.
+## The names 'time', 'data', and 'stdv' have a highest precedence in the solver code.
+
+for (i in seq_along(ex)){
+	t_ <- ex[[i]]$outputTimes
+	nt <- length(t_)
+	BY <- 10 # take every BYth point
+	D <- t(ex[[i]]$outputValues)
+	D[is.na(D)] <- 0.0
+	SD <- D*0.05+apply(D,1,FUN=max,na.rm=TRUE)*0.05  #t(ex[[i]]$errorValues)
+	SD[is.na(SD)] <- Inf
+	ex[[i]]$time <- t_[seq(1,nt,by=BY)]              # The solvers behind
+	ex[[i]]$data <- D[,seq(1,nt,by=BY),drop=FALSE]   # simfi() will use these
+	ex[[i]]$stdv <- SD[,seq(1,nt,by=BY),drop=FALSE]  # instead of outputValues
+}
+
+parMCMC <- log10(sb$Parameter[["!DefaultValue"]])
+stopifnot("!Max" %in% names(sb$Parameter))
+stopifnot("!Min" %in% names(sb$Parameter))
+mu <- 0.5*(log10(sb$Parameter[["!Max"]])+log10(sb$Parameter[["!Min"]]))
+stdv <- 0.5*(log10(sb$Parameter[["!Max"]])-log10(sb$Parameter[["!Min"]]))
+stopifnot(length(mu)==length(stdv))
+stopifnot(length(parMCMC)==length(mu))
+
+dprior <- dNormalPrior(mean=mu,sd=stdv)
+rprior <- rNormalPrior(mean=mu,sd=stdv)
+
+gprior <- \(p) {return(-1.0*(p-parMCMC)/stdv^2)}
 ## ----simulate-----------------------------------------------------------------
-sim <- simulator.c(experiments,modelName,log10ParMap)
+sim <- simfi(ex,modelName,log10ParMap) # or simulator.c
 
-y <- sim(parMCMC) ## little test
-stopifnot(is.list(y) && length(y)==length(experiments))
-stopifnot(all(c("state","func") %in% names(y[[1]])))
-
-## ----likelihood---------------------------------------------------------------
-logLH <- function(y,h,stdv,name){
-	n <- sum(!is.na(stdv))
-	llf_const <- sum(log(stdv),na.rm=TRUE) + 0.5*log(2*pi)*n
-	llf_sq <- 0.5*sum(((y - h)/stdv)^2,na.rm=TRUE)
-	return(-llf_const-llf_sq)
+## log-likelihood
+llf <- function(parMCMC){
+	i <- seq_along(parMCMC)
+	J <- log10ParMapJac(parMCMC)
+	return(Reduce(\(a,b) a + b$logLikelihood[1], attr(parMCMC,"simulations"), init = 0.0))
 }
 
-llf <- logLikelihoodFunc(experiments,simpleUserLLF=logLH)
+## gradient of the log-likelihood
+gllf <- function(parMCMC){
+	i <- seq_along(parMCMC)
+	J <- log10ParMapJac(parMCMC)
+	return(as.numeric(Reduce(\(a,b) a + b$gradLogLikelihood[i,1], attr(parMCMC,"simulations"), init = 0.0) %*% J))
+}
+
+## Fisher Information
+fi <- function(parMCMC){
+	i <- seq_along(parMCMC)
+	J <- log10ParMapJac(parMCMC)
+	return(t(J) %*% Reduce(\(a,b) a + b$FisherInformation[i,i,1], attr(parMCMC,"simulations"), init = 0.0) %*% J)
+}
 
 ## ----update-------------------------------------------------------------------
-metropolis <- mcmcUpdate(simulate=sim,
-	experiments=experiments,
-	model=model,
-	logLikelihood=llf,
-	dprior=dprior)
-
-## ----init---------------------------------------------------------------------
-ptMetropolis <- mcmc_mpi(metropolis,comm=comm,swapDelay=0,swapFunc=pbdMPI_bcast_reduce_temperatures)
-## ----sample-------------------------------------------------------------------
-x <- mcmcInit(
-	beta,
-	parMCMC,
+smmala <- mcmcUpdate(
 	simulate=sim,
+	experiments=ex,
 	logLikelihood=llf,
-	dprior)
-s <- ptMetropolis(x,N,h) # the main amount of work is done here
-saveRDS(s,file=sprintf("sample-rank-%i.RDS",r))
+	dprior=dprior,
+	gradLogLikelihood=gllf,
+	gprior,
+	fisherInformation=fi,
+	fisherInformationPrior=diag(1.0/stdv^2)
+)
 
-# ---- when all are done, we load the sampled points from the files but only for the right temperature:
-pbdMPI::barrier()
-f <- dir(pattern=sprintf('sample-rank-.*RDS$'))
-stopifnot(length(f) == cs)                                          # MPI comm size
-X <- uqsa::gatherSample(f,beta,size=N/2)
+## ----mcmc-method--------------------------------------------------------------
+MC <- mcmc(smmala)
+ptSMMALA <- mcmc_mpi(smmala,comm=comm,swapDelay=0,swapFunc=pbdMPI_bcast_reduce_temperatures)
+## ----init---------------------------------------------------------------------
+	x <- mcmcInit(
+		beta,
+		parMCMC,
+		simulate=sim,
+		logLikelihood=llf,
+		dprior,
+		gllf,
+		gprior,
+		fi
+	)
 
-Copula <- fitCopula(X)
-dprior <- dCopulaPrior(Copula)
-rprior <- rCopulaPrior(Copula)
-parMCMC <- as.numeric(tail(X,1))
-attr(Copula,"beta") <- beta
-attr(X,"beta") <- beta
+## beta,parMCMC,simulate,logLikelihood,dprior,gradLogLikelihood=NULL,gprior=NULL,fisherInformation=NULL
+A <- function(a) { # step-size adjuster
+    return(0.5 + a^4/(0.25^4 + a^4))
+}
 
-saveRDS(Copula,file=sprintf("Copula-for-beta-%i-l10b-%i.RDS",r,round(100*log10(beta))))
-saveRDS(X,file="parameter-sample-for-beta-%i-l10b-%i.RDS",r,round(100*log10(beta)))
+## ----converge-and-adapt-------------------------------------------------------
+if (r==0){
+	cat(sprintf("%10s  %12s %16s %16s\n","rank","iteration","acceptance","step size"))
+	cat(sprintf("%10s  %12s %16s %16s\n","----","---------","----------","---------"))
+}
 
+for (j in seq(2)){
+	for (i in seq(6)){
+		s <- MC(x,100,h)           # evaluate rate of acceptance
+		a <- attr(s,"acceptanceRate")
+		h <- h*A(a)                # adjust h up or down
+		x <- attr(s,"lastPoint")   # start next iteration from last point
+		cat(sprintf("%10i  %12i %16.4f %16.4g\n",r,i,a,h)) # cat(sprintf("rank: %02i; iteration: %02i; a: %f; h: %g\n",r,i,a,h))
+	}
+	pbdMPI::barrier()
+	## ---- here, the sampling happens
+	s <- ptSMMALA(x,N,h) # the main amount of work is done here
+	saveRDS(s,file=sprintf("AKAP79-pt-smmala-sample-%i-rank-%i.RDS",j,r))
+	## ---- when all are done, we load the sampled points from the files but only for the right temperature:
+	pbdMPI::barrier()
+	f <- dir(pattern=sprintf("^AKAP79-pt-smmala-sample-%i-rank-.*RDS$",j))
+	X <- uqsa::gatherSample(f,beta)
+	saveRDS(X,file=sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.RDS",j,r))
+	x <- mcmcInit(
+		beta,
+		as.numeric(tail(X,1)), # last row
+		simulate=sim,
+		logLikelihood=llf,
+		dprior,
+		gllf,
+		gprior,
+		fi
+	)
+}
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)
+
+cat(sprintf("rank %02i of %02i finished with an acceptance rate of %f and swap rate of %f.\n",round(r),round(cs),attr(s,"acceptanceRate"),attr(s,"swapRate")))
 finalize()
 ```
