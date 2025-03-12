@@ -412,7 +412,7 @@ void check_status(
 	double tf=target_t;
 	switch (status){
 	case TIME_LIMIT_ERROR:
-		error("[%s] time limit (%s seconds) reached on time point %i (%g/%g)\n",__func__,ODE_TIME_LIMIT_SECONDS,j,t,tf);
+		error("[%s] time limit (%i seconds) reached on time point %i (%g/%g)\n",__func__,ODE_TIME_LIMIT_SECONDS,j,t,tf);
 		break;
 	case GSL_EMAXITER:
 		error("[%s] time_point %i: maximum number of steps reached.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);

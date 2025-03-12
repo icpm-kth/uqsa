@@ -24,4 +24,6 @@ concentrations and rate coefficients.
 The model is interpreted by \code{stochasticModel()}, parameters found
 in reaction kinetics are converted to stochastic parameters.
 Input parameters are not converted.
+
+The default system size is 1 femtolitre.
 }
