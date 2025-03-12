@@ -215,6 +215,8 @@ reactionEffect <- function(sm){
 #' in reaction kinetics are converted to stochastic parameters.
 #' Input parameters are not converted.
 #'
+#' The default system size is 1 femtolitre.
+#'
 #' @param sb SBtab list of data-frames, as returned by
 #'     SBtabVFGEN::sbtab_from_*() functions
 #' @param LV Avogadro's Constant * volume [in litres]
@@ -246,54 +248,54 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	)
 	FuncDefinitions <- c(
 	"\t/* forward parameters */",
-	sprintf("\tdouble %s = %g * c[_%s]; // per second",names(sm$cvf),sm$cvf,names(sm$cvf)),
+	sprintf("\tdouble %s = c[_%s];",names(sm$cvf),names(sm$cvf)),
 	"\t/* backward parameters */",
-	sprintf("\tdouble %s = %g * c[_%s]; // per second",names(sm$cvb),sm$cvb,names(sm$cvb)),
+	sprintf("\tdouble %s = c[_%s];",names(sm$cvb),names(sm$cvb)),
 	"\t/* parameters that do not appear in kinetric laws */",
-	sprintf("\tdouble %s = %g * c[_%s]; // per second",names(sm$scv),sm$scv,names(sm$scv)),
+	sprintf("\tdouble %s = c[_%s];",names(sm$scv),names(sm$scv)),
 	"\t/*state variables */",
 	sprintf("\tdouble %s = x[_%s]/%g; /* %s */",rownames(sb$Compound),rownames(sb$Compound),ccc(sb,LV),sb$Compound[["!Unit"]]),
 	sprintf("\tdouble %s = %s;",rownames(sb$Expression),sb$Expression[["!Formula"]])
 	)
-
 	C <- c(
 	"#include <stdlib.h>",
-	"#include <math.h>",
+	"#include <math.h>","",
 	paste0("enum state {",paste0("_",rownames(sb$Compound),collapse=", "),", numStateVariables};"),
 	paste0("enum parameter {",paste0("_",names(k),collapse=", "),", numParameters};"),
 	paste0("enum reaction {",paste0("_",rownames(sb$Reaction),"_fwd",collapse=", "),", ",paste0("_",rownames(sb$Reaction),"_bwd",collapse=", "),", numReactions};"),
 	paste0("enum outputFunctions {",paste0("_",rownames(sb$Output),collapse=", "),", numFunctions};"),
+	"",
 	"int model_effects(double t, int *x, int j){",
 	sprintf("\tif (!x) return numStateVariables;"),
 	sprintf("\tswitch(j){"),
 	reactionEffect(sm),
 	"\t}",
 	"\treturn 0;",
-	"}",
+	"}","",
 	"int model_propensities(double t, int *x, double *c, double *a){",
 	"\tif (!x || !a) return numReactions;",
 	sprintf("\tdouble %s = %s;",rownames(sb$Constant),sb$Constant[["!Value"]]),
 	Definitions,
-	unlist(mapply(\(x,n) {sprintf("\ta[_%s_fwd] = %s;",n,x)},RC[,1],rownames(sb$Reaction))),
-	unlist(mapply(\(x,n) {sprintf("\ta[_%s_bwd] = %s;",n,x)},RC[,2],rownames(sb$Reaction))),
+	unlist(mapply(\(x,n,rf) {sprintf("\ta[_%s_fwd] = %s; /* %s */",n,x,rf)},RC[,1],rownames(sb$Reaction),sub("<=>","->",sb$Reaction[["!ReactionFormula"]],fixed=TRUE))),
+	unlist(mapply(\(x,n,rf) {sprintf("\ta[_%s_bwd] = %s; /* %s */",n,x,rf)},RC[,2],rownames(sb$Reaction),sub("<=>","->",sb$Reaction[["!ReactionFormula"]],fixed=TRUE))),
 	"\treturn 0;",
-	"}",
+	"}","",
 	"int model_reaction_coefficients(double *c){",
 	"\tif (!c) return numParameters;",
 	sprintf("\tc[_%s] = %s;",names(k),k),
 	"\treturn 0;",
-	"}",
+	"}","",
 	"int model_initial_counts(int *x){",
 	"\tif(!x) return numStateVariables;",
 	sprintf("\tx[_%s] = %i; // %g",names(sm$initialCount),round(sm$initialCount),sm$initialCount),
 	"\treturn 0;",
-	"}",
+	"}","",
 	"int model_func(double t, int *x, double *c, double *func){",
 	"\tif(!func) return numFunctions;",
 	FuncDefinitions,
 	sprintf("\tfunc[_%s] = %s;",rownames(sb$Output),sb$Output[["!Formula"]]),
 	"\treturn 0;",
-	"}",
+	"}","",
 	"int model_particle_count(double t, double *molarity, int *x){",
 	"\tif(!molarity || !x) return numStateVariables;",
 	sprintf("\tx[_%s] = lround(%g * molarity[_%s]);",rownames(sb$Compound),ccc(sb,LV),rownames(sb$Compound)),
@@ -301,4 +303,36 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"}"
 	)
 	return(C)
+}
+
+
+#' Simulate stochastic model
+#'
+#' Simulate a stochastic model generated with
+#' `uqsa::generateGillespieModel()`, using the solver in this package.
+#'
+#' This will simulate all experimental conditions included in the list of experiments, including applying the inputs:
+#' `u <- experiments[[i]]$input` - the input will be copied to the end of the model's internal parameter vector.
+#'
+#' Like for deterministic models, we assume that there is a vector of
+#' unknown parameter (a Markov chain variable, a vector of
+#' optimization variables) and also known parameters (aka the input
+#' parameters). The model itself does not distinguish between the two,
+#' but one is the same between the experiments and one is different
+#' between different experiments: `modelParam <- c(mcmcParam, inputParam)`
+#'
+#' @param model.so compiled C code for the model
+#' @param experiments list of expperiments, same as for the deterministic solvers.
+#' @param parameters a numeric vector of appropriate size
+#' @export
+#' @return simulation result list
+#' @useDynLib uqsa gillespie
+simstoch <- function(model.so, experiments, parameters){
+	if (!file.exists(model.so)) return(NULL)
+	y <- .Call(gillespie, model.so, experiments, parameters)
+	names(y) <- names(experiments)
+	for (i in seq_along(y)){
+		rownames(y[[i]]$state) <- names(experiments[[i]]$initialState)
+	}
+	return(y)
 }
