@@ -2,7 +2,7 @@
 
 This is an R package that performs *parameter estimation*,
 *uncertainty quantification*, and *global sensitivity analysis* using
-Bayesian methods and ABC-MCMC sampling.
+Bayesian methods, MCMC sampling and variance based decomposition methods.
 
 * **Source code:** https://github.com/icpm-kth/uqsa/
 
