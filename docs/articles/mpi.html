@@ -120,11 +120,12 @@
     
     
 <p>This article explains how to combine SMMALA with the technique of
-parallel tempering used in the previous article: <a href="articles/sampleAKAP79.html">Sample AKAP79</a>. AKAP79 is a fairly
-big model. This makes it worthwhile to use SMMALA and also parallel
-tempering which both speed up convergence to the target distribution.
-Here we explain which model properties have influenced our decisions and
-which modifications we made to the model to make the job easier.</p>
+parallel tempering used in the article: <a href="articles/sampleAKAP79.html">Sample AKAP79</a>.</p>
+<p>AKAP79 is a fairly big model. This makes it worthwhile to use SMMALA
+and also parallel tempering which both speed up convergence to the
+target distribution. Here we explain which model properties have
+influenced our decisions and which modifications we made to the model to
+make the job easier.</p>
 <p>UQSA includes a special ODE solver, which calculates a crude estimate
 of the Fisher information <span class="math inline">\(G\)</span> and the
 gradient of the log-likelihood <span class="math inline">\(\nabla_\theta
@@ -168,7 +169,11 @@ instead. For a small sample, even errors work better.</p>
 </h2>
 <p>Markov chain Monte Carlo scales exponentially with the problem size.
 For models with ~50 parameters it already becomes hard to intialize a
-Markov chain with good values: - starting parameters - step size</p>
+Markov chain with good values:</p>
+<ul>
+<li>starting parameters</li>
+<li>step size</li>
+</ul>
 <p>The effect is a slow moving chain, and a sample with high
 auto-correlation.</p>
 <p>To reduce auto-correlation, we suggest the parallel tempering

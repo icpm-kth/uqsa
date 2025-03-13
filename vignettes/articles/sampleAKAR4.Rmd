@@ -1,5 +1,5 @@
 ---
-title: "Uncertainty Quantification on AKAR4 (deterministic)"
+title: "Uncertainty Quantification on AKAR4 (deterministic model)"
 ---
 
 ```{r, include = FALSE}

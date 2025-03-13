@@ -21,7 +21,7 @@ This article provides code do perform global sensitivity analysis with the  Sobo
 Load the SBtab files, create ODE model code and load examples similar to the *simulate the AKAR4 model deterministically* example
 
 ```{r}
-modelFiles  <- uqsa::uqsa_example("AKAR4") 
+modelFiles  <- uqsa::uqsa_example("AKAR4")
 SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
 model  <- SBtabVFGEN::sbtab_to_vfgen(SBtab, cla=FALSE)
 experiments <- SBtabVFGEN::sbtab.data(SBtab)

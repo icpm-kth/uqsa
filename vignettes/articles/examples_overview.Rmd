@@ -9,9 +9,15 @@ knitr::opts_chunk$set(cache = TRUE,
 )
 ```
 
-We here provide some examples to simulate, calibrate or analyse different models. The calibration (parameter estimation) process includes uncertainty quantification and with analyses we mean global sensitivity analysis (SA). You find more details about the different tools in the accompanying [article](https://doi.org/10.48550/arXiv.2308.05527).
+We here provide some examples to simulate, calibrate or analyse
+different models. The calibration (parameter estimation) process
+includes uncertainty quantification and with analyses we mean global
+sensitivity analysis (SA). You find more details about the different
+tools in the accompanying
+[article](https://doi.org/10.48550/arXiv.2308.05527).
 
-The examples are listed in order of increasing difficulty and run time.
+The examples are listed in order of increasing difficulty and run
+time.
 
 # AKAR4
 These examples can be run on a laptop.
@@ -21,16 +27,19 @@ These examples can be run on a laptop.
 - [UQ of deterministic AKAR4](./sampleAKAR4.html) AKAR4 is calibrated with a likelihood based Metropolis approach.
 - [UQ of stochastic AKAR4](./sampleAKAR4stochastic.html) AKAR4 is calibrated with an Approximate Bayesian Computation (ABC) approach.
 - [SA of AKAR4](./GSA_AKAR4.html) Global sesnitivity analysis is perfomed on the determinitic AKAR4 model using independent prior parameter distributions.
-- [UQ and SA of AKAR4](error.html) First UQ and then SA is performed on the deterministic AKAR4 model.
+- [UQ and SA of AKAR4](./uqsaAKAR4.html) First UQ and then SA is performed on the deterministic AKAR4 model.
 
 # AKAP79
+
 These examples are meant to be run on a compute cluster, but with some patience you can test them on a multi core workstation or laptop.
 
-- [Paralllel chains with MPI](./mpi.html) Describes how to run the packege in parallel.
-- [UQ and SA of AKAP79 deterministic model](./error.html)
+- [Parallel chains with MPI](./mpi.html) Describes how to run the packege in parallel.
+- [UQ and SA of AKAP79 deterministic model](./sampleAKAP79.html)
 - [UQ and SA of AKAP79 stochastic model](./error.html)
 
-
+The Documentation article [Parallel chains with MPI](./mpi.html)
+includes a script that needs to be present as a _file_ to be able to
+execute it with `mpirun`, so the order of these articles is important.
 
 # CAMKII
 

@@ -1,5 +1,5 @@
 ---
-title: "Calibrate the AKAR4 stochastic model (UQ)"
+title: "Uncertainty Quantification of the AKAR4 (stochastic model)"
 ---
 
 ```{r, include = FALSE}
@@ -16,9 +16,12 @@ library(SBtabVFGEN)
 library(GillespieSSA2)
 ```
 
-This article provides code to perform uncertainty quantification (UQ) of a stochastic reaction network model. As an example we use the AKAR4 stochastic model. The UQ method that we use is ABCMCMC.
+This article provides code to perform uncertainty quantification (UQ)
+of a stochastic reaction network model. As an example we use the AKAR4
+stochastic model. The UQ method that we use is ABCMCMC.
 
-For information about the stochastic model, please read the article [Simulate AKAR4 stochastically](simAKAR4stochastic.html).
+For information about the stochastic model, please read the article
+[Simulate AKAR4 stochastically](simAKAR4stochastic.html).
 
 
 # Load the Model

@@ -35,6 +35,8 @@ navbar:
         href: articles/ODE-Model.html
       - text: Simulating a Model
         href: articles/simulate.html
+      - text: Multiple chains via MPI
+        href: articles/mpi.html
       - text: Global Sensitivity Analysis
         href: articles/GSA.html
       - text: Uncertainty Quantification
@@ -61,13 +63,11 @@ navbar:
         - text: GSA on AKAR4
           href: articles/GSA_AKAR4.html
         - text: UQ and SA on AKAR4
-          href: articles/UQSA_AKAR4.html
+          href: articles/uqsaAKAR4.html
         - text: -------
         - text: AKAP79
-        - text: Sample AKAP79
+        - text: UQ on deterministic AKAP79
           href: articles/sampleAKAP79.html
-        - text: Multiple chains via MPI
-          href: articles/mpi.html
         - text: -------
         - text: CaMKII
         - text: Calibrate CaMKII with SMMALA

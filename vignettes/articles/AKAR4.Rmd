@@ -205,7 +205,7 @@ if (require(hadron)){
     tau <- ceiling(ac$tauint+ac$dtauint)
     i <- seq(1,NROW(mcmc$draws),by=tau)
 } else {
-    i <- seq(1,NROW(mcmc$draws),by=100)
+    i <- seq(1,NROW(mcmc$draws),by=2)
 }
 
 if (require(hexbin)){

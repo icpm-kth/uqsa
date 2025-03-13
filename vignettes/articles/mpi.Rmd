@@ -11,12 +11,13 @@ knitr::opts_chunk$set(eval = FALSE,
 ```
 
 This article explains how to combine SMMALA with the technique of
-parallel tempering used in the previous article: [Sample
-AKAP79](articles/sampleAKAP79.html). AKAP79 is a fairly big
-model. This makes it worthwhile to use SMMALA and also parallel
-tempering which both speed up convergence to the target distribution.
-Here we explain which model properties have influenced our decisions
-and which modifications we made to the model to make the job easier.
+parallel tempering used in the article: [Sample AKAP79](articles/sampleAKAP79.html).
+
+AKAP79 is a fairly big model. This makes it worthwhile to use SMMALA
+and also parallel tempering which both speed up convergence to the
+target distribution.  Here we explain which model properties have
+influenced our decisions and which modifications we made to the model
+to make the job easier.
 
 UQSA includes a special ODE solver, which calculates a crude estimate
 of the Fisher information $G$ and the gradient of the log-likelihood
@@ -65,6 +66,7 @@ errors instead. For a small sample, even errors work better.
 Markov chain Monte Carlo scales exponentially with the problem
 size. For models with ~50 parameters it already becomes hard to
 intialize a Markov chain with good values:
+
 - starting parameters
 - step size
 

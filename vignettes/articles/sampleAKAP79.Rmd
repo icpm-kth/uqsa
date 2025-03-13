@@ -1,5 +1,5 @@
 ---
-title: "Sample AKAP79"
+title: "Uncertainty Quantification of AKAP79 (deterministic model)"
 ---
 
 ```{r, include = FALSE}
@@ -14,15 +14,28 @@ library(uqsa)
 ```
 
 To take a sufficiently large sample of AKAP79, we shall use MPI and
-parallel tempering. There are several ways to launch MPI processes (e.g. spawn processes).
+parallel tempering. There are several ways to launch MPI processes
+(e.g. spawn processes).  We will use the simplest form: launch all MPI
+workers right from the start, using `mpirun -N 8` (or similar) and
+have all processes communicate on `MPI_COMM_WORLD`, this requires very
+minimal MPI code in R.  This approach doesn't allow us to adapt the
+number of temperatures, which is probably not optimal but makes it
+easier to write and understand the code and increases
+performance significantly compared to a sequential Markov chain.
 
-We will use the simplest form: launch all MPI workers right from the
-start, using `mpirun -N 8` (or similar) and have all processes
-communicate on `MPI_COMM_WORLD`, this requires very minimal MPI code in R.
+The R code we are going to execute is not a code
+block on this page that we run in an interactive R session. Instead,
+it has to be a file that we pass on to `mpirun`.
+
+In this article we show the results of a parallel tempering SMMALA
+(simplified manifold Metropolis adjusted Langevin algorithm) run. The
+article titled [Parallel chains with MPI](articles/mpi.html) explains
+how to prepare the R-script for mpirun execution -- it includes the
+listing of the script we used in this article.
 
 # Create C Source Code
 
-First we load the model in its SBtab form and create all derived
+First we load the model in its SBtab form and create all derived model
 files. We do this step only once and have the MPI part of the process
 load the coimpleted results of this:
 
