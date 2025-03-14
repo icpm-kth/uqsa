@@ -181,7 +181,11 @@ makeGillespieModel <- function(sb,LV=6.02214076e+8){
 	convFactorBwd <- parameterConversion(k[names(pr$bwd)], u[names(pr$bwd)], cr[pr$bwd], LV)
 	l <- !(names(k) %in% names(convFactorFwd) | names(k) %in% names(convFactorBwd))
 	scv <- simpleConversion(k[l],u[l],LV)
-	return(list(left=cl,right=cr,cvf=convFactorFwd,cvb=convFactorBwd,scv=scv,initialCount=initialCount(sb,LV),par=k))
+	cUnit <- sb$Compound[["!Unit"]]
+	names(cUnit) <- rownames(sb$Compound)
+	parUnit <- sb$Parameter[["!Unit"]]
+	names(parUnit) <- rownames(sb$Parameter)
+	return(list(left=cl,right=cr,cvf=convFactorFwd,cvb=convFactorBwd,scv=scv,initialCount=initialCount(sb,LV),par=k,compoundUnit=cUnit, parameterUnit=parUnit))
 }
 
 reactionEffect <- function(sm){
@@ -236,6 +240,8 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	k <- sm$par
 
 	Definitions <- c(
+	"\t/* constants */",
+	sprintf("\t double %s = %s; /* %s */",rownames(sb$Constant),sb$Constant[["!Value"]],sb$Constant[["!Unit"]]),
 	"\t/* forward parameters */",
 	sprintf("\tdouble %s = %g * c[_%s]; // per second",names(sm$cvf),sm$cvf,names(sm$cvf)),
 	"\t/* backward parameters */",
@@ -247,6 +253,8 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	sprintf("\tdouble %s = %s;",rownames(sb$Expression),sb$Expression[["!Formula"]])
 	)
 	FuncDefinitions <- c(
+	"\t/* constants */",
+	sprintf("\t double %s = %s; /* %s */",rownames(sb$Constant),sb$Constant[["!Value"]],sb$Constant[["!Unit"]]),
 	"\t/* forward parameters */",
 	sprintf("\tdouble %s = c[_%s];",names(sm$cvf),names(sm$cvf)),
 	"\t/* backward parameters */",
@@ -254,12 +262,27 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"\t/* parameters that do not appear in kinetric laws */",
 	sprintf("\tdouble %s = c[_%s];",names(sm$scv),names(sm$scv)),
 	"\t/*state variables */",
-	sprintf("\tdouble %s = x[_%s]/%g; /* %s */",rownames(sb$Compound),rownames(sb$Compound),ccc(sb,LV),sb$Compound[["!Unit"]]),
+	sprintf("\tdouble %s = x[_%s]/%g; /* %s */",names(sm$initialCount),names(sm$initialCount),ccc(sb,LV),sm$compoundUnit),
 	sprintf("\tdouble %s = %s;",rownames(sb$Expression),sb$Expression[["!Formula"]])
 	)
 	C <- c(
 	"#include <stdlib.h>",
 	"#include <math.h>","",
+	"/* System's volume at creation time: */",
+	sprintf("#define sys_volume %g",LV/6.02214076E23),
+	"/* Product of Avogadro's number L (6.02214076E23) and volume V: */",
+	sprintf("#define LV %g",LV),
+	"/* This model was created from an SBtab file,         */",
+	"/* which always describes a systems biology model of  */",
+	"/* concentrations and kinetic laws. This code         */",
+	"/* re-interprets it as particle counts and stochastic */",
+	"/* reaction propensities. This interpretation may be  */",
+	"/*       >>INCORRECT<<       ... as it is automatic.  */",
+	"/* The plan is to use the kinetic law literally,      */",
+	"/* as specified in the SBtab file, but to convert the */",
+	"/* rate coefficients.                                 */",
+	"/* We also convert initial values to particle counts. */","",
+	"/* these enums make it possible to address vector elements by name, and automatically creates lengths for these vectors*/",
 	paste0("enum state {",paste0("_",rownames(sb$Compound),collapse=", "),", numStateVariables};"),
 	paste0("enum parameter {",paste0("_",names(k),collapse=", "),", numParameters};"),
 	paste0("enum reaction {",paste0("_",rownames(sb$Reaction),"_fwd",collapse=", "),", ",paste0("_",rownames(sb$Reaction),"_bwd",collapse=", "),", numReactions};"),
@@ -272,30 +295,44 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"\t}",
 	"\treturn 0;",
 	"}","",
+	"/* Here, we want to use the kinetic law literally, with no variable substitutions.*/",
+	"/* So, 'k*A*B' will be used as written, but the stochastic propensity is c*A*B    */",
+	"/* where c is different from k in value and unit. We pre-calculate c/k.           */",
+	"/* We convert k to have the right value (and unit, implicitly)                    */",
+	"/* and use the converted value under the name k directly so as not to change the  */",
+	"/* rate. This may look misleading to the reader compared to a stochastic model    */",
+	"/* made from scratch.                                                             */",
 	"int model_propensities(double t, int *x, double *c, double *a){",
 	"\tif (!x || !a) return numReactions;",
-	sprintf("\tdouble %s = %s;",rownames(sb$Constant),sb$Constant[["!Value"]]),
 	Definitions,
 	unlist(mapply(\(x,n,rf) {sprintf("\ta[_%s_fwd] = %s; /* %s */",n,x,rf)},RC[,1],rownames(sb$Reaction),sub("<=>","->",sb$Reaction[["!ReactionFormula"]],fixed=TRUE))),
-	unlist(mapply(\(x,n,rf) {sprintf("\ta[_%s_bwd] = %s; /* %s */",n,x,rf)},RC[,2],rownames(sb$Reaction),sub("<=>","->",sb$Reaction[["!ReactionFormula"]],fixed=TRUE))),
+	unlist(mapply(\(x,n,rf) {sprintf("\ta[_%s_bwd] = %s; /* %s */",n,x,rf)},RC[,2],rownames(sb$Reaction),sub("<=>","<-",sb$Reaction[["!ReactionFormula"]],fixed=TRUE))),
 	"\treturn 0;",
 	"}","",
+	"/* usually, these are stochastic propensity coefficients,                                      */",
+	"/* but we derive our model from a concentration based kinetic form.                            */",
+	"/* So, these are not directly usable, but we'll write the propensities with conversion factors */",
 	"int model_reaction_coefficients(double *c){",
 	"\tif (!c) return numParameters;",
-	sprintf("\tc[_%s] = %s;",names(k),k),
+	sprintf("\tc[_%s] = %s; /* %s */",names(k),k,sm$parameterUnit),
 	"\treturn 0;",
 	"}","",
 	"int model_initial_counts(int *x){",
 	"\tif(!x) return numStateVariables;",
-	sprintf("\tx[_%s] = %i; // %g",names(sm$initialCount),round(sm$initialCount),sm$initialCount),
+	sprintf("\tx[_%s] = %i; /* %g */",names(sm$initialCount),round(sm$initialCount),sm$initialCount),
 	"\treturn 0;",
 	"}","",
+	"/* This function will try to convert the model's state to concentrations */",
+	"/* We assume that the model was originally phrased as concentrations and kinetic laws. */",
 	"int model_func(double t, int *x, double *c, double *func){",
 	"\tif(!func) return numFunctions;",
 	FuncDefinitions,
 	sprintf("\tfunc[_%s] = %s;",rownames(sb$Output),sb$Output[["!Formula"]]),
 	"\treturn 0;",
 	"}","",
+	"/* The list of experiments we'll receive from R will cointain */",
+	"/* initial concentrations rather than particle counts.        */",
+	"/* We need to convert them.                                   */",
 	"int model_particle_count(double t, double *molarity, int *x){",
 	"\tif(!molarity || !x) return numStateVariables;",
 	sprintf("\tx[_%s] = lround(%g * molarity[_%s]);",rownames(sb$Compound),ccc(sb,LV),rownames(sb$Compound)),
@@ -321,13 +358,13 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 #' but one is the same between the experiments and one is different
 #' between different experiments: `modelParam <- c(mcmcParam, inputParam)`
 #'
-#' @param model.so compiled C code for the model
 #' @param experiments list of expperiments, same as for the deterministic solvers.
+#' @param model.so compiled C code for the model, this has to be a path with at least one slash in it, e.g.: ./model.so
 #' @param parameters a numeric vector of appropriate size
 #' @export
 #' @return simulation result list
 #' @useDynLib uqsa gillespie
-simstoch <- function(model.so, experiments, parMap=identity){
+simstoch <- function(experiments, model.so, parMap=identity){
 	if (!file.exists(model.so)) {
 		warning(sprintf("model.so «%s» not found.",model.so))
 		return(NULL)
@@ -336,6 +373,7 @@ simstoch <- function(model.so, experiments, parMap=identity){
 		if ("input" %in% names(experiments)){
 			cat(sprintf("Experiment %i, input has length: %i\n",i,length(experiments[[i]]$input)))
 		} else {
+			warning("experiments have no input parameters, defaults to numeric(0).")
 			experiments[[i]]$input <- numeric(0)
 		}
 	}

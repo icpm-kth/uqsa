@@ -18,27 +18,38 @@ int (*model_initial_counts)(int *x);
 int (*model_func)(double t, int *x, double *c, double *f);
 int (*model_particle_count)(double t, double *molarity, int *x);
 
-void load_model(const char *model_so){
+void* load_model(const char *model_so){
 	void *lib=dlopen(model_so,RTLD_LAZY);
-	if (!lib) abort();
-	if ((model_effects=dlsym(lib,"model_effects"))==NULL){
-		fprintf(stderr,"[%s] loading model_effects has failed.\n",__func__);
+	char *model_so_2=NULL;
+	if (!lib) {
+		fprintf(stderr,"[%s] %s.\n",__func__,dlerror());
+		model_so_2 = malloc(strlen(model_so)+3);
+		stpcpy(stpcpy(model_so_2,"./"),model_so);
+		fprintf(stderr,"[%s] retrying with: «%s»\n",__func__,model_so_2);
+		lib = dlopen(model_so_2,RTLD_LAZY);
 	}
-	if ((model_propensities=dlsym(lib,"model_propensities"))==NULL){
-		fprintf(stderr,"[%s] loading model_propensities has failed.\n",__func__);
+	if (lib){
+		if ((model_effects=dlsym(lib,"model_effects"))==NULL){
+			fprintf(stderr,"[%s] loading model_effects has failed.\n",__func__);
+		}
+		if ((model_propensities=dlsym(lib,"model_propensities"))==NULL){
+			fprintf(stderr,"[%s] loading model_propensities has failed.\n",__func__);
+		}
+		if ((model_reaction_coefficients=dlsym(lib,"model_reaction_coefficients"))==NULL){
+			fprintf(stderr,"[%s] loading model_reaction_coefficients has failed.\n",__func__);
+		}
+		if ((model_initial_counts=dlsym(lib,"model_initial_counts"))==NULL){
+			fprintf(stderr,"[%s] loading model_initial_counts has failed.\n",__func__);
+		}
+		if ((model_func=dlsym(lib,"model_func"))==NULL){
+			fprintf(stderr,"[%s] loading model_func has failed.\n",__func__);
+		}
+		if ((model_particle_count=dlsym(lib,"model_particle_count"))==NULL){
+			fprintf(stderr,"[%s] loading model_particle_count has failed.\n",__func__);
+		}
 	}
-	if ((model_reaction_coefficients=dlsym(lib,"model_reaction_coefficients"))==NULL){
-		fprintf(stderr,"[%s] loading model_reaction_coefficients has failed.\n",__func__);
-	}
-	if ((model_initial_counts=dlsym(lib,"model_initial_counts"))==NULL){
-		fprintf(stderr,"[%s] loading model_initial_counts has failed.\n",__func__);
-	}
-	if ((model_func=dlsym(lib,"model_func"))==NULL){
-		fprintf(stderr,"[%s] loading model_func has failed.\n",__func__);
-	}
-	if ((model_particle_count=dlsym(lib,"model_particle_count"))==NULL){
-		fprintf(stderr,"[%s] loading model_particle_count has failed.\n",__func__);
-	}
+	if (model_so_2) free(model_so_2);
+	return lib;
 }
 
 int pick_reaction(gsl_vector *a, double r_sum_a){
@@ -87,7 +98,9 @@ void set_names(Rdata list, const char *names[]);
 Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 	gsl_set_error_handler_off();
 	int i,j;
-	load_model(CHAR(STRING_ELT(model_so,0)));
+	void *handle = load_model(CHAR(STRING_ELT(model_so,0)));
+	if (!handle) return R_NilValue;
+
 	size_t n = model_initial_counts(NULL);
 	size_t m = model_reaction_coefficients(NULL);
 	size_t na = model_propensities(0,NULL,NULL,NULL);
@@ -121,7 +134,9 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 		time = from_list(E,"outputTimes");
 		input = from_list(E,"input");
 		memcpy(c->data,REAL(AS_NUMERIC(parameters)),sizeof(double)*length(parameters));
-		memcpy(c->data+(c->size - length(input)),REAL(AS_NUMERIC(input)),sizeof(double)*length(input));
+		if (input && input != R_NilValue) {
+			memcpy(c->data+(c->size - length(input)),REAL(AS_NUMERIC(input)),sizeof(double)*length(input));
+		}
 		t0 = *REAL(AS_NUMERIC(initialTime));
 		t = t0;
 		yf = PROTECT(NEW_LIST(2));

@@ -11,7 +11,9 @@ simulator.stoch(
   model.tab = model.tab,
   reactions = NULL,
   parMap = identity,
-  outputFunction = identity,
+  outputFunction = function(t, state, param) {
+     state
+ },
   vol = 4e-16,
   unit = 1e-06,
   nStochSim = 3,
