@@ -327,12 +327,26 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 #' @export
 #' @return simulation result list
 #' @useDynLib uqsa gillespie
-simstoch <- function(model.so, experiments, parameters){
-	if (!file.exists(model.so)) return(NULL)
-	y <- .Call(gillespie, model.so, experiments, parameters)
-	names(y) <- names(experiments)
-	for (i in seq_along(y)){
-		rownames(y[[i]]$state) <- names(experiments[[i]]$initialState)
+simstoch <- function(model.so, experiments, parMap=identity){
+	if (!file.exists(model.so)) {
+		warning(sprintf("model.so «%s» not found.",model.so))
+		return(NULL)
 	}
-	return(y)
+	for (i in seq_along(experiments)){
+		if ("input" %in% names(experiments)){
+			cat(sprintf("Experiment %i, input has length: %i\n",i,length(experiments[[i]]$input)))
+		} else {
+			experiments[[i]]$input <- numeric(0)
+		}
+	}
+	return(function(parMCMC){
+		p <- parMap(as.numeric(parMCMC))
+		y <- .Call(gillespie, model.so, experiments, p)
+		names(y) <- names(experiments)
+		for (i in seq_along(y)){
+			rownames(y[[i]]$state) <- names(experiments[[i]]$initialState)
+			rownames(y[[i]]$func) <- names(experiments[[i]]$outputValues)
+		}
+		return(y)
+	})
 }
