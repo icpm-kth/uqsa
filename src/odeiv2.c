@@ -495,9 +495,9 @@ simulate_timeseries(const gsl_odeiv2_system sys, /* the system to integrate */
 		}
 		if (tf>t) status=gsl_odeiv2_driver_apply(driver, &t, tf, y->data);
 		elapsed_sec = sec(clock()-ct0);
-		/*if (elapsed_sec > ODE_TIME_LIMIT_SECONDS){
+		if (elapsed_sec > ODE_TIME_LIMIT_SECONDS){
 			status = TIME_LIMIT_ERROR;
-			}*/
+		}
 		check_status(status,t,tf,j);
 		if(status==GSL_SUCCESS){
 			Yout_row = gsl_matrix_row(Yout,j);
@@ -681,7 +681,7 @@ int sensitivityApproximation(double t0, gsl_vector *t, gsl_vector *p, gsl_matrix
 	gsl_matrix *S_AB=M.S_AB;
 	gsl_permutation *P=M.P;
 	gsl_matrix *FA=M.FA;
-	gsl_matrix_view SY0, SY, SF; /* sensitivity matrices (array-views) */
+	gsl_matrix_view SY, SF; /* sensitivity matrices (array-views) */
 	int sign;
 	const double *y;
 	if (m != Y->size1) fprintf(stderr,"[%s] t has length %i, but Y has %li rows.\n",__func__,m,Y->size1);
@@ -741,7 +741,7 @@ double logLikelihood(Rdata experiment, double *f){
 	Rdata time=from_list(experiment,"time outputTimes");
 	double ll=0;
 	double d,s;
-	int i,j;
+	int i;
 	int nt=length(time);
 	int n=ODE_func(0,NULL,NULL,NULL);
 	double C;
@@ -770,7 +770,7 @@ int gradLogLikelihood(double *gll, Rdata experiment, double *func, double *funcS
 	gsl_vector_view d,s,g,f;
 	gsl_matrix_view Sf;
 	//gsl_vector *v=gsl_vector_alloc(n);
-	int i,j;
+	int j;
 	int status = GSL_SUCCESS;
 	g = gsl_vector_view_array(gll,m);
 	gsl_vector_set_zero(&(g.vector));
@@ -798,13 +798,12 @@ int gradLogLikelihood(double *gll, Rdata experiment, double *func, double *funcS
 /* for solve(Sigma) == diag(sd**(-2))                              */
 /* with Sf_sd[,j] = Sf[,j]/sd -> FisherInf = t(Sf_sd)*Sf_sd        */
 int FisherInformation(double *FI, Rdata experiment, double *funcSens, gsl_matrix *Sf_sd){
-	Rdata data=from_list(experiment,"data measuredData experimentalData");
 	Rdata stdv=from_list(experiment,"stdv standardError standardDeviationOfTheMean");
 	Rdata time=from_list(experiment,"time OutputTimes");
 	int nt=length(time);
 	int n=Sf_sd->size2; //ODE_func(0,NULL,NULL,NULL);
 	int m=Sf_sd->size1;
-	gsl_vector_view d,s,row;
+	gsl_vector_view s,row;
 	gsl_matrix_view Sf,fi;
 	//gsl_matrix *Sf_sd=gsl_matrix_alloc(m,n);
 	int i,j;
@@ -813,7 +812,6 @@ int FisherInformation(double *FI, Rdata experiment, double *funcSens, gsl_matrix
 	fi = gsl_matrix_view_array(FI,m,m);
 	gsl_matrix_set_zero(&(fi.matrix));
 	for (j=0;j<nt;j++){
-		d = gsl_vector_view_array(REAL(data)+(j*n),n);
 		s = gsl_vector_view_array(REAL(stdv)+(j*n),n);
 		Sf = gsl_matrix_view_array(funcSens+(j*n*m),m,n);
 		if (gsl_matrix_memcpy(Sf_sd,&Sf.matrix) != GSL_SUCCESS){
