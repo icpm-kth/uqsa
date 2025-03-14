@@ -44,6 +44,7 @@ tables, but the same documents)."><!-- mathjax --><script src="https://cdnjs.clo
     <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
     <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
+    <a class="dropdown-item" href="../articles/mpi.html">Multiple chains via MPI</a>
     <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
     <a class="dropdown-item" href="../articles/UQ.html">Uncertainty Quantification</a>
     <a class="dropdown-item" href="../articles/sa.html">Sensitivity Analysis</a>
@@ -61,11 +62,10 @@ tables, but the same documents)."><!-- mathjax --><script src="https://cdnjs.clo
     <a class="dropdown-item" href="../articles/sampleAKAR4mpi.html">UQ on deterministic AKAR4 with MPI</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">UQ on stochasic AKAR4</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
-    <a class="dropdown-item" href="../articles/UQSA_AKAR4.html">UQ and SA on AKAR4</a>
+    <a class="dropdown-item" href="../articles/uqsaAKAR4.html">UQ and SA on AKAR4</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>AKAP79</h6>
-    <a class="dropdown-item" href="../articles/sampleAKAP79.html">Sample AKAP79</a>
-    <a class="dropdown-item" href="../articles/mpi.html">Multiple chains via MPI</a>
+    <a class="dropdown-item" href="../articles/sampleAKAP79.html">UQ on deterministic AKAP79</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>CaMKII</h6>
     <a class="dropdown-item" href="../articles/smmala.html">Calibrate CaMKII with SMMALA</a>
@@ -170,8 +170,8 @@ directory).</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [10] "runABCMCMC_AKAP79_withStochasticStimulation.R"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [11] "test.R"                                       </span>
 <span class="r-in"><span><span class="fu">uqsa_example</span><span class="op">(</span><span class="st">"AKAP79"</span>,pat<span class="op">=</span><span class="st">"^run.*R$"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/tmp/RtmpDTRQ9Y/temp_libpath1aeec37ee11bd/uqsa/extdata/AKAP79/runABCMCMC_AKAP79.R"                          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2] "/tmp/RtmpDTRQ9Y/temp_libpath1aeec37ee11bd/uqsa/extdata/AKAP79/runABCMCMC_AKAP79_withStochasticStimulation.R"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/tmp/RtmpTO6kWj/temp_libpath18d7647f89033a/uqsa/extdata/AKAP79/runABCMCMC_AKAP79.R"                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2] "/tmp/RtmpTO6kWj/temp_libpath18d7647f89033a/uqsa/extdata/AKAP79/runABCMCMC_AKAP79_withStochasticStimulation.R"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

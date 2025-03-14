@@ -37,7 +37,7 @@ comment(modelName)
 # In the terminal run the following:
 # ``ode.sh -R --maxima AKAP79.tar.gz > AKAP79.R```
 # (Read article "..." in the documentation)
-system2(command = "ode_uqsa", args = c("-R", "--maxima", "AKAP79.tar.gz"), stdout = "AKAP79.R")
+system2(command = "ode", args = c("-R", "--maxima", "AKAP79.tar.gz"), stdout = "AKAP79.R")
 
 # model related functions, in R, e.g. AKAP79_default() parameters
 source(uqsa_example("AKAP79",pat='^AKAP79[.]R$'))
@@ -56,7 +56,7 @@ print(experiments[[1]]$initialState)
 # pick parameters for simulation
 nInput <- length(experiments[[1]]$input)
 p <- SBtab$Parameter[["!DefaultValue"]]
-par_names <- SBtab$Parameter[["!Name"]]
+par_names <- rownames(SBtab$Parameter)
 names(p) <- par_names
 print(p)
 ```
@@ -68,10 +68,10 @@ scenarios described in experiment `e` (i.e., same initial conditions, same input
 
 ```{r, sim}
 exp_ind <- 9 #index of the experiment to consider
-e <- experiments[[exp_ind]]
+e <- experiments[exp_ind]
 
 # generate a function (s) that simulates a trajectory given a parameter in input
-s <- simulator.stoch(experiment = e, model.tab = SBtab, vol = 4e-16)
+s <- simulator.stoch(experiment = e, model.tab = SBtab, vol = 4e-16, outputFunction = AKAP79_func)
 # vol indicates the volume in m^3 where the reactions take place
 
 # simulate a trajectory (y) given parameter p
@@ -90,7 +90,7 @@ plot(e$outputTimes, e$outputValues$AKAR4pOUT,ylim=c(90,180), ylab="AKAP79",
 lines(e$outputTimes, y$output, col="blue")
 ```
 
-# gg-Plot
+# Simulation Results via `ggplot2`
 
 ```{r, ggplot}
 require(ggplot2)
@@ -98,7 +98,7 @@ require(ggplot2)
 D<-data.frame(time=experiments[[exp_ind]]$outputTime,
               AKAP79=experiments[[exp_ind]]$outputValues$AKAR4pOUT,
               AKAP79ERR=experiments[[exp_ind]]$errorValues$AKAR4pOUT,
-              sim=y$output)
+              sim=y[[1]]$output)
 ggplot(D) +
   geom_linerange(mapping=aes(x=time,y=AKAP79,ymin=AKAP79-AKAP79ERR,ymax=AKAP79+AKAP79ERR),na.rm=TRUE) +
   geom_point(mapping=aes(x=time,y=AKAP79),na.rm=TRUE) +

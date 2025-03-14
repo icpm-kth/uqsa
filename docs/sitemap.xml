@@ -34,6 +34,9 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/SBtab.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/UQ.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/ABC_sampling.html</loc>
   </url>
   <url>
@@ -101,6 +104,15 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/sa.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/sampleAKAP79.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/sampleAKAR4.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/sampleAKAR4mpi.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/sampleAKAR4stochastic.html</loc>
@@ -232,6 +244,9 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/uqsa.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/uqsaAKAR4.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/user_model.html</loc>
   </url>
   <url>
@@ -247,7 +262,13 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/ABCMCMC.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/GillespieModelList.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/Rmpi_swap_temperatures.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/ccc.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/change_temperature.html</loc>
@@ -301,6 +322,9 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/generateCodeFromFile.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/generateGillespieCode.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/generateRCode.html</loc>
   </url>
   <url>
@@ -308,6 +332,9 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/getMCMCPar.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/ggplotDoseResponse.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/ggplotTimeSeries.html</loc>
@@ -332,6 +359,9 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/grapes-otherwise-grapes.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/gsl_odeiv2_fi.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/importReactionsSSA.html</loc>
@@ -412,10 +442,19 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/observable.mean.in.bin.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/onlyCoefficients.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/onlyNames.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/parUpdate.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/parameter.from.kinetic.law.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/parameterConversion.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/parameters_from_expressions_func.html</loc>
@@ -440,6 +479,9 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/plotTimeSeries.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/plotTimeSeriesBase.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/preCalibration.html</loc>
@@ -487,6 +529,18 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/simcf.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/simfi.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/simfiGaussianFILL.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/simfiGaussianGradLogLikelihood.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/simfiGaussianLogLikelihood.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/simulateAndComputeDistance.html</loc>
   </url>
   <url>
@@ -503,6 +557,9 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/smmala_move_density.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/stoichiometry.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/sum.of.bin.variance.html</loc>

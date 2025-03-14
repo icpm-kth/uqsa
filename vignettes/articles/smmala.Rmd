@@ -3,7 +3,7 @@ title: "SMMALA and CaMKII"
 ---
 
 ```{r, include = FALSE}
-    knitr::opts_chunk$set(eval=FALSE,mathjax=TRUE,
+    knitr::opts_chunk$set(eval=FALSE,
   collapse = TRUE,
   comment = "#>"
 )

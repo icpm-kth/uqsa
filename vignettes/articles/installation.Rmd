@@ -73,6 +73,9 @@ You can now install the packages developed by the uqsa team:
 ```{r remotes, eval=FALSE}
 # requires the 'remotes' package
 if (!require(remotes)) install.packages("remotes")
+
+remotes::install_github("icpm-kth/SBtabVFGEN",dependencies=TRUE)
+remotes::install_github("icpm-kth/rgsl",dependencies=TRUE)
 remotes::install_github("icpm-kth/uqsa",dependencies=TRUE)
 ```
 

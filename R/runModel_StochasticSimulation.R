@@ -178,7 +178,7 @@ importReactionsSSA <- function(model.tab, compile = TRUE){
   num_reactions <- length(row.names(model.tab$Reaction))
   num_reversible_reactions <- sum(model.tab$Reaction[["!IsReversible"]]==TRUE)
   reactions <- vector("list", len=num_reactions + num_reversible_reactions)
-  compound_names <- model.tab$Compound[["!Name"]]
+  compound_names <- rownames(model.tab$Compound)
   k <- 1
   for(i in 1:num_reactions){
     kinetic_law <- model.tab$Reaction[["!KineticLaw"]][i]
@@ -205,7 +205,7 @@ importReactionsSSA <- function(model.tab, compile = TRUE){
     if(sum(effect<0)==2){
       propensity <- paste0(propensity," / Phi")
     }
-    reactions[[k]] <- GillespieSSA2::reaction(propensity = propensity, effect = effect) #, name = model.tab$Reaction[["!Name"]][i])
+    reactions[[k]] <- GillespieSSA2::reaction(propensity = propensity, effect = effect)
     k <- k + 1
     if(model.tab$Reaction[["!IsReversible"]][i]){
       #also add the backward reaction
@@ -214,7 +214,7 @@ importReactionsSSA <- function(model.tab, compile = TRUE){
       if(sum(effect<0)==2){
         propensity <- paste0(propensity," / Phi")
       }
-      reactions[[k]] <- GillespieSSA2::reaction(propensity = propensity, effect = effect) #, name = paste0(model.tab$Reaction[["!Name"]][i],"_backward"))
+      reactions[[k]] <- GillespieSSA2::reaction(propensity = propensity, effect = effect)
       k <- k + 1
     }
   }
@@ -224,18 +224,18 @@ importReactionsSSA <- function(model.tab, compile = TRUE){
   }
   if(compile){
     parVal <- model.tab$Parameter[["!DefaultValue"]]
-    names(parVal) <- model.tab$Parameter[["!Name"]]
-    
+    names(parVal) <- rownames(model.tab$Parameter)
+
     parameters_from_expressions <- parameters_from_expressions_func(model.tab)
-    
+
     AvoNum <- 6.022e23          #Avogadro constant
     vol <- 4e-16  #volume where the reactions take place
     unit <- 1e-6  #unit of measure in meters (1e-6 corresponds to micrometer)
     Phi <- AvoNum * vol * unit #constant that will be used to simulate the random reactions
-    
+
     reactions <- GillespieSSA2::compile_reactions(
       reactions = reactions,
-      state_ids = model.tab$Compound[["!Name"]],
+      state_ids = rownames(model.tab$Compound),
       params = c(parVal, parameters_from_expressions(parVal), Phi=Phi)
     )
   }
@@ -249,29 +249,30 @@ importReactionsSSA <- function(model.tab, compile = TRUE){
 #' @export
 parameters_from_expressions_func <- function(model.tab){
   param_from_expr <- function(parVal){
-    # Return a named vector of parameters which are given by expressions 
-    for(i in seq_len(length(model.tab$Input[["!Name"]]))){
-      assign(model.tab$Input[["!Name"]][i],model.tab$Input[["!DefaultValue"]][i])
+    # Return a named vector of parameters which are given by expressions
+    if ("Input" %in% names(model.tab)){
+     for(i in seq(NROW(model.tab$Input))){
+      assign(rownames(model.tab$Input)[i],model.tab$Input[["!DefaultValue"]][i])
+     }
     }
-    
     if(is.null(parVal)){
       parVal <- model.tab$Parameter[["!DefaultValue"]]
     }
-    
-    parNames <- model.tab$Parameter[["!Name"]]
-    for(i in 1:length(parVal)){
+
+    parNames <- rownames(model.tab$Parameter)
+    for(i in seq_along(parVal)){
       assign(parNames[i],parVal[i])
     }
-    
+
     expr_formulas <- model.tab$Expression[["!Formula"]]
     expr <- c()
-    
-    for(i in seq_len(length(expr_formulas))){
+
+    for(i in seq_along(expr_formulas)){
       expr_value <- eval(str2expression(model.tab$Expression[["!Formula"]][i]))
-      assign(model.tab$Expression[["!Name"]][i],expr_value)
+      assign(rownames(model.tab$Expression)[i],expr_value)
       expr[i] <- expr_value
     }
-    names(expr) <- model.tab$Expression[["!Name"]]
+    names(expr) <- rownames(model.tab$Expression)
     return(expr)
   }
   return(param_from_expr)
@@ -280,9 +281,9 @@ parameters_from_expressions_func <- function(model.tab){
 
 
 #' Function that creates a closure that simulates a stochastic trajectory with the Gillespie algorithm
-#' given certain experimental conditions and a parameter vector, and computes the 
+#' given certain experimental conditions and a parameter vector, and computes the
 #' distance between the simulation and the experimental data
-#' 
+#'
 #' @param experiment an experiment
 #' @param model.tab an SBtab model
 #' @param reactions a list that encodes the reactions for
@@ -294,28 +295,30 @@ parameters_from_expressions_func <- function(model.tab){
 #' @param nStochSim number of stochastic simulations to average over
 #' @return a function that given a parameter returns a simulated trajectory obrained via the Gillespie algorithm
 #' @export
-simulator.stoch <- function(experiments, model.tab = model.tab, reactions = NULL, parMap = identity, outputFunction = identity, vol = 4e-16, unit = 1e-6, nStochSim = 3, distance = NULL){
-  
+simulator.stoch <- function(experiments, model.tab = model.tab, reactions = NULL, parMap = identity, outputFunction = function(t,state,param){state}, vol = 4e-16, unit = 1e-6, nStochSim = 3, distance = NULL){
+
     AvoNum <- 6.022e23          #Avogadro constant
     Phi <- AvoNum * vol * unit #constant that will be used to simulate the random reactions
-    
+
     parameters_from_expressions <- parameters_from_expressions_func(model.tab)
-    
+
     if(is.null(reactions)){
       reactions <- importReactionsSSA(model.tab)
     }
-    
+
     simulate_one_experiment <- function(param, experiment){
-      
+
       avgOutput <- rep(0, length(experiment[["outputTimes"]]))
-      names(param) <- model.tab$Parameter[["!Name"]]
+      names(param) <- rownames(model.tab$Parameter)
       SSAparam <- c(parMap(param), Phi = Phi)
       if(!is.null(parameters_from_expressions)){
         SSAparam <- c(SSAparam, parameters_from_expressions(parMap(param)))
       }
+      iv <- ceiling(experiment$initialState*Phi)
+      names(iv) <- names(experiment$initialState)
       for(i in 1:nStochSim){
         out_ssa <- GillespieSSA2::ssa(
-          initial_state = ceiling(experiment[["initialState"]]*Phi),
+          initial_state = iv,
           reactions = reactions,
           params = SSAparam,
           final_time = max(experiment[["outputTimes"]]),
@@ -325,9 +328,9 @@ simulator.stoch <- function(experiments, model.tab = model.tab, reactions = NULL
           log_firings = TRUE,
           census_interval = 5,
           max_walltime = 1)
-        
+
         # out$state is a matrix of dimension (time points)x(num compounds)
-        output <- apply(out_ssa$state/Phi, 1, function(state) outputFunction(t=0, state=state, param = parMap(param)))
+        output <- apply(out_ssa$state/Phi, 1, function(state){outputFunction(0, state, param=parMap(param))})
         if(sum(!is.na(out_ssa$time)) > 2){
           interpOutput <- approx(out_ssa$time, output, experiment[["outputTimes"]])
           interpOutput$y[experiment[["outputTimes"]]<min(out_ssa$time)] <- output[which.min(out_ssa$time)]
@@ -338,16 +341,16 @@ simulator.stoch <- function(experiments, model.tab = model.tab, reactions = NULL
         }
       }
       avgOutput <- avgOutput/nStochSim
-      
+
       if(!is.null(distance)){
         dist <- distance(avgOutput,t(experiment[["outputValues"]]),t(experiment[["errorValues"]]))
       } else {
         dist <- NULL
       }
-      
+
       return(list(time = experiment[["outputTimes"]], output = avgOutput, distance_data_simulation = dist))
     }
-    
+
     sim <- function(param){
       simulators <- mclapply(experiments, function(e){simulate_one_experiment(param = param, experiment = e)})
       return(simulators)
@@ -382,7 +385,7 @@ simulator.stoch <- function(experiments, model.tab = model.tab, reactions = NULL
 #'     only on the ABC parameters parABC.
 #' @export
 makeObjectiveSSA <- function(experiments, model.tab, parNames, distance, parMap=identity, outputFunction = identity, vol = 4e-16, unit = 1e-6, reactions, nStochSim = 1, parameters_from_expressions=NULL){
-  
+
   simulate_experiments <- simulator.stoch(experiments = experiments,
                                           model.tab = model.tab,
                                           reactions = reactions,
@@ -394,12 +397,12 @@ makeObjectiveSSA <- function(experiments, model.tab, parNames, distance, parMap=
                                           distance = distance)
   n_experiments <- length(experiments)
   objectiveFunction <- function(parABC){
-    
+
     sim_all_experiments_one_parameter <- function(par){
       simulations <- simulate_experiments(par)
       return(sapply(1:n_experiments, function(i) simulations[[i]]$distance_data_simulation))
     }
-    
+
     if (is.matrix(parABC)) {
       rownames(parABC) <- parNames
       npc <- ncol(parABC)
