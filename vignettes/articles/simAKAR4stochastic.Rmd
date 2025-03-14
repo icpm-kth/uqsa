@@ -47,9 +47,7 @@ experiments <- sbtab.data(SBtab)
 print(experiments[[1]]$initialState)
 
 # pick parameters for simulation
-p <- SBtab$Parameter[["!DefaultValue"]]
-par_names <- rownames(SBtab$Parameter)
-names(p) <- par_names
+p <- SBtabVFGEN::sbtab_quantity(SBtab$Parameter)
 print(p)
 ```
 # Simulate
@@ -58,16 +56,13 @@ Function `simulator.stoch` will output a function `s`, which will always simulat
 scenarios described in experiment `e` (i.e., same initial conditions, same inputs), but for user supplied parameters.
 
 ```{r, sim}
-exp_ind <- 1 #index of the experiment to consider
-e <- experiments[exp_ind]
-
 # generate a function (s) that simulates a trajectory given a parameter in input
-s <- simulator.stoch(experiment = e, model.tab = SBtab, vol = 4e-16, nStochSim = 3, outputFunction=AKAR4_func)
+ssa2 <- simulator.stoch(experiments[1], model.tab = SBtab, vol = 4e-16, nStochSim = 3, outputFunction=AKAR4_func)
 # vol indicates the volume in m^3 where the reactions take place
 # nStochSim indicates how many times we simulate the stochastic model; the output trajectory is the average of all (in this case nStochSim = 3) the simulated trajectories
 
 # simulate a trajectory (y) given parameter p
-y <- s(p)
+y_ssa2 <- ssa2(p)
 ```
 
 
@@ -75,24 +70,84 @@ y <- s(p)
 
 ```{r, plotting}
 par(bty='n',xaxp=c(80,120,4))
-plot(e[[1]]$outputTimes, e[[1]]$outputValues$AKAR4pOUT,ylim=c(90,200), ylab="AKAP79",
-     xlab="t",
-     main=sprintf("Experiment %i",exp_ind),
-     lwd=1.5)
-lines(e$outputTimes, y$output, col="blue")
+plot(
+    experiments[[1]]$outputTimes,
+    experiments[[1]]$outputValues$AKAR4pOUT,
+    ylim=c(90,200), ylab="AKAR4p", xlab="time",
+    main=names(experiments)[1],
+    lwd=1.5)
+lines(experiments[[1]]$outputTimes, as.numeric(y_ssa2[[1]]$output), col="blue")
 ```
 
 # Show Results via `ggplot2`
 
-```{r, ggplot}
-require(ggplot2)
-
-D<-data.frame(time=experiments[[exp_ind]]$outputTime,
-              AKAP79=experiments[[exp_ind]]$outputValues$AKAR4pOUT,
-              AKAP79ERR=experiments[[exp_ind]]$errorValues$AKAR4pOUT,
-              sim=y[[1]]$output)
+```{r, ggplot2}
+if (require(ggplot2)){
+D<-data.frame(time=experiments[[1]]$outputTime,
+              AKAR4p=experiments[[1]]$outputValues$AKAR4pOUT,
+              AKAR4pERR=experiments[[1]]$errorValues$AKAR4pOUT,
+              sim=y_ssa2[[1]]$output)
 ggplot(D) +
-  geom_linerange(mapping=aes(x=time,y=AKAP79,ymin=AKAP79-AKAP79ERR,ymax=AKAP79+AKAP79ERR),na.rm=TRUE) +
-  geom_point(mapping=aes(x=time,y=AKAP79),na.rm=TRUE) +
+  geom_linerange(mapping=aes(x=time,y=AKAR4p,ymin=AKAR4p-AKAR4pERR,ymax=AKAR4p+AKAR4pERR),na.rm=TRUE) +
+  geom_point(mapping=aes(x=time,y=AKAR4p),na.rm=TRUE) +
   geom_line(mapping=aes(x=time,y=sim),color="purple",lwd=1.2)
+}
+```
+
+# Built-in simulator
+
+This package (`uqsa`) has a built-in stochastic simulator which
+assumes that the model in question comes from an SBtab file and is
+formulated with concentrations and kinetic laws.
+
+We auto-generate C code, which uses the kinetic laws, but rescales all
+parameters internally to have the unit `1/s` and all compound species
+are rescaled to be in particle counts. So, the internal simulator can
+be used with the list of experiments that we use for ODE models, with
+no changes.
+
+```{r generateCode}
+C <- generateGillespieCode(SBtab)
+cat(C,sep="\n",file="AKAR4_st.c")
+```
+
+We compile that model to a shared library:
+
+```{sh compileCode}
+cc -shared -fPIC -O2 -o akar4-st.so AKAR4_st.c -lm
+```
+
+And next we simulate this compiled model:
+
+```{r executeCode}
+st <- uqsa::simstoch(experiments,model.so="./akar4-st.so")
+y <- st(p)
+```
+
+And also plot the results:
+
+```{r plot_simstoch}
+tm <- experiments[[1]]$outputTimes
+ov <- experiments[[1]]$outputValues$AKAR4pOUT
+ev <- experiments[[1]]$errorValues$AKAR4pOUT
+par(bty="n")
+plot(tm,ov,xlab="time",ylab="AKAR4p",main=names(experiments)[1],ylim=c(90,210))
+arrows(tm,ov,tm,ov+ev,angle=90,length=0.02)
+arrows(tm,ov,tm,ov-ev,angle=90,length=0.02)
+lines(tm,y[[1]]$func["AKAR4pOUT",],lwd=2)
+```
+
+## Benchmark
+
+Here we test which of the two simulates faster:
+
+```{r benchmark}
+if (require(rbenchmark)){
+	BM <- benchmark(
+		GillespieSSA2 = {y1<-ssa2(p)},
+		uqsa = {y2 <- st(p)},
+	replications = 500
+	)
+}
+print(BM)
 ```
