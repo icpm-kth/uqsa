@@ -35,8 +35,7 @@ modelName <- checkModel("AKAP79",uqsa_example("AKAP79",pat="_gvf[.]c$"))
 comment(modelName)
 
 # In the terminal run the following:
-# ``ode.sh -R --maxima AKAP79.tar.gz > AKAP79.R```
-# (Read article "..." in the documentation)
+# ode.sh -R --maxima AKAP79.tar.gz > AKAP79.R
 system2(command = "ode", args = c("-R", "--maxima", "AKAP79.tar.gz"), stdout = "AKAP79.R")
 
 # model related functions, in R, e.g. AKAP79_default() parameters
@@ -68,26 +67,27 @@ scenarios described in experiment `e` (i.e., same initial conditions, same input
 
 ```{r, sim}
 exp_ind <- 9 #index of the experiment to consider
-e <- experiments[exp_ind]
 
 # generate a function (s) that simulates a trajectory given a parameter in input
-s <- simulator.stoch(experiment = e, model.tab = SBtab, vol = 4e-16, outputFunction = AKAP79_func)
+ssa2 <- simulator.stoch(experiment = experiments, model.tab = SBtab, vol = 4e-16, outputFunction = AKAP79_func)
 # vol indicates the volume in m^3 where the reactions take place
 
 # simulate a trajectory (y) given parameter p
-y <- s(p)
-
+y <- ssa2(p)
 ```
 
 # Plot
 
 ```{r, plotting}
 par(bty='n',xaxp=c(80,120,4))
-plot(e$outputTimes, e$outputValues$AKAR4pOUT,ylim=c(90,180), ylab="AKAP79",
-     xlab="t",
+plot(experiments[[exp_ind]]$outputTimes,
+     experiments[[exp_ind]]$outputValues$AKAR4pOUT,
+     ylim=c(90,180),
+     ylab="AKAP79",
+     xlab="time",
      main=sprintf("Experiment %i",exp_ind),
      lwd=1.5)
-lines(e$outputTimes, y$output, col="blue")
+lines(experiments[[exp_ind]]$outputTimes, y[[exp_ind]]$output, col="blue")
 ```
 
 # Simulation Results via `ggplot2`
@@ -98,9 +98,58 @@ require(ggplot2)
 D<-data.frame(time=experiments[[exp_ind]]$outputTime,
               AKAP79=experiments[[exp_ind]]$outputValues$AKAR4pOUT,
               AKAP79ERR=experiments[[exp_ind]]$errorValues$AKAR4pOUT,
-              sim=y[[1]]$output)
+              sim=y[[exp_ind]]$output)
 ggplot(D) +
   geom_linerange(mapping=aes(x=time,y=AKAP79,ymin=AKAP79-AKAP79ERR,ymax=AKAP79+AKAP79ERR),na.rm=TRUE) +
   geom_point(mapping=aes(x=time,y=AKAP79),na.rm=TRUE) +
   geom_line(mapping=aes(x=time,y=sim),color="purple",lwd=1.2)
+```
+
+# Built-in Stochastic simulator
+
+Similarly, our built-in simulator `uqsa::simstoch()` can be used to obtain a similar result:
+
+```{r generateCode}
+C <- generateGillespieCode(SBtab)
+cat(C,sep="\n",file="AKAP79_st.c")
+```
+
+We compile that model to a shared library:
+
+```{sh compileCode}
+cc -shared -fPIC -O2 -o akap79-st.so AKAP79_st.c -lm
+```
+
+And next we simulate this compiled model:
+
+```{r executeCode}
+st <- uqsa::simstoch(experiments,model.so="./akap79-st.so")
+yst <- st(p)
+```
+
+And also plot the results:
+
+```{r plot_simstoch}
+tm <- experiments[[9]]$outputTimes
+ov <- experiments[[9]]$outputValues$AKAR4pOUT
+ev <- experiments[[9]]$errorValues$AKAR4pOUT
+par(bty="n")
+plot(tm,ov,xlab="time",ylab="AKAR4p",main=names(experiments)[9],ylim=c(90,210))
+arrows(tm,ov,tm,ov+ev,angle=90,length=0.02)
+arrows(tm,ov,tm,ov-ev,angle=90,length=0.02)
+lines(tm,as.numeric(yst[[9]]$func["AKAR4pOUT",]),lwd=2)
+```
+
+## Benchmark
+
+Here we test which of the two simulates faster:
+
+```{r benchmark}
+if (require(rbenchmark)){
+	BM <- benchmark(
+		GillespieSSA2 = {y1<-ssa2(p)},
+		uqsa = {y2 <- st(p)}
+	)
+}
+print(BM)
 ```
