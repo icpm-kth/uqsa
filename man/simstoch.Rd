@@ -4,12 +4,12 @@
 \alias{simstoch}
 \title{Simulate stochastic model}
 \usage{
-simstoch(model.so, experiments, parMap = identity)
+simstoch(experiments, model.so, parMap = identity)
 }
 \arguments{
-\item{model.so}{compiled C code for the model}
-
 \item{experiments}{list of expperiments, same as for the deterministic solvers.}
+
+\item{model.so}{compiled C code for the model, this has to be a path with at least one slash in it, e.g.: ./model.so}
 
 \item{parameters}{a numeric vector of appropriate size}
 }

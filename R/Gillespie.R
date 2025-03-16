@@ -378,7 +378,7 @@ simstoch <- function(experiments, model.so, parMap=identity){
 		}
 	}
 	return(function(parMCMC){
-		p <- parMap(as.numeric(parMCMC))
+		p <- as.matrix(parMap(parMCMC))
 		y <- .Call(gillespie, model.so, experiments, p)
 		names(y) <- names(experiments)
 		for (i in seq_along(y)){

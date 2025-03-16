@@ -95,17 +95,25 @@ int in_list(Rdata List, const char *name);
 Rdata from_list(Rdata List, const char *name);
 void set_names(Rdata list, const char *names[]);
 
+int cat_parameters(gsl_vector *c, double *p, size_t np, Rdata input){
+	memcpy(c->data,p,sizeof(double)*np);
+	if (input && input != R_NilValue) {
+		memcpy(c->data+(c->size - length(input)),REAL(AS_NUMERIC(input)),sizeof(double)*length(input));
+	}
+	return 0;
+}
+
 Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 	gsl_set_error_handler_off();
-	int i,j;
+	int i,j,k;
 	void *handle = load_model(CHAR(STRING_ELT(model_so,0)));
 	if (!handle) return R_NilValue;
-
+	size_t M = ncols(parameters);
 	size_t n = model_initial_counts(NULL);
 	size_t m = model_reaction_coefficients(NULL);
 	size_t na = model_propensities(0,NULL,NULL,NULL);
 	size_t nf = model_func(0,NULL,NULL,NULL);
-	printf("[%s] sizes: %li stateVars, %li parameters, %li propensities, and %li functions.\n",__func__,n,m,na,nf);
+	printf("[%s] sizes: %li stateVars, %li parameters (%li columns), %li propensities, and %li functions.\n",__func__,n,m,M,na,nf);
 	fflush(stdout);
 	if (m < length(parameters)){
 		fprintf(stderr,"[%s] too many parameters supplied (%i) for model (%li).\n",__func__,length(parameters),m);
@@ -117,11 +125,13 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 	double t0 = 0;
 	double tf = 10;
 	double t = t0;
+	double *p;
 	Rdata time, input, E, initialState, initialTime, yf, y, f;
 	const char *snames[] = {"state","func",NULL};
 	Rdata solution = PROTECT(NEW_LIST(length(experiments)));
 	SET_NAMES(solution,GET_NAMES(experiments));
 	gsl_vector_int_view column;
+
 	gsl_rng *RNG = gsl_rng_alloc(gsl_rng_ranlxs0);
 	gsl_rng_set(RNG, 1337);
 	model_initial_counts(x->data);
@@ -133,24 +143,24 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 		initialTime = from_list(E,"initialTime");
 		time = from_list(E,"outputTimes");
 		input = from_list(E,"input");
-		memcpy(c->data,REAL(AS_NUMERIC(parameters)),sizeof(double)*length(parameters));
-		if (input && input != R_NilValue) {
-			memcpy(c->data+(c->size - length(input)),REAL(AS_NUMERIC(input)),sizeof(double)*length(input));
-		}
 		t0 = *REAL(AS_NUMERIC(initialTime));
 		t = t0;
 		yf = PROTECT(NEW_LIST(2));
-		y = PROTECT(allocMatrix(INTSXP,n,length(time)));
-		f = PROTECT(allocMatrix(REALSXP,nf,length(time)));
-		model_particle_count(t0,REAL(initialState),x->data);
-		for (j=0; j<length(time); j++){
-			tf = REAL(AS_NUMERIC(time))[j];
-			while (t < tf){
-				advance_in_time(&t,x,c,a,RNG);
+		y = PROTECT(alloc3DArray(INTSXP,n,length(time),M));
+		f = PROTECT(alloc3DArray(REALSXP,nf,length(time),M));
+		for (k=0;k<M;k++){
+			p = REAL(parameters)+(k*nrows(parameters));
+			cat_parameters(c,p,nrows(parameters),input); /* c <- cat(p,input)*/
+			model_particle_count(t0,REAL(initialState),x->data);
+			for (j=0; j<length(time); j++){
+				tf = REAL(AS_NUMERIC(time))[j];
+				while (t < tf){
+					advance_in_time(&t,x,c,a,RNG);
+				}
+				column = gsl_vector_int_view_array(INTEGER(y)+(n*M*k+n*j),n);
+				model_func(t,x->data,c->data,REAL(f)+(nf*M*k+nf*j));
+				gsl_vector_int_memcpy(&(column.vector),x);
 			}
-			column = gsl_vector_int_view_array(INTEGER(y)+n*j,n);
-			model_func(t,x->data,c->data,REAL(f)+(nf*j));
-			gsl_vector_int_memcpy(&(column.vector),x);
 		}
 		SET_VECTOR_ELT(yf,0,y);
 		SET_VECTOR_ELT(yf,1,f);
