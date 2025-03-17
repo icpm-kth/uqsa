@@ -36,7 +36,7 @@ comment(modelName)
 
 # In the terminal run the following:
 # ode.sh -R --maxima AKAP79.tar.gz > AKAP79.R
-system2(command = "ode", args = c("-R", "--maxima", "AKAP79.tar.gz"), stdout = "AKAP79.R")
+# system2(command = "ode", args = c("-R", "--maxima", "AKAP79.tar.gz"), stdout = "AKAP79.R")
 
 # model related functions, in R, e.g. AKAP79_default() parameters
 source(uqsa_example("AKAP79",pat='^AKAP79[.]R$'))
@@ -54,10 +54,17 @@ print(experiments[[1]]$initialState)
 
 # pick parameters for simulation
 nInput <- length(experiments[[1]]$input)
-p <- SBtab$Parameter[["!DefaultValue"]]
-par_names <- rownames(SBtab$Parameter)
-names(p) <- par_names
-print(p)
+```
+
+Here, we set parameters that we obtained as a result of uncertainty quantification as the default parameters don't produce a good fit:
+```{r parameters}
+p <- c(5.40342450137064, -0.593059565400554, -4.39570531149944, 1.98913235099233, 3.49593680287832, 1.31835526644901, -1.64761120375187, -3.44424539513015, -7.42070370977838, -3.47327734160688, 4.63625539202539, 6.03319525602205, -0.566066254931962, -0.569733780252635, -3.72907416454369, 4.66370522446527, -4.33567445166803, -0.451486307294355, -1.45372555934348, -0.826202787318247, -2.93633608070918, -1.78589017250467, -1.08099779761871, 1.04052022801099, 2.26762500144325, 0.240677713068201, -0.47055330459084)
+names(p) <- rownames(SBtab$Parameter)
+```
+
+If instead we wanted to use the default parameters, then we could use this code:
+```{r defaults, eval=FALSE}
+p <- SBtabVFGEN::sbtab_quantity(SBtab$Parameter)
 ```
 
 # Simulate
@@ -148,7 +155,8 @@ Here we test which of the two simulates faster:
 if (require(rbenchmark)){
 	BM <- benchmark(
 		GillespieSSA2 = {y1<-ssa2(p)},
-		uqsa = {y2 <- st(p)}
+		uqsa = {y2 <- st(p)},
+		replications=10
 	)
 }
 print(BM)

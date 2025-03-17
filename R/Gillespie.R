@@ -183,8 +183,8 @@ makeGillespieModel <- function(sb,LV=6.02214076e+8){
 	scv <- simpleConversion(k[l],u[l],LV)
 	cUnit <- sb$Compound[["!Unit"]]
 	names(cUnit) <- rownames(sb$Compound)
-	parUnit <- sb$Parameter[["!Unit"]]
-	names(parUnit) <- rownames(sb$Parameter)
+	parUnit <- c(sb$Parameter[["!Unit"]],sb$Input[["!Unit"]])
+	names(parUnit) <- c(rownames(sb$Parameter),rownames(sb$Input))
 	return(list(left=cl,right=cr,cvf=convFactorFwd,cvb=convFactorBwd,scv=scv,initialCount=initialCount(sb,LV),par=k,compoundUnit=cUnit, parameterUnit=parUnit))
 }
 
@@ -237,8 +237,6 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	RC <- trimws(unlist(strsplit(RC,"-",fixed=TRUE)))
 	dim(RC) <- c(2,length(KL))
 	RC <- t(RC)
-	k <- sm$par
-
 	Definitions <- c(
 	"\t/* constants */",
 	sprintf("\t double %s = %s; /* %s */",rownames(sb$Constant),sb$Constant[["!Value"]],sb$Constant[["!Unit"]]),
@@ -284,7 +282,7 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"/* We also convert initial values to particle counts. */","",
 	"/* these enums make it possible to address vector elements by name, and automatically creates lengths for these vectors*/",
 	paste0("enum state {",paste0("_",rownames(sb$Compound),collapse=", "),", numStateVariables};"),
-	paste0("enum parameter {",paste0("_",names(k),collapse=", "),", numParameters};"),
+	paste0("enum parameter {",paste0("_",names(sm$par),collapse=", "),", numParameters};"),
 	paste0("enum reaction {",paste0("_",rownames(sb$Reaction),"_fwd",collapse=", "),", ",paste0("_",rownames(sb$Reaction),"_bwd",collapse=", "),", numReactions};"),
 	paste0("enum outputFunctions {",paste0("_",rownames(sb$Output),collapse=", "),", numFunctions};"),
 	"",
@@ -314,7 +312,7 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"/* So, these are not directly usable, but we'll write the propensities with conversion factors */",
 	"int model_reaction_coefficients(double *c){",
 	"\tif (!c) return numParameters;",
-	sprintf("\tc[_%s] = %s; /* %s */",names(k),k,sm$parameterUnit),
+	sprintf("\tc[_%s] = %s; /* %s */",names(sm$par),sm$par,sm$parameterUnit),
 	"\treturn 0;",
 	"}","",
 	"int model_initial_counts(int *x){",
