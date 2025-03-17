@@ -260,7 +260,7 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"\t/* parameters that do not appear in kinetric laws */",
 	sprintf("\tdouble %s = c[_%s];",names(sm$scv),names(sm$scv)),
 	"\t/*state variables */",
-	sprintf("\tdouble %s = x[_%s]/%g; /* %s */",names(sm$initialCount),names(sm$initialCount),ccc(sb,LV),sm$compoundUnit),
+	sprintf("\tdouble %s = ((double) x[_%s])/((double) %g); /* %s */",names(sm$initialCount),names(sm$initialCount),ccc(sb,LV),sm$compoundUnit),
 	sprintf("\tdouble %s = %s;",rownames(sb$Expression),sb$Expression[["!Formula"]])
 	)
 	C <- c(

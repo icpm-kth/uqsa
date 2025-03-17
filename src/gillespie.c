@@ -144,11 +144,11 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 		time = from_list(E,"outputTimes");
 		input = from_list(E,"input");
 		t0 = *REAL(AS_NUMERIC(initialTime));
-		t = t0;
 		yf = PROTECT(NEW_LIST(2));
 		y = PROTECT(alloc3DArray(INTSXP,n,length(time),M));
 		f = PROTECT(alloc3DArray(REALSXP,nf,length(time),M));
 		for (k=0;k<M;k++){
+			t = t0;
 			p = REAL(parameters)+(k*nrows(parameters));
 			cat_parameters(c,p,nrows(parameters),input); /* c <- cat(p,input)*/
 			model_particle_count(t0,REAL(initialState),x->data);
