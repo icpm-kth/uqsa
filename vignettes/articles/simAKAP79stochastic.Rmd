@@ -56,9 +56,9 @@ print(experiments[[1]]$initialState)
 nInput <- length(experiments[[1]]$input)
 ```
 
-Here, we set parameters that we obtained as a result of uncertainty quantification as the default parameters don't produce a good fit:
+Here, we set parameters that we obtained as a result of uncertainty quantification as the default parameters don't produce a good fit, they are still not optimal:
 ```{r parameters}
-p <- c(5.40342450137064, -0.593059565400554, -4.39570531149944, 1.98913235099233, 3.49593680287832, 1.31835526644901, -1.64761120375187, -3.44424539513015, -7.42070370977838, -3.47327734160688, 4.63625539202539, 6.03319525602205, -0.566066254931962, -0.569733780252635, -3.72907416454369, 4.66370522446527, -4.33567445166803, -0.451486307294355, -1.45372555934348, -0.826202787318247, -2.93633608070918, -1.78589017250467, -1.08099779761871, 1.04052022801099, 2.26762500144325, 0.240677713068201, -0.47055330459084)
+p <- 10^c(3.38,-0.22,-0.39,0.0013,7.89e-2,-1.02,-1.08,-2.86,-0.53,-0.34,-0.51,-2.42,-1.05,-1.37,-1.29,2.08,-2.79,-0.87,0.26,-0.168,-0.331,-1.77,-0.938,1.065,2.08,0.0147,-0.09893)
 names(p) <- rownames(SBtab$Parameter)
 ```
 
@@ -77,24 +77,9 @@ exp_ind <- 9 #index of the experiment to consider
 
 # generate a function (s) that simulates a trajectory given a parameter in input
 ssa2 <- simulator.stoch(experiment = experiments, model.tab = SBtab, vol = 4e-16, outputFunction = AKAP79_func)
-# vol indicates the volume in m^3 where the reactions take place
 
 # simulate a trajectory (y) given parameter p
 y <- ssa2(p)
-```
-
-# Plot
-
-```{r, plotting}
-par(bty='n',xaxp=c(80,120,4))
-plot(experiments[[exp_ind]]$outputTimes,
-     experiments[[exp_ind]]$outputValues$AKAR4pOUT,
-     ylim=c(90,180),
-     ylab="AKAP79",
-     xlab="time",
-     main=sprintf("Experiment %i",exp_ind),
-     lwd=1.5)
-lines(experiments[[exp_ind]]$outputTimes, y[[exp_ind]]$output, col="blue")
 ```
 
 # Simulation Results via `ggplot2`
@@ -129,22 +114,40 @@ cc -shared -fPIC -O2 -o akap79-st.so AKAP79_st.c -lm
 
 And next we simulate this compiled model:
 
-```{r executeCode}
+```{r executeCodeNoWarnings, eval=FALSE}
+P <- matrix(p,length(p),20)
 st <- uqsa::simstoch(experiments,model.so="./akap79-st.so")
-yst <- st(p)
+ystc <- st(P)
+```
+
+```{r executeCode, include=FALSE}
+P <- matrix(p,length(p),20)
+st <- uqsa::simstoch(experiments,model.so="./akap79-st.so")
+ystc <- st(P)
+```
+
+And also get a reference simulation from the ODE solver:
+
+```{r referenceODEsimulation}
+sode <- uqsa::simcf(experiments,modelName)
+yode <- sode(p)
 ```
 
 And also plot the results:
 
 ```{r plot_simstoch}
-tm <- experiments[[9]]$outputTimes
-ov <- experiments[[9]]$outputValues$AKAR4pOUT
-ev <- experiments[[9]]$errorValues$AKAR4pOUT
+tm <- experiments[[exp_ind]]$outputTimes
+ov <- experiments[[exp_ind]]$outputValues$AKAR4pOUT
+ev <- experiments[[exp_ind]]$errorValues$AKAR4pOUT
 par(bty="n")
-plot(tm,ov,xlab="time",ylab="AKAR4p",main=names(experiments)[9],ylim=c(90,210))
+plot(tm,ov,xlab="time",ylab="AKAR4p",main=names(experiments)[exp_ind],ylim=c(90,210))
 arrows(tm,ov,tm,ov+ev,angle=90,length=0.02)
 arrows(tm,ov,tm,ov-ev,angle=90,length=0.02)
-lines(tm,as.numeric(yst[[9]]$func["AKAR4pOUT",]),lwd=2)
+
+for (j in seq(NCOL(P))){
+	lines(tm,as.numeric(ystc[[exp_ind]]$func["AKAR4pOUT",,j]),lwd=1,col="blue")
+}
+lines(tm,as.numeric(yode[[exp_ind]]$func["AKAR4pOUT",,1]),lwd=3)
 ```
 
 ## Benchmark

@@ -209,6 +209,14 @@ reactionEffect <- function(sm){
 	)
 }
 
+lengths <- function(v){
+	return(sapply(as.character(v),length))
+}
+
+padding <- function(v,upper.bound=40){
+	return(upper.bound - lengths(v))
+}
+
 #' Generate C Code to solve a model stochastically
 #'
 #' This function tries to generate code for a stochastic solver, but
@@ -241,11 +249,11 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"\t/* constants */",
 	sprintf("\t double %s = %s; /* %s */",rownames(sb$Constant),sb$Constant[["!Value"]],sb$Constant[["!Unit"]]),
 	"\t/* forward parameters */",
-	sprintf("\tdouble %s = %g * c[_%s]; // per second",names(sm$cvf),sm$cvf,names(sm$cvf)),
+	sprintf("\tdouble %s = %g * c[_%s]; /* per second */",names(sm$cvf),sm$cvf,names(sm$cvf)),
 	"\t/* backward parameters */",
-	sprintf("\tdouble %s = %g * c[_%s]; // per second",names(sm$cvb),sm$cvb,names(sm$cvb)),
+	sprintf("\tdouble %s = %g * c[_%s]; /* per second */",names(sm$cvb),sm$cvb,names(sm$cvb)),
 	"\t/* parameters that do not appear in kinetric laws */",
-	sprintf("\tdouble %s = %g * c[_%s]; // per second",names(sm$scv),sm$scv,names(sm$scv)),
+	sprintf("\tdouble %s = %g * c[_%s]; /* per second */",names(sm$scv),sm$scv,names(sm$scv)),
 	"\t/*state variables */",
 	sprintf("\tdouble %s = x[_%s];",rownames(sb$Compound),rownames(sb$Compound)),
 	sprintf("\tdouble %s = %s;",rownames(sb$Expression),sb$Expression[["!Formula"]])
@@ -312,7 +320,7 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"/* So, these are not directly usable, but we'll write the propensities with conversion factors */",
 	"int model_reaction_coefficients(double *c){",
 	"\tif (!c) return numParameters;",
-	sprintf("\tc[_%s] = %s; /* %s */",names(sm$par),sm$par,sm$parameterUnit),
+	sprintf("\tc[_%s] = %s; %*s /* %s */",names(sm$par),sm$par,40-unlist(lapply(names(sm$par),length)),"",sm$parameterUnit),
 	"\treturn 0;",
 	"}","",
 	"int model_initial_counts(int *x){",

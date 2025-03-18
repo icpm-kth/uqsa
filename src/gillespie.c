@@ -106,16 +106,18 @@ int cat_parameters(gsl_vector *c, double *p, size_t np, Rdata input){
 Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 	gsl_set_error_handler_off();
 	int i,j,k;
+	//int l;
 	void *handle = load_model(CHAR(STRING_ELT(model_so,0)));
 	if (!handle) return R_NilValue;
 	size_t M = ncols(parameters);
+	size_t nrp = nrows(parameters);
 	size_t n = model_initial_counts(NULL);
 	size_t m = model_reaction_coefficients(NULL);
 	size_t na = model_propensities(0,NULL,NULL,NULL);
 	size_t nf = model_func(0,NULL,NULL,NULL);
 	printf("[%s] sizes: %li stateVars, %li parameters (%li columns), %li propensities, and %li functions.\n",__func__,n,m,M,na,nf);
 	fflush(stdout);
-	if (m < length(parameters)){
+	if (m < nrp){
 		fprintf(stderr,"[%s] too many parameters supplied (%i) for model (%li).\n",__func__,length(parameters),m);
 	}
 	gsl_vector_int *x = gsl_vector_int_alloc(n);
@@ -149,16 +151,21 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 		f = PROTECT(alloc3DArray(REALSXP,nf,length(time),M));
 		for (k=0;k<M;k++){
 			t = t0;
-			p = REAL(parameters)+(k*nrows(parameters));
-			cat_parameters(c,p,nrows(parameters),input); /* c <- cat(p,input)*/
+			p = REAL(parameters)+(k*nrp);
+			cat_parameters(c,p,nrp,input); /* c <- cat(p,input)*/
 			model_particle_count(t0,REAL(initialState),x->data);
 			for (j=0; j<length(time); j++){
 				tf = REAL(AS_NUMERIC(time))[j];
 				while (t < tf){
 					advance_in_time(&t,x,c,a,RNG);
 				}
-				column = gsl_vector_int_view_array(INTEGER(y)+(n*M*k+n*j),n);
-				model_func(t,x->data,c->data,REAL(f)+(nf*M*k+nf*j));
+				/*
+				printf("[%s] propensity: ",__func__);
+				for (l=0;l<a->size;l++) printf("%g%c",a->data[l],( l < a->size-1 ? ',' : ' '));
+				printf("\n");
+				*/
+				column = gsl_vector_int_view_array(INTEGER(y)+(n*length(time)*k+n*j),n);
+				model_func(t,x->data,c->data,REAL(f)+(nf*length(time)*k+nf*j));
 				gsl_vector_int_memcpy(&(column.vector),x);
 			}
 		}

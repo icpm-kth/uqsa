@@ -156,16 +156,16 @@ the <a href="user_model.html">user model</a> article.</p>
 <span><span class="va">SBtab</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">modelFiles</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [tsv] file[1] «AKAP79_Compound.tsv» belongs to Document «AKAP79»</span></span>
 <span><span class="co">#&gt;  I'll take this as the Model Name.</span></span>
-<span><span class="co">#&gt; AKAP79_Compound.tsv  AKAP79_Experiments.tsv  AKAP79_Expression.tsv  AKAP79_Input.tsv  AKAP79_Output.tsv  AKAP79_Parameter.tsv  AKAP79_Reaction.tsv  AKAP79_SuggestedInput.tsv  AKAP79_SuggestedOutput.tsv  X0uM_cAMPCaN_AKAP79_0_nM_cAMP.tsv  X0uM_cAMPCaN_only_0_nM_cAMP.tsv  X0uM_cAMPno_CaN_0_nM_cAMP.tsv  X1000nM_cAMPCaN_AKAP79_1_uM_cAMP.tsv  X1000nM_cAMPCaN_only_1_uM_cAMP.tsv  X1000nM_cAMPno_CaN_1_uM_cAMP.tsv  X100nM_cAMPCaN_AKAP79_100_nM_cAMP.tsv  X100nM_cAMPCaN_only_100_nM_cAMP.tsv  X100nM_cAMPno_CaN_100_nM_cAMP.tsv  X2000nM_cAMPCaN_AKAP79_2_uM_cAMP.tsv  X2000nM_cAMPCaN_only_2_uM_cAMP.tsv  X2000nM_cAMPno_CaN_2_uM_cAMP.tsv  X200nM_cAMPCaN_AKAP79_200_nM_cAMP.tsv  X200nM_cAMPCaN_only_200_nM_cAMP.tsv  X200nM_cAMPno_CaN_200_nM_cAMP.tsv  X500nM_cAMPCaN_AKAP79_500_nM_cAMP.tsv  X500nM_cAMPCaN_only_500_nM_cAMP.tsv  X500nM_cAMPno_CaN_500_nM_cAMP.tsv</span></span>
+<span><span class="co">#&gt; AKAP79_Compound.tsv  AKAP79_Experiments.tsv  AKAP79_Expression.tsv  AKAP79_Input.tsv  AKAP79_Output.tsv  AKAP79_Parameter.tsv  AKAP79_Reaction.tsv  X0uM_cAMPCaN_AKAP79_0_nM_cAMP.tsv  X0uM_cAMPCaN_only_0_nM_cAMP.tsv  X0uM_cAMPno_CaN_0_nM_cAMP.tsv  X1000nM_cAMPCaN_AKAP79_1_uM_cAMP.tsv  X1000nM_cAMPCaN_only_1_uM_cAMP.tsv  X1000nM_cAMPno_CaN_1_uM_cAMP.tsv  X100nM_cAMPCaN_AKAP79_100_nM_cAMP.tsv  X100nM_cAMPCaN_only_100_nM_cAMP.tsv  X100nM_cAMPno_CaN_100_nM_cAMP.tsv  X2000nM_cAMPCaN_AKAP79_2_uM_cAMP.tsv  X2000nM_cAMPCaN_only_2_uM_cAMP.tsv  X2000nM_cAMPno_CaN_2_uM_cAMP.tsv  X200nM_cAMPCaN_AKAP79_200_nM_cAMP.tsv  X200nM_cAMPCaN_only_200_nM_cAMP.tsv  X200nM_cAMPno_CaN_200_nM_cAMP.tsv  X500nM_cAMPCaN_AKAP79_500_nM_cAMP.tsv  X500nM_cAMPCaN_only_500_nM_cAMP.tsv  X500nM_cAMPno_CaN_500_nM_cAMP.tsv</span></span>
 <span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,<span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,pat<span class="op">=</span><span class="st">"_gvf[.]c$"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).</span></span>
-<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './AKAP79.so' '/home/andrei/R/library/uqsa/extdata/AKAP79/AKAP79_gvf.c' `pkg-config --libs gsl`</span></span>
+<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './AKAP79.so' '/home/andreikr/.local/R/library/uqsa/extdata/AKAP79/AKAP79_gvf.c' `pkg-config --libs gsl`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">modelName</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "./AKAP79.so"</span></span>
 <span></span>
 <span><span class="co"># In the terminal run the following:</span></span>
 <span><span class="co"># ode.sh -R --maxima AKAP79.tar.gz &gt; AKAP79.R</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/system2.html" class="external-link">system2</a></span><span class="op">(</span>command <span class="op">=</span> <span class="st">"ode"</span>, args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"-R"</span>, <span class="st">"--maxima"</span>, <span class="st">"AKAP79.tar.gz"</span><span class="op">)</span>, stdout <span class="op">=</span> <span class="st">"AKAP79.R"</span><span class="op">)</span></span>
+<span><span class="co"># system2(command = "ode", args = c("-R", "--maxima", "AKAP79.tar.gz"), stdout = "AKAP79.R")</span></span>
 <span></span>
 <span><span class="co"># model related functions, in R, e.g. AKAP79_default() parameters</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,pat<span class="op">=</span><span class="st">'^AKAP79[.]R$'</span><span class="op">)</span><span class="op">)</span></span>
@@ -219,39 +219,17 @@ the <a href="user_model.html">user model</a> article.</p>
 <span><span class="co">#&gt;          0.00</span></span>
 <span></span>
 <span><span class="co"># pick parameters for simulation</span></span>
-<span><span class="va">nInput</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span><span class="op">)</span></span>
-<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="va">SBtab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[[</span><span class="st">"!DefaultValue"</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="va">par_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">SBtab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">par_names</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span>
-<span><span class="co">#&gt;            kf_Rii_C__RiiP_C kf_RiiP_CxcAMP__RiiP_C_cAMP </span></span>
-<span><span class="co">#&gt;                    33.00000                     0.49600 </span></span>
-<span><span class="co">#&gt; kf_RiiP_cAMPxC__RiiP_C_cAMP kb_RiiP_cAMPxC__RiiP_C_cAMP </span></span>
-<span><span class="co">#&gt;                     0.00545                     0.01560 </span></span>
-<span><span class="co">#&gt;     kb_RiiPXcAMP__RiiP_cAMP     kf_RiiPXcAMP__RiiP_cAMP </span></span>
-<span><span class="co">#&gt;                     0.00160                     0.01500 </span></span>
-<span><span class="co">#&gt;           kf_RiiPxC__RiiP_C           kb_RiiPxC__RiiP_C </span></span>
-<span><span class="co">#&gt;                     0.03800                     0.00260 </span></span>
-<span><span class="co">#&gt;       kf_cAMPxRii__Rii_cAMP       kb_cAMPxRii__Rii_cAMP </span></span>
-<span><span class="co">#&gt;                     0.01500                     0.00160 </span></span>
-<span><span class="co">#&gt;   kf_Rii_CxcAMP__Rii_C_cAMP   kb_Rii_CxcAMP__Rii_C_cAMP </span></span>
-<span><span class="co">#&gt;                     0.49600                     1.41300 </span></span>
-<span><span class="co">#&gt;             kf_RiixC__Rii_C   kf_Rii_cAMPxC__Rii_C_cAMP </span></span>
-<span><span class="co">#&gt;                     2.10000                     0.29840 </span></span>
-<span><span class="co">#&gt;   kb_Rii_cAMPxC__Rii_C_cAMP  kf_Rii_C_cAMP__RiiP_C_cAMP </span></span>
-<span><span class="co">#&gt;                     0.01800                    33.00000 </span></span>
-<span><span class="co">#&gt;             kb_RiixC__Rii_C                   AKAPoff_1 </span></span>
-<span><span class="co">#&gt;                     0.00030                     2.60000 </span></span>
-<span><span class="co">#&gt;                   AKAPoff_3                    AKAPon_1 </span></span>
-<span><span class="co">#&gt;                    20.00000                     0.45000 </span></span>
-<span><span class="co">#&gt;                    AKAPon_3                  kf_C_AKAR4 </span></span>
-<span><span class="co">#&gt;                     2.00000                     0.01800 </span></span>
-<span><span class="co">#&gt;                  kb_C_AKAR4                  kcat_AKARp </span></span>
-<span><span class="co">#&gt;                     0.10600                    10.20000 </span></span>
-<span><span class="co">#&gt;                       kmOFF                        kmON </span></span>
-<span><span class="co">#&gt;                   100.00000                     1.00000 </span></span>
-<span><span class="co">#&gt;                        KD_T </span></span>
-<span><span class="co">#&gt;                     0.70000</span></span></code></pre></div>
+<span><span class="va">nInput</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span><span class="op">)</span></span></code></pre></div>
+<p>Here, we set parameters that we obtained as a result of uncertainty
+quantification as the default parameters don’t produce a good fit, they
+are still not optimal:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fl">10</span><span class="op">^</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.38</span>,<span class="op">-</span><span class="fl">0.22</span>,<span class="op">-</span><span class="fl">0.39</span>,<span class="fl">0.0013</span>,<span class="fl">7.89e-2</span>,<span class="op">-</span><span class="fl">1.02</span>,<span class="op">-</span><span class="fl">1.08</span>,<span class="op">-</span><span class="fl">2.86</span>,<span class="op">-</span><span class="fl">0.53</span>,<span class="op">-</span><span class="fl">0.34</span>,<span class="op">-</span><span class="fl">0.51</span>,<span class="op">-</span><span class="fl">2.42</span>,<span class="op">-</span><span class="fl">1.05</span>,<span class="op">-</span><span class="fl">1.37</span>,<span class="op">-</span><span class="fl">1.29</span>,<span class="fl">2.08</span>,<span class="op">-</span><span class="fl">2.79</span>,<span class="op">-</span><span class="fl">0.87</span>,<span class="fl">0.26</span>,<span class="op">-</span><span class="fl">0.168</span>,<span class="op">-</span><span class="fl">0.331</span>,<span class="op">-</span><span class="fl">1.77</span>,<span class="op">-</span><span class="fl">0.938</span>,<span class="fl">1.065</span>,<span class="fl">2.08</span>,<span class="fl">0.0147</span>,<span class="op">-</span><span class="fl">0.09893</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">SBtab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span></span></code></pre></div>
+<p>If instead we wanted to use the default parameters, then we could use
+this code:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_quantity.html" class="external-link">sbtab_quantity</a></span><span class="op">(</span><span class="va">SBtab</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="simulate">Simulate<a class="anchor" aria-label="anchor" href="#simulate"></a>
@@ -260,35 +238,19 @@ the <a href="user_model.html">user model</a> article.</p>
 <code>s</code>, which will always simulate the scenarios described in
 experiment <code>e</code> (i.e., same initial conditions, same inputs),
 but for user supplied parameters.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">exp_ind</span> <span class="op">&lt;-</span> <span class="fl">9</span> <span class="co">#index of the experiment to consider</span></span>
 <span></span>
 <span><span class="co"># generate a function (s) that simulates a trajectory given a parameter in input</span></span>
 <span><span class="va">ssa2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.stoch.html">simulator.stoch</a></span><span class="op">(</span>experiment <span class="op">=</span> <span class="va">experiments</span>, model.tab <span class="op">=</span> <span class="va">SBtab</span>, vol <span class="op">=</span> <span class="fl">4e-16</span>, outputFunction <span class="op">=</span> <span class="va">AKAP79_func</span><span class="op">)</span></span>
-<span><span class="co"># vol indicates the volume in m^3 where the reactions take place</span></span>
 <span></span>
 <span><span class="co"># simulate a trajectory (y) given parameter p</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">ssa2</span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="plot">Plot<a class="anchor" aria-label="anchor" href="#plot"></a>
-</h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>bty<span class="op">=</span><span class="st">'n'</span>,xaxp<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">80</span>,<span class="fl">120</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[[</span><span class="va">exp_ind</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span>,</span>
-<span>     <span class="va">experiments</span><span class="op">[[</span><span class="va">exp_ind</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">$</span><span class="va">AKAR4pOUT</span>,</span>
-<span>     ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>,<span class="fl">180</span><span class="op">)</span>,</span>
-<span>     ylab<span class="op">=</span><span class="st">"AKAP79"</span>,</span>
-<span>     xlab<span class="op">=</span><span class="st">"time"</span>,</span>
-<span>     main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Experiment %i"</span>,<span class="va">exp_ind</span><span class="op">)</span>,</span>
-<span>     lwd<span class="op">=</span><span class="fl">1.5</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">[[</span><span class="va">exp_ind</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span>, <span class="va">y</span><span class="op">[[</span><span class="va">exp_ind</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">output</span>, col<span class="op">=</span><span class="st">"blue"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="simAKAP79stochastic_files/figure-html/plotting-1.png" width="700"></p>
-</div>
-<div class="section level2">
 <h2 id="simulation-results-via-ggplot2">Simulation Results via <code>ggplot2</code><a class="anchor" aria-label="anchor" href="#simulation-results-via-ggplot2"></a>
 </h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: ggplot2</span></span>
 <span></span>
@@ -296,10 +258,10 @@ but for user supplied parameters.</p>
 <span>              AKAP79<span class="op">=</span><span class="va">experiments</span><span class="op">[[</span><span class="va">exp_ind</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">$</span><span class="va">AKAR4pOUT</span>,</span>
 <span>              AKAP79ERR<span class="op">=</span><span class="va">experiments</span><span class="op">[[</span><span class="va">exp_ind</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">errorValues</span><span class="op">$</span><span class="va">AKAR4pOUT</span>,</span>
 <span>              sim<span class="op">=</span><span class="va">y</span><span class="op">[[</span><span class="va">exp_ind</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">output</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ggplot2/man/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/ggplot2/man/geom_linerange.html" class="external-link">geom_linerange</a></span><span class="op">(</span>mapping<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ggplot2/man/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,y<span class="op">=</span><span class="va">AKAP79</span>,ymin<span class="op">=</span><span class="va">AKAP79</span><span class="op">-</span><span class="va">AKAP79ERR</span>,ymax<span class="op">=</span><span class="va">AKAP79</span><span class="op">+</span><span class="va">AKAP79ERR</span><span class="op">)</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/ggplot2/man/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>mapping<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ggplot2/man/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,y<span class="op">=</span><span class="va">AKAP79</span><span class="op">)</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/ggplot2/man/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>mapping<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ggplot2/man/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,y<span class="op">=</span><span class="va">sim</span><span class="op">)</span>,color<span class="op">=</span><span class="st">"purple"</span>,lwd<span class="op">=</span><span class="fl">1.2</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">geom_linerange</a></span><span class="op">(</span>mapping<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,y<span class="op">=</span><span class="va">AKAP79</span>,ymin<span class="op">=</span><span class="va">AKAP79</span><span class="op">-</span><span class="va">AKAP79ERR</span>,ymax<span class="op">=</span><span class="va">AKAP79</span><span class="op">+</span><span class="va">AKAP79ERR</span><span class="op">)</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>mapping<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,y<span class="op">=</span><span class="va">AKAP79</span><span class="op">)</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>mapping<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time</span>,y<span class="op">=</span><span class="va">sim</span><span class="op">)</span>,color<span class="op">=</span><span class="st">"purple"</span>,lwd<span class="op">=</span><span class="fl">1.2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="simAKAP79stochastic_files/figure-html/ggplot-1.png" width="700"></p>
 </div>
 <div class="section level2">
@@ -307,44 +269,54 @@ but for user supplied parameters.</p>
 </h2>
 <p>Similarly, our built-in simulator <code><a href="../reference/simstoch.html">uqsa::simstoch()</a></code> can
 be used to obtain a similar result:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateGillespieCode.html">generateGillespieCode</a></span><span class="op">(</span><span class="va">SBtab</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">C</span>,sep<span class="op">=</span><span class="st">"\n"</span>,file<span class="op">=</span><span class="st">"AKAP79_st.c"</span><span class="op">)</span></span></code></pre></div>
 <p>We compile that model to a shared library:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">cc</span> <span class="at">-shared</span> <span class="at">-fPIC</span> <span class="at">-O2</span> <span class="at">-o</span> akap79-st.so AKAP79_st.c <span class="at">-lm</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">cc</span> <span class="at">-shared</span> <span class="at">-fPIC</span> <span class="at">-O2</span> <span class="at">-o</span> akap79-st.so AKAP79_st.c <span class="at">-lm</span></span></code></pre></div>
 <p>And next we simulate this compiled model:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">st</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/simstoch.html">simstoch</a></span><span class="op">(</span><span class="va">experiments</span>,model.so<span class="op">=</span><span class="st">"./akap79-st.so"</span><span class="op">)</span></span>
-<span><span class="va">yst</span> <span class="op">&lt;-</span> <span class="fu">st</span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></code></pre></div>
-<p>And also plot the results:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tm</span> <span class="op">&lt;-</span> <span class="va">experiments</span><span class="op">[[</span><span class="fl">9</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span></span>
-<span><span class="va">ov</span> <span class="op">&lt;-</span> <span class="va">experiments</span><span class="op">[[</span><span class="fl">9</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">$</span><span class="va">AKAR4pOUT</span></span>
-<span><span class="va">ev</span> <span class="op">&lt;-</span> <span class="va">experiments</span><span class="op">[[</span><span class="fl">9</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">errorValues</span><span class="op">$</span><span class="va">AKAR4pOUT</span></span>
+<code class="sourceCode R"><span><span class="va">P</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">p</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span>,<span class="fl">20</span><span class="op">)</span></span>
+<span><span class="va">st</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/simstoch.html">simstoch</a></span><span class="op">(</span><span class="va">experiments</span>,model.so<span class="op">=</span><span class="st">"./akap79-st.so"</span><span class="op">)</span></span>
+<span><span class="va">ystc</span> <span class="op">&lt;-</span> <span class="fu">st</span><span class="op">(</span><span class="va">P</span><span class="op">)</span></span></code></pre></div>
+<p>And also get a reference simulation from the ODE solver:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sode</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/simcf.html">simcf</a></span><span class="op">(</span><span class="va">experiments</span>,<span class="va">modelName</span><span class="op">)</span></span>
+<span><span class="va">yode</span> <span class="op">&lt;-</span> <span class="fu">sode</span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></code></pre></div>
+<p>And also plot the results:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tm</span> <span class="op">&lt;-</span> <span class="va">experiments</span><span class="op">[[</span><span class="va">exp_ind</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span></span>
+<span><span class="va">ov</span> <span class="op">&lt;-</span> <span class="va">experiments</span><span class="op">[[</span><span class="va">exp_ind</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">$</span><span class="va">AKAR4pOUT</span></span>
+<span><span class="va">ev</span> <span class="op">&lt;-</span> <span class="va">experiments</span><span class="op">[[</span><span class="va">exp_ind</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">errorValues</span><span class="op">$</span><span class="va">AKAR4pOUT</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>bty<span class="op">=</span><span class="st">"n"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tm</span>,<span class="va">ov</span>,xlab<span class="op">=</span><span class="st">"time"</span>,ylab<span class="op">=</span><span class="st">"AKAR4p"</span>,main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">)</span><span class="op">[</span><span class="fl">9</span><span class="op">]</span>,ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>,<span class="fl">210</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tm</span>,<span class="va">ov</span>,xlab<span class="op">=</span><span class="st">"time"</span>,ylab<span class="op">=</span><span class="st">"AKAR4p"</span>,main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">experiments</span><span class="op">)</span><span class="op">[</span><span class="va">exp_ind</span><span class="op">]</span>,ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>,<span class="fl">210</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span><span class="va">tm</span>,<span class="va">ov</span>,<span class="va">tm</span>,<span class="va">ov</span><span class="op">+</span><span class="va">ev</span>,angle<span class="op">=</span><span class="fl">90</span>,length<span class="op">=</span><span class="fl">0.02</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span><span class="va">tm</span>,<span class="va">ov</span>,<span class="va">tm</span>,<span class="va">ov</span><span class="op">-</span><span class="va">ev</span>,angle<span class="op">=</span><span class="fl">90</span>,length<span class="op">=</span><span class="fl">0.02</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">tm</span>,<span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">yst</span><span class="op">[[</span><span class="fl">9</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="st">"AKAR4pOUT"</span>,<span class="op">]</span><span class="op">)</span>,lwd<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">NCOL</a></span><span class="op">(</span><span class="va">P</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">tm</span>,<span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">ystc</span><span class="op">[[</span><span class="va">exp_ind</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="st">"AKAR4pOUT"</span>,,<span class="va">j</span><span class="op">]</span><span class="op">)</span>,lwd<span class="op">=</span><span class="fl">1</span>,col<span class="op">=</span><span class="st">"blue"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">tm</span>,<span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">yode</span><span class="op">[[</span><span class="va">exp_ind</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="st">"AKAR4pOUT"</span>,,<span class="fl">1</span><span class="op">]</span><span class="op">)</span>,lwd<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <p><img src="simAKAP79stochastic_files/figure-html/plot_simstoch-1.png" width="700"></p>
 <div class="section level3">
 <h3 id="benchmark">Benchmark<a class="anchor" aria-label="anchor" href="#benchmark"></a>
 </h3>
 <p>Here we test which of the two simulates faster:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="http://rbenchmark.googlecode.com" class="external-link">rbenchmark</a></span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="va">BM</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/rbenchmark/man/benchmark.html" class="external-link">benchmark</a></span><span class="op">(</span></span>
 <span>        GillespieSSA2 <span class="op">=</span> <span class="op">{</span><span class="va">y1</span><span class="op">&lt;-</span><span class="fu">ssa2</span><span class="op">(</span><span class="va">p</span><span class="op">)</span><span class="op">}</span>,</span>
-<span>        uqsa <span class="op">=</span> <span class="op">{</span><span class="va">y2</span> <span class="op">&lt;-</span> <span class="fu">st</span><span class="op">(</span><span class="va">p</span><span class="op">)</span><span class="op">}</span></span>
+<span>        uqsa <span class="op">=</span> <span class="op">{</span><span class="va">y2</span> <span class="op">&lt;-</span> <span class="fu">st</span><span class="op">(</span><span class="va">p</span><span class="op">)</span><span class="op">}</span>,</span>
+<span>        replications<span class="op">=</span><span class="fl">10</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="co">#&gt; Loading required package: rbenchmark</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">BM</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            test replications elapsed relative user.self sys.self user.child</span></span>
-<span><span class="co">#&gt; 1 GillespieSSA2          100 334.237   13.971     0.301    4.692    580.682</span></span>
-<span><span class="co">#&gt; 2          uqsa          100  23.923    1.000    23.891    0.017      0.000</span></span>
+<span><span class="co">#&gt; 1 GillespieSSA2           10 262.311   34.374     0.012    0.108    460.643</span></span>
+<span><span class="co">#&gt; 2          uqsa           10   7.631    1.000     7.626    0.002      0.000</span></span>
 <span><span class="co">#&gt;   sys.child</span></span>
-<span><span class="co">#&gt; 1    86.636</span></span>
+<span><span class="co">#&gt; 1     2.809</span></span>
 <span><span class="co">#&gt; 2     0.000</span></span></code></pre></div>
 </div>
 </div>
