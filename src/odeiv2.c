@@ -18,7 +18,7 @@
 #define MATCH 0
 #define NO_DIFFERENCE 0
 #define RCOND_LIMIT 1e-10
-#define ODE_TIME_LIMIT_SECONDS 10
+#define ODE_TIME_LIMIT_SECONDS 100
 #define TIME_LIMIT_ERROR 1<<11
 /* SEXP stands for S-Expression, and it can be any R data object (or
  * function) in this program, we'll only use data from R. However SEXP is
