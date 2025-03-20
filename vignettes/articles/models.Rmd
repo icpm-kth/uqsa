@@ -13,7 +13,7 @@ If the model can be described in terms of reactions, inputs, and
 outputs, then the most straightforward way to define it is through
 [SBtab tables](./SBtab.html).^[For completely different models (or solvers), the user must either write their own likelihood function (cost-function/objective-function) or write a .vf file manually, to generate C code from.] ^[It is also possible to directly write the model functions in C (for `gsl_odeiv2`).]
 
-The following R commands load the SBtab model and data into R as `data.frames`, and convert the model into an ODE.
+The following R commands load the SBtab model and data into R as `data.frames`, and convert the model into an ODE. First, you will need to get to the directory with the SBtab files by the command `setwd(...)`.
 
 ```{r, eval=FALSE}
 f <- dir(pattern="[.]tsv$",full.names=TRUE)          # file names
