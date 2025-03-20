@@ -18,8 +18,11 @@ The following commands load the SBtab model and data into R as `data.frames`, an
 ```{r, eval=FALSE}
 f <- dir(pattern="[.]tsv$",full.names=TRUE)          # file names
 sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
-cl <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # conservation laws, if any
-ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # includes the data
+ml <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # ODE model (as a list)
+ex <- SBtabVFGEN::sbtab.data(sb,ml$conservationLaws) # includes the data
+C <- uqsa::generateCode(ml)                          # C Code
+cat(C, sep = "\n", file = "AKAR4cl_gvf.c")
+
 ```
 
 The rest of this page describes the variables we just created, as well as the written files.
