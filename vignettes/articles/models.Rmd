@@ -13,7 +13,7 @@ If the model can be described in terms of reactions, inputs, and
 outputs, then the most straightforward way to define it is through
 [SBtab tables](./SBtab.html).^[For completely different models (or solvers), the user must either write their own likelihood function (cost-function/objective-function) or write a .vf file manually, to generate C code from.] ^[It is also possible to directly write the model functions in C (for `gsl_odeiv2`).]
 
-The following commands load the SBtab model and data into R as `data.frames`, and convert the model into an ODE.
+The following R commands load the SBtab model and data into R as `data.frames`, and convert the model into an ODE.
 
 ```{r, eval=FALSE}
 f <- dir(pattern="[.]tsv$",full.names=TRUE)          # file names
@@ -25,13 +25,28 @@ cat(C, sep = "\n", file = "AKAR4cl_gvf.c")
 
 ```
 
-The rest of this page describes the variables we just created, as well as the written files.
+Some of the R commands above belong to our external package [SBtabVFGEN](https://github.com/icpm-kth/SBtabVFGEN). 
+
+More information on the R commands used in the previous code block, and further instructions on building and simulating your own model can be found in the page ["Build and simulate your own model"](user_model.html).
+
+The rest of this page describes the variables and the files that we just created through the previous R commands.
 
 ---
 
 # Real Example
 
-```{r, eval=TRUE}
+```{r, eval=TRUE, include=FALSE}
+library(uqsa)
+library(SBtabVFGEN)
+
+f <- uqsa_example('AKAR4')                           # file names
+print(f[1])
+sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
+cl <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # conservation laws, if any
+ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # includes the data
+```
+
+```{r, eval=FALSE}
 library(uqsa)
 library(SBtabVFGEN)
 
@@ -94,7 +109,13 @@ grep '<Expression' AKAR4.vf
 
 Finally, we clean up the generated files:
 
-```{sh, eval=TRUE}
+```{sh, eval=TRUE, include=FALSE}
+for t in vf tar.gz zip ; do rm ./AKAR4.$t ; done
+[ -f AKAR4.xml ] && rm AKAR4.xml # since that one is optional
+echo $?
+```
+
+```{sh, eval=FALSE}
 for t in vf tar.gz zip ; do rm ./AKAR4.$t ; done
 [ -f AKAR4.xml ] && rm AKAR4.xml # since that one is optional
 echo $?
