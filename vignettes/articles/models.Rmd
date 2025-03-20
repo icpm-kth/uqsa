@@ -27,7 +27,7 @@ cat(C, sep = "\n", file = "AKAR4cl_gvf.c")
 
 Some of the R commands above belong to our external package [SBtabVFGEN](https://github.com/icpm-kth/SBtabVFGEN). 
 
-More information on the R commands used in the previous code block, and further instructions on building and simulating your own model can be found in the page ["Build and simulate your own model"](user_model.html).
+More information on the R commands used in the previous code block, and further instructions on building and simulating your own model can be found in the pages ["Build and simulate your own model"](user_model.html) and ["Importing Data"](data.html).
 
 The rest of this page describes the variables and the files that we just created through the previous R commands.
 
