@@ -34,10 +34,6 @@ SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
 modelName <- checkModel("AKAP79",uqsa_example("AKAP79",pat="_gvf[.]c$"))
 comment(modelName)
 
-# In the terminal run the following:
-# ode.sh -R --maxima AKAP79.tar.gz > AKAP79.R
-# system2(command = "ode", args = c("-R", "--maxima", "AKAP79.tar.gz"), stdout = "AKAP79.R")
-
 # model related functions, in R, e.g. AKAP79_default() parameters
 source(uqsa_example("AKAP79",pat='^AKAP79[.]R$'))
 print(AKAP79_default())
