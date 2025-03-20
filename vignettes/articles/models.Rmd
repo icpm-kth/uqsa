@@ -11,33 +11,31 @@ knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
 
 If the model can be described in terms of reactions, inputs, and
 outputs, then the most straightforward way to define it is through
-[SBtab tables](./SBtab.html). 
+[SBtab tables](./SBtab.html).^[For completely different models (or solvers), the user must either write their own likelihood function (cost-function/objective-function) or write a .vf file manually, to generate C code from.] ^[It is also possible to directly write the model functions in C (for `gsl_odeiv2`).]
 
-For completely different models (or solvers), the user must either write their own
-likelihood function (cost-function/objective-function) or write a vf
-file manually, to generate C code from.
-
-It is also possible to directly write the model functions in C (for `gsl_odeiv2`).
-
-The SBtab path uses these functions:
+The following R commands load the SBtab model and data into R as `data.frames`, and convert the model into an ODE.
 
 ```{r, eval=FALSE}
 f <- dir(pattern="[.]tsv$",full.names=TRUE)          # file names
 sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
-cl <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # conservation laws, if any
-ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # includes the data
+ml <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # ODE model (as a list)
+ex <- SBtabVFGEN::sbtab.data(sb,ml$conservationLaws) # includes the data
+C <- uqsa::generateCode(ml)                          # C Code
+cat(C, sep = "\n", file = "AKAR4cl_gvf.c")
+
 ```
 
-The SBtab model has now been loaded into R as `data.frames`, and also converted into an
-ODE. The data has been loaded as well. 
+Some of the R commands above belong to our external package [SBtabVFGEN](https://github.com/icpm-kth/SBtabVFGEN). 
 
-The rest of this page describes the variables we just created, as well as the written files.
+More information on the R commands used in the previous code block, and further instructions on building and simulating your own model can be found in the page ["Build and simulate your own model"](user_model.html).
+
+The rest of this page describes the variables and the files that we just created through the previous R commands.
 
 ---
 
 # Real Example
 
-```{r, eval=TRUE}
+```{r, eval=TRUE, include=FALSE}
 library(uqsa)
 library(SBtabVFGEN)
 
@@ -48,8 +46,18 @@ cl <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # conservation laws, if any
 ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # includes the data
 ```
 
-The `ex` variable holds simulation instructions as a plain R list:
-inputs, initial values, measurement times, etc. -- but also the actual data.
+```{r, eval=FALSE}
+library(uqsa)
+library(SBtabVFGEN)
+
+f <- uqsa_example('AKAR4')                           # file names
+print(f[1])
+sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
+cl <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # conservation laws, if any
+ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # includes the data
+```
+
+The `ex` variable holds simulation instructions for the different experiments as an R list that includes information on inputs, initial values, measurement times, etc., and also the actual data.
 
 
 SBtab content:
@@ -78,8 +86,8 @@ arrows(t,y,t,y-dy,angle=90, length=0.01)
 
 # Files
 
-The function `sbtab_to_vfgen` will produce several files, using the
-model's name (`Document='model_name'` attribute of SBtab):
+The function `sbtab_to_vfgen` will produce several files, with the
+model's name (`Document='model_name'` attribute of SBtab) and different extensions:
 
 - `model_name.vf`, a vfgen compatible file
 - `model_name.mod`, a NEURON mod file
@@ -93,7 +101,7 @@ Let's look at the state variables of the ode:
 grep '<StateVariable' AKAR4.vf
 ```
 
-Two State variables have been commented out. These two have been replaced by vfgen expressions:
+Two State variables have been commented out (through conservation law analysis). These two have been replaced by vfgen expressions:
 
 ```{sh, label='show Expressions',eval=TRUE}
 grep '<Expression' AKAR4.vf
@@ -101,7 +109,13 @@ grep '<Expression' AKAR4.vf
 
 Finally, we clean up the generated files:
 
-```{sh, eval=TRUE}
+```{sh, eval=TRUE, include=FALSE}
+for t in vf tar.gz zip ; do rm ./AKAR4.$t ; done
+[ -f AKAR4.xml ] && rm AKAR4.xml # since that one is optional
+echo $?
+```
+
+```{sh, eval=FALSE}
 for t in vf tar.gz zip ; do rm ./AKAR4.$t ; done
 [ -f AKAR4.xml ] && rm AKAR4.xml # since that one is optional
 echo $?
@@ -111,11 +125,11 @@ echo $?
 
 The vf file is compatible with the
 [vfgen](https://warrenweckesser.github.io/vfgen/) tool, which creates
-code in many languages from this `vf` file (matlab, cvode, octave,
-python, xppaut). Use this tool if you want to use the created source
+code in many languages from this `vf` file (MATLAB, CVODE, Octave,
+Python, XPPAUT). Use this tool if you want to use the created source
 code for other programming languages. Some SBtab content will be
-missing here (e.g. scheduled events). The vfgen tool uses the
-[ginac](https://www.ginac.de/) library to calculate Jacobians.  Ginac
+missing here (e.g., scheduled events). The vfgen tool uses the
+[GiNaC](https://www.ginac.de/) library to calculate Jacobians. GiNaC
 cannot parse vf files with inequality expressions in them (e.g. `a < b`).
 
 ### Converting the ODE to code
@@ -158,12 +172,12 @@ does nothing related to delays.
 
 Our goal is to perform *parameter estimation*. A *systems biology*
 model typically has parameters that are either reaction rate
-coefficients $k_f$, equilibrium constants $K_d$, Hill coefficients,
-and many other quantities related to *kinetc laws*; they are often
-unknown or not uniquely determined yet. But, not all parameters of a
-model are unknown, and not all model parameters are intrinsic to the
-system we study. Some of them model the interventions we do to the
-model when performing an experiment. This could be the frequency of a
+coefficients $k_f, k_b$, equilibrium constants $K_d$, Hill coefficients,
+and many other quantities related to *kinetc laws*. Parameters are often
+unknown or not uniquely determined yet. However, not all parameters of a
+model are unknown, and not all parameters are intrinsic to the
+system we study. Some of them describe the interventions we do to the
+system when performing an experiment. This could be the frequency of a
 driving force for a mechanical model, or the amount of a treatment
 dose (added to the system) that affects the time course of reactions:
 
@@ -176,11 +190,11 @@ These parameters are known to us, because they are written down in the
 protocol. If the input is time dependent, then its dynamics (or
 explicit algebraic functions) have to become part of the model. These
 input parameters can be different between experiments, but the
-intrinsic parameters are always the same.
+intrinsic parameters (e.g., reaction rate coefficients) are always the same.
 
-The ordinary differential equation on the other hand does not need to
+The ordinary differential equation, on the other hand, does not need to
 know the distinction between known or unknown parameters. For these
-reasons:
+reasons, we may write:
 
 ```R
 parMCMC <- [...]             # some sampling variable
@@ -190,13 +204,12 @@ p <- c(k,u)
 # solve ODE using p
 ```
 
-where `k` are intrinsic, unknown parameters (subject to sampling), and
+where `k` are intrinsic, unknown parameters (of which we quantify the uncertainty via sampling algorithms in UQSA), and
 `u` are the known input parameters that are encoded in the `input`
 field of an experiment.
 
 If input parameters `u` exist, then they are always concatenated (`p <-c(k,u)`) 
-in that order and passed to the model, the model's C code
-only sees `p`. The wrapper functions in the `rgsl` package do this
+in that order (after intrinsic, unknown parameters) and passed to the model. The model's C code only sees `p`. The wrapper functions in the `rgsl` package do this
 concatenation when the solver is called. We sample in
 logarithmic space, but the solver gets `k` and appends
 the right `u` for each experiment, both in linear space.
