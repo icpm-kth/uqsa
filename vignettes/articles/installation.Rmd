@@ -84,7 +84,7 @@ remotes::install_github("icpm-kth/uqsa",dependencies=TRUE)
 MPI is intended for compute clusters (HPC) and is typically not needed if
 you have one machine you want to do simulations on.
 
-We do have several examples about MPI usage with this package (see documentation on [Parallel chains with MPI](mpi.Rmd) and Example [UQ on deterministic AKAR4 with MPI](sampleAKAR4mpi.html)). However, if you want to try them, you will need MPI.
+We do have several examples about MPI usage with this package (see documentation on [Parallel chains with MPI](mpi.html) and Example [UQ on deterministic AKAR4 with MPI](sampleAKAR4mpi.html)). However, if you want to try them, you will need MPI.
 
 To install MPI on Debian/Ubuntu:
 
