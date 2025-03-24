@@ -23,7 +23,7 @@ In this article, we are simulating the AKAR4 model with default parameters which
 # Load the Model
 
 This model is included with the package. To load your own model, see
-the [user model](user_model.html) article.
+the article [Build your own model](user_model.html).
 
 ```{r}
 
@@ -110,6 +110,7 @@ y_with_noise <- sim_with_noise(p)
 
 
 In the AKAR4 example we have a list of 3 experiments, thus function `sim` simulates the system 3 times, each time considering the specific initial condition of the corresponding experiment. The output of function `sim` (here saved in the variable `y`) is a list of 3 elements, corresponding to the 3 experimental conditions. Each element of the list is in turn a list with the following elements:
+
 * `state` (simulated trajectory of the ODE system)
 * `func` (the corresponding output of the system given the computed `state`)
 * `cpuSeconds` (simulation runtime)
@@ -149,7 +150,7 @@ arrows(x0=tm,x1=tm,y0=out,y1=out-err,angle=90,length=0.025)
 ```
 
 
-We now run the same code to plot the simulations with nois `y_with_noise`.
+We now run the same code to plot the simulations with noise `y_with_noise`.
 
 ```{r}
 E <- 2 # which experiment to plot
