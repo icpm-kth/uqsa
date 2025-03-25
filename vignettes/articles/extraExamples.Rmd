@@ -11,6 +11,7 @@ knitr::opts_chunk$set(cache = TRUE,
 
 Here are some more examples:
 
+- [Sample AKAR4 with Parallel Tempering](./sampleAKAR4mpi.html)
 - [Simulate AKAP79 deterministically and add noise](./simAKAP79.html)
 - [Simulate AKAP79 stochastically](./simAKAP79stochastic.html)
 - [Sample deterministic AKAP79 with ABC](./AKAP79.html)
