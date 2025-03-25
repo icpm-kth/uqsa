@@ -27,7 +27,7 @@ For information about the stochastic model, please read the article
 # Load the Model
 
 This model is included with the package. To load your own model, see
-the [user model](user_model.html) article.
+the article ["Build and simulate your own Model"](user_model.html).
 
 ```{r}
 modelFiles <- uqsa_example("AKAR4",full.names=TRUE)
@@ -45,7 +45,7 @@ To simulate the stochastic reaction network model we use the *Gillespie algorith
 reactions <- importReactionsSSA(SBtab)
 ```
 
-Moreover, to simulate the stochastic reactions with the Gillespie algorithm we need to specify the volume of space where the reactions take place and obtain the parameter `Phi` which will be needed for simulations.
+Moreover, to simulate the stochastic reactions with the Gillespie algorithm we need to specify the volume of space where the reactions take place and obtain the parameter `Phi` which will be needed for simulations. See [this article](https://doi.org/10.1186/1752-0509-5-187) for more information
 
 ```{r}
 AvoNum <- 6.022e23 #Avogadro constant
