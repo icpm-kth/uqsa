@@ -29,7 +29,7 @@ To obtain the stochastic model for the reaction network, we need to compute the 
 # Load the Model
 
 This model is included with the package. To load your own model, see
-the [user model](user_model.html) article.
+the article ["Build and simulate your own Model"](user_model.html).
 
 ```{r}
 modelFiles <- uqsa_example("AKAP79",full.names=TRUE)
