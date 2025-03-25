@@ -1,5 +1,5 @@
 ---
-title: "Example Simulation"
+title: "Simulate AKAP79 deterministically and add noise"
 ---
 
 ```{r, include = FALSE}
