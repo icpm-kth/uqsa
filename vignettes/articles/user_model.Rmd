@@ -127,7 +127,8 @@ if (require(deSolve)){
 
 # Simulate
 
-We now show how to simulate the model the same conditions as in the experiments (e.g., same initial conditions).
+We now show how to simulate the model the same conditions as in the experiments (e.g., same initial conditions). More details on simulating the model can be found in the page ["Simulating a model"](simulate.html).
+
 
 ```{r, eval=TRUE}
 # import the experimental data
