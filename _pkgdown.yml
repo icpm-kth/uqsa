@@ -54,8 +54,6 @@ navbar:
           href: articles/simAKAR4stochastic.html
         - text: UQ on deterministic AKAR4
           href: articles/sampleAKAR4.html
-        - text: UQ on deterministic AKAR4 with MPI
-          href: articles/sampleAKAR4mpi.html
         - text: UQ on stochasic AKAR4
           href: articles/sampleAKAR4stochastic.html
         - text: GSA on AKAR4
