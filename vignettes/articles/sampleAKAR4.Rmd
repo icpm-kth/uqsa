@@ -17,7 +17,7 @@ library(rgsl)
 
 # Load Model and Data
 
-The first step is to locate and load the SBtab model files. In this example we use the SBtab files from an already existing example ("AKAR4"). (In the [user model](user_model.html) article you can read about how the set up your own SBtab model. You can list the files in a directory with the `dir()` command.)  
+The first step is to locate and load the SBtab model files. In this example we use the SBtab files from an already existing example ("AKAR4"). (In the article ["Build and simulate your own Model](user_model.html) you can read about how the set up your own SBtab model. You can list the files in a directory with the `dir()` command.)  
 
 
 ```{r}
