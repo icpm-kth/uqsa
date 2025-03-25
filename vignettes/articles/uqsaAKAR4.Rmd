@@ -17,7 +17,7 @@ library(rgsl)
 
 # Load Model and Data
 
-First we load the model and data, for detailed explinations see previous examples.
+First we load the model and data, for detailed explinations see previous examples ([Simulate AKAR4 deterministically](./simAKAR4.html)).
 
 ```{r, eval=FALSE}
 f  <- uqsa::uqsa_example("AKAR4")
