@@ -1,5 +1,5 @@
 ---
-title: "Uncertainty Quantification on AKAR4 (deterministic)"
+title: "Uncertainty Quantification and global Sensitivity Analysis on AKAR4 (deterministic)"
 ---
 
 ```{r, include = FALSE}
@@ -19,7 +19,17 @@ library(rgsl)
 
 First we load the model and data, for detailed explinations see previous examples.
 
-```{r}
+```{r, eval=FALSE}
+f  <- uqsa::uqsa_example("AKAR4")
+sb <- SBtabVFGEN::sbtab_from_tsv(f)
+m  <- SBtabVFGEN::sbtab_to_vfgen(sb, cla=FALSE)
+ex <- SBtabVFGEN::sbtab.data(sb)
+C <- uqsa::generateCode(m)
+cat(C,sep="\n",file="./AKAR4_gvf.c")
+modelName <- checkModel("AKAR4",modelFile="./AKAR4_gvf.c")
+```
+
+```{r, eval=TRUE, include=FALSE}
 f  <- uqsa::uqsa_example("AKAR4")
 sb <- SBtabVFGEN::sbtab_from_tsv(f)
 m  <- SBtabVFGEN::sbtab_to_vfgen(sb, cla=FALSE)
