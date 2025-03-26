@@ -20,7 +20,7 @@ We have also implemented a [method based on binning](https://doi.org/10.1093/bio
 
 In this [example](GSA_AKAR4.html), both methods for GSA are used and compared.
 
-The Saltelli method requires that the parameter-matrices $M1,M2$ and $N$ is created. This can be done with the function `saltelli_prior()`. Next the corresponding model output has to be calculated (simulated). This gives corresponding matrices $FM1,FM2$ and $FN$. From $FM1,FM2$ and $FN$ the sobol indexes can next be calculated by the function `gsa_saltelli()`. For details see this [example](GSA_AKAR4.html).
+The Saltelli method requires that the parameter-matrices $M_1$, $M_2$ and $N$ is created. This can be done with the function `saltelli_prior()`. Next the corresponding model output has to be calculated (simulated). This gives corresponding matrices $FM_1$, $FM_2$ and $FN$. From $FM_1$, $FM_2$ and $FN$ the sobol indexes can next be calculated by the function `gsa_saltelli()`. For details see this [example](GSA_AKAR4.html).
 
 The binning method can be used directly on a (in most cases non-independent) sample from an uncertainty quantification process. The function `gsa_binning()`takes the parameter and output sample as input and returns Sobols first order sensitivity indexes. For details see this [example](GSA_AKAR4.html).
 
