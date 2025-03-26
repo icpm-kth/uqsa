@@ -17,6 +17,8 @@ int (*model_reaction_coefficients)(double *c);
 int (*model_initial_counts)(int *x);
 int (*model_func)(double t, int *x, double *c, double *f);
 int (*model_particle_count)(double t, double *molarity, int *x);
+int (*model_particle_count)(double t, double *molarity, int *x);
+int (*model_stochastic_parameters)(double t, double *par);
 
 void* load_model(const char *model_so){
 	void *lib=dlopen(model_so,RTLD_LAZY);
@@ -46,6 +48,9 @@ void* load_model(const char *model_so){
 		}
 		if ((model_particle_count=dlsym(lib,"model_particle_count"))==NULL){
 			fprintf(stderr,"[%s] loading model_particle_count has failed.\n",__func__);
+		}
+		if ((model_stochastic_parameters=dlsym(lib,"model_stochastic_parameters"))==NULL){
+			fprintf(stderr,"[%s] loading model_stochastic_parameters has failed.\n",__func__);
 		}
 	}
 	if (model_so_2) free(model_so_2);
@@ -122,6 +127,7 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 	}
 	gsl_vector_int *x = gsl_vector_int_alloc(n);
 	gsl_vector *c = gsl_vector_alloc(m);
+	gsl_vector *krc = gsl_vector_alloc(m);
 	gsl_vector *a = gsl_vector_alloc(na);
 	size_t nu;
 	double t0 = 0;
@@ -153,7 +159,13 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 			t = t0;
 			p = REAL(parameters)+(k*nrp);
 			cat_parameters(c,p,nrp,input); /* c <- cat(p,input)*/
-			model_particle_count(t0,REAL(initialState),x->data);
+			gsl_vector_memcpy(krc,c);
+			if (model_stochastic_parameters){
+				model_stochastic_parameters(t0,c->data);
+			}
+			if (model_particle_count){
+				model_particle_count(t0,REAL(initialState),x->data);
+			}
 			for (j=0; j<length(time); j++){
 				tf = REAL(AS_NUMERIC(time))[j];
 				while (t < tf){
@@ -165,7 +177,7 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 				printf("\n");
 				*/
 				column = gsl_vector_int_view_array(INTEGER(y)+(n*length(time)*k+n*j),n);
-				model_func(t,x->data,c->data,REAL(f)+(nf*length(time)*k+nf*j));
+				model_func(t,x->data,krc->data,REAL(f)+(nf*length(time)*k+nf*j));
 				gsl_vector_int_memcpy(&(column.vector),x);
 			}
 		}

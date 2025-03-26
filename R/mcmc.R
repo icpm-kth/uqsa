@@ -699,7 +699,7 @@ smmalaUpdate <- function(simulate, experiments, logLikelihood, dprior, gradLogLi
 		P <- priorProposal/priorGiven %otherwise% 0.0
 		K <- bwdDensity/fwdDensity %otherwise% 0.0
 		flush.console()
-		if (is.finite(L) && is.finite(K) && runif(1) < L * P * K){
+		if (is.finite(L) && is.finite(K) && is.finite(P) && runif(1) < L * P * K){
 			attr(parProposal,"accepted") <- TRUE
 			return(parProposal)
 		} else {

@@ -66,7 +66,7 @@ stoichiometry <- function(formulaList){
 #' @param LV Avogadro's constant multiplied with the system's volume (the default is a reasonable value for a small volume)
 #' @return a vector of parameter conversion factors
 #' @export
-parameterConversion <- function(value, unit, stoichiometry, LV=6.02214076e+8){
+parameterConversion <- function(value, unit, stoichiometry){
 	order <- unlist(lapply(stoichiometry,sum))
 	l <- lapply(stoichiometry,length)
 	u <- lapply(unit,SBtabVFGEN::unit.from.string) # data.frames
@@ -75,8 +75,7 @@ parameterConversion <- function(value, unit, stoichiometry, LV=6.02214076e+8){
 	# unit conversion factor
 	f <- unlist(lapply(u,\(x) 10^sum(x$scale*x$exponent)))
 	# taking reaction order into account:
-	CF <- LV^(1-order)*f*(1+aa)
-	names(CF) <- names(value)
+	CF <- data.frame(order=order, lvpower=(1-order), factor=f*(1+aa),row.names=names(value))
 	return(CF)
 }
 
@@ -97,13 +96,13 @@ parameterReaction <- function(reactionKinetic,parNames){
 	return(list(fwd=unlist(k_fwd),bwd=unlist(k_bwd)))
 }
 
-initialCount <- function(sb,LV=6.02214076e+8){
+initialCount <- function(sb){
 	v <- sb$Compound[["!InitialValue"]]
 	names(v) <- rownames(sb$Compound)
 	unit <- sb$Compound[["!Unit"]]
 	u <- lapply(unit,SBtabVFGEN::unit.from.string)
 	f <- unlist(lapply(u,\(x) 10^sum(x$scale*x$exponent)))
-	return(v*f*LV)
+	return(v*f)
 }
 
 #' Concentration to Count Conversion
@@ -129,20 +128,20 @@ initialCount <- function(sb,LV=6.02214076e+8){
 #' @return f a conversion factor: n <- f*x, where n is a particle
 #'     count and x a concentration in the specified volume.
 #' @export
-ccc <- function(sb,LV=6.02214076e+8){
+ccc <- function(sb){
 	u <- lapply(sb$Compound[["!Unit"]],SBtabVFGEN::unit.from.string)
-	f <- unlist(lapply(u,\(x) 10^sum(x$scale*x$exponent)))*LV
+	f <- unlist(lapply(u,\(x) 10^sum(x$scale*x$exponent)))
 	names(f) <- rownames(sb$Compound)
 	return(f)
 }
 
-simpleConversion <- function(v,unit,LV=6.02214076e+8){
+simpleConversion <- function(v,unit){
 	u <- lapply(unit,SBtabVFGEN::unit.from.string)
 	x <- unlist(lapply(u,\(u) u$exponent[pmatch("mole",u$kind)]))
 	x[is.na(x)] <- 0.0
 	f <- unlist(lapply(u,\(u) 10^sum(u$scale*u$exponent)))
-	cf <- f*LV^x
-	names(cf) <- names(v)
+	cf <- data.frame(factor=f, lvpower=x)
+	rownames(cf) <- names(v)
 	return(cf)
 }
 
@@ -160,7 +159,7 @@ simpleConversion <- function(v,unit,LV=6.02214076e+8){
 #' @param LV Avogadro's constant L multiplied by the system's volume V.
 #' @return a list containing the interpreted model.
 #' @export
-makeGillespieModel <- function(sb,LV=6.02214076e+8){
+makeGillespieModel <- function(sb){
 	f <- sb$Reaction[["!ReactionFormula"]]
 	rev <- as.logical(sb$Reaction[["!IsReversible"]])
 	F <- sub("*"," ",trimws(unlist(strsplit(f,"<=>",fixed=TRUE))),fixed=TRUE)
@@ -177,15 +176,15 @@ makeGillespieModel <- function(sb,LV=6.02214076e+8){
 	names(u) <- c(rownames(sb$Parameter),rownames(sb$Input))
 
 	pr <- parameterReaction(sb$Reaction[["!KineticLaw"]],rownames(sb$Parameter))
-	convFactorFwd <- parameterConversion(k[names(pr$fwd)], u[names(pr$fwd)], cl[pr$fwd], LV)
-	convFactorBwd <- parameterConversion(k[names(pr$bwd)], u[names(pr$bwd)], cr[pr$bwd], LV)
-	l <- !(names(k) %in% names(convFactorFwd) | names(k) %in% names(convFactorBwd))
-	scv <- simpleConversion(k[l],u[l],LV)
+	convFactorFwd <- parameterConversion(k[names(pr$fwd)], u[names(pr$fwd)], cl[pr$fwd])
+	convFactorBwd <- parameterConversion(k[names(pr$bwd)], u[names(pr$bwd)], cr[pr$bwd])
+	l <- !(names(k) %in% rownames(convFactorFwd) | names(k) %in% rownames(convFactorBwd))
+	scv <- simpleConversion(k[l],u[l])
 	cUnit <- sb$Compound[["!Unit"]]
 	names(cUnit) <- rownames(sb$Compound)
 	parUnit <- c(sb$Parameter[["!Unit"]],sb$Input[["!Unit"]])
 	names(parUnit) <- c(rownames(sb$Parameter),rownames(sb$Input))
-	return(list(left=cl,right=cr,cvf=convFactorFwd,cvb=convFactorBwd,scv=scv,initialCount=initialCount(sb,LV),par=k,compoundUnit=cUnit, parameterUnit=parUnit))
+	return(list(left=cl,right=cr,scf=convFactorFwd,scb=convFactorBwd,scv=scv,initialCount=initialCount(sb),par=k,compoundUnit=cUnit, parameterUnit=parUnit))
 }
 
 reactionEffect <- function(sm){
@@ -217,6 +216,36 @@ padding <- function(v,upper.bound=40){
 	return(upper.bound - lengths(v))
 }
 
+#' Retruns a string that contains code to scale the parameter
+#'
+#' The goal is to convertthe kinetic parameter k to the stochastic
+#' parameter c.
+#'
+#' The input is a pre-calculated factor f, determined from the
+#' parameter's unit and reaction order. LV is an importantfactor for
+#' conversion between molecule numbers and concentrations, the
+#' appropriate exponent for LV is passed as x: c = f * LV^x * k
+#'
+#' @param f the value of the scaling factor (a numeric vector), derived from the unit of the knietic parameter and stoichiometry. 
+#' @param x the reaction order based exponent of LV
+#' @param name the name of the parameter
+#' @return string with scaling instructions (C)
+scaleParameter <- function(f,x,name,arg="par"){
+	return(
+		paste0(
+		sprintf("\t%s[_%s] = ",arg,name),
+		ifelse(f<1,sprintf("(%s[_%s]/%g)",arg,name,1.0/f),sprintf("(%s[_%s]*%g)",arg,name,f)),
+		mapply(\(x,name)
+			switch(as.character(x),
+			'1'="*LV;",
+			'0'=";",
+			'-1'="/LV;",
+			'-2'="/(LV*LV);",
+			sprintf("/pow(LV,%i);",x)),x,name)
+		)
+	)
+}
+
 #' Generate C Code to solve a model stochastically
 #'
 #' This function tries to generate code for a stochastic solver, but
@@ -235,7 +264,7 @@ padding <- function(v,upper.bound=40){
 #' @return character vector with code
 #' @export
 generateGillespieCode <- function(sb,LV=6.02214076e+8){
-	sm <- makeGillespieModel(sb,LV)
+	sm <- makeGillespieModel(sb)
 	KL <- sb$Reaction[["!KineticLaw"]]
 	RC <- ifelse(
 		grepl("-",KL,fixed=TRUE),
@@ -249,35 +278,28 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"\t/* constants */",
 	sprintf("\t double %s = %s; /* %s */",rownames(sb$Constant),sb$Constant[["!Value"]],sb$Constant[["!Unit"]]),
 	"\t/* forward parameters */",
-	sprintf("\tdouble %s = %g * c[_%s]; /* per second */",names(sm$cvf),sm$cvf,names(sm$cvf)),
+	sprintf("\tdouble %s = c[_%s]; /* per second */",rownames(sm$scf),rownames(sm$scf)),
 	"\t/* backward parameters */",
-	sprintf("\tdouble %s = %g * c[_%s]; /* per second */",names(sm$cvb),sm$cvb,names(sm$cvb)),
+	sprintf("\tdouble %s = c[_%s]; /* per second */",rownames(sm$scb),rownames(sm$scb)),
 	"\t/* parameters that do not appear in kinetric laws */",
-	sprintf("\tdouble %s = %g * c[_%s]; /* per second */",names(sm$scv),sm$scv,names(sm$scv)),
-	"\t/*state variables */",
-	sprintf("\tdouble %s = x[_%s];",rownames(sb$Compound),rownames(sb$Compound)),
-	sprintf("\tdouble %s = %s;",rownames(sb$Expression),sb$Expression[["!Formula"]])
+	sprintf("\tdouble %s = c[_%s]; /* per second */",rownames(sm$scv),rownames(sm$scv)),
+	"\t/*state variables */"
 	)
-	FuncDefinitions <- c(
-	"\t/* constants */",
-	sprintf("\t double %s = %s; /* %s */",rownames(sb$Constant),sb$Constant[["!Value"]],sb$Constant[["!Unit"]]),
-	"\t/* forward parameters */",
-	sprintf("\tdouble %s = c[_%s];",names(sm$cvf),names(sm$cvf)),
-	"\t/* backward parameters */",
-	sprintf("\tdouble %s = c[_%s];",names(sm$cvb),names(sm$cvb)),
-	"\t/* parameters that do not appear in kinetric laws */",
-	sprintf("\tdouble %s = c[_%s];",names(sm$scv),names(sm$scv)),
-	"\t/*state variables */",
-	sprintf("\tdouble %s = ((double) x[_%s])/((double) %g); /* %s */",names(sm$initialCount),names(sm$initialCount),ccc(sb,LV),sm$compoundUnit),
+	Counts <- c(
+		sprintf("\tdouble %s = x[_%s];",rownames(sb$Compound),rownames(sb$Compound)),
+		sprintf("\tdouble %s = %s;",rownames(sb$Expression),sb$Expression[["!Formula"]])
+	)
+	FuncMolarities <- c(
+	sprintf("\tdouble %s = ((double) x[_%s])/(LV * %g); /* %s */",names(sm$initialCount),names(sm$initialCount),ccc(sb),sm$compoundUnit),
 	sprintf("\tdouble %s = %s;",rownames(sb$Expression),sb$Expression[["!Formula"]])
 	)
 	C <- c(
 	"#include <stdlib.h>",
 	"#include <math.h>","",
 	"/* System's volume at creation time: */",
-	sprintf("#define sys_volume %g",LV/6.02214076E23),
+	sprintf("static const double sys_volume = %16g;",LV/6.02214076E23),
 	"/* Product of Avogadro's number L (6.02214076E23) and volume V: */",
-	sprintf("#define LV %g",LV),
+	sprintf("static const double LV = %16g;",LV),
 	"/* This model was created from an SBtab file,         */",
 	"/* which always describes a systems biology model of  */",
 	"/* concentrations and kinetic laws. This code         */",
@@ -311,6 +333,7 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"int model_propensities(double t, int *x, double *c, double *a){",
 	"\tif (!x || !a) return numReactions;",
 	Definitions,
+	Counts,
 	unlist(mapply(\(x,n,rf) {sprintf("\ta[_%s_fwd] = %s; /* %s */",n,x,rf)},RC[,1],rownames(sb$Reaction),sub("<=>","->",sb$Reaction[["!ReactionFormula"]],fixed=TRUE))),
 	unlist(mapply(\(x,n,rf) {sprintf("\ta[_%s_bwd] = %s; /* %s */",n,x,rf)},RC[,2],rownames(sb$Reaction),sub("<=>","<-",sb$Reaction[["!ReactionFormula"]],fixed=TRUE))),
 	"\treturn 0;",
@@ -325,15 +348,25 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"}","",
 	"int model_initial_counts(int *x){",
 	"\tif(!x) return numStateVariables;",
-	sprintf("\tx[_%s] = %i; /* %g */",names(sm$initialCount),round(sm$initialCount),sm$initialCount),
+	sprintf("\tx[_%s] = lround(%g * LV); /* %g %s */",names(sm$initialCount),sm$initialCount,sm$initialCount,sm$compoundUnit),
 	"\treturn 0;",
 	"}","",
 	"/* This function will try to convert the model's state to concentrations */",
 	"/* We assume that the model was originally phrased as concentrations and kinetic laws. */",
 	"int model_func(double t, int *x, double *c, double *func){",
 	"\tif(!func) return numFunctions;",
-	FuncDefinitions,
+	Definitions,
+	FuncMolarities,
 	sprintf("\tfunc[_%s] = %s;",rownames(sb$Output),sb$Output[["!Formula"]]),
+	"\treturn 0;",
+	"}","",
+	"/* given kinetic parameters, calculate the stochastic parameters needed for propensities */",
+	"/* The changes are made in place */",
+	"int model_stochastic_parameters(double t, double *par){",
+	"\tif (!par) return numParameters;",
+	scaleParameter(sm$scf$factor,sm$scf$lvpower,rownames(sm$scf)),
+	scaleParameter(sm$scb$factor,sm$scb$lvpower,rownames(sm$scb)),
+	scaleParameter(sm$scv$factor,sm$scv$lvpower,rownames(sm$scv)),
 	"\treturn 0;",
 	"}","",
 	"/* The list of experiments we'll receive from R will cointain */",
@@ -341,7 +374,7 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"/* We need to convert them.                                   */",
 	"int model_particle_count(double t, double *molarity, int *x){",
 	"\tif(!molarity || !x) return numStateVariables;",
-	sprintf("\tx[_%s] = lround(%g * molarity[_%s]);",rownames(sb$Compound),ccc(sb,LV),rownames(sb$Compound)),
+	sprintf("\tx[_%s] = lround(%g * molarity[_%s] * LV);",rownames(sb$Compound),ccc(sb),rownames(sb$Compound)),
 	"\treturn 0;",
 	"}"
 	)
