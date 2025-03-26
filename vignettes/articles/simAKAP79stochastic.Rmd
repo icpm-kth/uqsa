@@ -23,20 +23,19 @@ are not expected to fit the data (this is the starting point).
 
 When the copy number of molecular species in a reaction network system (AKAP79 in our case) is low, we cannot model the amount of molecules deterministically (e.g., with an ODE model), because the stochasticity in the reactions that take place cannot be ignored. In particular, the time at which reactions take place is random, as well as the specific reactions that take place (i.e., what pair of molecules react). To model such system we can use the *master equation*: we model the (integer) number of each molecule species in the system (e.g., proteins) and how the number of each molecule type (randomly) evolves in time. The likelihood of this model is hard to compute; however, we can easily sample trajectories from this stochastic model using the *Gillespie algorithm*. Given the current amount of each molecular species in the system at a given time point, we can sample the time at which the next reaction takes place and we can sample the type of reaction (i.e., what pair of molecules react).
 
+To obtain the stochastic model for the reaction network, we need to compute the reaction _propensities_. These can be related to the reaction rate coefficients, that are the parameters that we usually use in our models, and on which we perform uncertainty quantification. To derive the reaction propensities we referred to [this article](https://doi.org/10.1186/1752-0509-5-187).
+
+
 # Load the Model
 
 This model is included with the package. To load your own model, see
-the [user model](user_model.html) article.
+the article ["Build and simulate your own Model"](user_model.html).
 
 ```{r}
 modelFiles <- uqsa_example("AKAP79",full.names=TRUE)
 SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
 modelName <- checkModel("AKAP79",uqsa_example("AKAP79",pat="_gvf[.]c$"))
 comment(modelName)
-
-# In the terminal run the following:
-# ode.sh -R --maxima AKAP79.tar.gz > AKAP79.R
-# system2(command = "ode", args = c("-R", "--maxima", "AKAP79.tar.gz"), stdout = "AKAP79.R")
 
 # model related functions, in R, e.g. AKAP79_default() parameters
 source(uqsa_example("AKAP79",pat='^AKAP79[.]R$'))

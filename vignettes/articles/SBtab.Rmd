@@ -17,7 +17,11 @@ library(uqsa)
 
 The R package `uqsa`, typically imports systems biology models and
 corresponding data stored in [SBtab](https://www.sbtab.net)
-files. SBtab is a table format for system biology. The use of SBtab is
+files. SBtab is a table format for system biology.
+
+You can find examples of SBtab tables at [this page](https://github.com/icpm-kth/uqsa/tree/master/inst/extdata/AKAR4). They are saved in the format of .tsv files.
+
+The use of SBtab is
 optional, but very practical. SBML models currently cannot be imported
 by this package, but can be converted to SBtab using the online tools
 that [sbtab.net](https://www.sbtab.net) provides. There could however be

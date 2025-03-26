@@ -14,8 +14,9 @@ UQSA is an R-package for modelling and calibration of biochemical (and other) re
 
 
 <br>
-An important part of this is the parameter estimation (calibration), and to make sure that the uncertainty in the parameter estimates and predictions are accounted for. UQSA allow you to perform Baysian *uncertainty quantification* while calibrating your model. With UQSA you can also do a global *sensitivity analysis* to guide further experiments.
-(To get to know UQSA quickly try out our smallest and easiest example: [AKAR4](AKAR4.html).)
+An important part of modelling is to estimate parameters (calibration), and to account for the uncertainty in the parameter estimates and predictions. UQSA allows you to perform Bayesian *uncertainty quantification* while calibrating your model. With UQSA you can also do a global *sensitivity analysis* to guide further experiments.
+
+For a quick hands-on introduction to UQSA, you can try our example on [UQ and SA on the AKAR4 model](uqsaAKAR4.html).
 
 ![**UQSA workflow**](uqsa.png){width=100%}
 
@@ -23,9 +24,9 @@ An important part of this is the parameter estimation (calibration), and to make
 <br>
 
 
-UQSA is specially constructed for systems biology models as we use the [SBtab](https://sbtab.net) format to define the model and calibration data (see [intro to SBtab](SBtab.html)). But SBtab can be translated to and from other formats like SBML.
+UQSA is specially constructed for systems biology models, as we use the [SBtab](https://sbtab.net) format to define the model and calibration data (see [intro to SBtab](SBtab.html)). SBtab files can be translated to and from other formats like SBML.
 
-Models (reaction networks) written in SBtab can automatically be translated to ODE or stochastic models within UQSA. These mathematical models can next be simulated and calibrated. As part of the calibration uncertainty quantification is performed. We use likelihood based Bayesian approaches for the ODE models and Approximate Bayesian Comutation (ABC) for the stochastic models to do this. Finally a global sensitivity analysis can be don on a independent or non-independent parameter space.
+Models (reaction networks) written in SBtab can automatically be translated to ODE or stochastic models within UQSA. These mathematical models can next be simulated and calibrated. Uncertainty quantification is performed as part of the calibration. To do this, we use likelihood based Bayesian approaches for the ODE models and Approximate Bayesian Computation (ABC) for the stochastic models. Finally, a global sensitivity analysis can be performed on an independent or non-independent parameter space.
 
-You can read more about UQSA in our [paper](https://doi.org/10.1093/bioinformatics/bty607) and there are several [examples](examples_overview.html) to try out within this documentation.
+You can read more about UQSA in our [article](https://doi.org/10.1093/bioinformatics/bty607) and explore several [examples](examples_overview.html) available in this documentation.
 

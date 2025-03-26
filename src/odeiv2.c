@@ -18,7 +18,7 @@
 #define MATCH 0
 #define NO_DIFFERENCE 0
 #define RCOND_LIMIT 1e-10
-#define ODE_TIME_LIMIT_SECONDS 10
+#define ODE_TIME_LIMIT_SECONDS 1
 #define TIME_LIMIT_ERROR 1<<11
 /* SEXP stands for S-Expression, and it can be any R data object (or
  * function) in this program, we'll only use data from R. However SEXP is
@@ -412,16 +412,16 @@ void check_status(
 	double tf=target_t;
 	switch (status){
 	case TIME_LIMIT_ERROR:
-		error("[%s] time limit (%i seconds) reached on time point %i (%g/%g)\n",__func__,ODE_TIME_LIMIT_SECONDS,j,t,tf);
+		fprintf(stderr,"[%s] time limit (%i seconds) reached on time point %i (%g/%g)\n",__func__,ODE_TIME_LIMIT_SECONDS,j,t,tf);
 		break;
 	case GSL_EMAXITER:
-		error("[%s] time_point %i: maximum number of steps reached.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
+		fprintf(stderr,"[%s] time_point %i: maximum number of steps reached.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
 		break;
 	case GSL_ENOPROG:
-		error("[%s] time_point %i: step size dropped below set minimum.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
+		fprintf(stderr,"[%s] time_point %i: step size dropped below set minimum.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
 		break;
 	case GSL_EBADFUNC:
-		error("[%s] time_point %i: bad function.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
+		fprintf(stderr,"[%s] time_point %i: bad function.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
 		break;
 	}
 }

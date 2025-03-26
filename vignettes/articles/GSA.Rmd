@@ -12,15 +12,15 @@ knitr::opts_chunk$set(cache = TRUE,
 ```{r setup}
 library(uqsa)
 ```
-With UQSA you can perform global sensitivity analysis (GSA) to find out how the uncertainty of the model output depend on the uncertainty in the parameter estimates. 
+With UQSA you can perform global sensitivity analysis (GSA) to find out how the uncertainty of the model output depend on the uncertainty in the parameter estimates. The global sensitivity analysis performed via UQSA is based on [decomposition of variance](https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis).
 
-UQSA computes *first order* and *total order* [Sobol sensitivity index](http://mi.mathnet.ru/mm2320) $S_i$ and $S_{iT}$ for **independent** parameter distributions using the method developed by [Saltelli, 2002](https://doi.org/10.1016/S0010-4655(02)00280-1) with help from [Halnes et al, 2009](https://doi.org/10.1007/s10827-009-0162-6) . 
+UQSA computes *first order* and *total order* [Sobol sensitivity index](https://doi.org/10.1016/S0378-4754(00)00270-6) $S_i$ and $S_{iT}$ for **independent** parameter distributions using the method developed by [Saltelli, 2002](https://doi.org/10.1016/S0010-4655(02)00280-1) with help from [Halnes et al, 2009](https://doi.org/10.1007/s10827-009-0162-6) . 
 
 We have also implemented a [method based on binning](https://doi.org/10.1093/bioinformatics/bty607) to calculate *first order* sensitivities $S_i$ also for **non-independent** distributions. This method can be applied directly on the distribution retrieved from an uncertainty quantification process.
 
-In this [example](GSA_AKAR4.html) both methods for GSA are used and compared.
+In this [example](GSA_AKAR4.html), both methods for GSA are used and compared.
 
-The Saltelli method requires that the parameter-matrices $M1,M2$ and $N$ is created. This can be done with the function `saltelli_prior()`. Next the corresponding model output has to be calculated (simulated). This gives corresponding matrices $FM1,FM2$ and $FN$. From $FM1,FM2$ and $FN$ the sobol indexes can next be calculated by the function `gsa_saltelli()`. For details see this [example](GSA_AKAR4.html).
+The Saltelli method requires that the parameter-matrices $M_1$, $M_2$ and $N$ is created. This can be done with the function `saltelli_prior()`. Next the corresponding model output has to be calculated (simulated). This gives corresponding matrices $FM_1$, $FM_2$ and $FN$. From $FM_1$, $FM_2$ and $FN$ the sobol indexes can next be calculated by the function `gsa_saltelli()`. For details see this [example](GSA_AKAR4.html).
 
 The binning method can be used directly on a (in most cases non-independent) sample from an uncertainty quantification process. The function `gsa_binning()`takes the parameter and output sample as input and returns Sobols first order sensitivity indexes. For details see this [example](GSA_AKAR4.html).
 

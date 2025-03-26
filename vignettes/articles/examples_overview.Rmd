@@ -11,7 +11,7 @@ knitr::opts_chunk$set(cache = TRUE,
 
 We here provide some examples to simulate, calibrate or analyse
 different models. The calibration (parameter estimation) process
-includes uncertainty quantification and with analyses we mean global
+includes uncertainty quantification (UQ) and it can be followed by global
 sensitivity analysis (SA). You find more details about the different
 tools in the accompanying
 [article](https://doi.org/10.48550/arXiv.2308.05527).
@@ -22,18 +22,18 @@ time.
 # AKAR4
 These examples can be run on a laptop.
 
-- [Simulate AKAR4 deterministically](./simAKAR4.html) Builds the AKAR4 model as an ODE and simulates it with the an ODE solver.
-- [Simulate AKAR4 stochastically](./simAKAR4stochastic.html) Builds the AKAR4 model as a stochastic model and simulates it with the Gillespie algorithm.
-- [UQ of deterministic AKAR4](./sampleAKAR4.html) AKAR4 is calibrated with a likelihood based Metropolis approach.
+- [Simulate AKAR4 deterministically](./simAKAR4.html) Builds the AKAR4 reaction network as an ODE and simulates it with an ODE solver.
+- [Simulate AKAR4 stochastically](./simAKAR4stochastic.html) Builds the AKAR4 reaction network as a stochastic model and simulates it with the Gillespie algorithm.
+- [UQ of deterministic AKAR4](./sampleAKAR4.html) AKAR4 is calibrated using Markov chain Monte Carlo (MCMC) methods in a likelihood-based approach.
 - [UQ of stochastic AKAR4](./sampleAKAR4stochastic.html) AKAR4 is calibrated with an Approximate Bayesian Computation (ABC) approach.
-- [SA of AKAR4](./GSA_AKAR4.html) Global sesnitivity analysis is perfomed on the determinitic AKAR4 model using independent prior parameter distributions.
+- [SA of AKAR4](./GSA_AKAR4.html) Global sensitivity analysis is performed on the deterministic AKAR4 model using independent prior parameter distributions.
 - [UQ and SA of AKAR4](./uqsaAKAR4.html) First UQ and then SA is performed on the deterministic AKAR4 model.
 
 # AKAP79
 
-These examples are meant to be run on a compute cluster, but with some patience you can test them on a multi core workstation or laptop.
+These examples are meant to be run on a compute cluster, but with some patience you can test them on a multicore workstation or laptop.
 
-- [Parallel chains with MPI](./mpi.html) Describes how to run the packege in parallel.
+- [Parallel chains with MPI](./mpi.html) Describes how to run the package in parallel.
 - [UQ and SA of AKAP79 deterministic model](./sampleAKAP79.html)
 - [UQ and SA of AKAP79 stochastic model](./error.html)
 
@@ -45,6 +45,7 @@ execute it with `mpirun`, so the order of these articles is important.
 
 - [UQ and SA on CaMKII with SMMALA](./smmala.html)
 
+_______
 
 The demo R scrips can be found in the folder [`inst/extdata`](https://github.com/icpm-kth/uqsa/tree/master/inst/extdata).
 

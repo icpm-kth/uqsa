@@ -1,5 +1,5 @@
 ---
-title: "Sample AKAP79"
+title: "Sample AKAP79 with ABC"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Sample AKAP79}
