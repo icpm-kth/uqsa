@@ -76,7 +76,7 @@ modelName <- checkModel(comment(sb),uqsa_example("AKAR4cl",pat="_gvf.c$"))
 sim <- simulator.c(ex,modelName,parMap)
 ```
 
-For the first use-case listed in the motivation:
+For example, here parameters are in log-space.
 
 ```{r, eval=TRUE}
 t <- as.numeric(ex[[1]]$outputTimes)
@@ -94,7 +94,7 @@ etm <- Sys.time()
 difftime(etm,stm)
 ```
 
-All trajectories, randomly sampled from log-space:
+Now we sample trajectories associated with parameters in log-space:
 
 ```{r, label="log-normal-sample", eval=TRUE}
 T <- rep(c(t,NA),REPS)                                  # the NA value will break the line
