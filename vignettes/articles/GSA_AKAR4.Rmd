@@ -18,9 +18,9 @@ library(ggplot2)
 
 This article provides code do perform global sensitivity analysis with the  Sobol-Saltelli method and the with the binning-approach.
 
-Load the SBtab files, create ODE model code and load examples similar to the *simulate the AKAR4 model deterministically* example
+Load the SBtab files, create ODE model code and load examples similar to the example [Simulate the AKAR4 deterministic model](./simAKAR4.html).
 
-```{r}
+```{r, eval = FALSE}
 modelFiles  <- uqsa::uqsa_example("AKAR4")
 SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
 model  <- SBtabVFGEN::sbtab_to_vfgen(SBtab, cla=FALSE)
@@ -30,7 +30,18 @@ cat(C,sep="\n",file="./AKAR4_gvf.c")
 modelName <- checkModel("AKAR4",modelFile="./AKAR4_gvf.c")
 ```
 
-##Create simulator
+```{r, eval = TRUE, include = FALSE}
+modelFiles  <- uqsa::uqsa_example("AKAR4")
+SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
+model  <- SBtabVFGEN::sbtab_to_vfgen(SBtab, cla=FALSE)
+experiments <- SBtabVFGEN::sbtab.data(SBtab)
+C <- uqsa::generateCode(model)
+cat(C,sep="\n",file="./AKAR4_gvf.c")
+modelName <- checkModel("AKAR4",modelFile="./AKAR4_gvf.c")
+```
+
+
+## Create simulator
 
 We construct a simulator function and and test it on default parameter values.
 ```{r test}
@@ -61,7 +72,7 @@ title<-paste("Prior distribution experiment");
 boxplot(prior$M1, main = title, names=names(p), las=2, cex.main=0.9, cex.axis=0.3)
 ```
 
-#Simulate from the prior
+## Simulate from the prior
 
 Set up simulator considering one experiment
 
@@ -87,14 +98,14 @@ for (i in 1:nPars){
 }
 ```
 
-#Calculate and plot sensitivity indexes 
+## Calculate and plot sensitivity indexes 
 
 Calculate sensitivity indexes for sobol-saltelli
 ```{r}
 SA <- shs_gsa(fM1,fM2,fN)
 ```
 
-#Plot first (SI) and total-order (SIT) sensitivity indexes for sobol-saltelli
+Plot first (SI) and total-order (SIT) sensitivity indexes for sobol-saltelli
 
 ```{r}
 cols=rainbow(3)
@@ -152,7 +163,7 @@ barplot(t(SA$SI[,]),
         names.arg=dimnames(y[[1]]$state)[[1]],
         cex.names = 0.7,
         las = 2,
-        main="SI Sobol-Homma-Saltelli")
+        main="SI Saltelli")
 barplot(t(SIappr), 
         col=cols, 
         border="white", 
