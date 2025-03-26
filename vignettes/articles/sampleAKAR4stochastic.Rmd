@@ -221,3 +221,42 @@ for(i in subsample_indices){
 }
 
 ```
+
+
+# Predict unobserved compounds in the system
+
+The data available for the AKA4 model consist of time series of concentrations of the compound AKAR4p. Using the posterior samples, we can predict the concentration of the unobserved compounds in the system. For example, here we show the predicted trajectories for the compound C.
+
+```{r, sim}
+
+expInd <- 1 # Index of the experiment that we want to plot, with corresponding fitted trajectories
+e <- experiments[[1]]
+
+# function that outputs the state C
+output_AKAR4 <- function(t,state,param){state[1]}
+
+# generate a function (s) that simulates a trajectory given a parameter in input
+s <- simulator.stoch(experiments = experiments, model.tab = SBtab, parMap = parMap, outputFunction = output_AKAR4, vol = vol, unit = unit, nStochSim = 3)
+
+n_draws <- dim(ABCMCMCoutput$draws)[1] # number of sampled posterior parameters
+subsample_indices <- sample(n_draws,100) # indices of 10 random parameters out of the paramneters in
+
+ p <- ABCMCMCoutput$draws[subsample_indices[1],] # random parameter from the posterior
+
+  y <- s(p) # simulate a trajectory (y) given parameter p
+  # "experiments" is a list of experiments
+  # "y" is a list where element i of the list is a simulation performed with the experimental conditions as in the i-th element of list "experiments"
+  
+plot(e$outputTimes, y[[expInd]]$output, type="s", ylim=c(0,0.23), col=alpha("blue", .1), ylab = "AKAR4", xlab = "time") # plot the simulated trajectory
+
+for(i in subsample_indices){
+  p <- ABCMCMCoutput$draws[i,] # random parameter from the posterior
+
+  y <- s(p) # simulate a trajectory (y) given parameter p
+  # "experiments" is a list of experiments
+  # "y" is a list where element i of the list is a simulation performed with the experimental conditions as in the i-th element of list "experiments"
+  
+  lines(e$outputTimes, y[[expInd]]$output, type="s", col=alpha("blue", .1)) # plot the simulated trajectory
+}
+
+```
