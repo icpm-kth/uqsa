@@ -172,7 +172,8 @@ propensity <- function(conv.coeff,kinetic.law,rExpressions){
 #' This translates the Reaction network into the specific form required by GillespieSSA2
 #'
 #' @param model the model, represented by a list of data.frames with SBtab content
-#' @return a list of compiled GillespieSSA2::reaction items
+#' @param compile boolean value: if TRUE (default value), the GillespieSSA2 reactions are compiled (recommended for faster simulations)
+#' @return a list of GillespieSSA2::reaction items (if compile==TRUE, the reactions are compiled)
 #' @export
 importReactionsSSA <- function(model.tab, compile = TRUE){
   num_reactions <- length(row.names(model.tab$Reaction))
@@ -284,16 +285,17 @@ parameters_from_expressions_func <- function(model.tab){
 #' given certain experimental conditions and a parameter vector, and computes the
 #' distance between the simulation and the experimental data
 #'
-#' @param experiment an experiment
-#' @param model.tab an SBtab model
-#' @param reactions a list that encodes the reactions for
-#'     GillespieSSA2
+#' @param experiments a list of experiment.
+#' @param model.tab an SBtab model.
+#' @param reactions a list of GillespieSSA2 reactions.
 #' @param parMap a function that translates ABC variables (parABC)
 #'     into something the model will accept.
-#' @param vol Volume in which the reactions take place
-#' @param unit unit of measure (1e-6 corresponds to micrometer)
-#' @param nStochSim number of stochastic simulations to average over
-#' @return a function that given a parameter returns a simulated trajectory obrained via the Gillespie algorithm
+#' @param outputFunction a function that, given (t,state,param), outputs the quantity that is measured in the experiments (e.g., the outputFunction may output the concentration of one of the compounds in the system).
+#' @param vol Volume in which the reactions take place.
+#' @param unit unit of measure for the volume (it converts the volume into liters).
+#' @param nStochSim number of stochastic simulations to average over.
+#' @param distance (optional) function that computes the distance between experimental data and simulated data. Default value is NULL.
+#' @return a function that, given a parameter, returns a simulated trajectory obtained via the Gillespie algorithm. Specifically, experimental time points, output value measured at these time points, and (if distance is not NULL) the distance between the simulated trajectories and the experimental data.
 #' @export
 simulator.stoch <- function(experiments, model.tab = model.tab, reactions = NULL, parMap = identity, outputFunction = function(t,state,param){state}, vol = 4e-16, unit = 1e-6, nStochSim = 3, distance = NULL){
 
@@ -303,7 +305,7 @@ simulator.stoch <- function(experiments, model.tab = model.tab, reactions = NULL
     parameters_from_expressions <- parameters_from_expressions_func(model.tab)
 
     if(is.null(reactions)){
-      reactions <- importReactionsSSA(model.tab)
+      reactions <- importReactionsSSA(model.tab, compile = TRUE)
     }
 
     simulate_one_experiment <- function(param, experiment){
@@ -367,25 +369,27 @@ simulator.stoch <- function(experiments, model.tab = model.tab, reactions = NULL
 #' experimental data and simulated data (coresponding to the parameter
 #' in input).
 #'
-#' @param experiments a list of experiments
+#' @param experiments a list of experiments.
+#' @param model.tab an SBtab model.
 #' @param parNames the names of the (biological) parameters of the
-#'     model
+#'     model.
 #' @param distance a user supplied function that calculates a distance
 #'     between simulation and data with an interface of
 #'     distance(simulation, data, errVal), where errVal is an estimate
-#'     of the measuremnet noise (e.g. standard deviation), if needed
+#'     of the measurement noise (e.g. standard deviation), if needed
 #'     by the function.
 #' @param parMap a function that translates ABC variables (parABC)
 #'     into something the model will accept.
-#' @param Phi Volume
-#' @param reactions a list that encodes the reactions for
-#'     GillespieSSA2
-#' @param nStochSim number of stochastic simulations to average over
+#' @param outputFunction a function that, given (t,state,param), outputs the quantity that is measured in the experiments (e.g., the outputFunction may output the concentration of one of the compounds in the system).
+#' @param vol Volume in which the reactions take place.
+#' @param unit unit of measure for the volume (it converts the volume into liters).
+#' @param reactions a list of GillespieSSA2 reactions
+#' @param nStochSim number of stochastic simulations to average over.
 #' @return a closure for the objective function that implicitly
 #'     depends on all of the arguments to this function but explicitly
 #'     only on the ABC parameters parABC.
 #' @export
-makeObjectiveSSA <- function(experiments, model.tab, parNames, distance, parMap=identity, outputFunction = identity, vol = 4e-16, unit = 1e-6, reactions, nStochSim = 1, parameters_from_expressions=NULL){
+makeObjectiveSSA <- function(experiments, model.tab, parNames, distance, parMap=identity, outputFunction = identity, vol = 4e-16, unit = 1e-6, reactions, nStochSim = 1){
 
   simulate_experiments <- simulator.stoch(experiments = experiments,
                                           model.tab = model.tab,
