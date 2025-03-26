@@ -18,7 +18,7 @@ UQSA computes *first order* and *total order* [Sobol sensitivity index](http://m
 
 We have also implemented a [method based on binning](https://doi.org/10.1093/bioinformatics/bty607) to calculate *first order* sensitivities $S_i$ also for **non-independent** distributions. This method can be applied directly on the distribution retrieved from an uncertainty quantification process.
 
-In this [example](GSA_AKAR4.html) both methods for GSA are used and compared.
+In this [example](GSA_AKAR4.html), both methods for GSA are used and compared.
 
 The Saltelli method requires that the parameter-matrices $M1,M2$ and $N$ is created. This can be done with the function `saltelli_prior()`. Next the corresponding model output has to be calculated (simulated). This gives corresponding matrices $FM1,FM2$ and $FN$. From $FM1,FM2$ and $FN$ the sobol indexes can next be calculated by the function `gsa_saltelli()`. For details see this [example](GSA_AKAR4.html).
 
