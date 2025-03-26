@@ -29,7 +29,9 @@ C <- uqsa::generateCode(model)
 cat(C,sep="\n",file="./AKAR4_gvf.c")
 modelName <- checkModel("AKAR4",modelFile="./AKAR4_gvf.c")
 ```
+
 ##Create simulator
+
 We construct a simulator function and and test it on default parameter values.
 ```{r test}
 s <- simcf(experiments,modelName,parMap=log10ParMap) # or simulator.c
@@ -60,6 +62,7 @@ boxplot(prior$M1, main = title, names=names(p), las=2, cex.main=0.9, cex.axis=0.
 ```
 
 #Simulate from the prior
+
 Set up simulator considering one experiment
 
 ```{r}
@@ -83,12 +86,16 @@ for (i in 1:nPars){
   fN[,,i] <- t(s(t(prior$N[,,i]))[[1]]$state[,T,])
 }
 ```
+
 #Calculate and plot sensitivity indexes 
+
 Calculate sensitivity indexes for sobol-saltelli
 ```{r}
 SA <- shs_gsa(fM1,fM2,fN)
 ```
+
 #Plot first (SI) and total-order (SIT) sensitivity indexes for sobol-saltelli
+
 ```{r}
 cols=rainbow(3)
 par(mfrow = c(1, 2))

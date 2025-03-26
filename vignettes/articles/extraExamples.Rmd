@@ -11,12 +11,13 @@ knitr::opts_chunk$set(cache = TRUE,
 
 Here are some more examples:
 
+- [Sample AKAR4 with Parallel Tempering](./sampleAKAR4mpi.html)
 - [Simulate AKAP79 deterministically and add noise](./simAKAP79.html)
 - [Simulate AKAP79 stochastically](./simAKAP79stochastic.html)
-- [Sample deterministic AKAP79 with ABC](./AKAP79.html)
 
-It is also possible to use ABC for deterministic models, if they are
-stochastically embedded in a noise process. So, if we turn on the
-`noise` option of the simulator, we can just use ABC on AKAR4, with
-similar results as with the deterministic example: [AKAR4 with
-ABC](./AKAR4.html)
+It is also possible to use a likelihood-free method (specifically, ABC) for deterministic models, if measurement noise is taken into account. So, if we turn on the
+`noise` option of the simulator, we can just use ABC on the deterministic (ODE) reaction network models, obtaining
+similar results as with the deterministic examples (where likelihood-based MCMC methods were used): 
+
+- [Sample deterministic AKAR4 with ABC](./AKAR4.html)
+- [Sample deterministic AKAP79 with ABC](./AKAP79.html)

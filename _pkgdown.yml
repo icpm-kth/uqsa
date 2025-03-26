@@ -25,22 +25,14 @@ navbar:
         href: articles/data.html
       - text: Simulating a model
         href: articles/simulate.html
-      - text: Global Sensitivity Analysis
-        href: articles/GSA.html
+      - text: -------
       - text: Uncertainty Quantification
         href: articles/UQ.html
+      - text: Global Sensitivity Analysis
+        href: articles/GSA.html
       - text: -------
       - text: More details...
-      - text: Build and simulate your own Model
-        href: articles/user_model.html
-      - text: Parallel chains via MPI
-        href: articles/mpi.html
-      - text: Transformation Events
-        href: articles/events.html
-      - text: Benefits of Intermediates
-        href: articles/intermediateFiles.html
-      - text: Beyond reaction network models
-        href: articles/ODE-Model.html
+        href: articles/more_details.html
     tutorials:
         text: Examples
         menu:
@@ -54,8 +46,6 @@ navbar:
           href: articles/simAKAR4stochastic.html
         - text: UQ on deterministic AKAR4
           href: articles/sampleAKAR4.html
-        - text: UQ on deterministic AKAR4 with MPI
-          href: articles/sampleAKAR4mpi.html
         - text: UQ on stochasic AKAR4
           href: articles/sampleAKAR4stochastic.html
         - text: GSA on AKAR4

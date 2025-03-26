@@ -26,7 +26,7 @@ find this location.
 All prerequisites can be installed all at once with the
 following command (that you have to write in a terminal window).
 
-### On macOS
+**On macOS**
 
 To install libraries and science related software, people typically
 opt for [homebrew](https://brew.sh/), or [nix](https://nixos.org). Here is an example using homebrew:
@@ -40,9 +40,7 @@ MacOS does not have a default package manager for software of this
 kind. There is probably no easier way of getting the above done on a
 factory fresh device without first installing brew or nix.
 
-### On GNU/Linux
-
-Ubuntu or Debian:
+**On GNU/Linux** (Ubuntu or Debian)
 
 ```{sh ubuntu/debian, eval=FALSE}
 sudo apt install pkg-config gcc libgsl-dev

@@ -1,5 +1,5 @@
 ---
-title: "Sample AKAR4 via ABC"
+title: "Sample deterministic AKAR4 with ABC"
 ---
 
 ```{r, include = FALSE}

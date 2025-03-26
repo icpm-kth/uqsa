@@ -1,5 +1,5 @@
 ---
-title: "Uncertainty Quantification on AKAR4 (deterministic)"
+title: "Uncertainty Quantification and global Sensitivity Analysis on AKAR4 (deterministic)"
 ---
 
 ```{r, include = FALSE}
@@ -17,9 +17,19 @@ library(rgsl)
 
 # Load Model and Data
 
-First we load the model and data, for detailed explinations see previous examples.
+First we load the model and data, for detailed explanations see previous examples ([Simulate AKAR4 deterministically](./simAKAR4.html)).
 
-```{r}
+```{r, eval=FALSE}
+f  <- uqsa::uqsa_example("AKAR4")
+sb <- SBtabVFGEN::sbtab_from_tsv(f)
+m  <- SBtabVFGEN::sbtab_to_vfgen(sb, cla=FALSE)
+ex <- SBtabVFGEN::sbtab.data(sb)
+C <- uqsa::generateCode(m)
+cat(C,sep="\n",file="./AKAR4_gvf.c")
+modelName <- checkModel("AKAR4",modelFile="./AKAR4_gvf.c")
+```
+
+```{r, eval=TRUE, include=FALSE}
 f  <- uqsa::uqsa_example("AKAR4")
 sb <- SBtabVFGEN::sbtab_from_tsv(f)
 m  <- SBtabVFGEN::sbtab_to_vfgen(sb, cla=FALSE)
@@ -42,7 +52,7 @@ y <- s(p) # here the simulation happens
 
 ## Uncertainty quantification: Sample the posterior distribution
 
-For details on how to sample from the posterior distribution, see e.g. the deterministic [AKAR4](sampleAKAR4.html) example.
+For details on how to sample from the posterior distribution, see, e.g., the [deterministic AKAR4 example](sampleAKAR4.html).
 First we construct the prior:
 
 ```{r prior}
@@ -54,7 +64,7 @@ metropolis_hastings <- mcmcUpdate(s,ex,logLikelihood=llf,dprior=dprior)
 MH_MCMC <- mcmc(metropolis_hastings)
 ```
 
-We obtain a high quality sample by combining several smaller samples using different random starting locations, removing the burn-in phase of each chain and adjust the stepsize at least once (for details see the [example](sampleAKAR4.html)). This will take a minute or so on a laptop.
+We obtain a high quality sample by following the steps described in details in the [deterministic AKAR4 example](sampleAKAR4.html)). This will take a minute or so on a laptop.
 
 
 ```{r betterSample}
@@ -105,14 +115,14 @@ if (require(hexbin)){
 
 ## Sensitivity analysis on the posterior distribution
 
-First we need to (re-)create the simulation result corresponding to the posterior parameter sample, now we set up the model without conservation laws so that we get output trajectories for all compounds. This will take a minute or so on a laptop.
+First we need to (re-)create the simulation result corresponding to the posterior parameter sample. This will take a minute or so on a laptop.
 
 ```{r simulation}
 s <- simcf(ex,modelName,parMap=log10ParMap) # or simulator.c
 y <- s(t(S_[,]))
 ```
 
-Next we calculate the first order sensitivity indexes. Here for a specific experimental setting and time point:
+Next we calculate the _first order sensitivity indexes_. Here for compute them for a specific experimental setting and time point:
 
 ```{r globalSensitivity}
 E <- 2                      # Experiment idx
@@ -121,7 +131,7 @@ fM <- y[[E]]$state[,T,]
 SIappr <- globalSensitivity(S_, t(fM), nBins = "Sturges")
 ```
 
-and plot:
+and plot the result:
 
 ```{r barplot-1}
 cols=rainbow(3)
@@ -136,9 +146,7 @@ barplot(t(SIappr),
 
 ```
 
-Or for all three experiments:
-
-Next we calculate the first order sensitivity indexes. Here for a specific timepoint and all three experimental conditions.
+Here for compute the first order sensitivity indexes for all three experiments, looking at the different compounds in the system (on the x axis):
 
 ```{r barplot-2}
 T <- 200                    #Time idx
@@ -159,7 +167,7 @@ barplot(t(SIappr),
 }
 ```
 
-Now we investigate a number of times instead of different species:
+Now we investigate the first order sensitivity indexes at different time points (time is on the x axis) for each of the compounds and one experiment.
 
 ```{r barplot-3}
 E <- 3
