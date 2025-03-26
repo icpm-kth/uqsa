@@ -34,6 +34,7 @@
 #' @param delta ABC acceptance threshold
 #' @param dprior a function that returns prior probability density
 #'     values
+#' @param batchSize number of chain samples to produce to save one sample (if batchSize=100, we save one sample every 100 samples that we produce)
 #' @return a list containing a sample matrix and a vector of scores
 #'     (values of delta for each sample)
 ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, batchSize = 100){
