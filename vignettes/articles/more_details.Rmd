@@ -1,0 +1,18 @@
+---
+title: "More details"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+More details about the UQSA package can be found in the following pages.
+
+- [Build and simulate your own Model](./user_model.html)
+- [Running parallel chains via MPI](./mpi.html)
+- [Transformation Events](./events.html)
+- [Benefits of Intermediates](./intermediateFiles.html)
+- [Beyond reaction network models](./ODE-Model.html) (use UQSA on ODE models without SBtab, not necessarily related with reaction networks)
