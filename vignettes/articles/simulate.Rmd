@@ -15,13 +15,17 @@ knitr::opts_chunk$set(eval=FALSE,
 )
 ```
 
-The main method for model simulation is:
+Reaction network models can be simulated as deterministic models or stochastic models. In this article we show the deterministic approach. An example of how to simualte from the stochastic model is available in [this article](./simAKAR4stochastic.html).
+
+Given a reaction network model, we can use the law of mass action to derive an ODE system that describes how the concentrations of the compounds in the system change in time.
+
+To simulate the reaction network model deterministically with UQSA you can use the `simulator.c` function:
 
 ```{r simulate}
-simulate <- simulator.c(experiments, modelName, parMap = identity)`
+simulate <- simulator.c(experiments = experiments, modelName = modelName, parMap = identity)
 ```
 
-This has created a closure (`simulate`), with a single argument `par`:
+This has created a [closure](https://en.wikipedia.org/wiki/Closure_(computer_programming)) (`simulate`), with a single argument `par`:
 
 ```{r}
 sr <- simulate(par)  # simulation results
