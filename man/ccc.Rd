@@ -4,7 +4,7 @@
 \alias{ccc}
 \title{Concentration to Count Conversion}
 \usage{
-ccc(sb, LV = 602214076)
+ccc(sb)
 }
 \arguments{
 \item{sb}{SBtab list of data.frames with one of the members called

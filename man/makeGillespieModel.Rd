@@ -4,7 +4,7 @@
 \alias{makeGillespieModel}
 \title{makeGillespieModel interprets the provided SBtab file as a stochastic model}
 \usage{
-makeGillespieModel(sb, LV = 602214076)
+makeGillespieModel(sb)
 }
 \arguments{
 \item{sb}{list of data.frames}

@@ -4,7 +4,7 @@
 \alias{parameterConversion}
 \title{Returns information about parameter conversion}
 \usage{
-parameterConversion(value, unit, stoichiometry, LV = 602214076)
+parameterConversion(value, unit, stoichiometry)
 }
 \arguments{
 \item{value}{parameter values (kinetic rate coefficients), a vector}

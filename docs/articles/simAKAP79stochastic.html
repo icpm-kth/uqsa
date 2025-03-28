@@ -50,16 +50,12 @@
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
-    <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
-    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
-    <a class="dropdown-item" href="../articles/generateCodeInR.html">Generate Model Code</a>
-    <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
-    <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
-    <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
-    <a class="dropdown-item" href="../articles/mpi.html">Multiple chains via MPI</a>
-    <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
+    <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
+    <div class="dropdown-divider"></div>
     <a class="dropdown-item" href="../articles/UQ.html">Uncertainty Quantification</a>
-    <a class="dropdown-item" href="../articles/sa.html">Sensitivity Analysis</a>
+    <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/more_details.html">More details...</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -71,7 +67,6 @@
     <a class="dropdown-item" href="../articles/simAKAR4.html">Simulate deterministic AKAR4</a>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate stochastic AKAR4</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4.html">UQ on deterministic AKAR4</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4mpi.html">UQ on deterministic AKAR4 with MPI</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">UQ on stochasic AKAR4</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <a class="dropdown-item" href="../articles/uqsaAKAR4.html">UQ and SA on AKAR4</a>
@@ -145,12 +140,18 @@ easily sample trajectories from this stochastic model using the
 species in the system at a given time point, we can sample the time at
 which the next reaction takes place and we can sample the type of
 reaction (i.e., what pair of molecules react).</p>
+<p>To obtain the stochastic model for the reaction network, we need to
+compute the reaction <em>propensities</em>. These can be related to the
+reaction rate coefficients, that are the parameters that we usually use
+in our models, and on which we perform uncertainty quantification. To
+derive the reaction propensities we referred to <a href="https://doi.org/10.1186/1752-0509-5-187" class="external-link">this article</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="load-the-model">Load the Model<a class="anchor" aria-label="anchor" href="#load-the-model"></a>
 </h2>
 <p>This model is included with the package. To load your own model, see
-the <a href="user_model.html">user model</a> article.</p>
+the article <a href="user_model.html">“Build and simulate your own
+Model”</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">modelFiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,full.names<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">SBtab</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">modelFiles</span><span class="op">)</span></span>
@@ -162,10 +163,6 @@ the <a href="user_model.html">user model</a> article.</p>
 <span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './AKAP79.so' '/home/andreikr/.local/R/library/uqsa/extdata/AKAP79/AKAP79_gvf.c' `pkg-config --libs gsl`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">modelName</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "./AKAP79.so"</span></span>
-<span></span>
-<span><span class="co"># In the terminal run the following:</span></span>
-<span><span class="co"># ode.sh -R --maxima AKAP79.tar.gz &gt; AKAP79.R</span></span>
-<span><span class="co"># system2(command = "ode", args = c("-R", "--maxima", "AKAP79.tar.gz"), stdout = "AKAP79.R")</span></span>
 <span></span>
 <span><span class="co"># model related functions, in R, e.g. AKAP79_default() parameters</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span>,pat<span class="op">=</span><span class="st">'^AKAP79[.]R$'</span><span class="op">)</span><span class="op">)</span></span>

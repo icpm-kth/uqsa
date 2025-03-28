@@ -17,20 +17,26 @@ preCalibration(
 }
 \arguments{
 \item{objectiveFunction}{function that, given a (vectorial)
-parameter as input, simulates the model, and outputs the
-distance between experimental data and data simulated from the
-model with the parameter provided in input}
+parameter as input, (1) simulates the model with the given parameter, and (2) outputs the
+distance between experimental data and simulated data simulated.}
 
-\item{npc}{sample size of pre-calibration}
+\item{npc}{sample size of pre-calibration.}
 
 \item{rprior}{a function that generates random ABC variables,
-distributed according to the prior}
+distributed according to the prior.}
 
-\item{rep}{number of repetitions of the preCalibration process}
+\item{rep}{number of repetitions of the preCalibration process.}
+
+\item{p}{fraction (top scoring) of sampled points to base Sigma on (Sigma is the covariance matrix for the moves proposed in the ABCMCMC algorithm).}
+
+\item{sfactor}{scales Sigma up or down (Sigma is the covariance matrix for the moves proposed in the ABCMCMC algorithm).}
+
+\item{delta}{ABC threshold.}
+
+\item{num}{number of different starting parameter vectors (initial states of the chains) to generate. Usually, num is equal to the number of chain that will be run in the sampling procedure.}
 }
 \value{
-list with entries preDelta and prePar, final values of
-calibration run
+list with entries prePar (sampled parameters),  preDelta (distances between experimental data and trajectories produced with each of the parameters in prePar), Sigma (covariance matrix for the moves proposed in the ABCMCMC algortihm) and startPar (starting parameters for the ABCMCMC chains)
 }
 \description{
 In ABC settings a model solution is compared to data with an

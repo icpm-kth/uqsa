@@ -14,31 +14,35 @@ makeObjectiveSSA(
   vol = 4e-16,
   unit = 1e-06,
   reactions,
-  nStochSim = 1,
-  parameters_from_expressions = NULL
+  nStochSim = 1
 )
 }
 \arguments{
-\item{experiments}{a list of experiments}
+\item{experiments}{a list of experiments.}
+
+\item{model.tab}{an SBtab model.}
 
 \item{parNames}{the names of the (biological) parameters of the
-model}
+model.}
 
 \item{distance}{a user supplied function that calculates a distance
 between simulation and data with an interface of
 distance(simulation, data, errVal), where errVal is an estimate
-of the measuremnet noise (e.g. standard deviation), if needed
+of the measurement noise (e.g. standard deviation), if needed
 by the function.}
 
 \item{parMap}{a function that translates ABC variables (parABC)
 into something the model will accept.}
 
-\item{reactions}{a list that encodes the reactions for
-GillespieSSA2}
+\item{outputFunction}{a function that, given (t,state,param), outputs the quantity that is measured in the experiments (e.g., the outputFunction may output the concentration of one of the compounds in the system).}
 
-\item{nStochSim}{number of stochastic simulations to average over}
+\item{vol}{Volume in which the reactions take place.}
 
-\item{Phi}{Volume}
+\item{unit}{unit of measure for the volume (it converts the volume into liters).}
+
+\item{reactions}{a list of GillespieSSA2 reactions}
+
+\item{nStochSim}{number of stochastic simulations to average over.}
 }
 \value{
 a closure for the objective function that implicitly

@@ -7,10 +7,12 @@
 importReactionsSSA(model.tab, compile = TRUE)
 }
 \arguments{
+\item{compile}{boolean value: if TRUE (default value), the GillespieSSA2 reactions are compiled (recommended for faster simulations)}
+
 \item{model}{the model, represented by a list of data.frames with SBtab content}
 }
 \value{
-a list of compiled GillespieSSA2::reaction items
+a list of GillespieSSA2::reaction items (if compile==TRUE, the reactions are compiled)
 }
 \description{
 This translates the Reaction network into the specific form required by GillespieSSA2

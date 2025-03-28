@@ -109,6 +109,7 @@ reference:
   - shs_gsa
   - shs_prior
   - simulator.stoch
+  - simstoch
   - simulator.c
   - uqsa_example
   - "%otherwise%"
@@ -140,6 +141,7 @@ reference:
   - onlyNames
   - parameterConversion
   - stoichiometry
+  - scaleParameter
 - title: "Internal Functions"
   desc: "not exported functions"
   contents:

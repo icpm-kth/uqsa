@@ -21,24 +21,27 @@ simulator.stoch(
 )
 }
 \arguments{
-\item{model.tab}{an SBtab model}
+\item{experiments}{a list of experiment.}
 
-\item{reactions}{a list that encodes the reactions for
-GillespieSSA2}
+\item{model.tab}{an SBtab model.}
+
+\item{reactions}{a list of GillespieSSA2 reactions.}
 
 \item{parMap}{a function that translates ABC variables (parABC)
 into something the model will accept.}
 
-\item{vol}{Volume in which the reactions take place}
+\item{outputFunction}{a function that, given (t,state,param), outputs the quantity that is measured in the experiments (e.g., the outputFunction may output the concentration of one of the compounds in the system).}
 
-\item{unit}{unit of measure (1e-6 corresponds to micrometer)}
+\item{vol}{Volume in which the reactions take place.}
 
-\item{nStochSim}{number of stochastic simulations to average over}
+\item{unit}{unit of measure for the volume (it converts the volume into liters).}
 
-\item{experiment}{an experiment}
+\item{nStochSim}{number of stochastic simulations to average over.}
+
+\item{distance}{(optional) function that computes the distance between experimental data and simulated data. Default value is NULL.}
 }
 \value{
-a function that given a parameter returns a simulated trajectory obrained via the Gillespie algorithm
+a function that, given a parameter, returns a simulated trajectory obtained via the Gillespie algorithm. Specifically, experimental time points, output value measured at these time points, and (if distance is not NULL) the distance between the simulated trajectories and the experimental data.
 }
 \description{
 Function that creates a closure that simulates a stochastic trajectory with the Gillespie algorithm

@@ -7,14 +7,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="description" content="uqsa">
 <title>Importing Models into R • uqsa</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="../deps/jquery-3.6.1/jquery-3.6.1.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js" integrity="sha512-7O5pXpc0oCRrxk8RUfDYFgn0nO1t+jLuIOQdOMRp4APB7uZ4vSjspzp5y6YDtDs4VzUSTbWzBFZ/LKJhnyFOKw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Importing Models into R">
+<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Importing Models into R">
 <meta property="og:description" content="uqsa">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+<!-- mathjax --><script src="file:///usr/share/javascript/mathjax/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
@@ -22,11 +21,11 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light" data-bs-theme="light"><div class="container">
+    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
     
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.5</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,16 +50,12 @@
     <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
-    <a class="dropdown-item" href="../articles/events.html">Transformation Events</a>
-    <a class="dropdown-item" href="../articles/user_model.html">Build your own Model</a>
-    <a class="dropdown-item" href="../articles/generateCodeInR.html">Generate Model Code</a>
-    <a class="dropdown-item" href="../articles/intermediateFiles.html">Advantages of Intermediates</a>
-    <a class="dropdown-item" href="../articles/ODE-Model.html">ODE Model</a>
-    <a class="dropdown-item" href="../articles/simulate.html">Simulating a Model</a>
-    <a class="dropdown-item" href="../articles/mpi.html">Multiple chains via MPI</a>
-    <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
+    <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
+    <div class="dropdown-divider"></div>
     <a class="dropdown-item" href="../articles/UQ.html">Uncertainty Quantification</a>
-    <a class="dropdown-item" href="../articles/sa.html">Sensitivity Analysis</a>
+    <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/more_details.html">More details...</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -72,7 +67,6 @@
     <a class="dropdown-item" href="../articles/simAKAR4.html">Simulate deterministic AKAR4</a>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate stochastic AKAR4</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4.html">UQ on deterministic AKAR4</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4mpi.html">UQ on deterministic AKAR4 with MPI</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">UQ on stochasic AKAR4</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <a class="dropdown-item" href="../articles/uqsaAKAR4.html">UQ and SA on AKAR4</a>
@@ -120,23 +114,29 @@
     
     
 <p>If the model can be described in terms of reactions, inputs, and
-outputs, then the most straightforward way to define it is through <a href="./SBtab.html">SBtab tables</a>.</p>
-<p>For completely different models (or solvers), the user must either
-write their own likelihood function (cost-function/objective-function)
-or write a vf file manually, to generate C code from.</p>
-<p>It is also possible to directly write the model functions in C (for
-<code>gsl_odeiv2</code>).</p>
-<p>The SBtab path uses these functions:</p>
+outputs, then the most straightforward way to define it is through <a href="./SBtab.html">SBtab tables</a>.<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;For completely different models (or solvers), the user
+must either write their own likelihood function
+(cost-function/objective-function) or write a .vf file manually, to
+generate C code from.&lt;/p&gt;"><sup>1</sup></a> <a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;It is also possible to directly write the model
+functions in C (for &lt;code&gt;gsl_odeiv2&lt;/code&gt;).&lt;/p&gt;"><sup>2</sup></a></p>
+<p>The following R commands load the SBtab model and data into R as
+<code>data.frames</code>, and convert the model into an ODE. First, you
+will need to get to the directory with the SBtab files by the command
+<code>setwd(...)</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span>pattern<span class="op">=</span><span class="st">"[.]tsv$"</span>,full.names<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>          <span class="co"># file names</span></span>
 <span><span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span>                  <span class="co"># a list of data.frames</span></span>
-<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">sbtab_to_vfgen</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>                 <span class="co"># conservation laws, if any</span></span>
-<span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">sb</span>,<span class="va">cl</span><span class="op">)</span>                  <span class="co"># includes the data</span></span></code></pre></div>
-<p>The SBtab model has now been loaded into R as
-<code>data.frames</code>, and also converted into an ODE. The data has
-been loaded as well.</p>
-<p>The rest of this page describes the variables we just created, as
-well as the written files.</p>
+<span><span class="va">ml</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">sbtab_to_vfgen</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>                 <span class="co"># ODE model (as a list)</span></span>
+<span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">sb</span>,<span class="va">ml</span><span class="op">$</span><span class="va">conservationLaws</span><span class="op">)</span> <span class="co"># includes the data</span></span>
+<span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/generateCode.html">generateCode</a></span><span class="op">(</span><span class="va">ml</span><span class="op">)</span>                          <span class="co"># C Code</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">C</span>, sep <span class="op">=</span> <span class="st">"\n"</span>, file <span class="op">=</span> <span class="st">"AKAR4cl_gvf.c"</span><span class="op">)</span></span></code></pre></div>
+<p>Some of the R commands above belong to our external package <a href="https://github.com/icpm-kth/SBtabVFGEN" class="external-link">SBtabVFGEN</a>.</p>
+<p>More information on the R commands used in the previous code block,
+and further instructions on building and simulating your own model can
+be found in the pages <a href="user_model.html">“Build and simulate your
+own model”</a> and <a href="data.html">“Importing Data”</a>.</p>
+<p>The rest of this page describes the variables and the files that we
+just created through the previous R commands.</p>
 <hr>
 <div class="section level2">
 <h2 id="real-example">Real Example<a class="anchor" aria-label="anchor" href="#real-example"></a>
@@ -147,148 +147,12 @@ well as the written files.</p>
 <span></span>
 <span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">'AKAR4'</span><span class="op">)</span>                           <span class="co"># file names</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">f</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpMhLIv3/temp_libpath2362eb7e3ffb7c/uqsa/extdata/AKAR4/AKAR4_100nM.tsv"</span></span>
 <span><span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span>                  <span class="co"># a list of data.frames</span></span>
-<span><span class="co">#&gt; [tsv] file[1] «AKAR4_100nM.tsv» belongs to Document «AKAR4»</span></span>
-<span><span class="co">#&gt;  I'll take this as the Model Name.</span></span>
-<span><span class="co">#&gt; AKAR4_100nM.tsv  AKAR4_25nM.tsv  AKAR4_400nM.tsv  AKAR4_Compound.tsv  AKAR4_Experiments.tsv  AKAR4_Output.tsv  AKAR4_Parameter.tsv  AKAR4_Reaction.tsv</span></span>
 <span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">sbtab_to_vfgen</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>                 <span class="co"># conservation laws, if any</span></span>
-<span><span class="co">#&gt; Document Name: AKAR4.</span></span>
-<span><span class="co">#&gt; SBtab has 8 tables.</span></span>
-<span><span class="co">#&gt; The names of SBtab[[1]]:</span></span>
-<span><span class="co">#&gt; !Time, &gt;AKAR4pOUT, ~AKAR4pOUT</span></span>
-<span><span class="co">#&gt;                 !Name                             !KineticLaw</span></span>
-<span><span class="co">#&gt; reaction_1 reaction_1 kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C</span></span>
-<span><span class="co">#&gt; reaction_2 reaction_2                      kcat_AKARp*AKAR4_C</span></span>
-<span><span class="co">#&gt;                  !ReactionFormula !IsReversible</span></span>
-<span><span class="co">#&gt; reaction_1  C + AKAR4 &lt;=&gt; AKAR4_C             1</span></span>
-<span><span class="co">#&gt; reaction_2 AKAR4_C &lt;=&gt; AKAR4p + C             0</span></span>
-<span><span class="co">#&gt; There is no «Constant» Table in this model. This is OK.</span></span>
-<span><span class="co">#&gt; There is no «Expression» Table in this model. This is OK.</span></span>
-<span><span class="co">#&gt; compound names:</span></span>
-<span><span class="co">#&gt; [1] "AKAR4"   "AKAR4_C" "AKAR4p"  "C"</span></span>
-<span><span class="co">#&gt; Units:</span></span>
-<span><span class="co">#&gt; [1] "micromole/liter" "micromole/liter" "micromole/liter" "micromole/liter"</span></span>
-<span><span class="co">#&gt; ---</span></span>
-<span><span class="co">#&gt; There is no «Input» Table in this model.</span></span>
-<span><span class="co">#&gt; units in «!Unit» column:</span></span>
-<span><span class="co">#&gt; [1] "micromole/liter"          "1/(micromolarity*second)"</span></span>
-<span><span class="co">#&gt; [3] "1/second"                 "liter"</span></span>
-<span><span class="co">#&gt; automatically created sbml unit ids:</span></span>
-<span><span class="co">#&gt; [1] "micromole_per_liter"           "one_over_micromolarity_second"</span></span>
-<span><span class="co">#&gt; [3] "one_over_second"               "liter"                        </span></span>
-<span><span class="co">#&gt; [1] "Compartment"</span></span>
-<span><span class="co">#&gt; [1] "AKAR4"</span></span>
-<span><span class="co">#&gt; unit of species 1 (AKAR4): «micromole_per_liter»</span></span>
-<span><span class="co">#&gt; [1] "AKAR4_C"</span></span>
-<span><span class="co">#&gt; unit of species 2 (AKAR4_C): «micromole_per_liter»</span></span>
-<span><span class="co">#&gt; [1] "AKAR4p"</span></span>
-<span><span class="co">#&gt; unit of species 3 (AKAR4p): «micromole_per_liter»</span></span>
-<span><span class="co">#&gt; [1] "C"</span></span>
-<span><span class="co">#&gt; unit of species 4 (C): «micromole_per_liter»</span></span>
-<span><span class="co">#&gt; adding SBtab parameter 1: «kf_C_AKAR4»</span></span>
-<span><span class="co">#&gt; unit of parameter 1 (kf_C_AKAR4): «one_over_micromolarity_second»</span></span>
-<span><span class="co">#&gt; adding SBtab parameter 2: «kb_C_AKAR4»</span></span>
-<span><span class="co">#&gt; unit of parameter 2 (kb_C_AKAR4): «one_over_second»</span></span>
-<span><span class="co">#&gt; adding SBtab parameter 3: «kcat_AKARp»</span></span>
-<span><span class="co">#&gt; unit of parameter 3 (kcat_AKARp): «one_over_second»</span></span>
-<span><span class="co">#&gt; adding reaction 1: «reaction_1»</span></span>
-<span><span class="co">#&gt; converting flux to mathml: «kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C»</span></span>
-<span><span class="co">#&gt; reaction rates in SBML need to have the unit «substance/time» rather than «concentration/time».</span></span>
-<span><span class="co">#&gt; So conventional kinetics need to be multiplied by compartment volumes.</span></span>
-<span><span class="co">#&gt; Since this model has only one Compartment, all kinetics will be multiplied by its volume for the SBML model.</span></span>
-<span><span class="co">#&gt; [SBML] Reactants:</span></span>
-<span><span class="co">#&gt; [1] "C"     "AKAR4"</span></span>
-<span><span class="co">#&gt; [SBML] Products:</span></span>
-<span><span class="co">#&gt; [1] "AKAR4_C"</span></span>
-<span><span class="co">#&gt; ---</span></span>
-<span><span class="co">#&gt; [1] "C" ""  "C"</span></span>
-<span><span class="co">#&gt; [1] "AKAR4" ""      "AKAR4"</span></span>
-<span><span class="co">#&gt; [1] "AKAR4_C" ""        "AKAR4_C"</span></span>
-<span><span class="co">#&gt; adding reaction 2: «reaction_2»</span></span>
-<span><span class="co">#&gt; converting flux to mathml: «kcat_AKARp*AKAR4_C»</span></span>
-<span><span class="co">#&gt; reaction rates in SBML need to have the unit «substance/time» rather than «concentration/time».</span></span>
-<span><span class="co">#&gt; So conventional kinetics need to be multiplied by compartment volumes.</span></span>
-<span><span class="co">#&gt; Since this model has only one Compartment, all kinetics will be multiplied by its volume for the SBML model.</span></span>
-<span><span class="co">#&gt; [SBML] Reactants:</span></span>
-<span><span class="co">#&gt; [1] "AKAR4_C"</span></span>
-<span><span class="co">#&gt; [SBML] Products:</span></span>
-<span><span class="co">#&gt; [1] "AKAR4p" "C"</span></span>
-<span><span class="co">#&gt; ---</span></span>
-<span><span class="co">#&gt; [1] "AKAR4_C" ""        "AKAR4_C"</span></span>
-<span><span class="co">#&gt; [1] "AKAR4p" ""       "AKAR4p"</span></span>
-<span><span class="co">#&gt; [1] "C" ""  "C"</span></span>
-<span><span class="co">#&gt; output 1:</span></span>
-<span><span class="co">#&gt; [1] "AKAR4pOUT"</span></span>
-<span><span class="co">#&gt; unit of output 1 (AKAR4pOUT): «micromole_per_liter»</span></span>
-<span><span class="co">#&gt; output 1 has formula:</span></span>
-<span><span class="co">#&gt; [1] "108 + 380*AKAR4p"</span></span>
-<span><span class="co">#&gt; 108 + 380 * AKAR4p</span></span>
-<span><span class="co">#&gt; The sbml file has been named «AKAR4.xml».</span></span>
-<span><span class="co">#&gt; class(IsConstant): logical.</span></span>
-<span><span class="co">#&gt; [1] Formula Unit   </span></span>
-<span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span>
-<span><span class="co">#&gt; [1] Formula Unit   </span></span>
-<span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span>
-<span><span class="co">#&gt; character(0)</span></span>
-<span><span class="co">#&gt; ---</span></span>
-<span><span class="co">#&gt; character</span></span>
-<span><span class="co">#&gt; Reaction 1:line (a-&gt;b): «C + AKAR4 » ←→ « AKAR4_C»</span></span>
-<span><span class="co">#&gt;  where a: [1] "C "      " AKAR4 "</span></span>
-<span><span class="co">#&gt;    and b: [1] " AKAR4_C"</span></span>
-<span><span class="co">#&gt; Products:</span></span>
-<span><span class="co">#&gt; 1 × AKAR4_C          (AKAR4_C is compound 2)</span></span>
-<span><span class="co">#&gt; Reactants:</span></span>
-<span><span class="co">#&gt; 1 × C            (C is compound 4)</span></span>
-<span><span class="co">#&gt; 1 × AKAR4            (AKAR4 is compound 1)</span></span>
-<span><span class="co">#&gt; Reaction 2:line (a-&gt;b): «AKAR4_C » ←→ « AKAR4p + C»</span></span>
-<span><span class="co">#&gt;  where a: [1] "AKAR4_C "</span></span>
-<span><span class="co">#&gt;    and b: [1] " AKAR4p " " C"      </span></span>
-<span><span class="co">#&gt; Products:</span></span>
-<span><span class="co">#&gt; 1 × AKAR4p           (AKAR4p is compound 3)</span></span>
-<span><span class="co">#&gt; 1 × C            (C is compound 4)</span></span>
-<span><span class="co">#&gt; Reactants:</span></span>
-<span><span class="co">#&gt; 1 × AKAR4_C          (AKAR4_C is compound 2)</span></span>
-<span><span class="co">#&gt; Number of compounds: 4</span></span>
-<span><span class="co">#&gt; Number of Reactions: 2</span></span>
-<span><span class="co">#&gt;      [,1] [,2]</span></span>
-<span><span class="co">#&gt; [1,]    0    1</span></span>
-<span><span class="co">#&gt; [2,]    1    0</span></span>
-<span><span class="co">#&gt; [3,]    0    1</span></span>
-<span><span class="co">#&gt; [4,]    1   -1</span></span>
-<span><span class="co">#&gt; Stoichiometric Matrix:</span></span>
-<span><span class="co">#&gt;      [,1] [,2]</span></span>
-<span><span class="co">#&gt; [1,]   -1    0</span></span>
-<span><span class="co">#&gt; [2,]    1   -1</span></span>
-<span><span class="co">#&gt; [3,]    0    1</span></span>
-<span><span class="co">#&gt; [4,]   -1    1</span></span>
-<span><span class="co">#&gt; ---</span></span>
-<span><span class="co">#&gt; Conservation Law dimensions: 4 × 2</span></span>
-<span><span class="co">#&gt; To check that the conservation laws apply: norm(t(StoichiometryMatrix) * ConservationLaw == 0.00000)</span></span>
-<span><span class="co">#&gt;      [,1] [,2]</span></span>
-<span><span class="co">#&gt; [1,]    0    1</span></span>
-<span><span class="co">#&gt; [2,]    1    0</span></span>
-<span><span class="co">#&gt; [3,]    0    1</span></span>
-<span><span class="co">#&gt; [4,]    1   -1</span></span>
-<span><span class="co">#&gt; [1] 2</span></span>
-<span><span class="co">#&gt; [1] 0 1 0 1</span></span>
-<span><span class="co">#&gt; [1] 0.2 0.0 0.0 0.0</span></span>
-<span><span class="co">#&gt; 1*AKAR4_C+1*C</span></span>
-<span><span class="co">#&gt; This will comment out compound 2 («AKAR4_C», initial value: 0), Conserved Constant = 0.000000</span></span>
-<span><span class="co">#&gt; [1]  1  0  1 -1</span></span>
-<span><span class="co">#&gt; [1] 0.2 0.0 0.0 0.0</span></span>
-<span><span class="co">#&gt; 1*AKAR4+1*AKAR4p-1*C</span></span>
-<span><span class="co">#&gt; This will comment out compound 1 («AKAR4», initial value: 0.2), Conserved Constant = 0.200000</span></span>
-<span><span class="co">#&gt; Loading required package: hdf5r</span></span>
-<span><span class="co">#&gt; StateVariable AKAR4 will be commented out as it was already defined as a Mass Conservation Law Expression.StateVariable AKAR4_C will be commented out as it was already defined as a Mass Conservation Law Expression.</span></span>
-<span><span class="co">#&gt; The vf content was written to: AKAR4.vf</span></span>
-<span><span class="co">#&gt; MOD: StateVariable AKAR4 will be commented out as it was already defined as a Mass Conservation Law Expression.</span></span>
-<span><span class="co">#&gt; MOD: StateVariable AKAR4_C will be commented out as it was already defined as a Mass Conservation Law Expression.</span></span>
-<span><span class="co">#&gt; The mod content was written to: AKAR4.mod</span></span>
 <span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">sb</span>,<span class="va">cl</span><span class="op">)</span>                  <span class="co"># includes the data</span></span></code></pre></div>
-<p>The <code>ex</code> variable holds simulation instructions as a plain
-R list: inputs, initial values, measurement times, etc. – but also the
-actual data.</p>
+<p>The <code>ex</code> variable holds simulation instructions for the
+different experiments as an R list that includes information on inputs,
+initial values, measurement times, etc., and also the actual data.</p>
 <p>SBtab content:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Reactions, as an example of SBtab in R:</span></span>
@@ -329,14 +193,14 @@ actual data.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">y</span>,bty<span class="op">=</span><span class="st">'n'</span>,ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>,<span class="fl">200</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">y</span>,<span class="va">t</span>,<span class="va">y</span><span class="op">+</span><span class="va">dy</span>,angle<span class="op">=</span><span class="fl">90</span>, length<span class="op">=</span><span class="fl">0.01</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">y</span>,<span class="va">t</span>,<span class="va">y</span><span class="op">-</span><span class="va">dy</span>,angle<span class="op">=</span><span class="fl">90</span>, length<span class="op">=</span><span class="fl">0.01</span><span class="op">)</span></span></code></pre></div>
-<p><img src="models_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
+<p><img src="models_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 </div>
 <div class="section level2">
 <h2 id="files">Files<a class="anchor" aria-label="anchor" href="#files"></a>
 </h2>
 <p>The function <code>sbtab_to_vfgen</code> will produce several files,
-using the model’s name (<code>Document='model_name'</code> attribute of
-SBtab):</p>
+with the model’s name (<code>Document='model_name'</code> attribute of
+SBtab) and different extensions:</p>
 <ul>
 <li>
 <code>model_name.vf</code>, a vfgen compatible file</li>
@@ -357,8 +221,8 @@ a zip archive</li>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; &lt;!-- &lt;StateVariable Name="AKAR4_C" Description="removed compound" DefaultInitialCondition="0" Formula="+reaction_1-reaction_2"/&gt; --&gt;</span></span>
 <span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt;  &lt;StateVariable Name="AKAR4p" Description="compound" DefaultInitialCondition="0" Formula="+reaction_2"/&gt;</span></span>
 <span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt;  &lt;StateVariable Name="C" Description="compound" DefaultInitialCondition="0" Formula="-reaction_1+reaction_2"/&gt;</span></span></code></pre></div>
-<p>Two State variables have been commented out. These two have been
-replaced by vfgen expressions:</p>
+<p>Two State variables have been commented out (through conservation law
+analysis). These two have been replaced by vfgen expressions:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">grep</span> <span class="st">'&lt;Expression'</span> AKAR4.vf</span>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">#&gt;  &lt;Expression Name="AKAR4_C" Description="derived from conservation law 1" Formula="AKAR4_C_ConservedConst - (C)"/&gt;</span></span>
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt;  &lt;Expression Name="AKAR4" Description="derived from conservation law 2" Formula="AKAR4_ConservedConst - (AKAR4p-C)"/&gt;</span></span>
@@ -367,18 +231,18 @@ replaced by vfgen expressions:</p>
 <p>Finally, we clean up the generated files:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> vf tar.gz zip <span class="kw">;</span> <span class="cf">do</span> <span class="fu">rm</span> ./AKAR4.<span class="va">$t</span> <span class="kw">;</span> <span class="cf">done</span></span>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-f</span> AKAR4.xml <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="fu">rm</span> AKAR4.xml <span class="co"># since that one is optional</span></span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="bu">echo</span> <span class="va">$?</span></span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; 0</span></span></code></pre></div>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="bu">echo</span> <span class="va">$?</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="the-vector-field-file">The Vector Field file<a class="anchor" aria-label="anchor" href="#the-vector-field-file"></a>
 </h3>
 <p>The vf file is compatible with the <a href="https://warrenweckesser.github.io/vfgen/" class="external-link">vfgen</a> tool, which
-creates code in many languages from this <code>vf</code> file (matlab,
-cvode, octave, python, xppaut). Use this tool if you want to use the
+creates code in many languages from this <code>vf</code> file (MATLAB,
+CVODE, Octave, Python, XPPAUT). Use this tool if you want to use the
 created source code for other programming languages. Some SBtab content
-will be missing here (e.g. scheduled events). The vfgen tool uses the <a href="https://www.ginac.de/" class="external-link">ginac</a> library to calculate Jacobians.
-Ginac cannot parse vf files with inequality expressions in them
-(e.g. <code>a &lt; b</code>).</p>
+will be missing here (e.g., scheduled events). The vfgen tool uses the
+<a href="https://www.ginac.de/" class="external-link">GiNaC</a> library to calculate
+Jacobians. GiNaC cannot parse vf files with inequality expressions in
+them (e.g. <code>a &lt; b</code>).</p>
 <div class="section level4">
 <h4 id="converting-the-ode-to-code">Converting the ODE to code<a class="anchor" aria-label="anchor" href="#converting-the-ode-to-code"></a>
 </h4>
@@ -422,15 +286,16 @@ do, and does nothing related to delays.</p>
 </h2>
 <p>Our goal is to perform <em>parameter estimation</em>. A <em>systems
 biology</em> model typically has parameters that are either reaction
-rate coefficients <span class="math inline">\(k_f\)</span>, equilibrium
-constants <span class="math inline">\(K_d\)</span>, Hill coefficients,
-and many other quantities related to <em>kinetc laws</em>; they are
-often unknown or not uniquely determined yet. But, not all parameters of
-a model are unknown, and not all model parameters are intrinsic to the
-system we study. Some of them model the interventions we do to the model
-when performing an experiment. This could be the frequency of a driving
-force for a mechanical model, or the amount of a treatment dose (added
-to the system) that affects the time course of reactions:</p>
+rate coefficients <span class="math inline">\(k_f, k_b\)</span>,
+equilibrium constants <span class="math inline">\(K_d\)</span>, Hill
+coefficients, and many other quantities related to <em>kinetc laws</em>.
+Parameters are often unknown or not uniquely determined yet. However,
+not all parameters of a model are unknown, and not all parameters are
+intrinsic to the system we study. Some of them describe the
+interventions we do to the system when performing an experiment. This
+could be the frequency of a driving force for a mechanical model, or the
+amount of a treatment dose (added to the system) that affects the time
+course of reactions:</p>
 <ul>
 <li>a substrate, or buffer</li>
 <li>an enzyme,</li>
@@ -441,25 +306,27 @@ to the system) that affects the time course of reactions:</p>
 the protocol. If the input is time dependent, then its dynamics (or
 explicit algebraic functions) have to become part of the model. These
 input parameters can be different between experiments, but the intrinsic
-parameters are always the same.</p>
-<p>The ordinary differential equation on the other hand does not need to
-know the distinction between known or unknown parameters. For these
-reasons:</p>
+parameters (e.g., reaction rate coefficients) are always the same.</p>
+<p>The ordinary differential equation, on the other hand, does not need
+to know the distinction between known or unknown parameters. For these
+reasons, we may write:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>parMCMC <span class="ot">&lt;-</span> [...]             <span class="co"># some sampling variable</span></span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="fu">parMap</span>(parMCMC)         <span class="co"># a model compatible parameter vector</span></span>
 <span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>u <span class="ot">&lt;-</span> experiments[[i]]<span class="sc">$</span>input  <span class="co"># a valid model input vector</span></span>
 <span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">c</span>(k,u)</span>
 <span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co"># solve ODE using p</span></span></code></pre></div>
-<p>where <code>k</code> are intrinsic, unknown parameters (subject to
-sampling), and <code>u</code> are the known input parameters that are
-encoded in the <code>input</code> field of an experiment.</p>
+<p>where <code>k</code> are intrinsic, unknown parameters (of which we
+quantify the uncertainty via sampling algorithms in UQSA), and
+<code>u</code> are the known input parameters that are encoded in the
+<code>input</code> field of an experiment.</p>
 <p>If input parameters <code>u</code> exist, then they are always
-concatenated (<code>p &lt;-c(k,u)</code>) in that order and passed to
-the model, the model’s C code only sees <code>p</code>. The wrapper
-functions in the <code>rgsl</code> package do this concatenation when
-the solver is called. We sample in logarithmic space, but the solver
-gets <code>k</code> and appends the right <code>u</code> for each
-experiment, both in linear space.</p>
+concatenated (<code>p &lt;-c(k,u)</code>) in that order (after
+intrinsic, unknown parameters) and passed to the model. The model’s C
+code only sees <code>p</code>. The wrapper functions in the
+<code>rgsl</code> package do this concatenation when the solver is
+called. We sample in logarithmic space, but the solver gets
+<code>k</code> and appends the right <code>u</code> for each experiment,
+both in linear space.</p>
 <p>So, if <code>parMCMC</code> is in log10-space, then
 <code>parMap</code> is the transformation to linear-space for the solver
 to work in:</p>
@@ -467,6 +334,7 @@ to work in:</p>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fl">10</span><span class="op">^</span><span class="op">(</span><span class="va">par</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre>
 </div>
+
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
 </div>
@@ -474,11 +342,13 @@ to work in:</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Alexandra Jauhiainen, Olivia Eriksson, Federica Milinanni, Andrei Kramer.</p>
+  <p></p>
+<p>Developed by Alexandra Jauhiainen, Olivia Eriksson, Federica Milinanni, Andrei Kramer.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
     </footer>

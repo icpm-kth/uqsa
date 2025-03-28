@@ -31,6 +31,8 @@ transition kernel}
 
 \item{dprior}{a function that returns prior probability density
 values}
+
+\item{batchSize}{number of chain samples to produce to save one sample (if batchSize=100, we save one sample every 100 samples that we produce)}
 }
 \value{
 a list containing a sample matrix and a vector of scores
