@@ -58,8 +58,8 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1, p=0.05,
 		prePar <- newPrePar[,ix]
 	}
 	
-	startPar <- getMCMCPar(prePar, preDelta, p=p, sfactor=sfactor, delta = delta, num=num)
-	return(list(prePar=prePar, preDelta=preDelta, Sigma=startPar$Sigma, startPar=startPar$startPar))
+	M <- getMCMCPar(prePar, preDelta, p=p, sfactor=sfactor, delta = delta, num=num)
+	return(list(prePar=prePar, preDelta=preDelta, Sigma=M$Sigma, startPar=M$startPar))
 }
 
 #' Selects MCMC scheme specific setup parameters
@@ -98,7 +98,7 @@ getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1)
 	diag(Scorr) <- 1
 	sdv <- apply(t(prePar[,pick]), 2, sd)
 	Sigma <- sfactor * Scorr * tcrossprod(sdv)
-	startPar <- prePar[,sample(pick, num, replace = FALSE)]
+	startPar <- prePar[,sample(pick, num, replace = FALSE),drop=FALSE]
 	list(Sigma=Sigma, startPar=startPar)
 }
 

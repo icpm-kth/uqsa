@@ -748,7 +748,7 @@ double logLikelihood(Rdata experiment, double *f){
 	for (i=0;i<n*nt;i++){
 		d = REAL(data)[i];
 		s = REAL(stdv)[i];
-		C = ((d != NAN) && (s != INFINITY)) ? log(2*M_PI*s*s) : 0.0;
+		C = (isnan(d) || isinf(s)) ? log(2*M_PI*s*s) : 0.0;
 		ll+= gsl_pow_2((f[i]-d)/s) + C;
 	}
 	return -0.5*ll;
