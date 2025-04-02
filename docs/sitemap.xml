@@ -61,6 +61,9 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/SBtab.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/UQ.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/cite.html</loc>
   </url>
   <url>
@@ -148,6 +151,9 @@
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/uqsa.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/articles/uqsaAKAR4.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/articles/user_model.html</loc>
   </url>
   <url>
@@ -191,6 +197,9 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/models.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/articles/more_details.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/articles/mpi.html</loc>
@@ -361,6 +370,12 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/grapes-otherwise-grapes.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/gsa_binning.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/gsa_saltelli.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/gsl_odeiv2_fi.html</loc>
   </url>
   <url>
@@ -505,7 +520,13 @@
     <loc>https://icpm-kth.github.io/uqsa/reference/runModel.html</loc>
   </url>
   <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/saltelli_prior.html</loc>
+  </url>
+  <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/sampleWithNoise.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/scaleParameter.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/sensitivity.graph.html</loc>
@@ -539,6 +560,9 @@
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/simfiGaussianLogLikelihood.html</loc>
+  </url>
+  <url>
+    <loc>https://icpm-kth.github.io/uqsa/reference/simstoch.html</loc>
   </url>
   <url>
     <loc>https://icpm-kth.github.io/uqsa/reference/simulateAndComputeDistance.html</loc>

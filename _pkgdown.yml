@@ -84,7 +84,9 @@ reference:
   - generateCode
   - generateRCode
   - getMCMCPar
-  - globalSensitivity
+  - gsa_binning
+  - gsa_saltelli
+  - saltelli_prior
   - importReactionsSSA
   - is.invertible
   - log10ParMap
@@ -106,8 +108,6 @@ reference:
   - rNormalPrior
   - rUniformPrior
   - sensitivity.graph
-  - shs_gsa
-  - shs_prior
   - simulator.stoch
   - simstoch
   - simulator.c

@@ -312,6 +312,7 @@ eventCode <-function(odeModel){
 #' @export
 #' @return a character vector with the generated code, one vector-element is one line of code.
 generateCode <- function(odeModel){
+	warning("This function will start a background yacas process via Ryacas.\nThere is currently no working way to reset/restart that process.\n It is therefore not advisable to generate the code for two different models in the same R session.\nThe definitions for the two models will be mixed up. ")
 	modelName <- comment(odeModel) %otherwise% "model"
 	# simplify a data.frame with two columns to a named character vector, assuming it's name/value pairs
 	makeEnum <- \(varNames, enumName, lastEntry, prefix="_") {

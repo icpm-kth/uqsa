@@ -1,10 +1,6 @@
 ---
 title: "Simulating a model"
 output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Simulate}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}

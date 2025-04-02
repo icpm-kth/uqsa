@@ -145,7 +145,7 @@ for(j in 1 : nChains){
 # Run ABC-MCMC Sampling
 The sampling is parallelized on several cores using the `parLapply` function. Running this code will take approximately 10 minutes on a 8-core laptop.
 
-```{r}
+```{r abc}
 cl <- parallel::makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
 out_ABCMCMC <- parLapply(
   cl,
