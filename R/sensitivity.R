@@ -59,7 +59,7 @@ sum.of.bin.variance  <- function(hst,binMeans,totalMean){
 #' @param nBins number of bins, if unset defaults to the default of the hist function
 #' @export
 #' @return sensitivity S[i,j] of output[i] with respect to parameter[j]
-globalSensitivity<-function(parSample,outputSample,nBins="Sturges"){
+gsa_binning<-function(parSample,outputSample,nBins="Sturges"){
 	isNA <- apply(is.na(outputSample),1,any)
 	parSample <- parSample[!isNA,,drop=FALSE]
 	outputSample <- outputSample[!isNA,,drop=FALSE]
@@ -159,7 +159,7 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 #' @param rprior a function that samples from the prior distribution
 #' @return a list with the components M1, M2 (both matrices) and N (a
 #'     3D-array).
-shs_prior <- function(nSamples,rprior){
+saltelli_prior <- function(nSamples,rprior){
 	nPars<-NCOL(rprior(1))
 	M1 <- rprior(nSamples)
 	M2 <- rprior(nSamples)
@@ -191,7 +191,7 @@ shs_prior <- function(nSamples,rprior){
 #' @param fM2 output (f)unction values for M2, nSamples × nOuts
 #' @param fN output (f)unction values for N, nSamples × nOuts × nPars
 #' @return a list with sensitivity indices $SI and total sensitivities $SIT
-shs_gsa<- function(fM1,fM2,fN, subtractMean = TRUE){
+gsa_saltelli<- function(fM1,fM2,fN, subtractMean = TRUE){
 	nSamples <- dim(fM1)[1]
 	nOuts <- dim(fM1)[2]
 	nPars <- dim(fN)[3]

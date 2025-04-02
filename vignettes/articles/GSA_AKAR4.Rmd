@@ -62,7 +62,7 @@ Construct parameter prior samples according to Sobol-Saltelli (M1, M2, N).
 ```{r}
 nPars <- length(p)
 rprior <- rNormalPrior(p, array(1, nPars))
-prior <- shs_prior(nSamples, rprior)
+prior <- saltelli_prior(nSamples, rprior)
 names(prior)
 ```
 
@@ -102,7 +102,7 @@ for (i in 1:nPars){
 
 Calculate sensitivity indexes for sobol-saltelli
 ```{r}
-SA <- shs_gsa(fM1,fM2,fN)
+SA <- gsa_saltelli(fM1,fM2,fN)
 ```
 
 Plot first (SI) and total-order (SIT) sensitivity indexes for sobol-saltelli
@@ -147,7 +147,7 @@ matplot(experiments[[1]]$outputTime,allTimesSample[i,,1:500] , type = "l", lty =
 
 Calculate first order sensitivity index (SI) based on binning approach
 ```{r}
-SIappr <-globalSensitivity(rbind(prior$M1,prior$M2), rbind(fM1,fM2), nBins = "Sturges")
+SIappr <-gsa_binning(rbind(prior$M1,prior$M2), rbind(fM1,fM2), nBins = "Sturges")
 ```
 
 Plot SI for Sobol-Saltelli versus the binning approach
