@@ -103,23 +103,19 @@ gsa_binning<-function(parSample,outputSample,nBins="Sturges"){
 #' @param decreasing direction of sort, the first item in the sorted
 #'     list (the parameter) will be plotted first, and thus at the
 #'     bottom of the plot
-#' @param title string, written above, as a title
+#' @param ... passed on to plot
 #' @return nothing
-sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.colors(dim(S)[2]+1),do.sort=TRUE,decreasing=FALSE,title="Sensitivity"){
+sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.colors(dim(S)[2]+1),do.sort=TRUE,decreasing=FALSE,...){
 	d <- dim(S)
 	n <- d[2]-1
 	if (do.sort) {
 		m <- colMeans(S)
 		I <- order(m,decreasing=decreasing)
 		S <- S[,I]
-		ylabel <- "sorted cumulative sensitivity"
-	} else {
-		ylabel <- "cumulative sensitivity"
 	}
 	C <- t(apply(S,1,cumsum))
 	x <- c(u,rev(u))
-
-	plot(u,C[,1],type='l',ylim=c(0,max(C)*1.1),ylab=ylabel,xlab="output",main=title,axes=FALSE,col=line.color[1])
+	plot(u,C[,1],type='l', axes=FALSE, col=line.color[1],...)
 	axis(1,at=u,labels=names(u))
 	axis(2)
 	z <- c(S[,1]*0,rev(S[,1]))
@@ -130,7 +126,7 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 		polygon(x,y,col=color[i+1],lty=0)
 		lines(u,C[,i],col=line.color[i+1],lwd=2)
 	}
-	legend(x="topright",fill=color[1:d[2]],legend=colnames(S),ncol=2)
+	legend("topright",fill=color[1:d[2]],legend=colnames(S),ncol=2)
 }
 
 
