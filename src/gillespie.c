@@ -120,7 +120,7 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 	size_t m = model_reaction_coefficients(NULL);
 	size_t na = model_propensities(0,NULL,NULL,NULL);
 	size_t nf = model_func(0,NULL,NULL,NULL);
-	printf("[%s] sizes: %li stateVars, %li parameters (%li columns), %li propensities, and %li functions.\n",__func__,n,m,M,na,nf);
+	/* printf("[%s] sizes: %li stateVars, %li parameters (%li columns), %li propensities, and %li functions.\n",__func__,n,m,M,na,nf); */
 	fflush(stdout);
 	if (m < nrp){
 		fprintf(stderr,"[%s] too many parameters supplied (%i) for model (%li).\n",__func__,length(parameters),m);
