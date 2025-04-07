@@ -108,6 +108,7 @@ reference:
   - rNormalPrior
   - rUniformPrior
   - sensitivity.graph
+  - showPosterior
   - simulator.stoch
   - simstoch
   - simulator.c
