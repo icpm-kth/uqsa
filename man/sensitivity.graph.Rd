@@ -11,7 +11,7 @@ sensitivity.graph(
   line.color = hcl.colors(dim(S)[2] + 1),
   do.sort = TRUE,
   decreasing = FALSE,
-  title = "Sensitivity"
+  ...
 )
 }
 \arguments{
@@ -35,7 +35,7 @@ sensitivity is plotted first, at the bottom}
 list (the parameter) will be plotted first, and thus at the
 bottom of the plot}
 
-\item{title}{string, written above, as a title}
+\item{...}{passed on to plot}
 }
 \value{
 nothing
