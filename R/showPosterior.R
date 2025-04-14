@@ -44,6 +44,13 @@ up <- function(x,y,num=round(min(NROW(x)/2,NROW(y)/2)),subscripts,...){
 #'
 #' @param posterior a matrix, each row is a sample member
 #' @param prior a matrix of the same size as the posterior
+#' @param lower.panel a lower panel plot function with a default that
+#'     shows correlation values (color coded)
+#' @param upper.panel an upper panel plot function which defaults to
+#'     shaded density plots of the posterior with contour lines for
+#'     the prior distribution.
+#' @return pairs plot object
+#' @export
 showPosterior <- function(posterior, prior, lower.panel=lp, upper.panel=up,...){
 	return(
 		pairs(
