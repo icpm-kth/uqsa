@@ -10,6 +10,16 @@ showPosterior(posterior, prior, lower.panel = lp, upper.panel = up, ...)
 \item{posterior}{a matrix, each row is a sample member}
 
 \item{prior}{a matrix of the same size as the posterior}
+
+\item{lower.panel}{a lower panel plot function with a default that
+shows correlation values (color coded)}
+
+\item{upper.panel}{an upper panel plot function which defaults to
+shaded density plots of the posterior with contour lines for
+the prior distribution.}
+}
+\value{
+pairs plot object
 }
 \description{
 This function will display the difference between the posterior and

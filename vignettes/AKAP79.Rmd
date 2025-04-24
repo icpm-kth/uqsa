@@ -72,13 +72,13 @@ Problem Size and core distribution:
 
 ```{r sample-size, eval=TRUE}
 ns <- 100 # Size of the sub-sample from each chain
-npc <- 5000 # pre-calibration sample size
+npc <- 50000 # pre-calibration sample size
 ```
 
 ABC related settings:
 
 ```{r ABC, eval=TRUE}
-delta <- 1
+delta <- 5
 
 set.seed(7619201)
 
@@ -147,15 +147,17 @@ head -n 1 /proc/meminfo
 Let's display the difference between the posterior and prior distribution:
 
 ```{r plot}
-uqsa::showPosterior(ABCMCMCoutput$draws[,seq(6)],prior=rprior(ns))
+posterior <- ABCMCMCoutput$draws[,seq(6)]
+prior <- rprior(NROW(posterior))[,seq(6)]
+uqsa::showPosterior(posterior,prior)
 ```
 
 Alternatively:
 
 ```{r hexbinplot}
 if (require(hexbin)){
-    hexbin::hexplom(ABCMCMCoutput$draws[,seq(6)])
+    hexbin::hexplom(posterior)
 } else {
-    uqsa::showPosterior(ABCMCMCoutput$draws[,seq(6)],prior=rprior(ns))
+    pairs(posterior)
 }
 ```
