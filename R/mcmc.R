@@ -348,8 +348,8 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 			ll[i] <- LL
 			b[i]  <- B
 			h[i] <- eps
-			if (i %% D == 0){ # e.g. i = 3,6,9, or i = 5,10,15
-				res <- swapFunc(i,B,LL,eps,r,comm,cs)
+			for (j in seq(0,cs-1)){
+				res <- swapFunc(j,B,LL,eps,r,comm,cs)
 				if (res$B != B) swaps <- swaps+1
 				attr(parMCMC,"beta") <- res$B
 				attr(parMCMC,"logLikelihood") <- res$LL

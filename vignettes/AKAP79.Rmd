@@ -71,8 +71,8 @@ chunks <- list(c(3, 12,18, 9), c(2, 11, 17, 8), c(1, 10, 16, 7))
 Problem Size and core distribution:
 
 ```{r sample-size, eval=TRUE}
-ns <- 100 # Size of the sub-sample from each chain
-npc <- 50000 # pre-calibration sample size
+ns <- 300 # Size of the sub-sample from each chain
+npc <- 70000 # pre-calibration sample size
 ```
 
 ABC related settings:
