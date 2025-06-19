@@ -350,11 +350,13 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 			h[i] <- eps
 			for (j in seq(0,cs-1)){
 				res <- swapFunc(j,B,LL,eps,r,comm,cs)
-				if (res$B != B) swaps <- swaps+1
-				attr(parMCMC,"beta") <- res$B
-				attr(parMCMC,"logLikelihood") <- res$LL
+				B <- res$B
+				LL <- res$LL
 				eps <- res$H
 			}
+			attr(parMCMC,"beta") <- B
+			attr(parMCMC,"logLikelihood") <- LL
+			swaps <- swaps + (B != b[i])
 		}
 		attr(sample,"acceptanceRate") <- a/N
 		attr(sample,"logLikelihood") <- ll
@@ -364,7 +366,7 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 		attr(sample,"stepSize") <- h
 		return(sample)
 	}
-	comment(M) <- "function(parMCMC, N=1000, eps=1e-4) where eps is the step size"
+	comment(M) <- "function(parMCMC, N=1000, eps=1e-4) where eps is the step size, and N the sample size"
 	return(M)
 }
 
