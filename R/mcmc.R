@@ -341,7 +341,7 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 		h <- numeric(N)
 		for (i in seq(N)){
 			parMCMC <- update(parMCMC,eps)
-			sample[i,] <- parMCMC
+			sample[i,] <- as.numeric(parMCMC)
 			LL <- attr(parMCMC,"logLikelihood")
 			B <- attr(parMCMC,"beta")
 			a <- a + as.numeric(attr(parMCMC,"accepted"))
@@ -475,7 +475,7 @@ gatherSample <- function(files,beta=1.0,size=NA){
 		b <- attr(s,"beta")
 		l <- attr(s,"logLikelihood")
 		h <- attr(s,"stepSize")
-		i <- which(abs(b - beta) <= 1e-9*beta)
+		i <- which(abs(b - beta) <= 1e-9*beta + 1e-15)
 		s <- s[i,,drop=FALSE]
 		l <- l[i]
 		if (!is.null(h) && length(h) == length(b)) {

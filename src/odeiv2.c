@@ -329,32 +329,24 @@ load_system(
 		*((char*) pcpy(suffix,"_jacp",5))='\0';
 		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
 		if ((ODE_jacp = load_or_warn(lib,symbol_name))==NULL){
-#ifdef DEBUG_PRINT
 			fprintf(stderr,"[%s] not having «%s» is OK if no sensitivities are needed.\n",__func__,symbol_name);
-#endif
 		}
 		*((char*) pcpy(suffix,"_func",5))='\0';
 		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
 		if ((ODE_func = load_or_warn(lib,symbol_name))==NULL){
-#ifdef DEBUG_PRINT
 			fprintf(stderr,"[%s] not having «%s» is OK in some cases, output values will not be calculated.\n",__func__,symbol_name);
-#endif
 		}
 
 		*((char*) pcpy(suffix,"_funcJac",8))='\0';
 		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
 		if ((ODE_funcJac = load_or_warn(lib,symbol_name))==NULL){
-#ifdef DEBUG_PRINT
 			fprintf(stderr,"[%s] not having «%s» is OK, but output sensitivities will not be calculated.\n",__func__,symbol_name);
-#endif
 		}
 
 		*((char*) pcpy(suffix,"_funcJacp",9))='\0';
 		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
 		if ((ODE_funcJacp = load_or_warn(lib,symbol_name))==NULL){
-#ifdef DEBUG_PRINT
 			fprintf(stderr,"[%s] not having «%s» is OK, but output sensitivities will not be calculated.\n",__func__,symbol_name);
-#endif
 		}
 		*((char*) pcpy(suffix,"_default",8))='\0';
 		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
@@ -367,16 +359,12 @@ load_system(
 		*((char*) pcpy(suffix,"_init",5))='\0';
 		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
 		if ((ODE_init = load_or_warn(lib,symbol_name))==NULL){
-#ifdef DEBUG_PRINT
 			fprintf(stderr,"[%s] «%s» is optional.\n",__func__,symbol_name);
-#endif
 		}
 		*((char*) pcpy(suffix,"_event",6))='\0';
 		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
 		if ((ODE_event = load_or_warn(lib,symbol_name))==NULL){
-#ifdef DEBUG_PRINT
 			fprintf(stderr,"[%s] «%s» is optional.\n",__func__,symbol_name);
-#endif
 		}
 	} else {
 		fprintf(stderr,"[%s] library «%s» could not be loaded: %s\n",__func__,model_so,dlerror());
@@ -384,18 +372,12 @@ load_system(
 	}
 	n=ODE_vf(0,NULL,NULL,NULL);
 	l=ODE_default(0,NULL);
-#ifdef DEBUG_PRINT
-	fprintf(stderr,"[%s] vf function returns %li components.\n",__func__,n);
-#endif
 	sys.function=ODE_vf;
 	sys.jacobian=ODE_jac;
 	sys.dimension=n;
 	double *p=malloc(sizeof(double)*l);
 	ODE_default(0,p);
 	sys.params=p;
-#ifdef DEBUG_PRINT
-	fprintf(stderr,"[%s] ode system created.\n",__func__); fflush(stderr);
-#endif
 	free(symbol_name);
 	return sys;
 }
@@ -461,9 +443,7 @@ simulate_timeseries(const gsl_odeiv2_system sys, /* the system to integrate */
 			te=event->time[i];
 			status=gsl_odeiv2_driver_apply(driver, &t, te, y->data);
 			if (status!=GSL_SUCCESS){
-#ifdef DEBUG_PRINT
 				fprintf(stderr,"[%s] before event %i gsl_odeiv2_driver_apply produced an error: %s.\n",__func__,i,gsl_strerror(status));
-#endif
 				gsl_vector_free(y);
 				gsl_odeiv2_driver_reset(driver);
 				return(status);
@@ -484,9 +464,7 @@ simulate_timeseries(const gsl_odeiv2_system sys, /* the system to integrate */
 			}
 			status=gsl_odeiv2_driver_reset(driver);
 			if (status!=GSL_SUCCESS){
-#ifdef DEBUG_PRINT
 				fprintf(stderr,"[%s] resetting the system after event %i produced an error: %s.\n",__func__,i,gsl_strerror(status));
-#endif
 				gsl_vector_free(y);
 				gsl_odeiv2_driver_reset(driver);
 				return(status);
@@ -748,8 +726,8 @@ double logLikelihood(Rdata experiment, double *f){
 	for (i=0;i<n*nt;i++){
 		d = REAL(data)[i];
 		s = REAL(stdv)[i];
-		C = (isnan(d) || isinf(s)) ? log(2*M_PI*s*s) : 0.0;
-		ll+= gsl_pow_2((f[i]-d)/s) + C;
+		C = (isnan(d) || isinf(s)) ? 0.0 : log(2*M_PI*s*s);
+		ll+= (isnan(d) || isinf(s)) ? 0.0 : (gsl_pow_2((f[i]-d)/s) + C);
 	}
 	return -0.5*ll;
 }
@@ -909,8 +887,8 @@ r_gsl_odeiv2_outer_fi(
 		FI=PROTECT(alloc3DArray(REALSXP,np,np,M));
 		ll=PROTECT(NEW_NUMERIC(M));
 		gll=PROTECT(allocMatrix(REALSXP,np,M));
-		sy_k=malloc(sizeof(double)*ny*np*nt);//PROTECT(alloc3DArray(REALSXP,ny,np,nt));
-		sf_k=malloc(sizeof(double)*nf*np*nt);//PROTECT(alloc3DArray(REALSXP,nf,np,nt));
+		sy_k=malloc(sizeof(double)*ny*np*nt);
+		sf_k=malloc(sizeof(double)*nf*np*nt);
 		for (j=0;j<nf*nt*M;j++) REAL(F)[j]=NA_REAL;   /* initialize to NA */
 		for (k=0;k<M;k++){
 			y=gsl_matrix_view_array(REAL(AS_NUMERIC(Y))+(nt*ny*k),nt,ny);
@@ -942,7 +920,7 @@ r_gsl_odeiv2_outer_fi(
 				REAL(ll)[k] = -INFINITY;
 				memset(REAL(gll)+(k*np),0,sizeof(double)*np);
 				memset(REAL(FI)+(k*np*np),0,sizeof(double)*np*np);
-				//fprintf(stderr,"[%s] simulation of provided parameters failed for experiment %i with error %i: %s\n",__func__,i,status,gsl_strerror (status));
+				fprintf(stderr,"[%s] simulation of provided parameters failed for experiment %i with error %i: %s\n",__func__,i,status,gsl_strerror (status));
 			}
 		}
 		free(sy_k);
@@ -950,8 +928,6 @@ r_gsl_odeiv2_outer_fi(
 		yf_list=PROTECT(NEW_LIST(6));
 		SET_VECTOR_ELT(yf_list,0,Y);
 		SET_VECTOR_ELT(yf_list,1,F);
-		//		SET_VECTOR_ELT(yf_list,2,SY);
-		//		SET_VECTOR_ELT(yf_list,3,SF);
 		SET_VECTOR_ELT(yf_list,2,cpuSeconds);
 		SET_VECTOR_ELT(yf_list,3,ll);
 		SET_VECTOR_ELT(yf_list,4,gll);
@@ -965,12 +941,9 @@ r_gsl_odeiv2_outer_fi(
 		UNPROTECT(1); /* Y */
 		UNPROTECT(1); /* cpuSeconds */
 		UNPROTECT(3); /* ll, gll, FI*/
-#ifdef DEBUG_PRINT
 		if (status!=GSL_SUCCESS){
-			fprintf(stderr,"[%s] parameter set lead to solver errors (%s) in experiment %i/%i, values:\n",__func__,gsl_strerror(status),i,N);
-			for (j=0; j<np_model; j++) fprintf(stderr,"%g%s",p[j],(j==np_model-1?"\n":", "));
+			fprintf(stderr,"[%s] parameter set lead to solver errors (%s) in experiment %i/%i\n",__func__,gsl_strerror(status),i,N);
 		}
-#endif
 	} // experiments: 0 to N-1
   sensApproxMemFree(saMem); /* frees the memory of temporary matrices of sensitivity approximation */
 	UNPROTECT(1); /* res_list */
