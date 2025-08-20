@@ -37,7 +37,7 @@
 #' @param batchSize number of chain samples to produce to save one sample (if batchSize=100, we save one sample every 100 samples that we produce)
 #' @return a list containing a sample matrix and a vector of scores
 #'     (values of delta for each sample)
-ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, batchSize = 100){
+ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, batchSize = 100, parAcceptable=\(p){return(TRUE)}){
   cat("Started chain.\n")
   Sigma1 <- 0.25*diag(diag(Sigma0))
   curDelta <- Inf
@@ -82,7 +82,7 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
       canPar <- MASS::mvrnorm(n=1, curPar, Sigma1)
     }
 
-    out <- parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
+    out <- parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior, parAcceptable)
     curPar <- out$curPar
     curDelta <- out$curDelta
     curPrior <- out$curPrior
@@ -120,12 +120,13 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
 #' @param curPrior current Prior values given curPar
 #' @param delta distance threshold for ABC
 #' @param dprior prior probability density function
+#' @param parAcceptable user-specified constraint function, must return a scalar Boolean
 #' @return updated values for curPar, curDelta, and curPrior
-parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior){
+parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior, parAcceptable){
 
   canPrior <- dprior(canPar)
 
-  acceptance <- (runif(1) <= canPrior/curPrior)
+  acceptance <- (runif(1) <= canPrior/curPrior) && parAcceptable(canPar)
   if(acceptance){
     canDelta <- max(objectiveFunction(canPar))
     if(is.na(canDelta)){
