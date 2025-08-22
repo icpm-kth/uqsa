@@ -562,7 +562,8 @@ smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
 		mean=parGiven+0.5*eps*g,
 		precision=G/eps
 	)
- return(as.numeric(parProposal))
+	names(parProposal) <- names(parGiven)
+	return(as.numeric(parProposal))
 }
 
 #' SMMALA transition kernel density
@@ -597,7 +598,7 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 	)
 }
 
-metropolisUpdate <- function(simulate, experiments, logLikelihood, dprior, Sigma=NULL){
+metropolisUpdate <- function(simulate, experiments, logLikelihood, dprior, Sigma=NULL, parAcceptable=\(p) {TRUE}){
 	if (!is.null(Sigma)){
 		cSigma <- chol(Sigma)
 	}
@@ -613,6 +614,13 @@ metropolisUpdate <- function(simulate, experiments, logLikelihood, dprior, Sigma
 			stopifnot(!is.null(eps) && is.numeric(eps) && length(eps)==1 && is.finite(eps))
 			parProposal <- parGiven + rnorm(length(parGiven),0,eps)
 			stopifnot(is.numeric(parProposal) && all(is.finite(priorGiven)))
+			names(parProposal) <- names(parGiven)
+			priorProposal <- dprior(parProposal)
+			attr(parProposal,"prior") <- priorProposal
+			if (priorProposal < 1e-15*priorGiven+1e-15 || !parAcceptable(parProposal)) {
+				attr(parGiven,"accepted") <- FALSE
+				return(parGiven)
+			}
 			attr(parProposal,"simulations") <- simulate(parProposal)
 			llProposal <- logLikelihood(parProposal)
 			if (!is.numeric(llProposal) || length(llProposal)!=1){
@@ -621,8 +629,6 @@ metropolisUpdate <- function(simulate, experiments, logLikelihood, dprior, Sigma
 				print(as.numeric(parGiven))
 			}
 			attr(parProposal,"logLikelihood") <- llProposal
-			priorProposal <- dprior(parProposal)
-			attr(parProposal,"prior") <- priorProposal
 			L <- exp(beta*(llProposal - llGiven))
 			if (is.null(L)) cat("llProposal: ",llProposal," llGiven: ",llGiven," beta: ",beta," L:",L,"\n")
 			P <- priorProposal/priorGiven
@@ -643,6 +649,13 @@ metropolisUpdate <- function(simulate, experiments, logLikelihood, dprior, Sigma
 			priorGiven <- attr(parGiven,"prior")
 			parProposal <- parGiven + solve(cSigma,rnorm(length(parGiven),0,eps))
 			stopifnot(is.numeric(parProposal) && all(is.finite(priorGiven)))
+			names(parProposal) <- names(parGiven)
+			priorProposal <- dprior(parProposal)
+			attr(parProposal,"prior") <- priorProposal
+			if (priorProposal < 1e-15*priorGiven+1e-15 || !parAcceptable(parProposal)) {
+				attr(parGiven,"accepted") <- FALSE
+				return(parGiven)
+			}
 			attr(parProposal,"simulations") <- simulate(parProposal)
 			llProposal <- logLikelihood(parProposal)
 			if (!is.numeric(llProposal) || length(llProposal)!=1){
@@ -651,8 +664,6 @@ metropolisUpdate <- function(simulate, experiments, logLikelihood, dprior, Sigma
 				print(as.numeric(parGiven))
 			}
 			attr(parProposal,"logLikelihood") <- llProposal
-			priorProposal <- dprior(parProposal)
-			attr(parProposal,"prior") <- priorProposal
 			L <- exp(beta*(llProposal - llGiven))
 			if (is.null(L)) cat("llProposal: ",llProposal," llGiven: ",llGiven," beta: ",beta," L:",L,"\n")
 			P <- priorProposal/priorGiven
@@ -669,7 +680,7 @@ metropolisUpdate <- function(simulate, experiments, logLikelihood, dprior, Sigma
 	return(U)
 }
 
-smmalaUpdate <- function(simulate, experiments, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior){
+smmalaUpdate <- function(simulate, experiments, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior, parAcceptable=\(p) {TRUE}){
 	U <- function(parGiven, eps=1e-4){
 		stopifnot(parGiven %has% c("logLikelihood","prior","fisherInformation","gradLogLikelihood","gradLogPrior"))
 		fp <- fisherInformationPrior
@@ -680,6 +691,11 @@ smmalaUpdate <- function(simulate, experiments, logLikelihood, dprior, gradLogLi
 		n <- length(parGiven)
 		## the very important step: suggest a successor to parGiven and simulate the model
 		parProposal <- smmala_move(beta,parGiven,fp,eps)
+		priorProposal <- dprior(parProposal)
+		if (priorProposal < 1e-15*priorGiven+1e-15 || !parAcceptable(parProposal)){
+			attr(parGiven,"accepted") <- FALSE
+			return(parGiven)
+		}
 		attr(parProposal,"simulations") <- simulate(parProposal)
 		llProposal <- logLikelihood(parProposal)
 		if (!is.numeric(llProposal) || length(llProposal)!=1){
@@ -687,8 +703,6 @@ smmalaUpdate <- function(simulate, experiments, logLikelihood, dprior, gradLogLi
 			print(llProposal)
 			print(as.numeric(parGiven))
 		}
-
-		priorProposal <- dprior(parProposal)
 		attr(parProposal,"beta") <- beta
 		attr(parProposal,"logLikelihood") <- llProposal
 		attr(parProposal,"prior") <- priorProposal
@@ -734,25 +748,31 @@ smmalaUpdate <- function(simulate, experiments, logLikelihood, dprior, gradLogLi
 #'     instructions)
 #' @param logLikelihood a function that calculates log-likelihood
 #'     values for given parMCMC
+#' @param dprior prior density function
 #' @param gradLogLikelihood a function that calculates the gradient of
 #'     the log-likelihood for given parMCMC
+#' @param gprior gradient of the prior density
 #' @param fisherInformation a function that calculates approximates
 #'     Fisher information matrices
 #' @param fisherInformationPrior a constant matrix, the prior
 #'     distributions fisher information
-#' @param Sigma alternatively, Sigma=solve(fisherInformationPrior), [the inverse to fisherInformationPrior] can be specified for the metropolis algorithm
-#' @param dprior prior density function
-#' @param gprior gradient of the prior density
+#' @param Sigma alternatively, Sigma=solve(fisherInformationPrior),
+#'     [the inverse to fisherInformationPrior] can be specified for
+#'     the metropolis algorithm
+#' @param parAcceptable a user shaped function that returns a Boolean
+#'     scalar indicating whether a proposed parameter satisfies any
+#'     user chosen constraints. A value of FALSE will trigger an early
+#'     return and the model will not be simulated.
 #' @return a function that returns possibly updated states of the
 #'     Markov chain
-mcmcUpdate <- function(simulate, experiments, logLikelihood, dprior, gradLogLikelihood=NULL, gprior=NULL, fisherInformation=NULL, fisherInformationPrior=NULL, Sigma=NULL){
+mcmcUpdate <- function(simulate, experiments, logLikelihood, dprior, gradLogLikelihood=NULL, gprior=NULL, fisherInformation=NULL, fisherInformationPrior=NULL, Sigma=NULL, parAcceptable=\(p) {TRUE}){
 	if (is.null(Sigma) && !is.null(fisherInformationPrior)) {
 		Sigma <- solve(fisherInformationPrior)
 	}
 	if (is.null(gradLogLikelihood)) { # Metropolis Hastings
-		return(metropolisUpdate(simulate, experiments, logLikelihood, dprior, Sigma=Sigma))
+		return(metropolisUpdate(simulate, experiments, logLikelihood, dprior, Sigma=Sigma, parAcceptable=parAcceptable))
 	} else {
-		return(smmalaUpdate(simulate, experiments, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior))
+		return(smmalaUpdate(simulate, experiments, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior, parAcceptable))
 	}
 }
 
@@ -863,12 +883,22 @@ fisherInformationFunc <- function(experiments, parMap=identity, parMapJac=functi
 #'     cases).
 #' @param simpleUserLLF (optional) a user supplied function that is
 #'     used instead of the default sum of ((y-h)/stdv)^2 terms. The
-#'     interface is: `simpleUserLLF(y,h,stdv)`, where each of them is
-#'     an N-M-matrix where N is the dimensionality of the model output
-#'     and M the number of data time-points.  Here, `y` is
-#'     `t(experiments[[i]]$outputValues)` and may contain NA values.
-#' @return llf(p), a closure (function) of the mcmc-variable: parMCMC;
-#'     returns a scalar logLikelihood value
+#'     interface is: `simpleUserLLF(y,h,stdv,name=NULL)`, where each
+#'     of them is an N-M-matrix where N is the dimensionality of the
+#'     model output and M the number of data time-points.  Here, `y`
+#'     is `t(experiments[[i]]$outputValues)` and may contain NA
+#'     values.  This function should also accept an optional _name_
+#'     argument (this is the name of the experiment this function is
+#'     currently called for).
+#' @return llf(parMCMC), a closure (function) of the mcmc-variable:
+#'     parMCMC; returns a scalar logLikelihood value. Alternatively,
+#'     the user can define such a function: parMCMC ->
+#'     log(Likelihood(parMCMC)), and use that during sampling. A test
+#'     simulation of p: y <- simulate(p) will reveal which values the
+#'     simulator produces.  These values will be attached to p during
+#'     sampling, as an attribute.  mcmcInit will attach the same
+#'     values for the initial Markov chain state.  The log-likelihood
+#'     function can use these attributes.
 #' @export
 logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	N <- length(experiments)
