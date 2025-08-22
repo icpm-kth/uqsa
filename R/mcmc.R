@@ -325,7 +325,7 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 #'
 #' @param update an update function
 #' @param comm an mpi comm which this function will use for send/receive operations
-#' @param swapDelay swaps will be attempted every 2*swapDelay+1 iterations
+#' @param swapDelay swaps will be attempted every 2*swapDelay+1 iterations [deprecated]
 #' @return an mcmc closure m(parMCMC,N,eps) that implicitly uses the supplied update function
 #' @export
 mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures){
