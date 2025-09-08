@@ -322,7 +322,7 @@ load_system(
 		ODE_jac=load_or_warn(lib,symbol_name);
 
 		*((char*) pcpy(suffix,"_jacp",5))='\0';
-		ODE_jacp = load_or_warn(lib,symbol_name)
+		ODE_jacp = load_or_warn(lib,symbol_name);
 
 		*((char*) pcpy(suffix,"_func",5))='\0';
 		ODE_func = load_or_warn(lib,symbol_name);
