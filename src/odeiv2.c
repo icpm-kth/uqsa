@@ -313,59 +313,34 @@ load_system(
 
 	if (lib){
 		*((char*) pcpy(suffix,"_vf",3))='\0';
-		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
 		if ((ODE_vf=load_or_warn(lib,symbol_name))==NULL){
 			fprintf(stderr,"[%s] loading «%s» is required.\n",__func__,symbol_name);
 			free(symbol_name);
 			return sys;
 		}
 		*((char*) pcpy(suffix,"_jac",4))='\0';
-		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
-		if ((ODE_jac=load_or_warn(lib,symbol_name))==NULL){
-			fprintf(stderr,"[%s] loading «%s» is required.\n",__func__,symbol_name);
-			free(symbol_name);
-			return sys;
-		}
+		ODE_jac=load_or_warn(lib,symbol_name);
+
 		*((char*) pcpy(suffix,"_jacp",5))='\0';
-		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
-		if ((ODE_jacp = load_or_warn(lib,symbol_name))==NULL){
-			fprintf(stderr,"[%s] not having «%s» is OK if no sensitivities are needed.\n",__func__,symbol_name);
-		}
+		ODE_jacp = load_or_warn(lib,symbol_name)
+
 		*((char*) pcpy(suffix,"_func",5))='\0';
-		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
-		if ((ODE_func = load_or_warn(lib,symbol_name))==NULL){
-			fprintf(stderr,"[%s] not having «%s» is OK in some cases, output values will not be calculated.\n",__func__,symbol_name);
-		}
+		ODE_func = load_or_warn(lib,symbol_name);
 
 		*((char*) pcpy(suffix,"_funcJac",8))='\0';
-		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
-		if ((ODE_funcJac = load_or_warn(lib,symbol_name))==NULL){
-			fprintf(stderr,"[%s] not having «%s» is OK, but output sensitivities will not be calculated.\n",__func__,symbol_name);
-		}
+		ODE_funcJac = load_or_warn(lib,symbol_name);
 
 		*((char*) pcpy(suffix,"_funcJacp",9))='\0';
-		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
-		if ((ODE_funcJacp = load_or_warn(lib,symbol_name))==NULL){
-			fprintf(stderr,"[%s] not having «%s» is OK, but output sensitivities will not be calculated.\n",__func__,symbol_name);
-		}
+		ODE_funcJacp = load_or_warn(lib,symbol_name);
+
 		*((char*) pcpy(suffix,"_default",8))='\0';
-		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
-		if ((ODE_default = load_or_warn(lib,symbol_name))==NULL) {
-			fprintf(stderr,"[%s] loading «%s» is required.\n",__func__,symbol_name);
-			free(symbol_name);
-			return sys;
-		}
+		ODE_default = load_or_warn(lib,symbol_name);
 
 		*((char*) pcpy(suffix,"_init",5))='\0';
-		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
-		if ((ODE_init = load_or_warn(lib,symbol_name))==NULL){
-			fprintf(stderr,"[%s] «%s» is optional.\n",__func__,symbol_name);
-		}
+		ODE_init = load_or_warn(lib,symbol_name);
+
 		*((char*) pcpy(suffix,"_event",6))='\0';
-		//printf("[%s] loading «%s» from «%s».\n",__func__,symbol_name,model_so);
-		if ((ODE_event = load_or_warn(lib,symbol_name))==NULL){
-			fprintf(stderr,"[%s] «%s» is optional.\n",__func__,symbol_name);
-		}
+		ODE_event = load_or_warn(lib,symbol_name);
 	} else {
 		fprintf(stderr,"[%s] library «%s» could not be loaded: %s\n",__func__,model_so,dlerror());
 		return sys;
