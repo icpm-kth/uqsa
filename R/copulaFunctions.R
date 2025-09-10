@@ -18,7 +18,6 @@
 #' package.
 #'
 #' @importFrom VineCopula RVineStructureSelect
-#' @importFrom ks kde kcde
 #' @export
 #' @param X sample that characterizes the traget distribution (rows)
 #' @return as list: vineCop, U, Z, and Y where U are marginal
@@ -52,8 +51,12 @@ fitCopula <- function(X){
     ls <- minx-eps
     us <- maxx+eps
     U[,i] <- X[I,i]
-    Z[,i] = kcde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
-    Y[,i] = kde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
+		if (requireNamespace("ks")){
+			Z[,i] = ks::kcde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
+			Y[,i] = ks::kde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
+		} else {
+			stop("ks:: is required for this function.")
+		}
   }
 
   # fit copula
