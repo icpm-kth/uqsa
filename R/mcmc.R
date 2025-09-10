@@ -117,21 +117,23 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #' @return a list with some members swapped
 swap_points_locally <- function(parMCMC){
 	nChains <- length(parMCMC)
-	for (j in seq(1,nChains-1)){
-		L1 <- attr(parMCMC[[j  ]],"logLikelihood")
-		L2 <- attr(parMCMC[[j+1]],"logLikelihood")
-		B1 <- attr(parMCMC[[j  ]],"beta")
-		B2 <- attr(parMCMC[[j+1]],"beta")
-		a <- exp((B2-B1)*(L1-L2))
-		r <- runif(1)
-		if (r<a){
-			cat(sprintf("swapping %i with %i\n",j,j+1))
-			X <- parMCMC[[j]]
-			parMCMC[[j]] <- parMCMC[[j+1]]
-			parMCMC[[j+1]] <- X
-			# update all attributes
-			attr(parMCMC[[j]],"beta") <- B1
-			attr(parMCMC[[j+1]],"beta") <- B2
+	L <- sapply(parMCMC,\(p) return(attr(p,"logLikelihood")))
+	B <- sapply(parMCMC,\(p) return(attr(p,"beta")))
+	H <- sapply(parMCMC,\(p) return(attr(p,"stepSize")))
+	for (j in seq_along(L)){
+		for (i in seq_along(L)) {
+			a <- exp((B[i]-B[j])*(L[j]-L[i]))
+			r <- runif(1)
+			if (r<a){
+				X <- parMCMC[[j]]
+				parMCMC[[j]] <- parMCMC[[i]]
+				parMCMC[[i]] <- X
+				# update all attributes
+				attr(parMCMC[[i]],"beta") <- B[i]
+				attr(parMCMC[[j]],"beta") <- B[j]
+				attr(parMCMC[[i]],"stepSize") <- H[i]
+				attr(parMCMC[[j]],"stepSize") <- H[j]
+			}
 		}
 	}
 	return(parMCMC)
