@@ -4,7 +4,16 @@
 \alias{parUpdate}
 \title{Updates Parameter Values}
 \usage{
-parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior)
+parUpdate(
+  objectiveFunction,
+  curPar,
+  canPar,
+  curDelta,
+  curPrior,
+  delta,
+  dprior,
+  parAcceptable
+)
 }
 \arguments{
 \item{objectiveFunction}{function that, given a (vectorial)
@@ -26,6 +35,8 @@ current state for the chain.}
 \item{delta}{distance threshold for ABC}
 
 \item{dprior}{prior probability density function}
+
+\item{parAcceptable}{user-specified constraint function, must return a scalar Boolean}
 }
 \value{
 updated values for curPar, curDelta, and curPrior
