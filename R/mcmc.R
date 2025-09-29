@@ -619,7 +619,7 @@ metropolisUpdate <- function(simulate, experiments, logLikelihood, dprior, Sigma
 			names(parProposal) <- names(parGiven)
 			priorProposal <- dprior(parProposal)
 			attr(parProposal,"prior") <- priorProposal
-			if (priorProposal < 1e-15*priorGiven+1e-15 || !parAcceptable(parProposal)) {
+			if (priorProposal == 0.0 || !parAcceptable(parProposal)) {
 				attr(parGiven,"accepted") <- FALSE
 				return(parGiven)
 			}
