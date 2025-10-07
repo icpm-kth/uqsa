@@ -62,3 +62,51 @@ showPosterior <- function(posterior, prior, lower.panel=lp, upper.panel=up,...){
 		)
 	)
 }
+
+
+#' plots a sample in parallel coordinates
+#'
+#' This function makes a plot that is quite similar to parallel
+#' coordinates. It includes information about the prior as error-bars,
+#' centered around th eprior's median.
+#'
+#' @param x a matrix, with N rows (sample-members), and M columns
+#'     (different model parameters). The columns must be named.
+#' @param prior a data.frame with at least $median, and $stdv
+#'     columns. This data.frame may also include the fields: color,
+#'     and colorOutline to change the prior error-bars.
+#' @param color the color of the sample lines, should have some
+#'     transparency.
+#' @param ... parameters are passed to matplot.
+#' @export
+#' @return produces a plot
+pcDist <- function(x,prior,color=rgb(0.5,0.5,0.5,0.05),...){
+	pI <- seq(NCOL(x))
+	stopifnot(all(c("median","stdv") %in% names(prior)))
+	m <- prior$median
+	sd <- prior$stdv
+	u <- m+sd
+	l <- m-sd
+	names(pI) <- colnames(x)
+
+	matplot(pI,t(x),type="l",lty=1,col=color,xlab=NA,axes = FALSE,lw=3,...)
+	if ("color" %in% names(prior)){
+		pColor <- prior$color
+	} else {
+		pColor <- "green2"
+	}
+	if ("colorOutline" %in% names(prior)){
+		colorOutline <- prior$colorOutline
+	} else {
+		pColorOutline <- "black"
+	}
+
+	arrows(pI,m,pI,u,angle=90,col=pColorOutline,lw=2)
+	arrows(pI,m,pI,l,angle=90,col=pColorOutline,lw=2)
+
+	lines(pI,x[1,],col="red3",lw=2)
+	arrows(pI,m,pI,u,angle=90,col=pColor)
+	arrows(pI,m,pI,l,angle=90,col=pColor)
+	axis(2)
+	axis(1,at=pI,labels=colnames(x),xpd=TRUE)
+}

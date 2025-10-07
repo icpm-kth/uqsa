@@ -16,7 +16,7 @@ mcmc_mpi(
 
 \item{comm}{an mpi comm which this function will use for send/receive operations}
 
-\item{swapDelay}{swaps will be attempted every 2*swapDelay+1 iterations}
+\item{swapDelay}{swaps will be attempted every 2*swapDelay+1 iterations \link{deprecated}}
 }
 \value{
 an mcmc closure m(parMCMC,N,eps) that implicitly uses the supplied update function
