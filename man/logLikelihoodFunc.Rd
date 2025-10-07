@@ -16,16 +16,26 @@ cases).}
 
 \item{simpleUserLLF}{(optional) a user supplied function that is
 used instead of the default sum of ((y-h)/stdv)^2 terms. The
-interface is: \code{simpleUserLLF(y,h,stdv)}, where each of them is
-an N-M-matrix where N is the dimensionality of the model output
-and M the number of data time-points.  Here, \code{y} is
-\code{t(experiments[[i]]$outputValues)} and may contain NA values.}
+interface is: \code{simpleUserLLF(y,h,stdv,name=NULL)}, where each
+of them is an N-M-matrix where N is the dimensionality of the
+model output and M the number of data time-points.  Here, \code{y}
+is \code{t(experiments[[i]]$outputValues)} and may contain NA
+values.  This function should also accept an optional \emph{name}
+argument (this is the name of the experiment this function is
+currently called for).}
 
 \item{experiment}{will be compared tp the simulation results}
 }
 \value{
-llf(p), a closure (function) of the mcmc-variable: parMCMC;
-returns a scalar logLikelihood value
+llf(parMCMC), a closure (function) of the mcmc-variable:
+parMCMC; returns a scalar logLikelihood value. Alternatively,
+the user can define such a function: parMCMC ->
+log(Likelihood(parMCMC)), and use that during sampling. A test
+simulation of p: y <- simulate(p) will reveal which values the
+simulator produces.  These values will be attached to p during
+sampling, as an attribute.  mcmcInit will attach the same
+values for the initial Markov chain state.  The log-likelihood
+function can use these attributes.
 }
 \description{
 This returns a function f(simulations), which maps simulation

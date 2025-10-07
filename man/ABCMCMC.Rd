@@ -11,7 +11,10 @@ ABCMCMC(
   Sigma0,
   delta,
   dprior,
-  batchSize = 100
+  batchSize = 100,
+  parAcceptable = function(p) {
+     return(TRUE)
+ }
 )
 }
 \arguments{

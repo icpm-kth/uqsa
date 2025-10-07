@@ -13,7 +13,10 @@ mcmcUpdate(
   gprior = NULL,
   fisherInformation = NULL,
   fisherInformationPrior = NULL,
-  Sigma = NULL
+  Sigma = NULL,
+  parAcceptable = function(p) {
+     TRUE
+ }
 )
 }
 \arguments{
@@ -39,7 +42,14 @@ Fisher information matrices}
 \item{fisherInformationPrior}{a constant matrix, the prior
 distributions fisher information}
 
-\item{Sigma}{alternatively, Sigma=solve(fisherInformationPrior), \link{the inverse to fisherInformationPrior} can be specified for the metropolis algorithm}
+\item{Sigma}{alternatively, Sigma=solve(fisherInformationPrior),
+\link{the inverse to fisherInformationPrior} can be specified for
+the metropolis algorithm}
+
+\item{parAcceptable}{a user shaped function that returns a Boolean
+scalar indicating whether a proposed parameter satisfies any
+user chosen constraints. A value of FALSE will trigger an early
+return and the model will not be simulated.}
 }
 \value{
 a function that returns possibly updated states of the

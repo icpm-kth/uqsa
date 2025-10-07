@@ -160,15 +160,16 @@ mcmc <- function(update){
 		sample <- matrix(nrow=N,ncol=length(parMCMC))
 		ll <- numeric(N)
 		b <- numeric(N)
-		a <- 0
+		a <- logical(N)
 		for (i in seq(N)){
 			parMCMC <- update(parMCMC,eps)
 			ll[[i]] <- attr(parMCMC,"logLikelihood")
 			sample[i,] <- as.numeric(parMCMC)
 			b[i] <- attr(parMCMC,"beta")
-			a <- a + as.numeric(attr(parMCMC,"accepted"))
+			a[i] <- attr(parMCMC,"accepted")
 		}
-		attr(sample,"acceptanceRate") <- a/N
+		attr(sample,"acceptanceRate") <- mean(a)
+		attr(sample,"acceptance") <- a
 		attr(sample,"logLikelihood") <- ll
 		attr(sample,"lastPoint") <- parMCMC
 		attr(sample,"beta") <- b
@@ -336,15 +337,15 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 		sample <- matrix(nrow=N,ncol=length(parMCMC))
 		ll <- numeric(N)
 		b <- numeric(N)
-		a <- 0
-		swaps <- 0
+		a <- logical(N)
+		swaps <- logical(N)
 		h <- numeric(N)
 		for (i in seq(N)){
 			parMCMC <- update(parMCMC,eps)
 			sample[i,] <- as.numeric(parMCMC)
 			LL <- attr(parMCMC,"logLikelihood")
 			B <- attr(parMCMC,"beta")
-			a <- a + as.numeric(attr(parMCMC,"accepted"))
+			a[i] <- attr(parMCMC,"accepted")
 			ll[i] <- LL
 			b[i]  <- B
 			h[i] <- eps
@@ -356,13 +357,15 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 			}
 			attr(parMCMC,"beta") <- B
 			attr(parMCMC,"logLikelihood") <- LL
-			swaps <- swaps + (B != b[i])
+			swaps[i] <- (B != b[i])
 		}
-		attr(sample,"acceptanceRate") <- a/N
+		attr(sample,"acceptanceRate") <- mean(a)
+		attr(sample,"acceptance") <- a
 		attr(sample,"logLikelihood") <- ll
 		attr(sample,"lastPoint") <- parMCMC
 		attr(sample,"beta") <- b
-		attr(sample,"swapRate") <- swaps/N
+		attr(sample,"swapRate") <- mean(swaps)
+		attr(sample,"swaps") <- swaps
 		attr(sample,"stepSize") <- h
 		return(sample)
 	}
@@ -491,6 +494,89 @@ gatherSample <- function(files,beta=1.0,size=NA){
 	attr(x,"stepSize") <- H
 	return(x)
 }
+
+#' gatherReplicas collects all sample points, from all files, which
+#' are assumed to be exact replicas, with different seeds (and
+#' possibly sizes). This function uses mclapply to process the files,
+#' which may be quicker than gatherSample.  The temperature is
+#' disregarded, assuming that no parallel tempering was used.  To
+#' facilitate the loading of a very big sample, this function will
+#' analyse the auto-correltation within each file and returned a
+#' thinned subsample of size N/2*tauint (effective sample size). There
+#' is no need to further reduce the rfesult.
+#'
+#' For small samples, it is better to load the entire sample and
+#' analyse it in full. This function is intended for samples that are
+#' so big that they challenge the memory of the machine.
+#'
+#' This function is quicker if you have used trivial parallelism,
+#' without mpi communication between the ranks (or another method of
+#' obtaining several replicas, like forking or sequetial reprtition).
+#'
+#' This function assumes that each supplied RDS file contains a matrix
+#' of model MCMC parameters. The returned value X will be the rbind of
+#' all the smaller x contained in the individual files. The value X
+#' will have several attributes attached to it:
+#'
+#' - logLikelihood: log(likelihood(X[i,])), one value per row of X
+#' - stepSize: the MCMC step size used in each given file#'
+#'
+#' @export
+#' @param files a list of file names
+#' @return a matrix of sampled points, all with the same temperature
+gatherReplicas <- function(files){
+	if (requireNamespace("hadron") && requireNamespace("errors")){
+		tau <- lapply(
+			lapply(
+				parallel::mclapply(files,readRDS),
+				attr,"logLikelihood"
+			),
+			function(l) {
+				res <- hadron::uwerr(data=l)
+				tau <- errors::set_errors(res$tauint,res$dtauint)
+				return(tau)
+			}
+		)
+	} else {
+		tau <- lapply(
+			lapply(
+				parallel::mclapply(files,readRDS),
+				attr,"logLikelihood"
+			),
+			function(l) {
+				res <- acf(l,plot=FALSE,lag.max=length(l))
+				tau <- sum(res$acf)
+				return(tau)
+			}
+		)
+	}
+	x <- Reduce(
+		rbind,
+		parallel::mcmapply(
+			function(x,tau){
+				return(x[seq(1,NROW(x),by=ceiling(tau)),])
+			},
+			parallel::mclapply(files,readRDS),
+			tau
+		),
+		init=numeric(0)
+	)
+	l <- unlist(
+		parallel::mcmapply(
+			function(l,tau){
+				return(l[seq(1,length(l),by=ceiling(tau))])
+			},
+			lapply(parallel::mclapply(files,readRDS),attr,"logLikelihood"),
+			tau
+		)
+	)
+	h <- sapply(parallel::mclapply(files,readRDS),attr,"stepSize")
+	attr(x,"logLikelihood") <- l
+	attr(x,"stepSize") <- h
+	attr(x,"tau") <- as.data.frame(Reduce(c,tau))
+	return(x)
+}
+
 
 #' checks whether a given matrix is a valid, invertible fisherInformation
 #'
