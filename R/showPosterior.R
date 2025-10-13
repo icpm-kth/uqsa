@@ -33,6 +33,34 @@ up <- function(x,y,num=round(min(NROW(x)/2,NROW(y)/2)),subscripts,...){
 	polygon(poly_X,poly_Y,col=rgb(0.2,1,0.2,0.05),border=NA)
 }
 
+#' highCor returns ordered index-pairs of high to low correlation
+#'
+#' This function uses the correlation matrix C of a sample X, orders
+#' all values from the upper triangle of C (excluding the diagonal)
+#' from highest to lowest correlation value and returns the indices as
+#' a data.frame.
+#'
+#' When truncated, the result can be used to plot only pairs with high
+#' correlation.
+#'
+#' @param C the correlation matrix of a sample, no attributes need be
+#'     present other than dim.
+#' @return data.frame with columns i and j, representing the rows and columns of high to low correlation pairs.
+#' @export
+highCor <- function(C){
+	stopifnot(is.matrix(C))
+	if (diff(dim(C))!=0){
+		## accidentally used a sample as argument rather than correlation?
+		warning("Argument C seems to be a sample rather than its correlation matrix; calculating correlation now.")
+		C <-cor(C)
+	}
+	U <- abs(C * upper.tri(C,diag=FALSE))
+	o <- order(as.numeric(U),decreasing=TRUE)
+	i <- ((o-1) %% NROW(U))+1
+	j <- ((o-1) %/% NCOL(U))+1
+	return(data.frame(i=i,j=j))
+}
+
 #' showPosterior makes a pairs plot for a sample
 #'
 #' This function will display the difference between the posterior and
