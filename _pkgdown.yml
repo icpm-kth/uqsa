@@ -61,6 +61,10 @@ navbar:
         - text: Calibrate CaMKII with SMMALA
           href: articles/smmala.html
         - text: -------
+        - text: CRNN
+        - text: CRNN models
+          href: articles/crnn.html
+        - text: -------
         - text: Extra
         - text: More examples...
           href: articles/extraExamples.html

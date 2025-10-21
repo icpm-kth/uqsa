@@ -1046,7 +1046,6 @@ r_gsl_odeiv2_outer_CRNN(
 	size_t nt;
 	struct event *ev=NULL;
 	double *f;
-	fprintf(stderr,"[%s] loading ODE system from «%s»\n",__func__, model_so); fflush(stderr);
 	gsl_odeiv2_system sys = load_system(model_name, model_so); /* also sets ODE_*() functions */
 	//	testcall_CRNN(sys);
 	if (sys.dimension == 0 || ODE_default==NULL || ODE_init==NULL){
@@ -1066,7 +1065,6 @@ r_gsl_odeiv2_outer_CRNN(
 		t0 = asReal(AS_NUMERIC(from_list(VECTOR_ELT(experiments,i),"intial_time initialTime t0 T0")));
 		ev = event_from_R(from_list(VECTOR_ELT(experiments,i),"event events scheduledEvents scheduledEvent scheduled_event"));
 		initial_value = gsl_vector_view_array(REAL(iv),ny);
-		gsl_vector_fprintf(stderr,&(initial_value.vector),"%g"); fflush(stderr);
 		nt = length(t);
 		time=gsl_vector_view_array(REAL(AS_NUMERIC(t)),nt);
 		Y=PROTECT(alloc3DArray(REALSXP,ny,nt,M));
@@ -1098,13 +1096,11 @@ r_gsl_odeiv2_outer_CRNN(
 						f,
 						sys.params
 					);
-					/*
-					CRNN_debug_print(
-						gsl_vector_get(&(time.vector),j),
-						gsl_matrix_ptr(&(y.matrix),j,0),
-						p
-					);
-					*/
+					/* CRNN_debug_print( */
+					/* 	gsl_vector_get(&(time.vector),j), */
+					/* 	gsl_matrix_ptr(&(y.matrix),j,0), */
+					/* 	p */
+					/* ); */
 				}
 			}
 		}
