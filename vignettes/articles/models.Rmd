@@ -15,7 +15,7 @@ outputs, then the most straightforward way to define it is through
 
 The following R commands load the SBtab model and data into R as `data.frames`, and convert the model into an ODE. First, you will need to get to the directory with the SBtab files by the command `setwd(...)`.
 
-```{r, eval=FALSE}
+```{r init, eval=FALSE}
 f <- dir(pattern="[.]tsv$",full.names=TRUE)          # file names
 sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
 ml <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # ODE model (as a list)
@@ -33,55 +33,75 @@ The rest of this page describes the variables and the files that we just created
 
 ---
 
-# Real Example
+# Real Example AKAR4
 
-```{r, eval=TRUE, include=FALSE}
+```{r init-evaluation, eval=TRUE, include=FALSE}
 library(uqsa)
 library(SBtabVFGEN)
 
 f <- uqsa_example('AKAR4')                           # file names
 print(f[1])
 sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
-cl <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # conservation laws, if any
-ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # includes the data
+ml <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # model, as character vector
+cl <- ml$conservationLaws                            # with conservation laws (if any)
+ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # list of simulation experiments
 ```
 
-```{r, eval=FALSE}
+```{r init-display, eval=FALSE, include=TRUE}
 library(uqsa)
 library(SBtabVFGEN)
 
 f <- uqsa_example('AKAR4')                           # file names
 print(f[1])
 sb <- SBtabVFGEN::sbtab_from_tsv(f)                  # a list of data.frames
-cl <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # conservation laws, if any
-ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # includes the data
+ml <- SBtabVFGEN::sbtab_to_vfgen(sb)                 # model, as character vector
+cl <- ml$conservationLaws                            # with conservation laws (if any)
+ex <- SBtabVFGEN::sbtab.data(sb,cl)                  # list of simulation experiments
 ```
 
-The `ex` variable holds simulation instructions for the different experiments as an R list that includes information on inputs, initial values, measurement times, etc., and also the actual data.
+The `ex` variable holds simulation instructions for the different
+experiments as an R list that includes information on:
 
+- inputs,
+- initial values,
+- measurement times,
+- scheduled events,
+- measured data.
 
-SBtab content:
+SBtab contents include:
 
-```{r, eval=TRUE}
-## Reactions, as an example of SBtab in R:
-print(sb$Reaction)
-## Conservation Laws, as text, and its attributes:
-cl$Text
-## data:
-head(ex[[1]]$outputValues)
-head(ex[[1]]$errorValues)
+Reactions and conservation laws
+```{r sb-reactions, eval=TRUE}
+print(sb$Reaction[,c(2,3)])
+cat(cl$Text,sep="\n")
+```
+
+The measured data, e.g. for experiment `1`:
+```{r sb-data, eval=TRUE}
+head(ex[[1]]$outputValues); cat("[...]\n"); tail(ex[[1]]$outputValues)
+```
+
+The standard error of the data:
+```{r sb-err, eval=TRUE}
+head(ex[[1]]$errorValues); cat("[...]\n"); tail(ex[[1]]$errorValues)
 ```
 
 Data as a plot:
-
-```{r, eval=TRUE}
+```{r error-bars, eval=TRUE}
 i <- seq(70)
 t <- ex[[1]]$outputTimes[i]
 y <- ex[[1]]$outputValues[[1]][i]
 dy <- ex[[1]]$errorValues[[1]][i]
-plot(t,y,bty='n',ylim=c(100,200))
-arrows(t,y,t,y+dy,angle=90, length=0.01)
-arrows(t,y,t,y-dy,angle=90, length=0.01)
+
+if (require("errors")){
+    t <- set_errors(t,0)
+    y <- set_errors(y,dy)
+    plot(t,y)
+} else {
+    plot(t,y,bty='n',ylim=c(100,200))
+    arrows(t,y,t,y+dy,angle=90, length=0.01)
+    arrows(t,y,t,y-dy,angle=90, length=0.01)
+}
 ```
 
 # Files

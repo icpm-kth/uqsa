@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -77,6 +77,9 @@
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>CaMKII</h6>
     <a class="dropdown-item" href="../articles/smmala.html">Calibrate CaMKII with SMMALA</a>
+    <div class="dropdown-divider"></div>
+    <h6 class="dropdown-header" data-toc-skip>CRNN</h6>
+    <a class="dropdown-item" href="../articles/crnn.html">CRNN models</a>
     <div class="dropdown-divider"></div>
     <h6 class="dropdown-header" data-toc-skip>Extra</h6>
     <a class="dropdown-item" href="../articles/extraExamples.html">More examples...</a>
@@ -140,7 +143,7 @@ own model”</a> and <a href="data.html">“Importing Data”</a>.</p>
 just created through the previous R commands.</p>
 <hr>
 <div class="section level2">
-<h2 id="real-example">Real Example<a class="anchor" aria-label="anchor" href="#real-example"></a>
+<h2 id="real-example-akar4">Real Example AKAR4<a class="anchor" aria-label="anchor" href="#real-example-akar4"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://icpm-kth.github.io/uqsa/">uqsa</a></span><span class="op">)</span></span>
@@ -149,27 +152,31 @@ just created through the previous R commands.</p>
 <span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">'AKAR4'</span><span class="op">)</span>                           <span class="co"># file names</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">f</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span>                  <span class="co"># a list of data.frames</span></span>
-<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">sbtab_to_vfgen</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>                 <span class="co"># conservation laws, if any</span></span>
-<span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">sb</span>,<span class="va">cl</span><span class="op">)</span>                  <span class="co"># includes the data</span></span></code></pre></div>
+<span><span class="va">ml</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_to_vfgen.html" class="external-link">sbtab_to_vfgen</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>                 <span class="co"># model, as character vector</span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="va">ml</span><span class="op">$</span><span class="va">conservationLaws</span>                            <span class="co"># with conservation laws (if any)</span></span>
+<span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">sb</span>,<span class="va">cl</span><span class="op">)</span>                  <span class="co"># list of simulation experiments</span></span></code></pre></div>
 <p>The <code>ex</code> variable holds simulation instructions for the
-different experiments as an R list that includes information on inputs,
-initial values, measurement times, etc., and also the actual data.</p>
-<p>SBtab content:</p>
+different experiments as an R list that includes information on:</p>
+<ul>
+<li>inputs,</li>
+<li>initial values,</li>
+<li>measurement times,</li>
+<li>scheduled events,</li>
+<li>measured data.</li>
+</ul>
+<p>SBtab contents include:</p>
+<p>Reactions and conservation laws</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## Reactions, as an example of SBtab in R:</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Reaction</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                 !Name                             !KineticLaw</span></span>
-<span><span class="co">#&gt; reaction_1 reaction_1 kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C</span></span>
-<span><span class="co">#&gt; reaction_2 reaction_2                      kcat_AKARp*AKAR4_C</span></span>
-<span><span class="co">#&gt;                  !ReactionFormula !IsReversible</span></span>
-<span><span class="co">#&gt; reaction_1  C + AKAR4 &lt;=&gt; AKAR4_C             1</span></span>
-<span><span class="co">#&gt; reaction_2 AKAR4_C &lt;=&gt; AKAR4p + C             0</span></span>
-<span><span class="co">## Conservation Laws, as text, and its attributes:</span></span>
-<span><span class="va">cl</span><span class="op">$</span><span class="va">Text</span></span>
-<span><span class="co">#&gt; [1] "AKAR4_C_ConservedConst = AKAR4_C+1*C"     </span></span>
-<span><span class="co">#&gt; [2] "AKAR4_ConservedConst = AKAR4+1*AKAR4p-1*C"</span></span>
-<span><span class="co">## data:</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Reaction</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                                        !KineticLaw       !ReactionFormula</span></span>
+<span><span class="co">#&gt; reaction_1 kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C  C + AKAR4 &lt;=&gt; AKAR4_C</span></span>
+<span><span class="co">#&gt; reaction_2                      kcat_AKARp*AKAR4_C AKAR4_C &lt;=&gt; AKAR4p + C</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">cl</span><span class="op">$</span><span class="va">Text</span>,sep<span class="op">=</span><span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; AKAR4_C_ConservedConst = AKAR4_C+1*C</span></span>
+<span><span class="co">#&gt; AKAR4_ConservedConst = AKAR4+1*AKAR4p-1*C</span></span></code></pre></div>
+<p>The measured data, e.g. for experiment <code>1</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[...]\n"</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          AKAR4pOUT</span></span>
 <span><span class="co">#&gt; E400T001    108.60</span></span>
 <span><span class="co">#&gt; E400T002    111.35</span></span>
@@ -177,24 +184,50 @@ initial values, measurement times, etc., and also the actual data.</p>
 <span><span class="co">#&gt; E400T004    111.40</span></span>
 <span><span class="co">#&gt; E400T005    111.70</span></span>
 <span><span class="co">#&gt; E400T006    113.25</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">errorValues</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [...]</span></span>
+<span><span class="co">#&gt;          AKAR4pOUT</span></span>
+<span><span class="co">#&gt; E400T220   184.125</span></span>
+<span><span class="co">#&gt; E400T221   186.250</span></span>
+<span><span class="co">#&gt; E400T222   185.350</span></span>
+<span><span class="co">#&gt; E400T223   186.250</span></span>
+<span><span class="co">#&gt; E400T224   185.675</span></span>
+<span><span class="co">#&gt; E400T225   187.250</span></span></code></pre></div>
+<p>The standard error of the data:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">errorValues</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[...]\n"</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">errorValues</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          AKAR4pOUT</span></span>
 <span><span class="co">#&gt; E400T001   14.7950</span></span>
 <span><span class="co">#&gt; E400T002   14.9325</span></span>
 <span><span class="co">#&gt; E400T003   14.8025</span></span>
 <span><span class="co">#&gt; E400T004   14.9350</span></span>
 <span><span class="co">#&gt; E400T005   14.9500</span></span>
-<span><span class="co">#&gt; E400T006   15.0275</span></span></code></pre></div>
+<span><span class="co">#&gt; E400T006   15.0275</span></span>
+<span><span class="co">#&gt; [...]</span></span>
+<span><span class="co">#&gt;          AKAR4pOUT</span></span>
+<span><span class="co">#&gt; E400T220  18.57125</span></span>
+<span><span class="co">#&gt; E400T221  18.67750</span></span>
+<span><span class="co">#&gt; E400T222  18.63250</span></span>
+<span><span class="co">#&gt; E400T223  18.67750</span></span>
+<span><span class="co">#&gt; E400T224  18.64875</span></span>
+<span><span class="co">#&gt; E400T225  18.72750</span></span></code></pre></div>
 <p>Data as a plot:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">70</span><span class="op">)</span></span>
 <span><span class="va">t</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
 <span><span class="va">dy</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">errorValues</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">y</span>,bty<span class="op">=</span><span class="st">'n'</span>,ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>,<span class="fl">200</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">y</span>,<span class="va">t</span>,<span class="va">y</span><span class="op">+</span><span class="va">dy</span>,angle<span class="op">=</span><span class="fl">90</span>, length<span class="op">=</span><span class="fl">0.01</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">y</span>,<span class="va">t</span>,<span class="va">y</span><span class="op">-</span><span class="va">dy</span>,angle<span class="op">=</span><span class="fl">90</span>, length<span class="op">=</span><span class="fl">0.01</span><span class="op">)</span></span></code></pre></div>
-<p><img src="models_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
+<span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://r-quantities.github.io/errors/" class="external-link">"errors"</a></span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">t</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-quantities.github.io/errors/reference/errors.html" class="external-link">set_errors</a></span><span class="op">(</span><span class="va">t</span>,<span class="fl">0</span><span class="op">)</span></span>
+<span>    <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-quantities.github.io/errors/reference/errors.html" class="external-link">set_errors</a></span><span class="op">(</span><span class="va">y</span>,<span class="va">dy</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">y</span><span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">y</span>,bty<span class="op">=</span><span class="st">'n'</span>,ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>,<span class="fl">200</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">y</span>,<span class="va">t</span>,<span class="va">y</span><span class="op">+</span><span class="va">dy</span>,angle<span class="op">=</span><span class="fl">90</span>, length<span class="op">=</span><span class="fl">0.01</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span><span class="va">t</span>,<span class="va">y</span>,<span class="va">t</span>,<span class="va">y</span><span class="op">-</span><span class="va">dy</span>,angle<span class="op">=</span><span class="fl">90</span>, length<span class="op">=</span><span class="fl">0.01</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="co">#&gt; Loading required package: errors</span></span></code></pre></div>
+<p><img src="models_files/figure-html/error-bars-1.png" width="700"></p>
 </div>
 <div class="section level2">
 <h2 id="files">Files<a class="anchor" aria-label="anchor" href="#files"></a>
@@ -217,22 +250,22 @@ representation of all ODE elements, no specific format</li>
 a zip archive</li>
 </ul>
 <p>Let’s look at the state variables of the ode:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">grep</span> <span class="st">'&lt;StateVariable'</span> AKAR4.vf</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt; &lt;!-- &lt;StateVariable Name="AKAR4" Description="removed compound" DefaultInitialCondition="0.2" Formula="-reaction_1"/&gt; --&gt;</span></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; &lt;!-- &lt;StateVariable Name="AKAR4_C" Description="removed compound" DefaultInitialCondition="0" Formula="+reaction_1-reaction_2"/&gt; --&gt;</span></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt;  &lt;StateVariable Name="AKAR4p" Description="compound" DefaultInitialCondition="0" Formula="+reaction_2"/&gt;</span></span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt;  &lt;StateVariable Name="C" Description="compound" DefaultInitialCondition="0" Formula="-reaction_1+reaction_2"/&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">grep</span> <span class="st">'&lt;StateVariable'</span> AKAR4.vf</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt; &lt;!-- &lt;StateVariable Name="AKAR4" Description="removed compound" DefaultInitialCondition="0.2" Formula="-reaction_1"/&gt; --&gt;</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt; &lt;!-- &lt;StateVariable Name="AKAR4_C" Description="removed compound" DefaultInitialCondition="0" Formula="+reaction_1-reaction_2"/&gt; --&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt;  &lt;StateVariable Name="AKAR4p" Description="compound" DefaultInitialCondition="0" Formula="+reaction_2"/&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt;  &lt;StateVariable Name="C" Description="compound" DefaultInitialCondition="0" Formula="-reaction_1+reaction_2"/&gt;</span></span></code></pre></div>
 <p>Two State variables have been commented out (through conservation law
 analysis). These two have been replaced by vfgen expressions:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">grep</span> <span class="st">'&lt;Expression'</span> AKAR4.vf</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">#&gt;  &lt;Expression Name="AKAR4_C" Description="derived from conservation law 1" Formula="AKAR4_C_ConservedConst - (C)"/&gt;</span></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt;  &lt;Expression Name="AKAR4" Description="derived from conservation law 2" Formula="AKAR4_ConservedConst - (AKAR4p-C)"/&gt;</span></span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt;  &lt;Expression Name="reaction_1" Description="flux" Formula="kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C"/&gt;</span></span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt;  &lt;Expression Name="reaction_2" Description="flux" Formula="kcat_AKARp*AKAR4_C"/&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">grep</span> <span class="st">'&lt;Expression'</span> AKAR4.vf</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co">#&gt;  &lt;Expression Name="AKAR4_C" Description="derived from conservation law 1" Formula="AKAR4_C_ConservedConst - (C)"/&gt;</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt;  &lt;Expression Name="AKAR4" Description="derived from conservation law 2" Formula="AKAR4_ConservedConst - (AKAR4p-C)"/&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#&gt;  &lt;Expression Name="reaction_1" Description="flux" Formula="kf_C_AKAR4*C*AKAR4 - kb_C_AKAR4*AKAR4_C"/&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt;  &lt;Expression Name="reaction_2" Description="flux" Formula="kcat_AKARp*AKAR4_C"/&gt;</span></span></code></pre></div>
 <p>Finally, we clean up the generated files:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> vf tar.gz zip <span class="kw">;</span> <span class="cf">do</span> <span class="fu">rm</span> ./AKAR4.<span class="va">$t</span> <span class="kw">;</span> <span class="cf">done</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-f</span> AKAR4.xml <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="fu">rm</span> AKAR4.xml <span class="co"># since that one is optional</span></span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="bu">echo</span> <span class="va">$?</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> vf tar.gz zip <span class="kw">;</span> <span class="cf">do</span> <span class="fu">rm</span> ./AKAR4.<span class="va">$t</span> <span class="kw">;</span> <span class="cf">done</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-f</span> AKAR4.xml <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="fu">rm</span> AKAR4.xml <span class="co"># since that one is optional</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="bu">echo</span> <span class="va">$?</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="the-vector-field-file">The Vector Field file<a class="anchor" aria-label="anchor" href="#the-vector-field-file"></a>
 </h3>
@@ -273,9 +306,9 @@ derivatives for the Jacobians: 1. <a href="https://maxima.sourceforge.io/" class
 <code>bin/derivative</code> binary that RPN-derivative contains (after
 <code>make &amp;&amp; make install</code>)</p>
 <p>Assuming that you followed all <a href="articles/installation.html">installation instructions</a>:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="ex">ode</span> <span class="at">-R</span> <span class="at">--maxima</span> ./myModel.vf <span class="op">&gt;</span> ./myModel.R </span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co">##     both     ./myModel.{zip,tar.gz}     also work here</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="ex">ode</span> <span class="at">-C</span> <span class="at">--maxima</span> ./myModel.tar.gz <span class="op">&gt;</span> ./myModel_gvf.c</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="ex">ode</span> <span class="at">-R</span> <span class="at">--maxima</span> ./myModel.vf <span class="op">&gt;</span> ./myModel.R </span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co">##     both     ./myModel.{zip,tar.gz}     also work here</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="ex">ode</span> <span class="at">-C</span> <span class="at">--maxima</span> ./myModel.tar.gz <span class="op">&gt;</span> ./myModel_gvf.c</span></code></pre></div>
 <p>Note: <code>ode.sh</code> is compatible with the same vf files from
 SBtabVFGEN, but doesn’t support all of the output formats that VFGEN can
 do, and does nothing related to delays.</p>
@@ -311,11 +344,11 @@ parameters (e.g., reaction rate coefficients) are always the same.</p>
 <p>The ordinary differential equation, on the other hand, does not need
 to know the distinction between known or unknown parameters. For these
 reasons, we may write:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>parMCMC <span class="ot">&lt;-</span> [...]             <span class="co"># some sampling variable</span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="fu">parMap</span>(parMCMC)         <span class="co"># a model compatible parameter vector</span></span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>u <span class="ot">&lt;-</span> experiments[[i]]<span class="sc">$</span>input  <span class="co"># a valid model input vector</span></span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">c</span>(k,u)</span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co"># solve ODE using p</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>parMCMC <span class="ot">&lt;-</span> [...]             <span class="co"># some sampling variable</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="fu">parMap</span>(parMCMC)         <span class="co"># a model compatible parameter vector</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>u <span class="ot">&lt;-</span> experiments[[i]]<span class="sc">$</span>input  <span class="co"># a valid model input vector</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">c</span>(k,u)</span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co"># solve ODE using p</span></span></code></pre></div>
 <p>where <code>k</code> are intrinsic, unknown parameters (of which we
 quantify the uncertainty via sampling algorithms in UQSA), and
 <code>u</code> are the known input parameters that are encoded in the
