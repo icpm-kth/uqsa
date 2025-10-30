@@ -10,6 +10,7 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_eigen.h>
+#include <gsl/gsl_sf.h>
 #include <math.h>
 #include <dlfcn.h>
 #include <R.h>
@@ -18,7 +19,7 @@
 #define MATCH 0
 #define NO_DIFFERENCE 0
 #define RCOND_LIMIT 1e-10
-#define ODE_TIME_LIMIT_SECONDS 1
+#define ODE_TIME_LIMIT_SECONDS 7
 #define TIME_LIMIT_ERROR 1<<11
 /* SEXP stands for S-Expression, and it can be any R data object (or
  * function) in this program, we'll only use data from R. However SEXP is
@@ -409,8 +410,6 @@ simulate_timeseries(const gsl_odeiv2_system sys, /* the system to integrate */
 	int label=0;
 	clock_t ct0=clock();
 	double elapsed_sec;
-	/* initialize t0 values */
-	gsl_vector_memcpy(y,y0);
 
 	for (j=0, i=0; j<nt; j++){
 		tf=gsl_vector_get(time,j);
@@ -418,12 +417,10 @@ simulate_timeseries(const gsl_odeiv2_system sys, /* the system to integrate */
 			te=event->time[i];
 			status=gsl_odeiv2_driver_apply(driver, &t, te, y->data);
 			if (status!=GSL_SUCCESS){
-				fprintf(stderr,"[%s] before event %i gsl_odeiv2_driver_apply produced an error: %s.\n",__func__,i,gsl_strerror(status));
 				gsl_vector_free(y);
 				gsl_odeiv2_driver_reset(driver);
 				return(status);
 			}
-			//fprintf(stderr,"[%s] event type: %i.\n",__func__,event->type);
 			switch (event->type){
 			case affine_tf_event:
 				apply_tf(event->state,y->data,i);
@@ -434,12 +431,11 @@ simulate_timeseries(const gsl_odeiv2_system sys, /* the system to integrate */
 				nDose = event->nDose;
 				if (event->dose && nDose) dose = event->dose[i % nDose];
 				if (event->label && nL) label = event->label[i % nL];
-				ODE_event(te,y->data,sys.params,label,dose);
+				if (ODE_event) ODE_event(te,y->data,sys.params,label,dose);
 				break;
 			}
 			status=gsl_odeiv2_driver_reset(driver);
 			if (status!=GSL_SUCCESS){
-				fprintf(stderr,"[%s] resetting the system after event %i produced an error: %s.\n",__func__,i,gsl_strerror(status));
 				gsl_vector_free(y);
 				gsl_odeiv2_driver_reset(driver);
 				return(status);
@@ -456,6 +452,7 @@ simulate_timeseries(const gsl_odeiv2_system sys, /* the system to integrate */
 			Yout_row = gsl_matrix_row(Yout,j);
 			gsl_vector_memcpy(&(Yout_row.vector),y);
 		} else {
+			fprintf(stderr,"[%s] %s\n",__func__,gsl_strerror(status));
 			break;
 		}
 	}
@@ -920,12 +917,207 @@ r_gsl_odeiv2_outer_fi(
 			fprintf(stderr,"[%s] parameter set lead to solver errors (%s) in experiment %i/%i\n",__func__,gsl_strerror(status),i,N);
 		}
 	} // experiments: 0 to N-1
-  sensApproxMemFree(saMem); /* frees the memory of temporary matrices of sensitivity approximation */
+	sensApproxMemFree(saMem); /* frees the memory of temporary matrices of sensitivity approximation */
 	UNPROTECT(1); /* res_list */
 	gsl_odeiv2_driver_free(driver);
 	gsl_matrix_free(P);
 	gsl_matrix_free(Y0);
 	gsl_matrix_free(Sf_sd);
 	gsl_vector_free(v);
+	return res_list;
+}
+
+/* the parameter struct for CRNNs */
+struct par {
+	double *l;  /* log(k), rate coefficients */
+	double *nu; /* stoichiometry (4×10)*/
+	double *m;  /* modifiers (enzymes); not consumed or produced */
+};
+
+int testcall_CRNN(gsl_odeiv2_system sys){
+	int numStateVar=sys.dimension;
+	int numReaction=ODE_default(0,NULL);
+	int numFunction=ODE_func(0,NULL,NULL,NULL);
+	fprintf(stderr,"[%s] %i %i %i\n",__func__,numStateVar,numReaction,numFunction);
+	gsl_vector *y0 = gsl_vector_alloc(numStateVar);
+	gsl_vector *f = gsl_vector_alloc(numStateVar);
+	gsl_vector *F = gsl_vector_alloc(numFunction);
+	gsl_matrix *J = gsl_matrix_alloc(numStateVar,numStateVar);
+	gsl_vector *l = gsl_vector_alloc(numReaction*2);
+	gsl_matrix *nu = gsl_matrix_alloc(numReaction,numStateVar);
+	gsl_matrix *m = gsl_matrix_alloc(numReaction,numStateVar);
+	struct par p={l->data, nu->data, m->data};
+	gsl_vector_set_all(y0,0.1);
+	gsl_matrix_set_identity(nu);
+	gsl_matrix_set_zero(m);
+	fprintf(stderr,"[%s]      vf: %i\n",__func__,ODE_vf(0,y0->data,f->data,&p));
+	gsl_vector_fprintf(stderr,f,"%g, ");
+	fprintf(stderr,"[%s]     jac: %i\n",__func__,ODE_jac(0,y0->data,J->data,NULL,&p));
+	gsl_matrix_fprintf(stderr,J,"%g, ");
+	fprintf(stderr,"[%s]    init: %i\n",__func__,ODE_init(0,y0->data,&p));
+	gsl_vector_fprintf(stderr,y0,"%g, ");
+	fprintf(stderr,"[%s] default: %i\n",__func__,ODE_default(0,&p));
+	fprintf(stderr,"[%s]    func: %i\n",__func__,ODE_func(0,y0->data,F->data,&p));
+	gsl_vector_fprintf(stderr,F,"%g, ");
+	gsl_vector_free(y0);
+	gsl_matrix_free(J);
+	gsl_matrix_free(nu);
+	gsl_matrix_free(m);
+	gsl_vector_free(f);
+	gsl_vector_free(F);
+	return GSL_SUCCESS;
+}
+
+
+int CRNN_debug_print(double t, double *y, struct par p){
+	if (!ODE_default || !ODE_vf || !ODE_jac) return GSL_FAILURE;
+	int numStateVar=ODE_vf(0,NULL,NULL,NULL);
+	int numReaction=ODE_default(0,NULL);
+	int numFunction=ODE_func(0,NULL,NULL,NULL);
+	gsl_vector *f = gsl_vector_alloc(numStateVar);
+	gsl_vector *F = gsl_vector_alloc(numFunction);
+	gsl_matrix *J = gsl_matrix_alloc(numStateVar,numStateVar);
+	int i;
+	// vf
+	fprintf(stderr,"[%s]       t: %g\n",__func__,t);
+	fprintf(stderr,"[%s]      vf: %i\n",__func__,ODE_vf(t,y,f->data,&p));
+	gsl_vector_fprintf(stderr,f,"%g, ");
+	// jac
+	fprintf(stderr,"[%s]     jac: %i\n",__func__,ODE_jac(t,y,J->data,NULL,&p));
+	gsl_matrix_fprintf(stderr,J,"%g, ");
+	// y
+	fprintf(stderr,"[%s]       y:\n",__func__);
+	for (i=0;i<numStateVar;i++) fprintf(stderr,"%g, ",y[i]);
+	fputc('\n',stderr);
+	// func
+	fprintf(stderr,"[%s]    func: %i\n",__func__,ODE_func(0,y,F->data,&p));
+	gsl_vector_fprintf(stderr,F,"%g, ");
+	// free
+	gsl_matrix_free(J);
+	gsl_vector_free(f);
+	gsl_vector_free(F);
+	return GSL_SUCCESS;
+}
+
+
+/* This program loads an ODE model, with functions compatible with `gsl_odeiv2`
+	(see odeiv2 documentation on the GSL webpage). It
+	 simulates the model for each entry in a list of named items, each
+	 describing a single initial value problem (`y0`, `t`, parameters `p`, events).
+	 ```
+	 y'=f(y,t;p) y0=y(t[0])
+	 ```
+	 This function also estimates the Fisher Information and gradient of a hypothetical Gaussian noise model.
+	 If the noise model for the data contained within the experiments variable is more complicated,
+	 then these estimates will be wrong and must be re-done in higher level code.
+*/
+Rdata /* the trajectories as a list (same size as experiments) */
+r_gsl_odeiv2_outer_CRNN(
+ Rdata modelName, /* a string */
+ Rdata experiments, /* a list of simulation experiments */
+ Rdata lparameters, /* a matrix of parameterization columns, in log-space */
+ Rdata stoichiometry, /* a matrix of stoichiometric coefficients */
+ Rdata modifiers, /* a matrix of rate modifiers (catalytic enzymes) */
+ Rdata absolute_tolerance, /* absolute tolerance for GSL's solver */
+ Rdata relative_tolerance, /* relative tolerance for GSL's solver */
+ Rdata initial_step_size, /* initial guess for the step size */
+ Rdata method) /* integration method (integer) */
+{
+	gsl_set_error_handler_off();
+	const gsl_odeiv2_step_type* step_types[] = {gsl_odeiv2_step_msbdf, gsl_odeiv2_step_msadams, gsl_odeiv2_step_bsimp, gsl_odeiv2_step_rk4imp, gsl_odeiv2_step_rk2imp, gsl_odeiv2_step_rk1imp, gsl_odeiv2_step_rk8pd, gsl_odeiv2_step_rkck, gsl_odeiv2_step_rkf45, gsl_odeiv2_step_rk4, gsl_odeiv2_step_rk2, NULL};
+	const char* model_so=CHAR(asChar(getAttrib(modelName,install("comment"))));
+	const char* model_name=CHAR(STRING_ELT(modelName,0));
+	int i,j,k,status=GSL_SUCCESS;
+	double abs_tol=asReal(absolute_tolerance);
+	double rel_tol=asReal(relative_tolerance);
+	double h=asReal(initial_step_size);
+	int N=GET_LENGTH(experiments);
+	size_t M=ncols(lparameters);
+	const gsl_odeiv2_step_type * T=step_types[asInteger(method)]; //gsl_odeiv2_step_msbdf;
+	struct par p = {REAL(lparameters), REAL(stoichiometry), REAL(modifiers)}; /* l, nu, m */
+	Rdata res_list = PROTECT(NEW_LIST(N)); /* use VECTOR_ELT and SET_VECTOR_ELT */
+	SET_NAMES(res_list, GET_NAMES(experiments));
+	Rdata yf_list, Y, F, iv, t, cpuSeconds;
+	double t0;
+	clock_t ct0, ct1;
+	const char *yf_names[]={"state","func","cpuSeconds",NULL};
+	gsl_vector_view initial_value, time;
+	gsl_matrix_view y;
+	size_t nt;
+	struct event *ev=NULL;
+	double *f;
+	gsl_odeiv2_system sys = load_system(model_name, model_so); /* also sets ODE_*() functions */
+	//	testcall_CRNN(sys);
+	if (sys.dimension == 0 || ODE_default==NULL || ODE_init==NULL){
+		fprintf(stderr,"[%s] loading model has failed (system dimension: «%li»).\n",__func__,sys.dimension);
+		UNPROTECT(1); /* res_list */
+		return R_NilValue;
+	}
+	free(sys.params); /* auto-allocated by load system */
+	sys.params = (void *) &p;
+	int nf = ODE_func(0,NULL,NULL,NULL);
+	int ny = sys.dimension;
+	int np = nrows(lparameters);
+	gsl_odeiv2_driver *driver = gsl_odeiv2_driver_alloc_y_new(&sys,T,h,abs_tol,rel_tol);
+	for (i=0; i<N; i++){
+		iv = from_list(VECTOR_ELT(experiments,i),"initial_value initialState initialValue initialValues");
+		t = from_list(VECTOR_ELT(experiments,i),"time outputTimes t");
+		t0 = asReal(AS_NUMERIC(from_list(VECTOR_ELT(experiments,i),"intial_time initialTime t0 T0")));
+		ev = event_from_R(from_list(VECTOR_ELT(experiments,i),"event events scheduledEvents scheduledEvent scheduled_event"));
+		initial_value = gsl_vector_view_array(REAL(iv),ny);
+		nt = length(t);
+		time=gsl_vector_view_array(REAL(AS_NUMERIC(t)),nt);
+		Y=PROTECT(alloc3DArray(REALSXP,ny,nt,M));
+		cpuSeconds=PROTECT(NEW_NUMERIC(M));
+		for (j=0; j<ny*nt*M; j++) REAL(Y)[j]=NA_REAL; /* initialize to NA */
+		F=PROTECT(alloc3DArray(REALSXP,nf,nt,M));
+		for (j=0;j<nf*nt*M;j++) REAL(F)[j]=NA_REAL;   /* initialize to NA */
+		for (k=0;k<M;k++){
+			p.l = (REAL(lparameters)+np*k);
+			y=gsl_matrix_view_array(REAL(AS_NUMERIC(Y))+(nt*ny*k),nt,ny);
+			ct0=clock();
+			status=simulate_timeseries(
+				sys,
+				driver,
+				t0,
+				&(initial_value.vector),
+				&(time.vector),
+				ev,
+				&(y.matrix)
+			);
+			ct1=clock();
+			REAL(cpuSeconds)[k] = sec(ct1-ct0);
+			if (status==GSL_SUCCESS) {
+				for (j=0;j<nt;j++){
+					f=REAL(F)+(0+j*nf+k*nf*nt);
+					ODE_func(
+						gsl_vector_get(&(time.vector),j),
+						gsl_matrix_ptr(&(y.matrix),j,0),
+						f,
+						sys.params
+					);
+					/* CRNN_debug_print( */
+					/* 	gsl_vector_get(&(time.vector),j), */
+					/* 	gsl_matrix_ptr(&(y.matrix),j,0), */
+					/* 	p */
+					/* ); */
+				}
+			}
+		}
+		yf_list=PROTECT(NEW_LIST(3));
+		SET_VECTOR_ELT(yf_list,0,Y);
+		SET_VECTOR_ELT(yf_list,1,F);
+		SET_VECTOR_ELT(yf_list,2,cpuSeconds);
+		set_names(yf_list,yf_names);
+		SET_VECTOR_ELT(res_list,i,yf_list);
+		event_free(&ev);
+
+		UNPROTECT(1); /* yf_list */
+		UNPROTECT(1); /* F */
+		UNPROTECT(1); /* Y */
+		UNPROTECT(1); /* cpuSeconds */
+	} // experiments: 0 to N-1
+	UNPROTECT(1); /* res_list */
+	gsl_odeiv2_driver_free(driver);
 	return res_list;
 }

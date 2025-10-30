@@ -40,6 +40,103 @@ gsl_odeiv2_fi <- function(name,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.s
 	return(y)
 }
 
+#' simulates a CRNN ode model with extra work
+#'
+#' This function calls a C function which solves an initial value
+#' problem, derived from a CRNN.
+#'
+#' @param name the name of the ODE model to simulate (a shared library
+#'     of the same name will be dynamically loaded and needs to be
+#'     created first)
+#' @param experiments a list of `N` simulation experiments (time,
+#'     parameters, initial value, events).
+#' @param l a matrix of parameters with M columns, in log-space.
+#' @param nu a stoichiometry matrix (N×R) where N is the number of state
+#'     variables and R the number of reactions, all reactions are
+#'     assumed to be reversible.
+#' @param m modifiers -- similar to stoichiometry, but indicates whether the
+#'     species takes part in the reaction without being consumed.
+#' @param abs.tol absolute tolerance, real scalar.
+#' @param rel.tol relative tolerance, real scalar.
+#' @param initial.step.size initial value for the step size; the step
+#'     size will adapt to a value that observes the tolerances, real
+#'     scalar.
+#' @return a list of the solution trajectories `y(t;p)` for all
+#'     experiments (named like the experiments), as well as the output
+#'     functions.
+#' @export
+#' @keywords ODE
+#' @useDynLib uqsa r_gsl_odeiv2_outer_CRNN
+gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0){
+	if (is.character(comment(name))){
+		so <- comment(name)
+	} else {
+		so <- paste0("./",name,".so")
+		comment(name)<-so
+	}
+	if (!file.exists(so)){
+            warning(sprintf("[r_gsl_odeiv2_outer] for model name «%s», in directory «%s» file «%s» not found.",name,getwd(),so))
+	}
+	if (!is.matrix(l)) l <- as.matrix(p)
+	y <- .Call(r_gsl_odeiv2_outer_CRNN,name,experiments,l,nu,m,abs.tol,rel.tol,initial.step.size,method)
+	for (i in seq_along(experiments)){
+		if ("initialState" %in% names(experiments[[i]])){
+			dimnames(y[[i]]$state) <- list(names(experiments[[i]]$initialState),NULL,NULL)
+		}
+		if ("outputValues" %in% names(experiments[[i]])){
+			dimnames(y[[i]]$func) <- list(names(experiments[[i]]$outputValues),NULL,NULL)
+		}
+	}
+	return(y)
+}
+
+#' scrnn returns a closure around gsl_odeiv2_CRNN()
+#'
+#' the returned value is a function of a variable p that encodes the
+#' CRNN in some way. Three user supplied functions are used to extract
+#' the three components of a CRNN:
+#'
+#' - kinetic rate coefficients (in log-space): `l <- parMap(p)`
+#' - stoichiometric matrix: `nu <- stoichiometry(p)`
+#' - modifier matrix: `m <- modifiers(p)`
+#'
+#' these three components (one numeric vector, and two matrices) are
+#' passed to the simulation procedure. The vector l can be a matrix
+#' with M columns. In that case, one simulation per column is
+#' performed. The stoichiometry and modifiers remain unchanged
+#' throughout.
+#' @param experiments list of experiments (inputs are ignored).
+#' @param modelName scalar string, can indicate a shared library with
+#'     an attached comment attribute.
+#' @param parMap (function) extracts kinetic rate coefficients from
+#'     its argument.
+#' @param stoichiometry (function) extracts the stoichiometry matrix
+#'     from its argument.
+#' @param modifiers (function) extracts the modifier matrix from its
+#'     argument.
+#' @param method (integer) integration method key (0:10) corresponds to
+#'     these GSL methods: msbdf, msadams, bsimp, rk4imp, rk2imp,
+#'     rk1imp, rk8pd, rkck, rkf45, rk4, rk2
+#' @return closure that maps one argument (p) to simulation results (y).
+#' @export
+scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$nu, modifiers=\(p) p$m, method = 0){
+	N <- length(experiments)
+	sim <- function(parMCMC){
+		nu <- stoichiometry(parMCMC)
+		m <- modifiers(parMCMC)
+		l <- parMap(parMCMC)
+		yf <- gsl_odeiv2_CRNN(modelName,experiments,l,nu,m,method=0)
+		if (N==length(yf)) {
+			names(yf) <- names(experiments)
+		} else {
+			message(sprintf("experiments(%i) should be the same length as simulations(%i), but isn't.",length(experiments),length(yf)))
+		}
+		return(yf)
+	}
+	return(sim)
+}
+
+
 #' This creates a closure that simulates the model, similar to simulator.c
 #'
 #' This is a shorter alternative to simulator.c (C backend). It also
@@ -94,7 +191,6 @@ simfi <- function(experiments, modelName, parMap=identity, method = 0){
 	}
 	return(sim)
 }
-
 
 #' This creates a closure that simulates the model
 #'
