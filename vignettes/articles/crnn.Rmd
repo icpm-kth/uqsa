@@ -24,7 +24,7 @@ changing the parameters, without re-building the model.
 The output of the CRNN is the right hand side function:
 
 $$
-\dot x(t) = CRNN(t,x,p)\,,
+\dot x(t) = \text{CRNN}(t,x,p)\,,
 $$
 
 where $p$ includes the kinetic rate coefficients, the stoichiometry
@@ -46,12 +46,14 @@ The simple way to simulate exactly this model is to create a flux $v$ from the l
 
 $$
 v(x,k) = \begin{pmatrix}
-k_{1,\text{f}} A B - k_{1,\text{r}} C\\
-k_{2,\text{f}} D - k_{2,\text{r}}
+k_{1,\text{f}} [A] [B] - k_{1,\text{r}} [C]\\
+k_{2,\text{f}} [D] - k_{2,\text{r}}
 \end{pmatrix}
 $$
 
-Where the $k$ are kinetic rate coefficients.
+Where the $k$ are kinetic rate coefficients, and $[A]$ means
+_concentration of_ compound A (this is a typical convention in systems
+biology).
 
 The stoichiometry of this system is:
 
@@ -111,28 +113,38 @@ Here, we made the second reaction almost irreversible:
 k[2,'bwd'] = exp(-30) # ~1e-13
 ```
 
-Next, we define the vector field and Jacobin (the ODE):
+Next, we define the vector field and Jacobian (the ODE):
 
 ```{r ODE}
+
+## kinetic laws hard-coded into vf
+manual_vf <- function(t,y,par){
+	k <- exp(par$l)
+	flux <- c(
+		k[1,'fwd']*y['A']*y['B'] - k[1,'bwd']*y['C'],
+		k[2,'fwd']*y['D']-k[2,'bwd']
+	)
+	return(as.vector(par$nu %*% flux))
+} # changing nu may make this function wrong
+
 manual_jac <- function(t,y,par){
 	k <- exp(par$l)
 	dflux_dy <- matrix(
 		c(
-			k[1,1]*y['B'],k[1,1]*y['A'],-k[1,2],0,
-			0,0,0,k[2,1]
-		)
-		,2,4,
+			k[1,'fwd']*y['B'], # dflux[1]/dA
+			k[1,'bwd']*y['A'], # dflux[1]/dB
+			-k[1,2],           # dflux[1]/dC
+			0,                 # dflux[1]/dD
+			0,
+			0,                 # […]
+			0,
+			k[2,'fwd']         # dflux[2]/dD
+		),
+		2, 4,
 		byrow=TRUE
 	)
 	J <- par$nu %*% dflux_dy
 	return(J)
-}
-
-## kinetic laws hard-coded into vf, changing nu will make this wrong:
-manual_vf <- function(t,y,par){
-	k <- exp(par$l)
-	flux <- c(k[1,'fwd']*y['A']*y['B'] - k[1,'bwd']*y['C'],k[2,'fwd']*y['D']-k[2,'bwd'])
-	return(as.vector(par$nu %*% flux))
 }
 ```
 
@@ -140,9 +152,10 @@ These two functions are not very general, any changes to $\nu$ must be
 considered in the flux expressions. These functions hard-code the
 model's structure at least partially.
 
-We could use `vf` and `jac` with deSolve (with some modification), but
-since it is a very small system we can obtain a fairly good solution
-with Euler forward steps (ignoring the Jacobin entirely):
+We could use `manual_vf` and `manual_jac` with `deSolve` (with
+modifications), but since it is a very small system we can obtain a
+fairly good solution with Euler forward steps (ignoring the Jacobian
+entirely):
 
 
 ```{r Euler, out.width="100%"}
@@ -167,6 +180,7 @@ matplot(
 	ylim=c(-1,sum(iv)),
 	main="manual Euler forward"
 )
+
 legend(
 	"topright",
 	legend=LETTERS[seq(4)],
@@ -252,8 +266,8 @@ matplot(
 
 Here, `s(par)` can be called repeatedly, with various `par`, without
 re-stating which experiments to simulate or which model to use. But,
-crucially, changing `par$nu` will be correctly handled by the CRNN,
-the flux and Jacobin will change accordingly.
+crucially, changing `par$nu` will be handled correctly by the CRNN,
+the flux and Jacobian will change accordingly.
 
 ### Changed Reaction System
 

@@ -8,29 +8,39 @@
 #'
 #' @export
 #' @param txtUnit a string with numeric values, including units,
-#'     e.g. "3 cm"
-#' @param target string, target unit, e.g. "m"
+#'     e.g. "3 cm", can be a character vector
+#' @param target string, target unit, e.g. "m", must be scalar
 #' @return a numeric value y: val*originalUnit = y*targetUnit, the
 #'     target unit is attached to the returned value, as a comment.
 #' @examples
 #' y <- "21 cm" %as% "inches"
+#' y <- "12 μmol/L" %as% "mol/L"
+#' print(comment(y))
+#' y <- "12 mol/m^3" %as% "mmol/L"
 `%as%` <- function(txtUnit,target){
-	if (system2("command",args=c("-v","units"),stderr=FALSE,stdout=FALSE)==0){
-		f <- as.double(
-			system2(
-				"units",
-				args=c(
-					paste0("--",c("strict","compact")),
-					"-1",
-					sprintf("'%s'",txtUnit),
-					sprintf("'%s'",target)
-				),
-				stdout=TRUE
+	if (system2("command",args=c("-v","units"),stderr=FALSE,stdout=FALSE)){
+		warning("The 'units' utility must be installed (system program, not R).")
+		return(NA)
+	}
+	if (length(target)!=1) warning("There must be exactly one target unit.")
+	f <- as.numeric(
+		sapply(
+			txtUnit,
+			\(u) return(
+				system2(
+					command="units",
+					args=c(
+						paste0("--",c("strict","compact")),
+						"-1",
+						sprintf("'%s'",as.character(u)),
+						sprintf("'%s'",as.character(paste(target,collapse="")))
+					),
+					stdout=TRUE
+				)
 			)
 		)
-		comment(f) <- target
-	} else {
-		warning("The 'units' utility must be installed (system program, not R).")
-	}
+	)
+	attr(f,"unit") <- target
+	names(f) <- txtUnit
 	return(f)
 }

@@ -8,9 +8,9 @@ txtUnit \%as\% target
 }
 \arguments{
 \item{txtUnit}{a string with numeric values, including units,
-e.g. "3 cm"}
+e.g. "3 cm", can be a character vector}
 
-\item{target}{string, target unit, e.g. "m"}
+\item{target}{string, target unit, e.g. "m", must be scalar}
 }
 \value{
 a numeric value y: val\emph{originalUnit = y}targetUnit, the
@@ -25,4 +25,7 @@ line arguments: \verb{units --strict --compact -1 "$originalUnit" "$targetUnit"}
 }
 \examples{
 y <- "21 cm" \%as\% "inches"
+y <- "12 μmol/L" \%as\% "mol/L"
+print(comment(y))
+y <- "12 mol/m^3" \%as\% "mmol/L"
 }
