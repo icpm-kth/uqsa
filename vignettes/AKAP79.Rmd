@@ -8,7 +8,9 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
+knitr::opts_chunk$set(
+  cache = TRUE,
+  eval = FALSE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -100,7 +102,7 @@ dprior <- dUniformPrior(ll, ul)
 
 The sampling loop:
 
-```{r sample, eval=TRUE}
+```{r sample, eval=FALSE}
 nChains <- 4
 
 start_time = Sys.time()
@@ -146,7 +148,7 @@ head -n 1 /proc/meminfo
 
 Let's display the difference between the posterior and prior distribution:
 
-```{r plot}
+```{r plot, eval=FALSE}
 posterior <- ABCMCMCoutput$draws[,seq(6)]
 prior <- rprior(NROW(posterior))[,seq(6)]
 uqsa::showPosterior(posterior,prior)
@@ -154,7 +156,7 @@ uqsa::showPosterior(posterior,prior)
 
 Alternatively:
 
-```{r hexbinplot}
+```{r hexbinplot, eval=FALSE}
 if (require(hexbin)){
     hexbin::hexplom(posterior)
 } else {
