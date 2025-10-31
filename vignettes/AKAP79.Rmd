@@ -19,11 +19,11 @@ knitr::opts_chunk$set(
 We use `icpm-kth/SBtabVFGEN` to read the model files and `icpm-kth/rgsl` as an
 interface to `gsl_odeiv2` solvers (for initial value problems) to simulate the model:
 
-```{r setup}
-require(SBtabVFGEN)
-require(rgsl)
+```{r setup, eval=TRUE}
+library(SBtabVFGEN)
+library(rgsl)
 library(uqsa)
-require(parallel)
+library(parallel)
 ```
 
 Next, we import the model's data tables from the SBtab files:
