@@ -219,9 +219,9 @@ the model and experiment, similar to conventional ODEs. But, in this
 case, we want to be able to switch between different integration
 methods, so we use the solver more explicitly:
 
-```{r solve, out.width="100%"}
-par(mfrow=c(2,2))
-for (M in seq(0,3)){
+```{r solve, fig.width=7, fig.height=14, out.width="100%"}
+par(mfrow=c(4,2))
+for (M in seq(0,7)){
 	y <- gsl_odeiv2_CRNN(
 		modelName,
 		experiments=ex,
@@ -249,14 +249,16 @@ for (M in seq(0,3)){
 In an MCMC context, we typically don't want to switch between methods, so we would create a closure:
 
 ```{r MCMC, out.width="100%"}
+                          # A B and C interact with one another 
 s <- scrnn(ex,modelName)  # s encloses ex, and model
-y <- s(par)               # a function of par only
+y_ABC_D <- s(par)         # s is a function of only 'par'
+
 matplot(
 	ex[[1]]$outputTimes,
-	t(y[[1]]$state[,,1]),
+	t(y_ABC_D[[1]]$state[,,1]),
 	type="l",
 	xlab="time",
-	ylab="states",
+	ylab="state variables",
 	lty=1,
 	col=c("red4","blue4","purple","green4"),
 	ylim=c(-1,sum(iv)),
@@ -290,19 +292,39 @@ par$nu <- matrix(
 Now, this is just a parameter change.
 We simulate without generating any new code:
 
-```{r changed-par, out.width="100%"}
-y <- s(par)
+```{r changed-par, fig.width=7, fig.height=9, out.width="100%"}
 
+y_ABCD_ <- s(par)          # A,B,C,&D all interact now
+
+par(mfrow=c(2,1), family="Fira Code")
 matplot(
 	ex[[1]]$outputTimes,
-	t(y[[1]]$state[,,1]),
+	t(y_ABCD_[[1]]$state[,,1]),
 	type="l",
 	xlab="time",
-	ylab="states",
+	ylab="state variables",
 	lty=1,
 	col=c("red4","blue4","purple","green4"),
 	ylim=c(-1,sum(iv)),
-	main=rgsl::nameMethod(0)
+	main="A + B <=> C + D      (D -> Ø)"
+)
+legend(
+	"topright",
+	legend=LETTERS[seq(4)],
+	lty=1,
+	col=c("red4","blue4","purple","green4")
+)
+
+matplot(
+	ex[[1]]$outputTimes,
+	t(y_ABC_D[[1]]$state[,,1]),
+	type="l",
+	xlab="time",
+	ylab="state variables",
+	lty=1,
+	col=c("red4","blue4","purple","green4"),
+	ylim=c(-1,sum(iv)),
+	main="A + B <=> C          (D -> Ø)"
 )
 legend(
 	"topright",
