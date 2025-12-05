@@ -7,6 +7,9 @@
 *.log
 *.txt
 *.so
+*.o
+# compressed files
+*.gz
 # R related
 .Rproj.user
 .Rhistory

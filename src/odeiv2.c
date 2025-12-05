@@ -799,6 +799,7 @@ r_gsl_odeiv2_outer_fi(
  Rdata absolute_tolerance, /* absolute tolerance for GSL's solver */
  Rdata relative_tolerance, /* relative tolerance for GSL's solver */
  Rdata initial_step_size, /* initial guess for the step size */
+ Rdata optional_outputs, /* a value that indicates whether ll, gl, fi are to be calculated or not */
  Rdata method) /* integration method (integer) */
 {
 	gsl_set_error_handler_off();
@@ -812,7 +813,8 @@ r_gsl_odeiv2_outer_fi(
 	int N=GET_LENGTH(experiments);
 	size_t M=ncols(parameters);
 	const gsl_odeiv2_step_type * T=step_types[asInteger(method)]; //gsl_odeiv2_step_msbdf;
-
+	int OUTPUTS = asInteger(optional_outputs); /* 0,1,2,3 */
+	enum possible_outputs {output_fisher_information, output_grad_log_likelihood, output_log_likelihood, output_functions, numOptOutputs};
 	Rdata res_list = PROTECT(NEW_LIST(N)); /* use VECTOR_ELT and SET_VECTOR_ELT */
 	SET_NAMES(res_list,GET_NAMES(experiments));
 	Rdata yf_list, Y, F, iv, t, cpuSeconds, Status;
@@ -857,12 +859,24 @@ r_gsl_odeiv2_outer_fi(
 		Status=PROTECT(NEW_INTEGER(M));
 
 		for (j=0; j<ny*nt*M; j++) REAL(Y)[j]=NA_REAL; /* initialize to NA */
-		F=PROTECT(alloc3DArray(REALSXP,nf,nt,M));
-		FI=PROTECT(alloc3DArray(REALSXP,np,np,M));
-		ll=PROTECT(NEW_NUMERIC(M));
-		gll=PROTECT(allocMatrix(REALSXP,np,M));
-		sy_k=malloc(sizeof(double)*ny*np*nt);
-		sf_k=malloc(sizeof(double)*nf*np*nt);
+		/* here we initialize optional return values */
+		/* each output element implies the ones following it (fisherInformation implies all the rest) */
+		/* For this reason, the switch statement has no breaks.*/
+		switch(OUTPUTS){ /* with fall-through on purpose */
+		case output_fisher_information:
+			FI=PROTECT(alloc3DArray(REALSXP,np,np,M));
+			sy_k=malloc(sizeof(double)*ny*np*nt);
+			sf_k=malloc(sizeof(double)*nf*np*nt);
+			// fall-through
+		case output_grad_log_likelihood:
+			gll=PROTECT(allocMatrix(REALSXP,np,M));
+			// fall-through
+		case output_log_likelihood:
+			ll=PROTECT(NEW_NUMERIC(M));
+			// fall-through
+		case output_functions:
+			F=PROTECT(alloc3DArray(REALSXP,nf,nt,M));
+		}
 		for (j=0;j<nf*nt*M;j++) REAL(F)[j]=NA_REAL;   /* initialize to NA */
 		for (k=0;k<M;k++){
 			y=gsl_matrix_view_array(REAL(AS_NUMERIC(Y))+(nt*ny*k),nt,ny);
@@ -883,41 +897,78 @@ r_gsl_odeiv2_outer_fi(
 			INTEGER(Status)[k] = status;
 			if (status==GSL_SUCCESS) {
 				p = gsl_matrix_row(P,i);
-				for (j=0;j<nt;j++){
-					f=REAL(F)+(0+j*nf+k*nf*nt);
-					ODE_func(gsl_vector_get(&(time.vector),j),gsl_matrix_ptr(&(y.matrix),j,0),f,sys.params);
+				if (OUTPUTS<=output_functions){
+					for (j=0;j<nt;j++){
+						f=REAL(F)+(0+j*nf+k*nf*nt);
+						ODE_func(gsl_vector_get(&(time.vector),j),gsl_matrix_ptr(&(y.matrix),j,0),f,sys.params);
+					}
 				}
-				sensitivityApproximation(t0,&(time.vector),&(p.vector),&(y.matrix),sy_k,sf_k,saMem);
-				REAL(ll)[k]=logLikelihood(VECTOR_ELT(experiments,i),REAL(F)+(k*nf*nt));
-				gradLogLikelihood(REAL(gll)+(k*np),VECTOR_ELT(experiments,i),REAL(F)+(k*nf*nt),sf_k,np,v);
-				FisherInformation(REAL(FI)+(k*np*np),VECTOR_ELT(experiments,i),sf_k,Sf_sd);
+				if (OUTPUTS<=output_grad_log_likelihood){
+					sensitivityApproximation(t0,&(time.vector),&(p.vector),&(y.matrix),sy_k,sf_k,saMem);
+				}
+				switch(OUTPUTS){
+				case output_fisher_information:
+					FisherInformation(REAL(FI)+(k*np*np),VECTOR_ELT(experiments,i),sf_k,Sf_sd);
+				case output_grad_log_likelihood:
+					gradLogLikelihood(REAL(gll)+(k*np),VECTOR_ELT(experiments,i),REAL(F)+(k*nf*nt),sf_k,np,v);
+				case output_log_likelihood:
+					REAL(ll)[k]=logLikelihood(VECTOR_ELT(experiments,i),REAL(F)+(k*nf*nt));
+				}
 			} else {
-				REAL(ll)[k] = -INFINITY;
-				memset(REAL(gll)+(k*np),0,sizeof(double)*np);
-				memset(REAL(FI)+(k*np*np),0,sizeof(double)*np*np);
 				fprintf(stderr,"[%s] simulation of provided parameters failed for experiment %i with error %i: %s\n",__func__,i,status,gsl_strerror (status));
+				switch(OUTPUTS){
+				case output_fisher_information:
+					memset(REAL(FI)+(k*np*np),0,sizeof(double)*np*np);
+				case output_grad_log_likelihood:
+					memset(REAL(gll)+(k*np),0,sizeof(double)*np);
+				case output_log_likelihood:
+					REAL(ll)[k] = -INFINITY;
+				}
 			}
 		}
 		free(sy_k);
 		free(sf_k);
 		yf_list=PROTECT(NEW_LIST(7));
 		SET_VECTOR_ELT(yf_list,0,Y);
-		SET_VECTOR_ELT(yf_list,1,F);
+		if (OUTPUTS <= output_functions){
+			SET_VECTOR_ELT(yf_list,1,F);
+		} else {
+			SET_VECTOR_ELT(yf_list,1,R_NilValue);
+		}
 		SET_VECTOR_ELT(yf_list,2,cpuSeconds);
 		SET_VECTOR_ELT(yf_list,3,Status);
-		SET_VECTOR_ELT(yf_list,4,ll);
-		SET_VECTOR_ELT(yf_list,5,gll);
-		SET_VECTOR_ELT(yf_list,6,FI);
+		if (OUTPUTS <= output_log_likelihood){
+			SET_VECTOR_ELT(yf_list,4,ll);
+		} else {
+			SET_VECTOR_ELT(yf_list,4,R_NilValue);
+		}
+		if (OUTPUTS <= output_grad_log_likelihood){
+			SET_VECTOR_ELT(yf_list,5,gll);
+		} else {
+			SET_VECTOR_ELT(yf_list,5,R_NilValue);
+		}
+		if (OUTPUTS <= output_fisher_information){
+			SET_VECTOR_ELT(yf_list,6,FI);
+		} else {
+			SET_VECTOR_ELT(yf_list,6,R_NilValue);
+		}
 		set_names(yf_list,yf_names);
 		SET_VECTOR_ELT(res_list,i,yf_list);
 		event_free(&ev);
 
 		UNPROTECT(1); /* yf_list */
-		UNPROTECT(1); /* F */
+		if (OUTPUTS <= output_functions) UNPROTECT(1); /* F */
 		UNPROTECT(1); /* Y */
 		UNPROTECT(1); /* cpuSeconds */
 		UNPROTECT(1); /* Status */
-		UNPROTECT(3); /* ll, gll, FI*/
+		switch (OUTPUTS){
+		case output_fisher_information:
+			UNPROTECT(1);
+		case output_grad_log_likelihood:
+			UNPROTECT(1);
+		case output_log_likelihood:
+			UNPROTECT(1);
+		}
 		if (status!=GSL_SUCCESS){
 			fprintf(stderr,"[%s] parameter set lead to solver errors (%s) in experiment %i/%i\n",__func__,gsl_strerror(status),i,N);
 		}
