@@ -201,11 +201,11 @@ plotTimeSeriesBase <- function(simulations, experiments, nmax=NULL, by=1, ylimit
 			o <- experiments[[i]]$data[j,] %otherwise% experiments[[i]]$outputValues[[j]]
 			e <- experiments[[i]]$stdv[j,] %otherwise% experiments[[i]]$errorValues[[j]]
 			if (is.null(ylimit) || length(ylimit)<j || any(is.na(ylimit[[j]])) || !all(is.finite(ylimit[[j]]))){
-				yl <- c(min(o-e),max(o+e))
+				yl <- c(min(o-e-1e-1,na.rm=TRUE),max(o+e+1e-1,na.rm=TRUE))
 			} else {
 				yl <- ylimit[[j]]
 			}
-			p <- plot(time,o,type='p',ylim=yl,title=names(experiments)[i],ylab=oNames[j])
+			p <- plot(time,o,type='p',ylim=yl,main=names(experiments)[i],ylab=oNames[j])
 			arrows(time,o,time,o+e,angle=90,length=0.01)
 			arrows(time,o,time,o-e,angle=90,length=0.01)
 			for (k in seq(1,nmax,by=by)){

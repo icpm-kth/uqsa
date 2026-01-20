@@ -892,6 +892,7 @@ r_gsl_odeiv2_outer_fi(
 				ev,
 				&(y.matrix)
 			);
+			fprintf(stderr,"[%s] status = %i\n",__func__,status);
 			ct1=clock();
 			REAL(cpuSeconds)[k] = sec(ct1-ct0);
 			INTEGER(Status)[k] = status;
@@ -900,9 +901,15 @@ r_gsl_odeiv2_outer_fi(
 				if (OUTPUTS<=output_functions){
 					for (j=0;j<nt;j++){
 						f=REAL(F)+(0+j*nf+k*nf*nt);
-						ODE_func(gsl_vector_get(&(time.vector),j),gsl_matrix_ptr(&(y.matrix),j,0),f,sys.params);
+						ODE_func(
+							gsl_vector_get(&(time.vector),j),
+							gsl_matrix_ptr(&(y.matrix),j,0),
+							f,
+							sys.params
+						);
 					}
 				}
+				fprintf(stderr,"[%s] optional outputs: %i\n",__func__,OUTPUTS);
 				if (OUTPUTS<=output_grad_log_likelihood){
 					sensitivityApproximation(t0,&(time.vector),&(p.vector),&(y.matrix),sy_k,sf_k,saMem);
 				}

@@ -18,13 +18,13 @@ This function maps c("A","2 B") to c(1,2)
 }
 \details{
 This is a C function because it is much easier to write in C.  C
-has teh strtod() function which expects a leading number and stops
+has the strtod() function which expects a leading number and stops
 when the numbers end. as.character() returns NA if the input
 contains any dirt.
 
 The reaction formula is as tring like this: "A + 2 B <=> C", when
 split at \verb{<=>} and then later at \code{+}, we get the strings that must
-be prsed: "A" and "2 B" for the left side and "C" for the right
+be parsed: "A" and "2 B" for the left side and "C" for the right
 side. The numbers are the stoichiometric constants, or coefficients.
 }
 \examples{
