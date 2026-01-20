@@ -174,8 +174,14 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'     parMap.
 #' @param parMap the model will be called with parMap(parABC); so any
 #'     parameter transformation can happen there.
-#' @param method the integration method as an integer (higher numbers are simpler methods, lower numbers are more advanced methods, 0 = msbdf)
-#' @param omit integer, omit optional return values, in this order: Fisher Information, gradient of the log-likelihood, the log-likelihood, output functions. Omission includes all previous entries. 'omit = 1' omits only the Fisher Information, omit=3, omits FI, grad-ll, and log-likelihood calculations. 
+#' @param method the integration method as an integer (higher numbers
+#'     are simpler methods, lower numbers are more advanced methods, 0
+#'     = msbdf)
+#' @param omit integer, omit optional return values, in this order:
+#'     Fisher Information, gradient of the log-likelihood, the
+#'     log-likelihood, output functions. Omission includes all
+#'     previous entries. 'omit = 1' omits only the Fisher Information,
+#'     omit=3, omits FI, grad-ll, and log-likelihood calculations.
 #' @export
 #' @return a closure that returns the model's output for a given
 #'     parameter vector, and approximate sensitivity matrices, for
@@ -187,43 +193,47 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 #'
 #'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
-#'  #  simulate <- simc(experiments, modelName,  parABC)
+#'  #  simulate <- simfi(experiments, modelName,  parABC)
 #'  #  yf <- simulate(parABC)
 simfi <- function(experiments, modelName, parMap=identity, method = 0, omit = 0){
 	N <- length(experiments)
-	## convert data-frames tpo matrices for the C code
-	for (i in seq_along(experiments)){
-		if (!('data' %in% names(experiments[[i]])) && 'outputValues' %in% names(experiments[[i]])){
-			experiments[[i]]$data = t(experiments[[i]][['outputValues']])
-		}
-		if (!('stdv' %in% names(experiments[[i]])) && 'errorValues' %in% names(experiments[[i]])){
-			experiments[[i]]$stdv = t(experiments[[i]][['errorValues']])
+	if (omit<=3){ # create data matrices, if they don't exist
+		for (i in seq_along(experiments)){
+			if (!('data' %in% names(experiments[[i]])) && 'outputValues' %in% names(experiments[[i]])){
+				j <- sapply(experiments[[i]][['outputValues']],is.numeric)
+				experiments[[i]]$data = t(experiments[[i]][['outputValues']][,j])
+			}
+			if (!('stdv' %in% names(experiments[[i]])) && 'errorValues' %in% names(experiments[[i]])){
+				j <- sapply(experiments[[i]][['errorValues']],is.numeric)
+				experiments[[i]]$stdv = t(experiments[[i]][['errorValues']][,j])
+			}
 		}
 	}
-	sim <- function(parABC){
-		modelPar <- parMap(parABC)
-		m <- NCOL(parABC)
-		yf <- gsl_odeiv2_fi(
-			modelName,
-			experiments,
-			as.matrix(modelPar),
-			method=method,
-			omit=min(omit,3)
-		)
-		if (N==length(yf)) {
-			names(yf) <- names(experiments)
-		} else {
-			message(
-				sprintf(
-					"experiments(%i) should be the same length as simulations(%i), but isn't.",
-					length(experiments),
-					length(yf)
-				)
+	return(
+		function(parABC){
+			modelPar <- parMap(parABC)
+			m <- NCOL(parABC)
+			yf <- gsl_odeiv2_fi(
+				modelName,
+				experiments,
+				as.matrix(modelPar),
+				method=method,
+				omit=min(omit,3)
 			)
+			if (N==length(yf)) {
+				names(yf) <- names(experiments)
+			} else {
+				message(
+					sprintf(
+						"experiments(%i) should be the same length as simulations(%i), but isn't.",
+						length(experiments),
+						length(yf)
+					)
+				)
+			}
+			return(yf)
 		}
-		return(yf)
-	}
-	return(sim)
+	)
 }
 
 #' This creates a closure that simulates the model
