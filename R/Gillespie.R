@@ -216,7 +216,7 @@ padding <- function(v,upper.bound=40){
 	return(upper.bound - lengths(v))
 }
 
-#' Retruns a string that contains code to scale the parameter
+#' Returns a string that contains code to scale the parameter
 #'
 #' The goal is to convertthe kinetic parameter k to the stochastic
 #' parameter c.
@@ -226,7 +226,7 @@ padding <- function(v,upper.bound=40){
 #' conversion between molecule numbers and concentrations, the
 #' appropriate exponent for LV is passed as x: c = f * LV^x * k
 #'
-#' @param f the value of the scaling factor (a numeric vector), derived from the unit of the knietic parameter and stoichiometry. 
+#' @param f the value of the scaling factor (a numeric vector), derived from the unit of the knietic parameter and stoichiometry.
 #' @param x the reaction order based exponent of LV
 #' @param name the name of the parameter
 #' @return string with scaling instructions (C)

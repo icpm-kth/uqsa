@@ -13,11 +13,12 @@
 #' @param abs.tol absolute tolerance, real scalar
 #' @param rel.tol relative tolerance, real scalar
 #' @param initial.step.size initial value for the step size; the step size will adapt to a value that observes the tolerances, real scalar
+#' @param omit an integer that indicates how many of these to omit in this order: fisher information, gradient of the log-likelihood, log-likelihood
 #' @return a list of the solution trajectories `y(t;p)` for all experiments (named like the experiments), as well as the output functions
 #' @export
 #' @keywords ODE
 #' @useDynLib uqsa r_gsl_odeiv2_outer_fi
-gsl_odeiv2_fi <- function(name,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0){
+gsl_odeiv2_fi <- function(name,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0, omit=0){
 	if (is.character(comment(name))){
 		so <- comment(name)
 	} else {
@@ -28,7 +29,7 @@ gsl_odeiv2_fi <- function(name,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.s
             warning(sprintf("[r_gsl_odeiv2_outer] for model name «%s», in directory «%s» file «%s» not found.",name,getwd(),so))
 	}
 	if (!is.matrix(p)) p <- as.matrix(p)
-	y <- .Call(r_gsl_odeiv2_outer_fi, name,experiments,p,abs.tol,rel.tol,initial.step.size,method)
+	y <- .Call(r_gsl_odeiv2_outer_fi, name,experiments,p,abs.tol,rel.tol,initial.step.size,method, omit)
 	for (i in seq_along(experiments)){
 		if ("initialState" %in% names(experiments[[i]])){
 			dimnames(y[[i]]$state) <- list(names(experiments[[i]]$initialState),NULL,NULL)
@@ -163,6 +164,8 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'     parMap.
 #' @param parMap the model will be called with parMap(parABC); so any
 #'     parameter transformation can happen there.
+#' @param method the integration method as an integer (higher numbers are simpler methods, lower numbers are more advanced methods, 0 = msbdf)
+#' @param omit integer, omit optional return values, in this order: Fisher Information, gradient of the log-likelihood, the log-likelihood, output functions. Omission includes all previous entries. 'omit = 1' omits only the Fisher Information, omit=3, omits FI, grad-ll, and log-likelihood calculations. 
 #' @export
 #' @return a closure that returns the model's output for a given
 #'     parameter vector, and approximate sensitivity matrices, for
@@ -176,8 +179,17 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
 #'  #  simulate <- simc(experiments, modelName,  parABC)
 #'  #  yf <- simulate(parABC)
-simfi <- function(experiments, modelName, parMap=identity, method = 0){
+simfi <- function(experiments, modelName, parMap=identity, method = 0, omit = 0){
 	N <- length(experiments)
+	## convert data-frames tpo matrices for the C code
+	for (i in seq_along(experiments)){
+		if (!('data' %in% names(experiments[[i]])) && 'outputValues' %in% names(experiments[[i]])){
+			experiments[[i]]$data = t(experiments[[i]][['outputValues']])
+		}
+		if (!('stdv' %in% names(experiments[[i]])) && 'errorValues' %in% names(experiments[[i]])){
+			experiments[[i]]$stdv = t(experiments[[i]][['errorValues']])
+		}
+	}
 	sim <- function(parABC){
 		modelPar <- parMap(parABC)
 		m <- NCOL(parABC)
@@ -391,8 +403,8 @@ simcf <- function(experiments, modelName, parMap=identity, method = 0){
 	sim <- function(parABC){
 		modelPar <- parMap(parABC)
 		m <- NCOL(parABC)
-		yf <- rgsl::r_gsl_odeiv2_outer(modelName, experiments, as.matrix(modelPar), method=method)
-		return(yf)
+		yf <- rgsl::gsl_odeiv2_outer(name,experiments,modelPar,abs.tol,rel.tol,initial.step.size, method)
+		return(y)
 	}
 	return(sim)
 }

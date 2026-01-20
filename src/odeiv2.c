@@ -812,12 +812,12 @@ r_gsl_odeiv2_outer_fi(
 	double h=asReal(initial_step_size);
 	int N=GET_LENGTH(experiments);
 	size_t M=ncols(parameters);
-	const gsl_odeiv2_step_type * T=step_types[asInteger(method)]; //gsl_odeiv2_step_msbdf;
-	int OUTPUTS = asInteger(optional_outputs); /* 0,1,2,3 */
+	const gsl_odeiv2_step_type * T=step_types[asInteger(method)];
+	int OUTPUTS = asInteger(optional_outputs);                        /* 0,1,2,3 */
 	enum possible_outputs {output_fisher_information, output_grad_log_likelihood, output_log_likelihood, output_functions, numOptOutputs};
-	Rdata res_list = PROTECT(NEW_LIST(N)); /* use VECTOR_ELT and SET_VECTOR_ELT */
+	Rdata res_list = PROTECT(NEW_LIST(N));                            /* use VECTOR_ELT and SET_VECTOR_ELT */
 	SET_NAMES(res_list,GET_NAMES(experiments));
-	Rdata yf_list, Y, F, iv, t, cpuSeconds, Status;
+	Rdata yf_list, state, func, iv, t, cpuSeconds, Status;
 	double t0;
 	clock_t ct0, ct1;
 	const char *yf_names[]={"state","func","cpuSeconds","status","logLikelihood","gradLogLikelihood","FisherInformation",NULL};
@@ -830,14 +830,14 @@ r_gsl_odeiv2_outer_fi(
 	double *sy_k, *sf_k;
 	Rdata FI, gll, ll;
 	gsl_odeiv2_system sys = load_system(model_name, model_so); /* also sets ODE_*() functions */
-	if (sys.dimension == 0 || ODE_default==NULL || ODE_init==NULL || ODE_func==NULL || ODE_funcJac==NULL || ODE_funcJacp==NULL){
+	if (sys.dimension == 0 || ODE_default==NULL || ODE_init==NULL){
 		fprintf(stderr,"[%s] loading model has failed (system dimension: «%li»).\n",__func__,sys.dimension);
 		UNPROTECT(1); /* res_list */
 		return R_NilValue;
 	}
 	gsl_matrix *P = params_alloc(experiments);
 	gsl_matrix *Y0 = init_alloc(sys,P);
-	int nf = ODE_func(0,NULL,NULL,NULL);
+	int nf = ODE_func ? ODE_func(0,NULL,NULL,NULL):0;
 	int ny = sys.dimension;
 	int np = P->size2;
 	gsl_matrix *Sf_sd=gsl_matrix_alloc(np,nf);
@@ -854,7 +854,7 @@ r_gsl_odeiv2_outer_fi(
 		nt = length(t);
 		time=gsl_vector_view_array(REAL(AS_NUMERIC(t)),nt);
 		ny = Y0->size2;
-		Y=PROTECT(alloc3DArray(REALSXP,ny,nt,M));
+		state=PROTECT(alloc3DArray(REALSXP,ny,nt,M));
 		cpuSeconds=PROTECT(NEW_NUMERIC(M));
 		Status=PROTECT(NEW_INTEGER(M));
 
@@ -865,21 +865,21 @@ r_gsl_odeiv2_outer_fi(
 		switch(OUTPUTS){ /* with fall-through on purpose */
 		case output_fisher_information:
 			FI=PROTECT(alloc3DArray(REALSXP,np,np,M));
-			sy_k=malloc(sizeof(double)*ny*np*nt);
-			sf_k=malloc(sizeof(double)*nf*np*nt);
+			sy_k=malloc(sizeof(double)*ny*np*nt);          /* sensitivity of state: d state/dp */
+			sf_k=malloc(sizeof(double)*nf*np*nt);          /* sensitivity of  func: d  func/dp */
 			// fall-through
 		case output_grad_log_likelihood:
-			gll=PROTECT(allocMatrix(REALSXP,np,M));
+			gll=PROTECT(allocMatrix(REALSXP,np,M));        /* gradient of log-likelihood */
 			// fall-through
 		case output_log_likelihood:
-			ll=PROTECT(NEW_NUMERIC(M));
+			ll=PROTECT(NEW_NUMERIC(M));                    /* log-likelihood */
 			// fall-through
 		case output_functions:
-			F=PROTECT(alloc3DArray(REALSXP,nf,nt,M));
+			func=PROTECT(alloc3DArray(REALSXP,nf,nt,M));   /* output functions */
 		}
-		for (j=0;j<nf*nt*M;j++) REAL(F)[j]=NA_REAL;   /* initialize to NA */
+		for (j=0;j<nf*nt*M;j++) REAL(func)[j]=NA_REAL;     /* initialize to NA */
 		for (k=0;k<M;k++){
-			y=gsl_matrix_view_array(REAL(AS_NUMERIC(Y))+(nt*ny*k),nt,ny);
+			y=gsl_matrix_view_array(REAL(AS_NUMERIC(state))+(nt*ny*k),nt,ny);
 			memcpy((double*) sys.params, REAL(AS_NUMERIC(parameters))+nrows(parameters)*k, nrows(parameters)*sizeof(double));
 			update_initial_values(&initial_value.vector,sys,iv);
 			ct0=clock();
@@ -900,13 +900,8 @@ r_gsl_odeiv2_outer_fi(
 				p = gsl_matrix_row(P,i);
 				if (OUTPUTS<=output_functions){
 					for (j=0;j<nt;j++){
-						f=REAL(F)+(0+j*nf+k*nf*nt);
-						ODE_func(
-							gsl_vector_get(&(time.vector),j),
-							gsl_matrix_ptr(&(y.matrix),j,0),
-							f,
-							sys.params
-						);
+						f=REAL(func)+(0+j*nf+k*nf*nt);
+						ODE_func(gsl_vector_get(&(time.vector),j),gsl_matrix_ptr(&(y.matrix),j,0),f,sys.params);
 					}
 				}
 				fprintf(stderr,"[%s] optional outputs: %i\n",__func__,OUTPUTS);
@@ -917,9 +912,9 @@ r_gsl_odeiv2_outer_fi(
 				case output_fisher_information:
 					FisherInformation(REAL(FI)+(k*np*np),VECTOR_ELT(experiments,i),sf_k,Sf_sd);
 				case output_grad_log_likelihood:
-					gradLogLikelihood(REAL(gll)+(k*np),VECTOR_ELT(experiments,i),REAL(F)+(k*nf*nt),sf_k,np,v);
+					gradLogLikelihood(REAL(gll)+(k*np),VECTOR_ELT(experiments,i),REAL(func)+(k*nf*nt),sf_k,np,v);
 				case output_log_likelihood:
-					REAL(ll)[k]=logLikelihood(VECTOR_ELT(experiments,i),REAL(F)+(k*nf*nt));
+					REAL(ll)[k]=logLikelihood(VECTOR_ELT(experiments,i),REAL(func)+(k*nf*nt));
 				}
 			} else {
 				fprintf(stderr,"[%s] simulation of provided parameters failed for experiment %i with error %i: %s\n",__func__,i,status,gsl_strerror (status));
@@ -936,9 +931,9 @@ r_gsl_odeiv2_outer_fi(
 		free(sy_k);
 		free(sf_k);
 		yf_list=PROTECT(NEW_LIST(7));
-		SET_VECTOR_ELT(yf_list,0,Y);
+		SET_VECTOR_ELT(yf_list,0,state);
 		if (OUTPUTS <= output_functions){
-			SET_VECTOR_ELT(yf_list,1,F);
+			SET_VECTOR_ELT(yf_list,1,func);
 		} else {
 			SET_VECTOR_ELT(yf_list,1,R_NilValue);
 		}
@@ -964,8 +959,8 @@ r_gsl_odeiv2_outer_fi(
 		event_free(&ev);
 
 		UNPROTECT(1); /* yf_list */
-		if (OUTPUTS <= output_functions) UNPROTECT(1); /* F */
-		UNPROTECT(1); /* Y */
+		if (OUTPUTS <= output_functions) UNPROTECT(1); /* func */
+		UNPROTECT(1); /* state */
 		UNPROTECT(1); /* cpuSeconds */
 		UNPROTECT(1); /* Status */
 		switch (OUTPUTS){
