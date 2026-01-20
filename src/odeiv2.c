@@ -820,7 +820,7 @@ r_gsl_odeiv2_outer_fi(
 	Rdata yf_list, state, func, iv, t, cpuSeconds, Status;
 	double t0;
 	clock_t ct0, ct1;
-	const char *yf_names[]={"state","func","cpuSeconds","status","logLikelihood","gradLogLikelihood","FisherInformation",NULL};
+	const char *yf_names[]={"cpuSeconds","status","state","func","logLikelihood","gradLogLikelihood","FisherInformation",NULL};
 	gsl_vector_view initial_value, time;
 	gsl_matrix_view y;
 	size_t nt;
@@ -840,10 +840,12 @@ r_gsl_odeiv2_outer_fi(
 	int nf = ODE_func ? ODE_func(0,NULL,NULL,NULL):0;
 	int ny = sys.dimension;
 	int np = P->size2;
+	fprintf(stderr,"[%s] nf=%i, ny=%i, np=%i\n",__func__,nf,ny,np);
 	gsl_matrix *Sf_sd=gsl_matrix_alloc(np,nf);
 	gsl_vector *v=gsl_vector_alloc(nf);
 	struct sensApproxMem saMem = sensApproxMemAlloc(ny,np,nf);
 	gsl_odeiv2_driver *driver = gsl_odeiv2_driver_alloc_y_new(&sys,T,h,abs_tol,rel_tol);
+	fprintf(stderr,"[%s] optional outputs: %i\n",__func__,OUTPUTS);
 	for (i=0; i<N; i++){
 		iv = from_list(VECTOR_ELT(experiments,i),"initial_value initialState initialValue initialValues");
 		t = from_list(VECTOR_ELT(experiments,i),"time outputTimes t");
@@ -858,21 +860,21 @@ r_gsl_odeiv2_outer_fi(
 		cpuSeconds=PROTECT(NEW_NUMERIC(M));
 		Status=PROTECT(NEW_INTEGER(M));
 
-		for (j=0; j<ny*nt*M; j++) REAL(Y)[j]=NA_REAL; /* initialize to NA */
+		for (j=0; j<ny*nt*M; j++) REAL(state)[j]=NA_REAL; /* initialize to NA */
 		/* here we initialize optional return values */
 		/* each output element implies the ones following it (fisherInformation implies all the rest) */
 		/* For this reason, the switch statement has no breaks.*/
 		switch(OUTPUTS){ /* with fall-through on purpose */
 		case output_fisher_information:
 			FI=PROTECT(alloc3DArray(REALSXP,np,np,M));
-			sy_k=malloc(sizeof(double)*ny*np*nt);          /* sensitivity of state: d state/dp */
-			sf_k=malloc(sizeof(double)*nf*np*nt);          /* sensitivity of  func: d  func/dp */
 			// fall-through
 		case output_grad_log_likelihood:
 			gll=PROTECT(allocMatrix(REALSXP,np,M));        /* gradient of log-likelihood */
 			// fall-through
 		case output_log_likelihood:
 			ll=PROTECT(NEW_NUMERIC(M));                    /* log-likelihood */
+			sy_k=malloc(sizeof(double)*ny*np*nt);          /* sensitivity of state: d state/dp */
+			sf_k=malloc(sizeof(double)*nf*np*nt);          /* sensitivity of  func: d  func/dp */
 			// fall-through
 		case output_functions:
 			func=PROTECT(alloc3DArray(REALSXP,nf,nt,M));   /* output functions */
@@ -892,7 +894,6 @@ r_gsl_odeiv2_outer_fi(
 				ev,
 				&(y.matrix)
 			);
-			fprintf(stderr,"[%s] status = %i\n",__func__,status);
 			ct1=clock();
 			REAL(cpuSeconds)[k] = sec(ct1-ct0);
 			INTEGER(Status)[k] = status;
@@ -904,7 +905,6 @@ r_gsl_odeiv2_outer_fi(
 						ODE_func(gsl_vector_get(&(time.vector),j),gsl_matrix_ptr(&(y.matrix),j,0),f,sys.params);
 					}
 				}
-				fprintf(stderr,"[%s] optional outputs: %i\n",__func__,OUTPUTS);
 				if (OUTPUTS<=output_grad_log_likelihood){
 					sensitivityApproximation(t0,&(time.vector),&(p.vector),&(y.matrix),sy_k,sf_k,saMem);
 				}
@@ -931,28 +931,21 @@ r_gsl_odeiv2_outer_fi(
 		free(sy_k);
 		free(sf_k);
 		yf_list=PROTECT(NEW_LIST(7));
-		SET_VECTOR_ELT(yf_list,0,state);
+		SET_VECTOR_ELT(yf_list,0,cpuSeconds);
+		SET_VECTOR_ELT(yf_list,1,Status);
+
+		SET_VECTOR_ELT(yf_list,2,state);
 		if (OUTPUTS <= output_functions){
-			SET_VECTOR_ELT(yf_list,1,func);
-		} else {
-			SET_VECTOR_ELT(yf_list,1,R_NilValue);
+			SET_VECTOR_ELT(yf_list,3,func);
 		}
-		SET_VECTOR_ELT(yf_list,2,cpuSeconds);
-		SET_VECTOR_ELT(yf_list,3,Status);
 		if (OUTPUTS <= output_log_likelihood){
 			SET_VECTOR_ELT(yf_list,4,ll);
-		} else {
-			SET_VECTOR_ELT(yf_list,4,R_NilValue);
 		}
 		if (OUTPUTS <= output_grad_log_likelihood){
 			SET_VECTOR_ELT(yf_list,5,gll);
-		} else {
-			SET_VECTOR_ELT(yf_list,5,R_NilValue);
 		}
 		if (OUTPUTS <= output_fisher_information){
 			SET_VECTOR_ELT(yf_list,6,FI);
-		} else {
-			SET_VECTOR_ELT(yf_list,6,R_NilValue);
 		}
 		set_names(yf_list,yf_names);
 		SET_VECTOR_ELT(res_list,i,yf_list);

@@ -18,23 +18,33 @@
 #' @export
 #' @keywords ODE
 #' @useDynLib uqsa r_gsl_odeiv2_outer_fi
-gsl_odeiv2_fi <- function(name,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0, omit=0){
+gsl_odeiv2_fi <- function(name,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3, method=0, omit=0){
 	if (is.character(comment(name))){
 		so <- comment(name)
 	} else {
 		so <- paste0("./",name,".so")
-		comment(name)<-so
+		comment(name) <- so
 	}
 	if (!file.exists(so)){
             warning(sprintf("[r_gsl_odeiv2_outer] for model name «%s», in directory «%s» file «%s» not found.",name,getwd(),so))
 	}
 	if (!is.matrix(p)) p <- as.matrix(p)
-	y <- .Call(r_gsl_odeiv2_outer_fi, name,experiments,p,abs.tol,rel.tol,initial.step.size,method, omit)
+	y <- .Call(
+		r_gsl_odeiv2_outer_fi,
+		name,
+		experiments,
+		p,
+		abs.tol,
+		rel.tol,
+		initial.step.size,
+		omit,
+		method
+	)
 	for (i in seq_along(experiments)){
-		if ("initialState" %in% names(experiments[[i]])){
+		if ("initialState" %in% names(experiments[[i]]) && length(experiments[[i]]$initialState)==NROW(y[[i]]$state)){
 			dimnames(y[[i]]$state) <- list(names(experiments[[i]]$initialState),NULL,NULL)
 		}
-		if ("outputValues" %in% names(experiments[[i]])){
+		if ("outputValues" %in% names(experiments[[i]]) && NCOL(experiments[[i]]$outputValues)==NROW(y[[i]]$func)){
 			dimnames(y[[i]]$func) <- list(names(experiments[[i]]$outputValues),NULL,NULL)
 		}
 	}
@@ -193,11 +203,23 @@ simfi <- function(experiments, modelName, parMap=identity, method = 0, omit = 0)
 	sim <- function(parABC){
 		modelPar <- parMap(parABC)
 		m <- NCOL(parABC)
-		yf <- gsl_odeiv2_fi(modelName, experiments, as.matrix(modelPar), method=method)
+		yf <- gsl_odeiv2_fi(
+			modelName,
+			experiments,
+			as.matrix(modelPar),
+			method=method,
+			omit=min(omit,3)
+		)
 		if (N==length(yf)) {
 			names(yf) <- names(experiments)
 		} else {
-			message(sprintf("experiments(%i) should be the same length as simulations(%i), but isn't.",length(experiments),length(yf)))
+			message(
+				sprintf(
+					"experiments(%i) should be the same length as simulations(%i), but isn't.",
+					length(experiments),
+					length(yf)
+				)
+			)
 		}
 		return(yf)
 	}
