@@ -3,6 +3,7 @@
 #include <string.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_vector.h>
+#include <gsl/gsl_sort_vector.h>
 #include <math.h>
 #include <dlfcn.h>
 #include <R.h>
@@ -61,6 +62,7 @@ int pick_reaction(gsl_vector *a, double r_sum_a){
 	int j;
 	size_t m=a->size;
 	double psum = 0.0;
+	gsl_sort_vector(a);
 	for (j=0; j<m; j++){
 		psum += gsl_vector_get(a,j);
 		if (psum > r_sum_a) break;

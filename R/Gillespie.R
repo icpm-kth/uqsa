@@ -22,7 +22,7 @@
 #' @export
 onlyCoefficients <- function(formulaList){
 	C <- lapply(formulaList,\(v) .Call(lstrtod,as.character(v)))
-	return(C)
+	return(ifelse(nchar(formulaList)>0,C,0))
 }
 
 #' Returns only the names in a reaction formula
@@ -37,6 +37,10 @@ onlyNames <- function(formulaList){
 	return(lapply(formulaList,\(x) sub("^[0-9]+\\b","",x)))
 }
 
+is_empty <- function(b){
+	return(b == "NULL" | b == "_" | b == "Ø" | b == "\U00002205")
+}
+
 #' This function returns a list of named stoichiometric vectors
 #'
 #' Given an already split list of entries such as c("3 A","B"), this
@@ -47,7 +51,20 @@ onlyNames <- function(formulaList){
 stoichiometry <- function(formulaList){
 	sc <- onlyCoefficients(formulaList)
 	nm <- onlyNames(formulaList)
-	sc <- mapply(\(a,b) {names(a) <- trimws(b); return(a)}, sc, nm) # make all the vectors in the list named
+	sc <- mapply(
+		function(a,b) {
+			if (length(a)==0) {
+				return(NULL)
+			} else if (length(a) == 1 && is_empty(b)){
+				return(NULL)
+			} else {
+				names(a) <- trimws(b)
+				return(a)
+			}
+		},
+		sc,
+		nm,
+		SIMPLIFY=FALSE) # make all the vectors in the list named
 	return(sc)
 }
 
@@ -79,19 +96,64 @@ parameterConversion <- function(value, unit, stoichiometry){
 	return(CF)
 }
 
+#' Find the Reaction a parameter appears in
+#'
+#' Usually Parameters are a list of names and values, Reactions have
+#' reaction kinetics, which can contain any number of parameters. To
+#' make matters worse, a parameter may influence two or more
+#' reactions. The goal is to decide on the parameter's conversion
+#' factor. We shall assume that if the parameter appears in more than
+#' one reaction, it is the same kind of context, and thus it must be
+#' converted exactly the sam eway.  This function finds the first
+#' reaction a given parameter appears in.
+#'
+#' Note that the entire conversion may not work at all for complicated
+#' kinetics, we use very simple rules here.
+#'
+#' @param reactionKinetic a character vector with all of the kinetic
+#'     law expressions
+#' @param parNames parameter names
+#' @return list with two named components: fwd, bwd; each is a named
+#'     vector of integers, th enames are taken from parNames, the
+#'     integer indicates a reaction.
 parameterReaction <- function(reactionKinetic,parNames){
+	N <- length(reactionKinetic)
 	RC <- ifelse(
 		grepl("-",reactionKinetic,fixed=TRUE),
 		reactionKinetic,
 		paste0(reactionKinetic," - 0")
 	)
 	RC <- trimws(unlist(strsplit(RC,"-",fixed=TRUE)))
-	dim(RC) <- c(2,length(reactionKinetic))
+	dim(RC) <- c(2,N)
 	RC <- t(RC)
 	# forward and backward reaction kinetics
-	k_fwd <- lapply(parNames, \(x) grep(paste0("\\b",x,"\\b"),RC[,1]))
+	k_fwd <- lapply(
+		parNames,
+		function(x){
+			return(
+				head(
+					grep(
+						paste0("\\b",x,"\\b"),RC[,1]
+					),
+					1
+				)
+			)
+		}
+	)
 	names(k_fwd) <- parNames
-	k_bwd <- lapply(parNames, \(x) grep(paste0("\\b",x,"\\b"),RC[,2]))
+	k_bwd <- lapply(
+		parNames,
+		function(x) {
+			return(
+				head(
+					grep(
+						paste0("\\b",x,"\\b"),RC[,2]
+					),
+					1
+				)
+			)
+		}
+	)
 	names(k_bwd) <- parNames
 	return(list(fwd=unlist(k_fwd),bwd=unlist(k_bwd)))
 }
@@ -102,7 +164,13 @@ initialCount <- function(sb){
 	unit <- sb$Compound[["!Unit"]]
 	u <- lapply(unit,SBtabVFGEN::unit.from.string)
 	f <- unlist(lapply(u,\(x) 10^sum(x$scale*x$exponent)))
-	return(v*f)
+	if (is.numeric(v)){
+		IC <- v*f
+	} else {
+		IC <- sprintf("%s * %s",v,f)
+		names(IC) <- names(v)
+	}
+	return(IC)
 }
 
 #' Concentration to Count Conversion
@@ -169,13 +237,12 @@ makeGillespieModel <- function(sb){
 	names(cl) <- paste0(rownames(sb$Reaction),"_fwd")
 	cr <- stoichiometry(strsplit(F[,2],"+",fixed=TRUE))
 	names(cr) <- paste0(rownames(sb$Reaction),"_bwd")
-
 	k <- c(sb$Parameter[["!DefaultValue"]],sb$Input[["!DefaultValue"]])
 	names(k) <- c(rownames(sb$Parameter),rownames(sb$Input))
 	u <- c(sb$Parameter[["!Unit"]],sb$Input[["!Unit"]])
 	names(u) <- c(rownames(sb$Parameter),rownames(sb$Input))
-
-	pr <- parameterReaction(sb$Reaction[["!KineticLaw"]],rownames(sb$Parameter))
+	KL <- sb$Reaction[["!KineticLaw"]]
+	pr <- parameterReaction(KL,rownames(sb$Parameter))
 	convFactorFwd <- parameterConversion(k[names(pr$fwd)], u[names(pr$fwd)], cl[pr$fwd])
 	convFactorBwd <- parameterConversion(k[names(pr$bwd)], u[names(pr$bwd)], cr[pr$bwd])
 	l <- !(names(k) %in% rownames(convFactorFwd) | names(k) %in% rownames(convFactorBwd))
@@ -195,13 +262,15 @@ reactionEffect <- function(sm){
 				\(x,y,n) c(sprintf("\tcase _%s:",n),sprintf("\t\tx[_%s] -= %i;",names(x),x),sprintf("\t\tx[_%s] += %i;",names(y),y),sprintf("\t\tbreak;")),
 				sm$left,
 				sm$right,
-				names(sm$left)
+				names(sm$left),
+				SIMPLIFY=FALSE
 				),
 				mapply(
 				\(x,y,n) c(sprintf("\tcase _%s:",n),sprintf("\t\tx[_%s] -= %i;",names(x),x),sprintf("\t\tx[_%s] += %i;",names(y),y),sprintf("\t\tbreak;")),
 				sm$right,
 				sm$left,
-				names(sm$right)
+				names(sm$right),
+				SIMPLIFY=FALSE
 				)
 			)
 		)
@@ -209,7 +278,7 @@ reactionEffect <- function(sm){
 }
 
 lengths <- function(v){
-	return(sapply(as.character(v),length))
+	return(sapply(as.character(v),nchar))
 }
 
 padding <- function(v,upper.bound=40){
@@ -246,6 +315,11 @@ scaleParameter <- function(f,x,name,arg="par"){
 	)
 }
 
+spacing <- function(v,max.width=40){
+	if (!is.null(names(v))) return(max.width - lengths(v) - lengths(names(v)))
+	else return(max.width - lengths(v))
+}
+
 #' Generate C Code to solve a model stochastically
 #'
 #' This function tries to generate code for a stochastic solver, but
@@ -276,13 +350,34 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	RC <- t(RC)
 	Definitions <- c(
 	"\t/* constants */",
-	sprintf("\t double %s = %s; /* %s */",rownames(sb$Constant),sb$Constant[["!Value"]],sb$Constant[["!Unit"]]),
+	sprintf(
+		"\t double %s = %s; %*s /* %s */",
+		rownames(sb$Constant),
+		sb$Constant[["!Value"]],
+		43 - lengths(sb$Constant[["!Value"]]) - lengths(rownames(sb$Constant))," ",
+		sb$Constant[["!Unit"]]
+	),
 	"\t/* forward parameters */",
-	sprintf("\tdouble %s = c[_%s]; /* per second */",rownames(sm$scf),rownames(sm$scf)),
+	sprintf(
+		"\tdouble %s = c[_%s]; %*s /* per second */",
+		rownames(sm$scf),
+		rownames(sm$scf),
+		40 - 2*lengths(rownames(sm$scf))," "
+	),
 	"\t/* backward parameters */",
-	sprintf("\tdouble %s = c[_%s]; /* per second */",rownames(sm$scb),rownames(sm$scb)),
+	sprintf(
+		"\tdouble %s = c[_%s]; %*s /* per second */",
+		rownames(sm$scb),
+		rownames(sm$scb),
+		40 - 2*lengths(rownames(sm$scb))," "
+	),
 	"\t/* parameters that do not appear in kinetric laws */",
-	sprintf("\tdouble %s = c[_%s]; /* per second */",rownames(sm$scv),rownames(sm$scv)),
+	sprintf(
+		"\tdouble %s = c[_%s]; %*s /* per second */",
+		rownames(sm$scv),
+		rownames(sm$scv),
+		40 - 2*lengths(rownames(sm$scv))," "
+	),
 	"\t/*state variables */"
 	)
 	Counts <- c(
@@ -290,7 +385,14 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 		sprintf("\tdouble %s = %s;",rownames(sb$Expression),sb$Expression[["!Formula"]])
 	)
 	FuncMolarities <- c(
-	sprintf("\tdouble %s = ((double) x[_%s])/(LV * %g); /* %s */",names(sm$initialCount),names(sm$initialCount),ccc(sb),sm$compoundUnit),
+	sprintf(
+		"\tdouble %s = ((double) x[_%s])/(LV * %g); %*s /* %s */",
+		names(sm$initialCount),
+		names(sm$initialCount),
+		ccc(sb),
+		40 - 2*lengths(names(sm$initialCount))-lengths(ccc(sb)),"",
+		sm$compoundUnit
+	),
 	sprintf("\tdouble %s = %s;",rownames(sb$Expression),sb$Expression[["!Formula"]])
 	)
 	C <- c(
@@ -334,8 +436,8 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"\tif (!x || !a) return numReactions;",
 	Definitions,
 	Counts,
-	unlist(mapply(\(x,n,rf) {sprintf("\ta[_%s_fwd] = %s; /* %s */",n,x,rf)},RC[,1],rownames(sb$Reaction),sub("<=>","->",sb$Reaction[["!ReactionFormula"]],fixed=TRUE))),
-	unlist(mapply(\(x,n,rf) {sprintf("\ta[_%s_bwd] = %s; /* %s */",n,x,rf)},RC[,2],rownames(sb$Reaction),sub("<=>","<-",sb$Reaction[["!ReactionFormula"]],fixed=TRUE))),
+	unlist(mapply(\(x,n,rf) {sprintf("\ta[_%s_fwd] = %s; %*s /* %s */",n,x,40-lengths(x)-lengths(n)," ",rf)},RC[,1],rownames(sb$Reaction),sub("<=>","->",sb$Reaction[["!ReactionFormula"]],fixed=TRUE))),
+	unlist(mapply(\(x,n,rf) {sprintf("\ta[_%s_bwd] = %s; %*s /* %s */",n,x,40-lengths(x)-lengths(n)," ",rf)},RC[,2],rownames(sb$Reaction),sub("<=>","<-",sb$Reaction[["!ReactionFormula"]],fixed=TRUE))),
 	"\treturn 0;",
 	"}","",
 	"/* usually, these are stochastic propensity coefficients,                                      */",
@@ -343,12 +445,19 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"/* So, these are not directly usable, but we'll write the propensities with conversion factors */",
 	"int model_reaction_coefficients(double *c){",
 	"\tif (!c) return numParameters;",
-	sprintf("\tc[_%s] = %s; %*s /* %s */",names(sm$par),sm$par,40-unlist(lapply(names(sm$par),length)),"",sm$parameterUnit),
+	sprintf("\tc[_%s] = %s; %*s /* %s */",names(sm$par),sm$par,40-lengths(names(sm$par))-lengths(sm$par),"",sm$parameterUnit),
 	"\treturn 0;",
 	"}","",
 	"int model_initial_counts(int *x){",
 	"\tif(!x) return numStateVariables;",
-	sprintf("\tx[_%s] = lround(%g * LV); /* %g %s */",names(sm$initialCount),sm$initialCount,sm$initialCount,sm$compoundUnit),
+	sprintf(
+		"\tx[_%s] = lround(%s * LV); %*s /* %s %s */",
+		names(sm$initialCount),
+		as.character(sm$initialCount),
+		40-lengths(as.character(sm$initialCount))-lengths(names(sm$initialCount))," ",
+		as.character(sm$initialCount),
+		sm$compoundUnit
+	),
 	"\treturn 0;",
 	"}","",
 	"/* This function will try to convert the model's state to concentrations */",
