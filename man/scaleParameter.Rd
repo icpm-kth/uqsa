@@ -2,7 +2,7 @@
 % Please edit documentation in R/Gillespie.R
 \name{scaleParameter}
 \alias{scaleParameter}
-\title{Retruns a string that contains code to scale the parameter}
+\title{Returns a string that contains code to scale the parameter}
 \usage{
 scaleParameter(f, x, name, arg = "par")
 }

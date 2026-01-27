@@ -11,7 +11,8 @@ gsl_odeiv2_fi(
   abs.tol = 1e-06,
   rel.tol = 1e-05,
   initial.step.size = 0.001,
-  method = 0
+  method = 0,
+  omit = 0
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ gsl_odeiv2_fi(
 \item{rel.tol}{relative tolerance, real scalar}
 
 \item{initial.step.size}{initial value for the step size; the step size will adapt to a value that observes the tolerances, real scalar}
+
+\item{omit}{an integer that indicates how many of these to omit in this order: fisher information, gradient of the log-likelihood, log-likelihood}
 }
 \value{
 a list of the solution trajectories \verb{y(t;p)} for all experiments (named like the experiments), as well as the output functions

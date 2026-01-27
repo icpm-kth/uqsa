@@ -840,12 +840,10 @@ r_gsl_odeiv2_outer_fi(
 	int nf = ODE_func ? ODE_func(0,NULL,NULL,NULL):0;
 	int ny = sys.dimension;
 	int np = P->size2;
-	fprintf(stderr,"[%s] nf=%i, ny=%i, np=%i\n",__func__,nf,ny,np);
 	gsl_matrix *Sf_sd=gsl_matrix_alloc(np,nf);
 	gsl_vector *v=gsl_vector_alloc(nf);
 	struct sensApproxMem saMem = sensApproxMemAlloc(ny,np,nf);
 	gsl_odeiv2_driver *driver = gsl_odeiv2_driver_alloc_y_new(&sys,T,h,abs_tol,rel_tol);
-	fprintf(stderr,"[%s] optional outputs: %i\n",__func__,OUTPUTS);
 	for (i=0; i<N; i++){
 		iv = from_list(VECTOR_ELT(experiments,i),"initial_value initialState initialValue initialValues");
 		t = from_list(VECTOR_ELT(experiments,i),"time outputTimes t");
@@ -878,8 +876,8 @@ r_gsl_odeiv2_outer_fi(
 			// fall-through
 		case output_functions:
 			func=PROTECT(alloc3DArray(REALSXP,nf,nt,M));   /* output functions */
+			for (j=0;j<nf*nt*M;j++) REAL(func)[j]=NA_REAL;     /* initialize to NA */
 		}
-		for (j=0;j<nf*nt*M;j++) REAL(func)[j]=NA_REAL;     /* initialize to NA */
 		for (k=0;k<M;k++){
 			y=gsl_matrix_view_array(REAL(AS_NUMERIC(state))+(nt*ny*k),nt,ny);
 			memcpy((double*) sys.params, REAL(AS_NUMERIC(parameters))+nrows(parameters)*k, nrows(parameters)*sizeof(double));
@@ -928,8 +926,10 @@ r_gsl_odeiv2_outer_fi(
 				}
 			}
 		}
-		free(sy_k);
-		free(sf_k);
+		if (OUTPUTS<=output_grad_log_likelihood){
+			free(sy_k);
+			free(sf_k);
+		}
 		yf_list=PROTECT(NEW_LIST(7));
 		SET_VECTOR_ELT(yf_list,0,cpuSeconds);
 		SET_VECTOR_ELT(yf_list,1,Status);
@@ -952,10 +952,10 @@ r_gsl_odeiv2_outer_fi(
 		event_free(&ev);
 
 		UNPROTECT(1); /* yf_list */
-		if (OUTPUTS <= output_functions) UNPROTECT(1); /* func */
-		UNPROTECT(1); /* state */
 		UNPROTECT(1); /* cpuSeconds */
 		UNPROTECT(1); /* Status */
+		UNPROTECT(1); /* state */
+		if (OUTPUTS <= output_functions) UNPROTECT(1); /* func */
 		switch (OUTPUTS){
 		case output_fisher_information:
 			UNPROTECT(1);

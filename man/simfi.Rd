@@ -4,7 +4,7 @@
 \alias{simfi}
 \title{This creates a closure that simulates the model, similar to simulator.c}
 \usage{
-simfi(experiments, modelName, parMap = identity, method = 0)
+simfi(experiments, modelName, parMap = identity, method = 0, omit = 0)
 }
 \arguments{
 \item{experiments}{a list of experiments to simulate: inital
@@ -15,6 +15,16 @@ file) which points out the model to simulate}
 
 \item{parMap}{the model will be called with parMap(parABC); so any
 parameter transformation can happen there.}
+
+\item{method}{the integration method as an integer (higher numbers
+are simpler methods, lower numbers are more advanced methods, 0
+= msbdf)}
+
+\item{omit}{integer, omit optional return values, in this order:
+Fisher Information, gradient of the log-likelihood, the
+log-likelihood, output functions. Omission includes all
+previous entries. 'omit = 1' omits only the Fisher Information,
+omit=3, omits FI, grad-ll, and log-likelihood calculations.}
 
 \item{parABC}{the parameters for the model, subject to change by
 parMap.}
@@ -49,6 +59,6 @@ all and cannot add noise to the simulations.
  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 
  #  modelName <- checkModel("<insert_model_name>_gvf.c")
- #  simulate <- simc(experiments, modelName,  parABC)
+ #  simulate <- simfi(experiments, modelName,  parABC)
  #  yf <- simulate(parABC)
 }
