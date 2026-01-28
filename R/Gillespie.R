@@ -278,7 +278,7 @@ reactionEffect <- function(sm){
 }
 
 lengths <- function(v){
-	if (is.null(v)) return(0)
+	if (is.null(v) || length(v)==0) return(0)
 	else return(sapply(as.character(v),nchar))
 }
 
