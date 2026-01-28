@@ -278,7 +278,8 @@ reactionEffect <- function(sm){
 }
 
 lengths <- function(v){
-	return(sapply(as.character(v),nchar))
+	if (is.null(v)) return(0)
+	else return(sapply(as.character(v),nchar))
 }
 
 padding <- function(v,upper.bound=40){
@@ -316,6 +317,7 @@ scaleParameter <- function(f,x,name,arg="par"){
 }
 
 spacing <- function(v,max.width=40){
+	if (is.null(v)) return(max.width)
 	if (!is.null(names(v))) return(max.width - lengths(v) - lengths(names(v)))
 	else return(max.width - lengths(v))
 }
