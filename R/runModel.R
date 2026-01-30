@@ -470,7 +470,7 @@ simcf <- function(experiments, modelName, parMap=identity, method = 0){
 #'     "modelName.R". If the file name ends in .c, the c source will be
 #'     compiled to a shared library.
 #' @return modelName with an additional comment about which file to use for simulations
-checkModel <- function(modelName,modelFile=NULL){
+checkModel <- function(modelName,modelFile=NULL,OPTS=c("-O2")){
 	if (is.null(modelFile)) {
 		modelFile <- paste0(modelName,c('.R','_gvf.c','.so'));
 		modelFile <- modelFile[file.exists(modelFile)]
@@ -483,7 +483,7 @@ checkModel <- function(modelName,modelFile=NULL){
 		LIBS <- "`pkg-config --libs gsl`"
 		CFLAGS <- "-shared -fPIC `pkg-config --cflags gsl`"
 		so <- sprintf("./%s.so",modelName)
-		command_args <- sprintf("%s -o '%s' '%s' %s",CFLAGS,so,modelFile,LIBS)
+		command_args <- sprintf("%s %s -o '%s' '%s' %s",CFLAGS,paste(OPTS,collapse=" "),so,modelFile,LIBS)
 		message(paste("cc",command_args))
 		system2("cc",command_args)
 		stopifnot(file.exists(so))

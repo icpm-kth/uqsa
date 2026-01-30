@@ -96,6 +96,13 @@ parameterConversion <- function(value, unit, stoichiometry){
 	return(CF)
 }
 
+expressionConversion <- function(formula, unit) {
+	u <- lapply(unit,SBtabVFGEN::unit.from.string)
+	f <- sapply(u,\(x) with(x,10^sum(scale*exponent)))
+	l <- sapply(u,\(x) with(x,sum(exponent*(kind=='mole'))))
+	return(data.frame(lvpower=l, factor=f, row.names=names(formula)))
+}
+
 #' Find the Reaction a parameter appears in
 #'
 #' Usually Parameters are a list of names and values, Reactions have
@@ -251,7 +258,23 @@ makeGillespieModel <- function(sb){
 	names(cUnit) <- rownames(sb$Compound)
 	parUnit <- c(sb$Parameter[["!Unit"]],sb$Input[["!Unit"]])
 	names(parUnit) <- c(rownames(sb$Parameter),rownames(sb$Input))
-	return(list(left=cl,right=cr,scf=convFactorFwd,scb=convFactorBwd,scv=scv,initialCount=initialCount(sb),par=k,compoundUnit=cUnit, parameterUnit=parUnit))
+	expr <- sb$Expression[["!Formula"]]
+	names(expr) <- rownames(sb$Expression)
+	ec <- expressionConversion(expr,sb$Expression[["!Unit"]])
+	return(
+		list(
+			left=cl,
+			right=cr,
+			scf=convFactorFwd,
+			scb=convFactorBwd,
+			scv=scv,
+			initialCount=initialCount(sb),
+			par=k,
+			compoundUnit=cUnit,
+			parameterUnit=parUnit,
+			expressionConversion=ec
+		)
+	)
 }
 
 reactionEffect <- function(sm){

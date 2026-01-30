@@ -3,7 +3,7 @@
 #include <string.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_vector.h>
-#include <gsl/gsl_sort_vector.h>
+#include <gsl/gsl_randist.h>
 #include <math.h>
 #include <dlfcn.h>
 #include <R.h>
@@ -83,14 +83,14 @@ void print_counts(double t, gsl_vector_int *x){
 void advance_in_time(double *t, gsl_vector_int *x, gsl_vector *c, gsl_vector *a, gsl_rng *RNG){
 	double tau;
 	double r;
-	double sum_a;
+	double sum_a=0.0;
 	int j;
+	int i;
 	model_propensities(*t,x->data,c->data,a->data);
 	// 1. calculate sum(a)
 	sum_a = gsl_vector_sum(a);
-	// 2. pick a tau
-	r = gsl_rng_uniform(RNG);
-	tau = -log(r)/sum_a;
+	// 2. pick a time step forward (tau)
+	tau = gsl_ran_exponential(RNG,1.0/sum_a); /* -log(gsl_rng_uniform(RNG))/sum_a; */
 	// 3. pick a reaction to perform:
 	r = gsl_rng_uniform(RNG);
 	j = pick_reaction(a,r*sum_a);
@@ -173,11 +173,6 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 				while (t < tf){
 					advance_in_time(&t,x,c,a,RNG);
 				}
-				/*
-				printf("[%s] propensity: ",__func__);
-				for (l=0;l<a->size;l++) printf("%g%c",a->data[l],( l < a->size-1 ? ',' : ' '));
-				printf("\n");
-				*/
 				column = gsl_vector_int_view_array(INTEGER(y)+(n*length(time)*k+n*j),n);
 				model_func(t,x->data,krc->data,REAL(f)+(nf*length(time)*k+nf*j));
 				gsl_vector_int_memcpy(&(column.vector),x);
