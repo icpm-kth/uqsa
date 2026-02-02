@@ -12,8 +12,6 @@ parameterConversion(value, unit, stoichiometry)
 \item{unit}{of the kinetic parameter, a character vector}
 
 \item{stoichiometry}{a list of the stoichiometric constants of each reaction, a list of integer vectors}
-
-\item{LV}{Avogadro's constant multiplied with the system's volume (the default is a reasonable value for a small volume)}
 }
 \value{
 a vector of parameter conversion factors

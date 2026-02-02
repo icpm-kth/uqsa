@@ -80,7 +80,6 @@ stoichiometry <- function(formulaList){
 #' @param value parameter values (kinetic rate coefficients), a vector
 #' @param unit of the kinetic parameter, a character vector
 #' @param stoichiometry a list of the stoichiometric constants of each reaction, a list of integer vectors
-#' @param LV Avogadro's constant multiplied with the system's volume (the default is a reasonable value for a small volume)
 #' @return a vector of parameter conversion factors
 #' @export
 parameterConversion <- function(value, unit, stoichiometry){
@@ -96,11 +95,33 @@ parameterConversion <- function(value, unit, stoichiometry){
 	return(CF)
 }
 
-expressionConversion <- function(formula, unit) {
-	u <- lapply(unit,SBtabVFGEN::unit.from.string)
+
+#' This function calculates the conversion from moles to particle counts
+#'
+#' Given some molar quantity with a unit (character vector), this function
+#' calculates a conversion factor based on the SI prefixes used, as
+#' well as what the exponent of LV (Avogadro's constant * Volume)
+#' applies in this case. The formula itself will not be examined, but
+#' the names will be used to name the result
+#'
+#' @param unit character vector, will be parsed for SI prefixes and to
+#'     determine the mole component
+#' @return a data.frame with an lvpower and factor component, with
+#'     names like the names of the unit vector
+moleCountConversion <- function(unit) {
+	u <- lapply(unit,unit.from.string)
 	f <- sapply(u,\(x) with(x,10^sum(scale*exponent)))
 	l <- sapply(u,\(x) with(x,sum(exponent*(kind=='mole'))))
-	return(data.frame(lvpower=l, factor=f, row.names=names(formula)))
+	new_unit <- sapply(
+		u,
+		function(x) {
+			x$scale<-0
+			l <- na.omit(pmatch(c("dimensionless","mole"),x$kind))
+			if (length(l) > 0 && all(is.finite(l))) x <- x[-l,]
+			return(unit_as_character(x))
+		}
+	)
+	return(data.frame(lvpower=l, factor=f, effectively=new_unit, row.names=names(unit)))
 }
 
 #' Find the Reaction a parameter appears in
@@ -248,31 +269,22 @@ makeGillespieModel <- function(sb){
 	names(k) <- c(rownames(sb$Parameter),rownames(sb$Input))
 	u <- c(sb$Parameter[["!Unit"]],sb$Input[["!Unit"]])
 	names(u) <- c(rownames(sb$Parameter),rownames(sb$Input))
-	KL <- sb$Reaction[["!KineticLaw"]]
-	pr <- parameterReaction(KL,rownames(sb$Parameter))
-	convFactorFwd <- parameterConversion(k[names(pr$fwd)], u[names(pr$fwd)], cl[pr$fwd])
-	convFactorBwd <- parameterConversion(k[names(pr$bwd)], u[names(pr$bwd)], cr[pr$bwd])
-	l <- !(names(k) %in% rownames(convFactorFwd) | names(k) %in% rownames(convFactorBwd))
-	scv <- simpleConversion(k[l],u[l])
+	parConversion <- moleCountConversion(u)
 	cUnit <- sb$Compound[["!Unit"]]
 	names(cUnit) <- rownames(sb$Compound)
 	parUnit <- c(sb$Parameter[["!Unit"]],sb$Input[["!Unit"]])
 	names(parUnit) <- c(rownames(sb$Parameter),rownames(sb$Input))
-	expr <- sb$Expression[["!Formula"]]
-	names(expr) <- rownames(sb$Expression)
-	ec <- expressionConversion(expr,sb$Expression[["!Unit"]])
 	return(
 		list(
 			left=cl,
 			right=cr,
-			scf=convFactorFwd,
-			scb=convFactorBwd,
-			scv=scv,
+			parConversion=parConversion,
 			initialCount=initialCount(sb),
 			par=k,
 			compoundUnit=cUnit,
 			parameterUnit=parUnit,
-			expressionConversion=ec
+			reactionMultiplicityFWD=sapply(cl,\(x) 1+sum(x-1)),
+			reactionMultiplicityBWD=sapply(cr,\(x) 1+sum(x-1))
 		)
 	)
 }
@@ -382,32 +394,19 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 		43 - lengths(sb$Constant[["!Value"]]) - lengths(rownames(sb$Constant))," ",
 		sb$Constant[["!Unit"]]
 	),
-	"\t/* forward parameters */",
+	"\t/* parameters */",
 	sprintf(
-		"\tdouble %s = c[_%s]; %*s /* per second */",
-		rownames(sm$scf),
-		rownames(sm$scf),
-		40 - 2*lengths(rownames(sm$scf))," "
-	),
-	"\t/* backward parameters */",
-	sprintf(
-		"\tdouble %s = c[_%s]; %*s /* per second */",
-		rownames(sm$scb),
-		rownames(sm$scb),
-		40 - 2*lengths(rownames(sm$scb))," "
-	),
-	"\t/* parameters that do not appear in kinetric laws */",
-	sprintf(
-		"\tdouble %s = c[_%s]; %*s /* per second */",
-		rownames(sm$scv),
-		rownames(sm$scv),
-		40 - 2*lengths(rownames(sm$scv))," "
+		"\tdouble %s = c[_%s]; %*s /* %s */",
+		names(sm$par),
+		names(sm$par),
+		40 - 2*lengths(names(sm$par))," ",
+		sm$parConversion$effectively
 	),
 	"\t/*state variables */"
 	)
 	Counts <- c(
 		sprintf("\tdouble %s = x[_%s];",rownames(sb$Compound),rownames(sb$Compound)),
-		sprintf("\tdouble %s = %s;",rownames(sb$Expression),sb$Expression[["!Formula"]])
+		sprintf("\tdouble %s = %s;",rownames(sb$Expression),replace_powers(sb$Expression[["!Formula"]]))
 	)
 	FuncMolarities <- c(
 	sprintf(
@@ -418,7 +417,7 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 		40 - 2*lengths(names(sm$initialCount))-lengths(ccc(sb)),"",
 		sm$compoundUnit
 	),
-	sprintf("\tdouble %s = %s;",rownames(sb$Expression),sb$Expression[["!Formula"]])
+	sprintf("\tdouble %s = %s;",rownames(sb$Expression),replace_powers(sb$Expression[["!Formula"]]))
 	)
 	C <- c(
 	"#include <stdlib.h>",
@@ -461,8 +460,38 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"\tif (!x || !a) return numReactions;",
 	Definitions,
 	Counts,
-	unlist(mapply(\(x,n,rf) {sprintf("\ta[_%s_fwd] = %s; %*s /* %s */",n,x,40-lengths(x)-lengths(n)," ",rf)},RC[,1],rownames(sb$Reaction),sub("<=>","->",sb$Reaction[["!ReactionFormula"]],fixed=TRUE))),
-	unlist(mapply(\(x,n,rf) {sprintf("\ta[_%s_bwd] = %s; %*s /* %s */",n,x,40-lengths(x)-lengths(n)," ",rf)},RC[,2],rownames(sb$Reaction),sub("<=>","<-",sb$Reaction[["!ReactionFormula"]],fixed=TRUE))),
+	unlist(
+		mapply(
+			\(x,n,f,rf) {
+				sprintf(
+					"\ta[_%s_fwd] = %i*%s; %*s /* %s */",
+					n,f,x,
+					40-lengths(x)-lengths(n)," ",
+					rf
+				)
+			},
+			RC[,1],
+			rownames(sb$Reaction),
+			sm$reactionMultiplicityFWD,
+			sub("<=>","->",sb$Reaction[["!ReactionFormula"]],fixed=TRUE)
+		)
+	),
+	unlist(
+		mapply(
+			\(x,n,f,rf) {
+				sprintf(
+					"\ta[_%s_bwd] = %i*%s; %*s /* %s */",
+					n,f,x,
+					40-lengths(x)-lengths(n)," ",
+					rf
+				)
+			},
+			RC[,2],
+			rownames(sb$Reaction),
+			sm$reactionMultiplicityBWD,
+			sub("<=>","<-",sb$Reaction[["!ReactionFormula"]],fixed=TRUE)
+		)
+	),
 	"\treturn 0;",
 	"}","",
 	"/* usually, these are stochastic propensity coefficients,                                      */",
@@ -473,8 +502,9 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	sprintf("\tc[_%s] = %s; %*s /* %s */",names(sm$par),sm$par,40-lengths(names(sm$par))-lengths(sm$par),"",sm$parameterUnit),
 	"\treturn 0;",
 	"}","",
-	"int model_initial_counts(int *x){",
+	"int model_initial_counts(int *x, double *c){",
 	"\tif(!x) return numStateVariables;",
+	Definitions,
 	sprintf(
 		"\tx[_%s] = lround(%s * LV); %*s /* %s %s */",
 		names(sm$initialCount),
@@ -498,9 +528,7 @@ generateGillespieCode <- function(sb,LV=6.02214076e+8){
 	"/* The changes are made in place */",
 	"int model_stochastic_parameters(double t, double *par){",
 	"\tif (!par) return numParameters;",
-	scaleParameter(sm$scf$factor,sm$scf$lvpower,rownames(sm$scf)),
-	scaleParameter(sm$scb$factor,sm$scb$lvpower,rownames(sm$scb)),
-	scaleParameter(sm$scv$factor,sm$scv$lvpower,rownames(sm$scv)),
+	scaleParameter(sm$parConversion$factor,sm$parConversion$lvpower,rownames(sm$parConversion)),
 	"\treturn 0;",
 	"}","",
 	"/* The list of experiments we'll receive from R will cointain */",
@@ -543,7 +571,7 @@ simstoch <- function(experiments, model.so, parMap=identity){
 		return(NULL)
 	}
 	for (i in seq_along(experiments)){
-		if ("input" %in% names(experiments)){
+		if ("input" %in% names(experiments[[i]])){
 			cat(sprintf("Experiment %i, input has length: %i\n",i,length(experiments[[i]]$input)))
 		} else {
 			warning("experiments have no input parameters, defaults to numeric(0).")

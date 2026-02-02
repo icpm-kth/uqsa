@@ -15,7 +15,7 @@ typedef SEXP Rdata;
 int (*model_effects)(double t, int *x, int j);
 int (*model_propensities)(double t, int *x, double *c, double*a);
 int (*model_reaction_coefficients)(double *c);
-int (*model_initial_counts)(int *x);
+int (*model_initial_counts)(int *x, double *c);
 int (*model_func)(double t, int *x, double *c, double *f);
 int (*model_particle_count)(double t, double *molarity, int *x);
 int (*model_particle_count)(double t, double *molarity, int *x);
@@ -118,7 +118,7 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 	if (!handle) return R_NilValue;
 	size_t M = ncols(parameters);
 	size_t nrp = nrows(parameters);
-	size_t n = model_initial_counts(NULL);
+	size_t n = model_initial_counts(NULL,NULL);
 	size_t m = model_reaction_coefficients(NULL);
 	size_t na = model_propensities(0,NULL,NULL,NULL);
 	size_t nf = model_func(0,NULL,NULL,NULL);
@@ -144,8 +144,8 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 
 	gsl_rng *RNG = gsl_rng_alloc(gsl_rng_ranlxs0);
 	gsl_rng_set(RNG, 1337);
-	model_initial_counts(x->data);
 	model_reaction_coefficients(c->data);
+	model_initial_counts(x->data,c->data);
 	/* main solver loop: */
 	for (i=0; i<length(experiments); i++){
 		E = VECTOR_ELT(experiments,i);
