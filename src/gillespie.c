@@ -15,7 +15,7 @@ typedef SEXP Rdata;
 int (*model_effects)(double t, int *x, int j);
 int (*model_propensities)(double t, int *x, double *c, double*a);
 int (*model_reaction_coefficients)(double *c);
-int (*model_initial_counts)(int *x);
+int (*model_initial_counts)(int *x, double *c);
 int (*model_func)(double t, int *x, double *c, double *f);
 int (*model_particle_count)(double t, double *molarity, int *x);
 int (*model_particle_count)(double t, double *molarity, int *x);
@@ -85,12 +85,11 @@ void advance_in_time(double *t, gsl_vector_int *x, gsl_vector *c, gsl_vector *a,
 	double r;
 	double sum_a=0.0;
 	int j;
-	int i;
 	model_propensities(*t,x->data,c->data,a->data);
 	// 1. calculate sum(a)
 	sum_a = gsl_vector_sum(a);
 	// 2. pick a time step forward (tau)
-	tau = gsl_ran_exponential(RNG,1.0/sum_a); /* -log(gsl_rng_uniform(RNG))/sum_a; */
+	tau = gsl_ran_exponential(RNG,1.0/sum_a);
 	// 3. pick a reaction to perform:
 	r = gsl_rng_uniform(RNG);
 	j = pick_reaction(a,r*sum_a);
@@ -118,7 +117,7 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 	if (!handle) return R_NilValue;
 	size_t M = ncols(parameters);
 	size_t nrp = nrows(parameters);
-	size_t n = model_initial_counts(NULL);
+	size_t n = model_initial_counts(NULL,NULL);
 	size_t m = model_reaction_coefficients(NULL);
 	size_t na = model_propensities(0,NULL,NULL,NULL);
 	size_t nf = model_func(0,NULL,NULL,NULL);
@@ -131,7 +130,6 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 	gsl_vector *c = gsl_vector_alloc(m);
 	gsl_vector *krc = gsl_vector_alloc(m);
 	gsl_vector *a = gsl_vector_alloc(na);
-	size_t nu;
 	double t0 = 0;
 	double tf = 10;
 	double t = t0;
@@ -144,8 +142,8 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 
 	gsl_rng *RNG = gsl_rng_alloc(gsl_rng_ranlxs0);
 	gsl_rng_set(RNG, 1337);
-	model_initial_counts(x->data);
 	model_reaction_coefficients(c->data);
+	model_initial_counts(x->data,c->data);
 	/* main solver loop: */
 	for (i=0; i<length(experiments); i++){
 		E = VECTOR_ELT(experiments,i);
