@@ -42,8 +42,8 @@ Fisher information matrices}
 \item{fisherInformationPrior}{a constant matrix, the prior
 distributions fisher information}
 
-\item{Sigma}{alternatively, Sigma=solve(fisherInformationPrior),
-\link{the inverse to fisherInformationPrior} can be specified for
+\item{Sigma}{alternatively, \code{Sigma=solve(fisherInformationPrior)},
+[the inverse to fisherInformationPrior] can be specified for
 the metropolis algorithm}
 
 \item{parAcceptable}{a user shaped function that returns a Boolean

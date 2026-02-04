@@ -2,7 +2,7 @@
 #'
 #' The model parameters were binned with a histogram function. In each
 #' bin one of the parameters is almost fixed (it varies much less than
-#' the other parameters [full range]). This function returns the mean
+#' the other parameters \[full range\]). This function returns the mean
 #' of the observable for each bin, as a vector.
 #'
 #' @param id is an integer vector that identifies the bin the
@@ -12,7 +12,7 @@
 #' @param outputSample a matrix of output values, one output vector
 #'     per row (different rows are results at different parameter
 #'     values)
-#' @return M[i,j] the mean of each observable[j] in bin[i]
+#' @return `M\[i,j\]` the mean of each `observable\[j\]` in `bin\[i\]`
 observable.mean.in.bin <- function(id,outputSample){
 	d<-dim(outputSample)
 	stopifnot(length(id)==d[1])
@@ -58,7 +58,7 @@ sum.of.bin.variance  <- function(hst,binMeans,totalMean){
 #' @param outputSample a matrix, with rows of outputs (row-index is the sample index)
 #' @param nBins number of bins, if unset defaults to the default of the hist function
 #' @export
-#' @return sensitivity S[i,j] of output[i] with respect to parameter[j]
+#' @return sensitivity `S\[i,j\]` of `output\[i\]` with respect to `parameter\[j\]`
 gsa_binning<-function(parSample,outputSample,nBins="Sturges"){
 	isNA <- apply(is.na(outputSample),1,any)
 	parSample <- parSample[!isNA,,drop=FALSE]
@@ -92,9 +92,9 @@ gsa_binning<-function(parSample,outputSample,nBins="Sturges"){
 #' @param u the values of the x-axis for the plot, if named, the names
 #'     are put at the tick-marks
 #' @param S the sensitivity matrix as returned by `globalSensitivity()`,
-#'     S[i,j] is with respect to model output i and parameter j
+#'     `S\[i,j\]` is with respect to model output `i` and parameter `j`
 #' @param color the list of colors to use for the shaded areas, e.g.:
-#'     rainbow(24)
+#'     `rainbow(24)`
 #' @param line.color the color of the lines drawn between the shaded
 #'     areas
 #' @param do.sort the parameter sensitivities are sorted according to
@@ -153,7 +153,7 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 #' @export
 #' @param nSamples number of rows to return
 #' @param rprior a function that samples from the prior distribution
-#' @return a list with the components M1, M2 (both matrices) and N (a
+#' @return a list with the components `M1`, `M2` (both matrices) and `N` (a
 #'     3D-array).
 saltelli_prior <- function(nSamples,rprior){
 	nPars<-NCOL(rprior(1))
@@ -183,10 +183,10 @@ saltelli_prior <- function(nSamples,rprior){
 #' See Geir Halnes et al. (Halnes, Geir, et al. J. comp. neuroscience 27.3 (2009): 471.
 #'
 #' @export
-#' @param fM1 output (f)unction values for M1, nSamples × nOuts
-#' @param fM2 output (f)unction values for M2, nSamples × nOuts
-#' @param fN output (f)unction values for N, nSamples × nOuts × nPars
-#' @return a list with sensitivity indices $SI and total sensitivities $SIT
+#' @param fM1 output (f)unction values for `M1`, nSamples × nOuts
+#' @param fM2 output (f)unction values for `M2`, nSamples × nOuts
+#' @param fN output (f)unction values for `N`, nSamples × nOuts × nPars
+#' @return a list with sensitivity indices $SI and total sensitivities `$SIT`
 gsa_saltelli<- function(fM1,fM2,fN, subtractMean = TRUE){
 	nSamples <- dim(fM1)[1]
 	nOuts <- dim(fM1)[2]

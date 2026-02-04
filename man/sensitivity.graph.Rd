@@ -19,10 +19,10 @@ sensitivity.graph(
 are put at the tick-marks}
 
 \item{S}{the sensitivity matrix as returned by \code{globalSensitivity()},
-S\link{i,j} is with respect to model output i and parameter j}
+\verb{S\[i,j\]} is with respect to model output \code{i} and parameter \code{j}}
 
 \item{color}{the list of colors to use for the shaded areas, e.g.:
-rainbow(24)}
+\code{rainbow(24)}}
 
 \item{line.color}{the color of the lines drawn between the shaded
 areas}

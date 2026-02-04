@@ -18,12 +18,29 @@ int (*model_reaction_coefficients)(double *c);
 int (*model_initial_counts)(int *x, double *c);
 int (*model_func)(double t, int *x, double *c, double *f);
 int (*model_particle_count)(double t, double *molarity, int *x);
-int (*model_particle_count)(double t, double *molarity, int *x);
 int (*model_stochastic_parameters)(double t, double *par);
+/* The union below exists because dlsym always returns a (void*)
+ * pointer.  With this unit type, we can convert the void-pointer to
+ * any of the functions above using one of the other union members.
+ * This is only necessary to suppress a pedantic warning.  The ptr
+ * component accepts a void pointer from dlsym.  and the above
+ * function pointers are filled from the rest of the union members.
+ */
+union symbol {
+	void *ptr;                                         /* <- input   */
+	int (*model_effects)(double t, int *x, int j);     /* outputs -> */
+	int (*model_propensities)(double t, int *x, double *c, double*a);
+	int (*model_reaction_coefficients)(double *c);
+	int (*model_initial_counts)(int *x, double *c);
+	int (*model_func)(double t, int *x, double *c, double *f);
+	int (*model_particle_count)(double t, double *molarity, int *x);
+	int (*model_stochastic_parameters)(double t, double *par);
+};
 
 void* load_model(const char *model_so){
 	void *lib=dlopen(model_so,RTLD_LAZY);
 	char *model_so_2=NULL;
+	union symbol conversion; /* pointer conversion */
 	if (!lib) {
 		fprintf(stderr,"[%s] %s.\n",__func__,dlerror());
 		model_so_2 = malloc(strlen(model_so)+3);
@@ -32,26 +49,40 @@ void* load_model(const char *model_so){
 		lib = dlopen(model_so_2,RTLD_LAZY);
 	}
 	if (lib){
-		if ((model_effects=dlsym(lib,"model_effects"))==NULL){
+		if ((conversion.ptr=dlsym(lib,"model_effects"))==NULL){
 			fprintf(stderr,"[%s] loading model_effects has failed.\n",__func__);
+		} else {
+			model_effects = conversion.model_effects;
 		}
-		if ((model_propensities=dlsym(lib,"model_propensities"))==NULL){
+		if ((conversion.ptr=dlsym(lib,"model_propensities"))==NULL){
 			fprintf(stderr,"[%s] loading model_propensities has failed.\n",__func__);
+		} else {
+			model_propensities = conversion.model_propensities;
 		}
-		if ((model_reaction_coefficients=dlsym(lib,"model_reaction_coefficients"))==NULL){
+		if ((conversion.ptr=dlsym(lib,"model_reaction_coefficients"))==NULL){
 			fprintf(stderr,"[%s] loading model_reaction_coefficients has failed.\n",__func__);
+		} else {
+			model_reaction_coefficients = conversion.model_reaction_coefficients;
 		}
-		if ((model_initial_counts=dlsym(lib,"model_initial_counts"))==NULL){
+		if ((conversion.ptr=dlsym(lib,"model_initial_counts"))==NULL){
 			fprintf(stderr,"[%s] loading model_initial_counts has failed.\n",__func__);
+		} else {
+			model_initial_counts = conversion.model_initial_counts;
 		}
-		if ((model_func=dlsym(lib,"model_func"))==NULL){
+		if ((conversion.ptr=dlsym(lib,"model_func"))==NULL){
 			fprintf(stderr,"[%s] loading model_func has failed.\n",__func__);
+		} else {
+			model_func = conversion.model_func;
 		}
-		if ((model_particle_count=dlsym(lib,"model_particle_count"))==NULL){
+		if ((conversion.ptr=dlsym(lib,"model_particle_count"))==NULL){
 			fprintf(stderr,"[%s] loading model_particle_count has failed.\n",__func__);
+		} else {
+			model_particle_count = conversion.model_particle_count;
 		}
-		if ((model_stochastic_parameters=dlsym(lib,"model_stochastic_parameters"))==NULL){
+		if ((conversion.ptr = dlsym(lib,"model_stochastic_parameters"))==NULL){
 			fprintf(stderr,"[%s] loading model_stochastic_parameters has failed.\n",__func__);
+		} else {
+			model_stochastic_parameters = conversion.model_stochastic_parameters;
 		}
 	}
 	if (model_so_2) free(model_so_2);

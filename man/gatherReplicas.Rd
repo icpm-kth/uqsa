@@ -35,7 +35,7 @@ of model MCMC parameters. The returned value X will be the rbind of
 all the smaller x contained in the individual files. The value X
 will have several attributes attached to it:
 \itemize{
-\item logLikelihood: log(likelihood(X\link{i,})), one value per row of X
+\item logLikelihood: log(likelihood(X[i,])), one value per row of X
 \item stepSize: the MCMC step size used in each given file#'
 }
 }

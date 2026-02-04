@@ -14,7 +14,7 @@ gsa_binning(parSample, outputSample, nBins = "Sturges")
 \item{nBins}{number of bins, if unset defaults to the default of the hist function}
 }
 \value{
-sensitivity S\link{i,j} of output\link{i} with respect to parameter\link{j}
+sensitivity \verb{S\[i,j\]} of \verb{output\[i\]} with respect to \verb{parameter\[j\]}
 }
 \description{
 This function performs a binning based estimation of the global

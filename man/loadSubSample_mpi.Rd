@@ -18,7 +18,7 @@ loadSubSample_mpi(
 returned}
 
 \item{selection}{integer index vector or logical vector indicating
-which temperatures to return: beta\link{selection} is returned, in
+which temperatures to return: beta[selection] is returned, in
 decreasing order of beta.}
 
 \item{mc.cores}{defaults to the total number of cores, but can be

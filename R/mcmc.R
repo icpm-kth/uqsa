@@ -411,7 +411,7 @@ loadSample_mpi <- function(files){
 #' @param size sub sample size, if not set, the whole sample is
 #'     returned
 #' @param selection integer index vector or logical vector indicating
-#'     which temperatures to return: beta[selection] is returned, in
+#'     which temperatures to return: beta\[selection\] is returned, in
 #'     decreasing order of beta.
 #' @param mc.cores defaults to the total number of cores, but can be
 #'     reduced with this option.
@@ -520,7 +520,7 @@ gatherSample <- function(files,beta=1.0,size=NA){
 #' all the smaller x contained in the individual files. The value X
 #' will have several attributes attached to it:
 #'
-#' - logLikelihood: log(likelihood(X[i,])), one value per row of X
+#' - logLikelihood: log(likelihood(X\[i,\])), one value per row of X
 #' - stepSize: the MCMC step size used in each given file#'
 #'
 #' @export
@@ -844,8 +844,8 @@ smmalaUpdate <- function(simulate, experiments, logLikelihood, dprior, gradLogLi
 #'     Fisher information matrices
 #' @param fisherInformationPrior a constant matrix, the prior
 #'     distributions fisher information
-#' @param Sigma alternatively, Sigma=solve(fisherInformationPrior),
-#'     [the inverse to fisherInformationPrior] can be specified for
+#' @param Sigma alternatively, `Sigma=solve(fisherInformationPrior)`,
+#'     \[the inverse to fisherInformationPrior\] can be specified for
 #'     the metropolis algorithm
 #' @param parAcceptable a user shaped function that returns a Boolean
 #'     scalar indicating whether a proposed parameter satisfies any

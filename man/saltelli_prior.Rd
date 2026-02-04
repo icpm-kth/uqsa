@@ -13,7 +13,7 @@ saltelli_prior(nSamples, rprior)
 \item{rprior}{a function that samples from the prior distribution}
 }
 \value{
-a list with the components M1, M2 (both matrices) and N (a
+a list with the components \code{M1}, \code{M2} (both matrices) and \code{N} (a
 3D-array).
 }
 \description{

@@ -30,7 +30,7 @@ struct num {
 /* this will only read: 12.34(56)E-7, like this, with an E*/
 struct num read_concise(const char *line){
 	struct num a;
-	char *ptr_u=line, *ptr_e=line;
+	char *ptr_u, *ptr_e;
 	int vscale=0;
 	double v=strtod(line,&ptr_u);
 	int u=0;
@@ -50,7 +50,7 @@ struct num read_concise(const char *line){
 
 struct num read_number(const char *line){
 	struct num a;
-	char *p=line;
+	char *p;
 	char *q;
 	a.value = strtod(line,&p);
 	char *decimal = strchr(line,'.');
