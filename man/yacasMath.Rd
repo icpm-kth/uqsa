@@ -15,6 +15,6 @@ yacasMath(v, reverse = FALSE)
 a character vector with yacas math
 }
 \description{
-Given a string like "exp(2\emph{x)" this function returns a string that
-yacas can process: "Exp(2}x)"
+Given a string like \code{"exp(2*x)"} this function returns a string that
+yacas can process: \code{"Exp(2*x)"}
 }

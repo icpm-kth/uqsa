@@ -7,14 +7,14 @@
 generateRCode(odeModel)
 }
 \arguments{
-\item{odeModel}{a list, as returned from SBtabVFGEN::sbtab_to_vfgen()}
+\item{odeModel}{a list, as returned from \code{SBtabVFGEN::sbtab_to_vfgen()}}
 }
 \value{
 a character vector with the generated code, one vector-element is one line of code.
 }
 \description{
 This function expects a list of character vectors, as returned by
-SBtabVFGEN::sbtab_to_vfgen. This list describes an ODE model
+\code{SBtabVFGEN::sbtab_to_vfgen}. This list describes an ODE model
 (initial values, default parameters, transformation events, output
 functions).  This function uses this information, calculates
 Jacobians via Ryacas and returns a character vector with R source

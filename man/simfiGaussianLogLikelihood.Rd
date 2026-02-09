@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{simfiGaussianLogLikelihood}
 \alias{simfiGaussianLogLikelihood}
-\title{\link{SMMALA} The default Extractor of the log-likelihood computed bu the simfi solver}
+\title{SMMALA -- The default Extractor of the log-likelihood computed by the simfi solver}
 \usage{
 simfiGaussianLogLikelihood(init = 0)
 }

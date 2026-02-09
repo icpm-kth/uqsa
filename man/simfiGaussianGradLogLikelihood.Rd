@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{simfiGaussianGradLogLikelihood}
 \alias{simfiGaussianGradLogLikelihood}
-\title{\link{SMMALA} Extract the gradient of the log-likelihood from the simfi solver's return value}
+\title{SMMALA -- Extract the gradient of the log-likelihood from the simfi solver's return value}
 \usage{
 simfiGaussianGradLogLikelihood(
   ParMapJac = function(x) {
@@ -23,5 +23,5 @@ transforms the gradient using the Jacobian of the parameter map
 between Markov chain variables and model parameters.
 }
 \details{
-The simfi() gradient is with respect to the raw model parameters
+The \code{simfi()} gradient is with respect to the raw model parameters
 }

@@ -14,11 +14,11 @@ a character vector with the generated code, one element is one line.
 }
 \description{
 This function generates C code, expecting the information about the
-ODE to come from the files that SBtabVFGEN::sbtab_to_vfgen()
+ODE to come from the files that \code{SBtabVFGEN::sbtab_to_vfgen()}
 writes. It exists for compatibility with the scripts in the
 RPN-derivative package.
 }
 \details{
-sbtab_to_vfgen() also returns a variable. This variable (a list)
+\code{sbtab_to_vfgen()} also returns a variable. This variable (a list)
 has the same information as the files and can be used directly (by a different function).
 }

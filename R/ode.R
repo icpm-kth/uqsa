@@ -1,7 +1,7 @@
 #' yacasMath converts math to Ryacas compatible math
 #'
-#' Given a string like "exp(2*x)" this function returns a string that
-#' yacas can process: "Exp(2*x)"
+#' Given a string like `"exp(2*x)"` this function returns a string that
+#' yacas can process: `"Exp(2*x)"`
 #'
 #' @param v a chcarcter vector with math expressions
 #' @param reverse do the reverse operation
@@ -31,7 +31,7 @@ yacasMath <- function(v,reverse=FALSE) {
 #' of the math expressions with respect to the variables.
 #' @param f a character vector of length n
 #' @param x a character vector of length m
-#' @return a character matrix (n×m) with derivatives df[i]/dx[j]
+#' @return a character matrix (n×m) with derivatives `df[i]/dx[j]`
 #' @export
 yJacobian <- function(f,x){
 	f <- yacasMath(f)
@@ -70,11 +70,11 @@ cOffset <- \(d) {seq(0,NROW(d)-1)}
 #' Write C code
 #'
 #' This function generates C code, expecting the information about the
-#' ODE to come from the files that SBtabVFGEN::sbtab_to_vfgen()
+#' ODE to come from the files that `SBtabVFGEN::sbtab_to_vfgen()`
 #' writes. It exists for compatibility with the scripts in the
 #' RPN-derivative package.
 #'
-#' sbtab_to_vfgen() also returns a variable. This variable (a list)
+#' `sbtab_to_vfgen()` also returns a variable. This variable (a list)
 #' has the same information as the files and can be used directly (by a different function).
 #'
 #' @param ode a list of data.frames with the text representation of the ordinary differential equation
@@ -308,7 +308,7 @@ eventCode <-function(odeModel){
 #' compiled into a shared library and used by the solvers in the
 #' icpm-kth/rgsl package.
 #'
-#' @param odeModel a list, as returned from SBtabVFGEN::sbtab_to_vfgen()
+#' @param odeModel a list, as returned from `SBtabVFGEN::sbtab_to_vfgen()`
 #' @export
 #' @return a character vector with the generated code, one vector-element is one line of code.
 generateCode <- function(odeModel){
@@ -450,7 +450,7 @@ writeRFunction <- function(prefix,fName,ret,value,arguments=c('t','state','param
 #' Write R code
 #'
 #' This function expects a list of character vectors, as returned by
-#' SBtabVFGEN::sbtab_to_vfgen. This list describes an ODE model
+#' `SBtabVFGEN::sbtab_to_vfgen`. This list describes an ODE model
 #' (initial values, default parameters, transformation events, output
 #' functions).  This function uses this information, calculates
 #' Jacobians via Ryacas and returns a character vector with R source
@@ -460,7 +460,7 @@ writeRFunction <- function(prefix,fName,ret,value,arguments=c('t','state','param
 #' `cat(generateRCode(odeModel),sep="\n",file=...)`. This file can be
 #' sourced later.
 #'
-#' @param odeModel a list, as returned from SBtabVFGEN::sbtab_to_vfgen()
+#' @param odeModel a list, as returned from `SBtabVFGEN::sbtab_to_vfgen()`
 #' @export
 #' @return a character vector with the generated code, one vector-element is one line of code.
 generateRCode <- function(odeModel){
@@ -543,7 +543,7 @@ generateRCode <- function(odeModel){
 #' comment of the return value. To override this choice, replace the
 #' comment. This function exists for compatibility with the scripts in
 #' the RPN-derivative repository and loads the zip and tar.gz files
-#' that SBtabVFGEN::sbtab_to_vfgen writes to disk.
+#' that `SBtabVFGEN::sbtab_to_vfgen` writes to disk.
 #'
 #' @param fileList list of file paths
 #' @export

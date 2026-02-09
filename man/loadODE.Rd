@@ -20,5 +20,5 @@ uncompressed tsv files. This auto-determined name is attached as a
 comment of the return value. To override this choice, replace the
 comment. This function exists for compatibility with the scripts in
 the RPN-derivative repository and loads the zip and tar.gz files
-that SBtabVFGEN::sbtab_to_vfgen writes to disk.
+that \code{SBtabVFGEN::sbtab_to_vfgen} writes to disk.
 }

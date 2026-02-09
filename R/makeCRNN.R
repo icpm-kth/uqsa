@@ -18,9 +18,9 @@ writeComment <- function(x) {
 #' (functions of the state variables).
 #'
 #' Note: In addition to the state variables, the function values can
-#' also reference the log-parameters of the model as l[i], where i is
-#' a 0-based offset to the reaction i; the backward rate, is stored at
-#' position l[i+numRct].
+#' also reference the log-parameters of the model as `l[i]`, where `i` is
+#' a 0-based offset to the reaction `i`; the backward rate, is stored at
+#' position `l[i+numRct]`.
 #'
 #' @param numReactions the number of reversible mass action law
 #'     reactions

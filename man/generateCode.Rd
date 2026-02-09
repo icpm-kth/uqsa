@@ -7,7 +7,7 @@
 generateCode(odeModel)
 }
 \arguments{
-\item{odeModel}{a list, as returned from SBtabVFGEN::sbtab_to_vfgen()}
+\item{odeModel}{a list, as returned from \code{SBtabVFGEN::sbtab_to_vfgen()}}
 }
 \value{
 a character vector with the generated code, one vector-element is one line of code.

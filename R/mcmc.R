@@ -1154,7 +1154,7 @@ gradLogLikelihoodFunc <- function(experiments,parMap=identity,parMapJac=function
 	return(gradLL)
 }
 
-#' [SMMALA] The default Extractor of the log-likelihood computed bu the simfi solver
+#' SMMALA -- The default Extractor of the log-likelihood computed by the simfi solver
 #'
 #' This function will only extract the log-likelihood value from the
 #' solution via simfi. Simfi returns the likelihhod value based on the
@@ -1174,13 +1174,13 @@ simfiGaussianLogLikelihood <- function(init = 0.0){
 	return(llf)
 }
 
-#' [SMMALA] Extract the gradient of the log-likelihood from the simfi solver's return value
+#' SMMALA -- Extract the gradient of the log-likelihood from the simfi solver's return value
 #'
 #' This function extracts the approximate gradient of the log-likelihood and
 #' transforms the gradient using the Jacobian of the parameter map
 #' between Markov chain variables and model parameters.
 #'
-#' The simfi() gradient is with respect to the raw model parameters
+#' The `simfi()` gradient is with respect to the raw model parameters
 #'
 #' @param ParMapJac Jacobian of the parMap function
 #' @export
@@ -1195,14 +1195,14 @@ simfiGaussianGradLogLikelihood <- function(ParMapJac=function (x) {diag(1,length
 	return(gllf)
 }
 
-#' [SMMALA] Extract the approximate Fisher infomration from the simfi results
+#' SMMALA -- Extract the approximate Fisher infomration from the simfi results
 #'
-#' This function extracts the approximate Fisher information matrix G
+#' This function extracts the approximate Fisher information matrix `G`
 #' of the log-likelihood and transforms it using the
 #' Jacobian of the parameter map between Markov chain variables and
 #' model parameters.
 #'
-#' The simfi() values are with respect to the raw model parameters,
+#' The `simfi()` values are with respect to the raw model parameters,
 #' while this function rephrases them in terms of the Markov chain's
 #' position.
 #'

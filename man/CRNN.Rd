@@ -35,7 +35,7 @@ and log(A) are treated as observable (measureable) values
 (functions of the state variables).
 
 Note: In addition to the state variables, the function values can
-also reference the log-parameters of the model as l\link{i}, where i is
-a 0-based offset to the reaction i; the backward rate, is stored at
-position l\link{i+numRct}.
+also reference the log-parameters of the model as \code{l[i]}, where \code{i} is
+a 0-based offset to the reaction \code{i}; the backward rate, is stored at
+position \code{l[i+numRct]}.
 }

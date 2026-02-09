@@ -8,9 +8,9 @@ generateGillespieCode(sb, LV = 602214076)
 }
 \arguments{
 \item{sb}{SBtab list of data-frames, as returned by
-SBtabVFGEN::sbtab_from_*() functions}
+\verb{SBtabVFGEN::sbtab_from_*()} functions}
 
-\item{LV}{Avogadro's Constant * volume \link{in litres}}
+\item{LV}{Avogadro's Constant * volume (in litres)}
 }
 \value{
 character vector with code

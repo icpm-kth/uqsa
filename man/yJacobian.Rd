@@ -12,7 +12,7 @@ yJacobian(f, x)
 \item{x}{a character vector of length m}
 }
 \value{
-a character matrix (n×m) with derivatives df\link{i}/dx\link{j}
+a character matrix (n×m) with derivatives \code{df[i]/dx[j]}
 }
 \description{
 Given a named character array of math expressions and a vector of

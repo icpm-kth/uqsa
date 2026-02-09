@@ -370,8 +370,8 @@ spacing <- function(v,max.width=40){
 #' The default system size is 1 femtolitre.
 #'
 #' @param sb SBtab list of data-frames, as returned by
-#'     SBtabVFGEN::sbtab_from_*() functions
-#' @param LV Avogadro's Constant * volume [in litres]
+#'     `SBtabVFGEN::sbtab_from_*()` functions
+#' @param LV Avogadro's Constant * volume (in litres)
 #' @return character vector with code
 #' @export
 generateGillespieCode <- function(sb,LV=6.02214076e+8){

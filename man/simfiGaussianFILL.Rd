@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{simfiGaussianFILL}
 \alias{simfiGaussianFILL}
-\title{\link{SMMALA} Extract the approximate Fisher infomration from the simfi results}
+\title{SMMALA -- Extract the approximate Fisher infomration from the simfi results}
 \usage{
 simfiGaussianFILL(
   ParMapJac = function(x) {
@@ -18,13 +18,13 @@ the approximate Fisher information of the Gaussian log-likelihood with respect t
 the MCMC variable, useful for SMMALA
 }
 \description{
-This function extracts the approximate Fisher information matrix G
+This function extracts the approximate Fisher information matrix \code{G}
 of the log-likelihood and transforms it using the
 Jacobian of the parameter map between Markov chain variables and
 model parameters.
 }
 \details{
-The simfi() values are with respect to the raw model parameters,
+The \code{simfi()} values are with respect to the raw model parameters,
 while this function rephrases them in terms of the Markov chain's
 position.
 }
