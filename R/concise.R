@@ -19,6 +19,7 @@
 #' @useDynLib uqsa, concise
 parse_concise <- function(v,use.errors=requireNamespace("errors")){
 	w<-.Call(concise,as.character(v))
+	w[,grep("NA",v,ignore.case=TRUE)] <- c(NA,NA)
 	if (use.errors){
 		return(errors::set_errors(w[1,],w[2,]))
 	} else {
