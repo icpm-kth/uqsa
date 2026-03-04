@@ -209,8 +209,99 @@ linear_scale <- function(x,str_scale=""){
 	return(vf)
 }
 
+#' Reduce the size of the system
+#'
+#' Given a stoichiometric matrix, this function performs model
+#' reduction via linear algebra operations, with [pracma].
+#' @param nu stoichiometric matrix
+#' @useDynLib uqsa, lstrtod
+#' @return a list of conservation laws
+conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
+	C <- pracma::rref(t(pracma::nullspace(t(nu))))
+	stopifnot(norm(C %*% nu)<1e-6)
+	nm <- rownames(nu)
+	colnames(C) <- rownames(nu)
+	K <- numeric(NROW(C))
+	allText <- character(NROW(C))
+	if (is.character(iv)) {
+		warning("initial values are not numeric.")
+		iv <- .Call(lstrtod,iv) # guarantees no NA values
+	}
+	for (i in seq(NROW(C))){
+		l <- which(abs(C[i,])>1e-3)
+		for (k in l){
+			if (all(k!=K)){
+				K[i] <- k
+				break
+			}
+		}
+		j <- l[-k]
+		if (C[i,k]!=1){
+			Text <- paste0(
+				sprintf("(%s_ConservedConst - (",nm[k]),
+				paste0(
+					sprintf("%+i*%s",round(C[i,j]),nm[j]),
+					collapse=""
+				),
+				sprintf("))*(%i)",1.0/C[i,k])
+			)
+		} else {
+			Text <- paste0(
+				sprintf("%s_ConservedConst - (",nm[k]),
+				paste0(
+					sprintf("%+i*%s",round(C[i,j]),nm[j]),
+					collapse=""
+				),
+				sprintf(")")
+			)
+		}
+		if (as.logical(verbose)){
+			cat("d/dt(",sprintf("%+i*%s",round(C[i,l]),nm[l]),") == 0\n")
+			cat(Text,"\n")
+		}
+		allText[i] <- Text
+	}
+	if (any(diff(c(1,2,4,11,14))==0)) stop("conservation law analysis is trying to replace the same compound several times.")
+	CL <- data.frame(
+		Eliminates=rev(K),
+		value=rev(C %*% iv),
+		Constant=rev(C %*% iv),
+		ConstantName=rev(sprintf("%s_ConservedConst",nm[K])),
+		Formula=rev(gsub("+1*","+",allText,fixed=TRUE)),
+		row.names=rev(nm[K])
+	)
+	attr(CL,"lawMatrix") <- t(C)
+	return(CL)
+}
+
 #' Interpret a model as an ODE
-as_ode <- function(m){
+#'
+#' This function accepts a list generated from a collection of TSV
+#' files (or a similar format) and interprets the contents as an
+#' ordinary differential equation (ODE).
+#'
+#' The argument `m` can be obtained via `model_from_tsv()`.
+#' It has the components:
+#' - `m$Constant`
+#' - `m$Parameter`
+#' - `m$Input`
+#' - `m$Expression`
+#' - `m$Compound`
+#' - `m$Reaction`
+#' - `m$Experiment`
+#'
+#' There can be additional components describing measured data for
+#' this model.
+#' @param m a list of data.frames, each corresponding to a TSV file or
+#'     sheet in a spreadsheet.
+#' @param cla a Boolean value indicating whether conservation law
+#'     analysis should be performed.
+#' @return a list that contains a summary of this model interpreted as
+#'     an ODE, crucially, the list contains the element `vf`, the
+#'     right-hand-side (vector field) of the ODE, this is the main
+#'     result of this function.
+#' @export
+as_ode <- function(m,cla=requireNamespace("pracma")){
 	iv <- values(m$Compound)
 	pv <- values(m$Parameter)
 	xp <- c(formulae(m$Expression),formulae(m$Reaction))
@@ -220,12 +311,122 @@ as_ode <- function(m){
 	nu <- stoichiometric_matrix(m)
 	flux <- formulae(m$Reaction)
 	vf <- character(NROW(iv))
-	names(vf) <- rownames(m$Compound)
+	names(vf) <- names(iv)
 	r <- nu %@% 'reactants'
 	p <- nu %@% 'products'
 	for (i in seq_along(flux)){
 		reaction(vf,r[[i]],p[[i]]) <- flux[i]
 	}
-	ode <- list(vf=vf,par=par,var=iv,exp=xp,func=out,stoichiometric_matrix=nu)
+	if (as.logical(cla)){
+		CL <- conservation_law_analysis(nu,iv)
+		iv <- iv[-CL$Eliminates]
+		cq <- CL$Formula
+		names(cq) <- rownames(CL)
+		xp <- c(formulae(m$Expression),cq,formulae(m$Reaction))
+		C <- CL$Constant
+		names(C) <- CL$ConstantName
+		par <- c(par,C)
+		vf <- vf[-CL$Eliminates]
+	} else {
+		CL <- NULL
+		xp <- c(formulae(m$Expression),formulae(m$Reaction))
+	}
+	ode <- list(vf=vf,par=par,var=iv,exp=xp,func=out,stoichiometric_matrix=nu,conservationLaws=CL)
+	comment(ode) <- comment(m)
 	return(ode)
+}
+
+time_series_experiment <- function(t,measurements){
+
+}
+
+#'
+#'
+#' Updates the named values of vector `v` with values mentioned in data.frame d
+#'
+update_values <- function(v,d){
+	if (is.null(names(v))) stop("[update_values] v must be named")
+	ret <- matrix(v,length(v),NROW(d),dimnames=list(names(v),rownames(d)))
+	for (i in seq(NCOL(ret))){
+		j <- names(v) %in% colnames(d)
+		if (any(j)){
+			ret[j,i] <- d[i,names(v)[j]]
+		}
+	}
+	return(ret)
+}
+
+#' Extract Measured Data and Simulation Experiment Instructions
+#'
+#' This function accepts the model obtained via `model_fromt_tsv` or a
+#' similar function. It finds the data tables for this model (if any
+#' are present), and finds the simulation instructions to reproduce
+#' these data sets using the model.
+#'
+#' This function requires that the files the model is stored as
+#' contains measurements (data) that can be interpreted fairly
+#' easily. Each data file needs columns that are named like the
+#' observable quantities listed in the Output table.
+#'
+#' If the data is very indirectly related to the model, then we don't
+#' interpret the data files themselves and the user needs to write a
+#' specialized likelihood function to relate the raw data in the files
+#' with something that the model does. In such cases, don't use this function.
+#'
+#' The instructions must be organised in a table called Experiment(s).
+#' @param m the model (with data), as obtained via `model_from_tsv()`, or similar.
+#' @param CL conservation laws, obtained through conservation law analysis.
+#' @return a list of simulation instructions
+data_with_instructions <- function(m,o){
+	if (!is.list(m)) {
+		stop("the first argument needs to be a list of file contents.")
+	}
+	# The Experiment table is orchestrating the whole simulation procedure
+	if (all(is.finite(pmatch('Experiment',names(m))))){
+		E <- m$Experiment
+	} else {
+		cat(names(m),"\n",sep=", ")
+		stop("argument must contain an item named 'Experiment(s)'.")
+	}
+	# If there isn't an output table, then all state variables must be measurable
+	if (all(is.finite(pmatch('Output',names(m))))){
+		out <- rownames(m$Output)
+		print(out)
+	} else {
+		out <- rownames(m$Compound)
+	}
+	if (all(is.finite(pmatch('Input',names(m))))){
+		C <- o$conservationLaws$Constant
+		names(C) <- o$conservationLaws$ConstantName
+		input <- update_values(
+			c(values(m$Input),C),
+			m$Experiment
+		)
+	} else {
+		input <- NULL
+	}
+	iv <- update_values(o$var,m$Experiment)
+	D <- vector("list",NROW(E))
+	for (i in seq(NROW(E))){
+		d <- m[[rownames(E)[i]]]
+		if (is.null(d)) {
+			message("no data provided for experiment ",i)
+		} else {
+			DATA <-parse_concise(
+				t(d[,colnames(d) %in% out, drop=FALSE]),
+				use.errors=TRUE
+			)  # this is a matrix
+			rownames(DATA) <- out
+		}
+		D[[i]] <- list(
+			measurements=cbind(time=d$time,as.data.frame(t(DATA))),
+			data=DATA,
+			input=input[,i],
+			initialTime=E$t0[i] %otherwise% min(d$time),
+			initialState=iv[,i],
+			outputTimes=d$time
+		)
+	}
+	names(D) <- rownames(E)
+	return(D)
 }

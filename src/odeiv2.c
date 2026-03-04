@@ -686,8 +686,11 @@ int sensitivityApproximation(double t0, gsl_vector *t, gsl_vector *p, gsl_matrix
 /* log(Likelihood) = -0.5*(((f-d)/sd)**2 + log(2*pi*sd))           */
 double logLikelihood(Rdata experiment, double *f){
 	/* these two are supposed to be matrices, without missing values */
-  Rdata data=from_list(experiment,"data measuredData experimentalData");
-	Rdata stdv=from_list(experiment,"stdv standardError standardDeviationOfTheMean");
+	Rdata data=from_list(experiment,"data measuredData experimentalData");
+	Rdata stdv=getAttrib(data,install("errors"));
+	if (!IS_NUMERIC(stdv)){
+		stdv = from_list(experiment,"stdv standardError standardDeviationOfTheMean");
+	}
 	Rdata time=from_list(experiment,"time outputTimes");
 	double ll=0;
 	double d,s;
@@ -713,7 +716,11 @@ double logLikelihood(Rdata experiment, double *f){
 /* grad(log(Likelihood)) = ((d-f)/(sd*sd))*df/dp */
 int gradLogLikelihood(double *gll, Rdata experiment, double *func, double *funcSens, size_t m, gsl_vector *v){
 	Rdata data=from_list(experiment,"data measuredData experimentalData");
-	Rdata stdv=from_list(experiment,"stdv standardError standardDeviationOfTheMean");
+	Rdata stdv=getAttrib(data,install("errors"));
+	if (!IS_NUMERIC(stdv)){
+		stdv = from_list(experiment,"stdv standardError standardDeviationOfTheMean");
+	}
+	//Rdata stdv=from_list(experiment,"stdv standardError standardDeviationOfTheMean");
 	Rdata time=from_list(experiment,"time outputTimes");
 	int nt=length(time);
 	int n=v->size;
@@ -748,7 +755,11 @@ int gradLogLikelihood(double *gll, Rdata experiment, double *func, double *funcS
 /* for solve(Sigma) == diag(sd**(-2))                              */
 /* with Sf_sd[,j] = Sf[,j]/sd -> FisherInf = t(Sf_sd)*Sf_sd        */
 int FisherInformation(double *FI, Rdata experiment, double *funcSens, gsl_matrix *Sf_sd){
-	Rdata stdv=from_list(experiment,"stdv standardError standardDeviationOfTheMean");
+	Rdata data=from_list(experiment,"data measuredData");
+	Rdata stdv=getAttrib(data,install("errors"));
+	if (!IS_NUMERIC(stdv)){
+		stdv = from_list(experiment,"stdv standardError standardDeviationOfTheMean");
+	}
 	Rdata time=from_list(experiment,"time OutputTimes");
 	int nt=length(time);
 	int n=Sf_sd->size2; //ODE_func(0,NULL,NULL,NULL);

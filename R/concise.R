@@ -1,9 +1,16 @@
 #' Read Concise Error Notation
 #'
-#' Convert a vector of strings of the form: c("1.2(3)E-4","1.2(3)E-2") to a matrix with
-#' two rows: values, and uncertainties.
+#' Convert a vector of strings of the form: c("1.2(3)E-4","1.2(3)E-2")
+#' to a matrix with two rows:
+#' 1. values,
+#' 2. uncertainties.
 #'
-#' Cincise error notation means that a floating point number is
+#' If the [errors] package is available, then an _errors_ object is
+#' returned instead (uncertainties are an attribute). In that case the
+#' dimensions of `v` are preserved on output. You can override this
+#' choice using the second argument `use.errors`.
+#'
+#' Concise error notation means that a floating point number is
 #' followed by an integer in parentheses which indicates the
 #' uncertainty of the last digits of the value:
 #' 1.2345(12) = 1.2345 ± 0.0012.
@@ -15,14 +22,18 @@
 #' @param v a character vector of numbers in concise error notation
 #' @param use.errors if TRUE, the errors package will be used to
 #'     retrun an object of type "errors" (from that package).
-#' @return a matrix of values and uncertainties (2 rows), or errors object
+#' @return either a numeric object with class [errors] (with the same
+#'     dimensions as `v`), or a numeric matrix of values and
+#'     uncertainties (2 rows), dimensions of original object are lost
 #' @useDynLib uqsa, concise
 parse_concise <- function(v,use.errors=requireNamespace("errors")){
-	w<-.Call(concise,as.character(v))
+	d <- dim(v)
+	w <- .Call(concise,as.character(v))
 	w[,grep("NA",v,ignore.case=TRUE)] <- c(NA,NA)
+
 	if (use.errors){
-		return(errors::set_errors(w[1,],w[2,]))
-	} else {
-		return(w)
+		w <- errors::set_errors(w[1,],w[2,])
+		dim(w) <- d
 	}
+	return(w)
 }
