@@ -13,14 +13,25 @@ parse_concise(v, use.errors = requireNamespace("errors"))
 retrun an object of type "errors" (from that package).}
 }
 \value{
-a matrix of values and uncertainties (2 rows), or errors object
+either a numeric object with class errors (with the same
+dimensions as \code{v}), or a numeric matrix of values and
+uncertainties (2 rows), dimensions of original object are lost
 }
 \description{
-Convert a vector of strings of the form: c("1.2(3)E-4","1.2(3)E-2") to a matrix with
-two rows: values, and uncertainties.
+Convert a vector of strings of the form: c("1.2(3)E-4","1.2(3)E-2")
+to a matrix with two rows:
+\enumerate{
+\item values,
+\item uncertainties.
+}
 }
 \details{
-Cincise error notation means that a floating point number is
+If the errors package is available, then an \emph{errors} object is
+returned instead (uncertainties are an attribute). In that case the
+dimensions of \code{v} are preserved on output. You can override this
+choice using the second argument \code{use.errors}.
+
+Concise error notation means that a floating point number is
 followed by an integer in parentheses which indicates the
 uncertainty of the last digits of the value:
 1.2345(12) = 1.2345 ± 0.0012.

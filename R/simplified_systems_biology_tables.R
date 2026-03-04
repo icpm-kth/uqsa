@@ -39,6 +39,8 @@ model_from_tsv <- function(src="."){
 #' class _errors_.
 #'
 #' @param df a data frame with a "value" column
+#' @return a named numeric vector
+#' @export
 values <- function(df){
 	if ("value" %in% colnames(df)){
 		v <- df$value
@@ -79,14 +81,22 @@ formulae <- function(df){
 
 #' Modifies a value
 #'
-#' This function does the same as `x <- x + v`, but without repeating x
-#' modify(x) <- 1 will add one to it
+#' This function does the same as `x <- x + sign*value`, but without
+#' repeating x modify(x) <- 1 will add one to it. This is a
+#' replacement for the x += 1 syntax of C. This function exists only for
+#' aesthetic reasons.
 #'
-#' This is meant to add entries in a matrix 
-#' @param x
-#' @param v
+#' Specifically, this function should work for matrices.
+#' @param x a numeric value to be modified
+#' @param i row-indices of `x` to be modified
+#' @param j column-indices of `x` to be modified
+#' @param sign modification
 #' @return `x+v`
-`modify<-` <- function(x,i,j,sign=+1,value){
+#' @examples
+#'  x <- matrix(seq(12),3,4)
+#'  modify(x,seq(2),seq(2)) <- 10
+#'  print(x)
+`modify<-` <- function(x,i=seq_along(NROW(x)),j=seq_along(NCOL(x)),sign=+1,value){
 	x[i,j] <- x[i,j] + sign*value
 	return(x)
 }
@@ -99,12 +109,15 @@ formulae <- function(df){
 #'
 #' If `x` was provided in logarithmic space, then it is an exponent to
 #' the given base (value).
-#' 
+#'
 #' @param x a numeric vector
 #' @param i a subset of values in x, defaults to all values of x
 #' @param value the base of the logarithm x was provided in
 #' @return x will be changed to be in linear space
-#' @example x <- 1; base(x) <- 10; print(x)
+#' @examples
+#'  x <- 1
+#'  base(x) <- 10
+#'  print(x)
 `base<-` <- function(x,i=seq_along(x),value){
 	x[i] <- exp(log(value)*x[i])
 	return(x)
@@ -133,6 +146,7 @@ stoichiometric_matrix <- function(m) {
 #' @param x an R object (variable with attributes)
 #' @param a the name of an attribute
 #' @return the value of the attribute: `attr(x,a)`
+#' @export
 `%@%` <- function(x,a){
 	stopifnot(x %has% a)
 	return(attr(x,a))
@@ -181,7 +195,7 @@ linear_scale <- function(x,str_scale=""){
 #' @param r a named vector of stoichiometric coefficients for the reactants
 #' @param p a named vector of stoichiometric coefficients for the products
 #' @return updated vf
-#' @example
+#' @examples
 #' Reaction <- "A + B <=> C"
 #' r <- c(A=1,B=1)
 #' p <- c(C=1)
@@ -212,10 +226,11 @@ linear_scale <- function(x,str_scale=""){
 #' Reduce the size of the system
 #'
 #' Given a stoichiometric matrix, this function performs model
-#' reduction via linear algebra operations, with [pracma].
+#' reduction via linear algebra operations, with [pracma::null].
 #' @param nu stoichiometric matrix
 #' @useDynLib uqsa, lstrtod
 #' @return a list of conservation laws
+#' @export
 conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
 	C <- pracma::rref(t(pracma::nullspace(t(nu))))
 	stopifnot(norm(C %*% nu)<1e-6)
@@ -336,14 +351,18 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 	return(ode)
 }
 
-time_series_experiment <- function(t,measurements){
-
-}
-
-#'
-#'
 #' Updates the named values of vector `v` with values mentioned in data.frame d
 #'
+#' Given a named vector, this function will create a mtarix, with
+#' several copies of the vector, with different values, dependeing on
+#' some context. The context is each row of a `data.frame`, with
+#' columns referring to the names of `v`, and values for the entries
+#' in `v` for that row's context. Example: the rows can be different
+#' experinemnts, with each experiment assigning new values to some
+#' members of `v` (but not necessarily all).
+#' @param v a named vector
+#' @param a data.frame with column names that correspond to those of `v`
+#' @return a matrix of dimension length(v) × NROW(d)
 update_values <- function(v,d){
 	if (is.null(names(v))) stop("[update_values] v must be named")
 	ret <- matrix(v,length(v),NROW(d),dimnames=list(names(v),rownames(d)))
@@ -377,6 +396,7 @@ update_values <- function(v,d){
 #' @param m the model (with data), as obtained via `model_from_tsv()`, or similar.
 #' @param CL conservation laws, obtained through conservation law analysis.
 #' @return a list of simulation instructions
+#' @export
 data_with_instructions <- function(m,o){
 	if (!is.list(m)) {
 		stop("the first argument needs to be a list of file contents.")

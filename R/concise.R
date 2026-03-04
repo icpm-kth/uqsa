@@ -5,7 +5,7 @@
 #' 1. values,
 #' 2. uncertainties.
 #'
-#' If the [errors] package is available, then an _errors_ object is
+#' If the errors package is available, then an _errors_ object is
 #' returned instead (uncertainties are an attribute). In that case the
 #' dimensions of `v` are preserved on output. You can override this
 #' choice using the second argument `use.errors`.
@@ -22,7 +22,7 @@
 #' @param v a character vector of numbers in concise error notation
 #' @param use.errors if TRUE, the errors package will be used to
 #'     retrun an object of type "errors" (from that package).
-#' @return either a numeric object with class [errors] (with the same
+#' @return either a numeric object with class errors (with the same
 #'     dimensions as `v`), or a numeric matrix of values and
 #'     uncertainties (2 rows), dimensions of original object are lost
 #' @useDynLib uqsa, concise
