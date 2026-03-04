@@ -196,18 +196,28 @@ plotTimeSeriesBase <- function(simulations, experiments, nmax=NULL, by=1, ylimit
 		time <- experiments[[i]]$outputTimes
 		n <- dim(simulations[[i]]$func)
 		if (is.null(nmax)) nmax=n[3]
-		oNames <- names(experiments[[i]]$outputValues)
+		oNames <- names(experiments[[i]]$measurements)
 		for (j in seq(n[1])){
-			o <- experiments[[i]]$data[j,] %otherwise% experiments[[i]]$outputValues[[j]]
-			e <- experiments[[i]]$stdv[j,] %otherwise% experiments[[i]]$errorValues[[j]]
-			if (is.null(ylimit) || length(ylimit)<j || any(is.na(ylimit[[j]])) || !all(is.finite(ylimit[[j]]))){
-				yl <- c(min(o-e-1e-1,na.rm=TRUE),max(o+e+1e-1,na.rm=TRUE))
+			d <- experiments[[i]]$data[j,] %otherwise% experiments[[i]]$measurements[[j]]
+			if (is.null(ylimit) || !all(is.finite(ylimit[[j]]))){
+				yl <- c(min(d-1e-1,na.rm=TRUE),max(d+1e-1,na.rm=TRUE))
 			} else {
 				yl <- ylimit[[j]]
 			}
-			p <- plot(time,o,type='p',ylim=yl,main=names(experiments)[i],ylab=oNames[j])
-			arrows(time,o,time,o+e,angle=90,length=0.01)
-			arrows(time,o,time,o-e,angle=90,length=0.01)
+			if (is(d,"errors")){ # real error bars plot
+				p <- plot(
+					errors::as.errors(time),
+					d,
+					ylim=yl,
+					main=names(experiments)[i],
+					ylab=oNames[j]
+				)
+			} else { # fake error bars plot
+				e <- experiments[[i]]$stdv[j,] %otherwise% experiments[[i]]$standardError[[j]]
+				p <- plot(time,d,type='p',ylim=yl,main=names(experiments)[i],ylab=oNames[j])
+				arrows(time,d,time,o+e,angle=90,length=0.01)
+				arrows(time,d,time,o-e,angle=90,length=0.01)
+			}
 			for (k in seq(1,nmax,by=by)){
 				y<-as.numeric(simulations[[i]]$func[j,,k])
 				lines(time,y,col=rgb(0.3,0.6,0.9,0.4));

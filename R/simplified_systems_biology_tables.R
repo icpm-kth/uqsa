@@ -361,7 +361,7 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 #' experinemnts, with each experiment assigning new values to some
 #' members of `v` (but not necessarily all).
 #' @param v a named vector
-#' @param a data.frame with column names that correspond to those of `v`
+#' @param d data.frame with column names that correspond to those of `v`
 #' @return a matrix of dimension length(v) × NROW(d)
 update_values <- function(v,d){
 	if (is.null(names(v))) stop("[update_values] v must be named")
@@ -369,7 +369,7 @@ update_values <- function(v,d){
 	for (i in seq(NCOL(ret))){
 		j <- names(v) %in% colnames(d)
 		if (any(j)){
-			ret[j,i] <- d[i,names(v)[j]]
+			ret[j,i] <- as.numeric(d[i,names(v)[j]])
 		}
 	}
 	return(ret)
@@ -417,10 +417,12 @@ data_with_instructions <- function(m,o){
 	}
 	if (all(is.finite(pmatch('Input',names(m))))){
 		C <- o$conservationLaws$Constant
-		names(C) <- o$conservationLaws$ConstantName
-		input <- update_values(
-			c(values(m$Input),C),
-			m$Experiment
+		names(C) <- rownames(o$conservationLaws)
+		conservedConstants <- update_values(C,m$Experiment)
+		rownames(conservedConstants) <- o$conservationLaws$ConstantName
+		input <- rbind(
+			update_values(values(m$Input),m$Experiment),
+			conservedConstants
 		)
 	} else {
 		input <- NULL
