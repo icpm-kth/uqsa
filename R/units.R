@@ -182,6 +182,12 @@ simple.unit <- function(u=NULL){
 	return(data.frame(scale=u.s,multiplier=u.m,exponent=u.x,kind=u.k))
 }
 
+trimmed_split <- function(a,b,fixed=TRUE,...){
+	s <- trimws(unlist(strsplit(a,"/",fixed=fixed,...)))
+	l <- nzchar(s)
+	return(s[l])
+}
+
 #' Unit Interpreter
 #'
 #' This function will try its best to interpret strings like
@@ -232,12 +238,12 @@ unit.from.string <- function(unit.str){
 	a <- gsub("[()]","",unit.str)
 	a <- gsub("molarity","mol l^-1",a);
 	if (grepl("/",unit.str)){
-		a <- ftsplit(a,"/")
+		a <- trimmed_split(a,"/")
 	}
 	n <- length(a)
 	stopifnot(n==1 || n==2)
 	for (j in 1:n){
-		b <- ftsplit(a[j],"[* ]",re=TRUE)
+		b <- trimmed_split(a[j],"[* ]",fixed=FALSE)
 		for (u in b){
 			su <- simple.unit(u)
 			if (j>1) su$exponent <- -su$exponent
