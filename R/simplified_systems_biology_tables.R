@@ -452,3 +452,37 @@ data_with_instructions <- function(m,o){
 	names(D) <- rownames(E)
 	return(D)
 }
+
+#' Transforms Experiments from Dose Response to Time Series
+#'
+#' Given a list of data.frames, as obrained via [model_from_tsv] or
+#' similar, this function searches for a data.frame called
+#' Experiment(s), there it looks up the column "type" and if any entry
+#' in that column is "Dose Response", it expands the data table for it
+#' into a series of data tables.
+#' @param m a list of data.frames, including `m$Experiment`
+unwrap_dose_response <- function(m){
+	stopifnot(any(is.finite(pmatch("Experiment",names(m)))))
+	l <- grepl("[Dd]ose ?[Rr]esponse",colnames(m$Experiment$type))
+	TS <- list()
+	DR <- m$Experiment[l,,drop=FALSE]
+	t0 <- DR$t0
+	tf <- DR$tf
+	for (i in seq(NROW(DR))){
+		d <- m[[rownames(DR)[i]]] # data table
+		ts <- vector("list",length=NROW(d))
+		for (j in seq_along(ts)){
+			ts[[j]] <- cbind(
+				data.frame(time=tf[i] %otherwise% d$time[j]),
+				d[j,,drop=FALSE]
+			)
+			rownames(ts[[j]]) <- rownames(d)[j]
+		}
+		names(ts) <- sprintf("%s_dose_%i",rownames(DR)[i],seq_along(ts))
+		TS <- c(TS,ts)
+	}
+	# which data tables have to be replaced?
+	k <- rownames(m$Experiment)[l] # the dose reponse experiments, by name
+	m <- c(m[-k],TS)
+	return(m)
+}
