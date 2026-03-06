@@ -375,64 +375,13 @@ update_values <- function(v,d){
 	return(ret)
 }
 
-#' Extract Measured Data and Simulation Experiment Instructions
-#'
-#' This function accepts the model obtained via `model_fromt_tsv` or a
-#' similar function. It finds the data tables for this model (if any
-#' are present), and finds the simulation instructions to reproduce
-#' these data sets using the model.
-#'
-#' This function requires that the files the model is stored as
-#' contains measurements (data) that can be interpreted fairly
-#' easily. Each data file needs columns that are named like the
-#' observable quantities listed in the Output table.
-#'
-#' If the data is very indirectly related to the model, then we don't
-#' interpret the data files themselves and the user needs to write a
-#' specialized likelihood function to relate the raw data in the files
-#' with something that the model does. In such cases, don't use this function.
-#'
-#' The instructions must be organised in a table called Experiment(s).
-#' @param m the model (with data), as obtained via `model_from_tsv()`, or similar.
-#' @param CL conservation laws, obtained through conservation law analysis.
-#' @return a list of simulation instructions
-#' @export
-data_with_instructions <- function(m,o){
-	if (!is.list(m)) {
-		stop("the first argument needs to be a list of file contents.")
-	}
-	# The Experiment table is orchestrating the whole simulation procedure
-	if (all(is.finite(pmatch('Experiment',names(m))))){
-		E <- m$Experiment
-	} else {
-		cat(names(m),"\n",sep=", ")
-		stop("argument must contain an item named 'Experiment(s)'.")
-	}
-	# If there isn't an output table, then all state variables must be measurable
-	if (all(is.finite(pmatch('Output',names(m))))){
-		out <- rownames(m$Output)
-		print(out)
-	} else {
-		out <- rownames(m$Compound)
-	}
-	if (all(is.finite(pmatch('Input',names(m))))){
-		C <- o$conservationLaws$Constant
-		names(C) <- rownames(o$conservationLaws)
-		conservedConstants <- update_values(C,m$Experiment)
-		rownames(conservedConstants) <- o$conservationLaws$ConstantName
-		input <- rbind(
-			update_values(values(m$Input),m$Experiment),
-			conservedConstants
-		)
-	} else {
-		input <- NULL
-	}
-	iv <- update_values(o$var,m$Experiment)
+time_series_experiments <- function(m,E,iv,input,out){
+	if (is.null(E)) return(NULL)
 	D <- vector("list",NROW(E))
 	for (i in seq(NROW(E))){
 		d <- m[[rownames(E)[i]]]
 		if (is.null(d)) {
-			message("no data provided for experiment ",i)
+			message("no data provided for experiment ",rownames(E)[i])
 		} else {
 			DATA <-parse_concise(
 				t(d[,colnames(d) %in% out, drop=FALSE]),
@@ -453,36 +402,97 @@ data_with_instructions <- function(m,o){
 	return(D)
 }
 
-#' Transforms Experiments from Dose Response to Time Series
-#'
-#' Given a list of data.frames, as obrained via [model_from_tsv] or
-#' similar, this function searches for a data.frame called
-#' Experiment(s), there it looks up the column "type" and if any entry
-#' in that column is "Dose Response", it expands the data table for it
-#' into a series of data tables.
-#' @param m a list of data.frames, including `m$Experiment`
-unwrap_dose_response <- function(m){
-	stopifnot(any(is.finite(pmatch("Experiment",names(m)))))
-	l <- grepl("[Dd]ose ?[Rr]esponse",colnames(m$Experiment$type))
-	TS <- list()
-	DR <- m$Experiment[l,,drop=FALSE]
-	t0 <- DR$t0
-	tf <- DR$tf
-	for (i in seq(NROW(DR))){
-		d <- m[[rownames(DR)[i]]] # data table
+dose_response_experiments <- function(m,E,iv,input,out){
+	if (is.null(E)) return(NULL)
+	TS <- list() # list of time series experiments
+	t0 <- E$t0
+	tf <- E$tf
+	for (i in seq(NROW(E))){
+		d <- m[[rownames(E)[i]]] # data table
 		ts <- vector("list",length=NROW(d))
+		DATA <-parse_concise(
+			t(d[,colnames(d) %in% out, drop=FALSE]),
+			use.errors=TRUE
+		)  # this is a matrix
+		rownames(DATA) <- out
 		for (j in seq_along(ts)){
-			ts[[j]] <- cbind(
-				data.frame(time=tf[i] %otherwise% d$time[j]),
-				d[j,,drop=FALSE]
-			)
-			rownames(ts[[j]]) <- rownames(d)[j]
+			inputMatrix <- update_values(input[,i],d)
+			initialStateMatrix <- update_values(iv[,i],d)
+			ts[[j]] <- list(
+				outputTimes=tf[i] %otherwise% d$time[j],
+				measurements=d[j,,drop=FALSE],
+				data=DATA[,j,drop=FALSE],
+				input=inputMatrix[,j],
+				initialState=initialStateMatrix[,j],
+				initialTime=E$t0[i]
+			) # several time series experiments per 1 dose response table
 		}
-		names(ts) <- sprintf("%s_dose_%i",rownames(DR)[i],seq_along(ts))
+		names(ts) <- sprintf("%s_dose_%i",rownames(E)[i],seq_along(ts))
 		TS <- c(TS,ts)
 	}
-	# which data tables have to be replaced?
-	k <- rownames(m$Experiment)[l] # the dose reponse experiments, by name
-	m <- c(m[-k],TS)
-	return(m)
+	return(TS)
+}
+
+#' Extract Measured Data and Simulation Experiment Instructions
+#'
+#' This function accepts the model obtained via `model_fromt_tsv` or a
+#' similar function. It finds the data tables for this model (if any
+#' are present), and finds the simulation instructions to reproduce
+#' these data sets using the model.
+#'
+#' This function requires that the files the model is stored as
+#' contains measurements (data) that can be interpreted fairly
+#' easily. Each data file needs columns that are named like the
+#' observable quantities listed in the Output table.
+#'
+#' If the data is very indirectly related to the model, then we don't
+#' interpret the data files themselves and the user needs to write a
+#' specialized likelihood function to relate the raw data in the files
+#' with something that the model does. In such cases, don't use this function.
+#'
+#' The instructions must be organised in a table called Experiment(s).
+#' @param m the model (with data), as obtained via `model_from_tsv()`, or similar.
+#' @param o the ode derived from `m`
+#' @return a list of simulation instructions
+#' @export
+data_with_instructions <- function(m,o){
+	if (!is.list(m)) {
+		stop("the first argument needs to be a list of file contents.")
+	}
+	# The Experiment table is orchestrating the whole simulation procedure
+	if (all(is.finite(pmatch('Experiment',names(m))))){
+		E <- m$Experiment
+	} else {
+		cat(names(m),"\n",sep=", ")
+		stop("argument must contain an item named 'Experiment(s)'.")
+	}
+	# If there isn't an output table, then all state variables must be measurable
+	if (all(is.finite(pmatch('Output',names(m))))){
+		out <- rownames(m$Output)
+	} else {
+		out <- rownames(m$Compound)
+	}
+	if (all(is.finite(pmatch('Input',names(m))))){
+		C <- o$conservationLaws$Constant
+		names(C) <- rownames(o$conservationLaws)
+		conservedConstants <- update_values(C,E)
+		rownames(conservedConstants) <- o$conservationLaws$ConstantName
+		input <- rbind(
+			update_values(values(m$Input),E),
+			conservedConstants
+		)
+	} else {
+		input <- NULL
+	}
+	iv <- update_values(o$var,E)
+	if ("type" %in% colnames(E)){
+		l <- grepl("[Dd]ose ?[Rr]esponse",E$type)
+	} else {
+		l <- logical(NROW(E))
+	}
+	D <- c(
+		time_series_experiments(m,E[!l,,drop=FALSE],iv[,!l,drop=FALSE],input[,!l,drop=FALSE],out),
+		dose_response_experiments(m,E[l,,drop=FALSE],iv[,l,drop=FALSE],input[,l,drop=FALSE],out)
+	)
+	return(D)
 }
