@@ -407,7 +407,8 @@ time_series_experiments <- function(m,E,iv,input,out){
 	eventSchedule <- E$event
 	tr <- m$Transformation
 	if (is.null(tr) && !is.null(eventSchedule)){
-		stop("When an 'event' column is present in the table of experiments (Experiment.tsv), then a transformation table must exist (names «Transformation.tsv») as well.")
+		stop("When an 'event' column is present in the table of experiments (Experiment.tsv), ",
+			 "then a transformation table must exist (named «Transformation.tsv») as well.")
 	}
 	for (i in seq(NROW(E))){
 		d <- m[[rownames(E)[i]]]
@@ -452,6 +453,10 @@ dose_response_experiments <- function(m,E,iv,input,out){
 	TS <- list() # list of time series experiments
 	t0 <- E$t0
 	tf <- E$tf
+	if (!is.null(E$event) && any(nzchar(E$event))){
+		print(E[,c("type","event")])
+		warning("Dose response experiments are not (yet) compatible with events.")
+	}
 	for (i in seq(NROW(E))){
 		d <- m[[rownames(E)[i]]] # data table
 		ts <- vector("list",length=NROW(d))
@@ -507,6 +512,13 @@ dose_response_experiments <- function(m,E,iv,input,out){
 data_with_instructions <- function(m,o){
 	if (!is.list(m)) {
 		stop("the first argument needs to be a list of file contents.")
+	}
+	if (is.finite(pmatch("Transformation",names(m))) && !is.null(o$conservationLaws)){
+		warninig(
+			"CONFLICT: This model seems to have event based transformations and conservation laws. ",
+			"These two concepts clash with one another if a compound is conserved, ",
+			"but also changed by scheduled events."
+		)
 	}
 	# The Experiment table is orchestrating the whole simulation procedure
 	if (all(is.finite(pmatch('Experiment',names(m))))){
