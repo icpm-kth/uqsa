@@ -28,6 +28,19 @@ model_from_tsv <- function(src="."){
 	return(m)
 }
 
+#' Get j-th column with names
+#'
+#' When indexing a matrix, rownames are lost. This function will
+#' return a column of a matrix, as a vector (dropping rank so to
+#' speak), but the vector will retain the rownames of the matrix
+#' @param m a matrix
+#' @param j a column index
+#' @return a named vector
+column <- function(m,j=1){
+	v <- m[,j]
+	names(v) <- rownames(m)
+	return(v)
+}
 
 #' Find values in a data.frame that is derived from a tsv file or similar
 #'
@@ -373,6 +386,9 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 #' @param as_type a character scalar indicating a type ('character','numeric','logical',etc.)
 #' @return a matrix of dimension length(v) × NROW(d)
 update_values <- function(v,d,as_type="numeric"){
+	if (is.matrix(v) && NCOL(v)==1) {
+		v <- column(v,1)
+	}
 	if (is.null(names(v))) stop("[update_values] v must be named")
 	if (is.null(d) || prod(dim(d))==0) stop("non-empty data.frame d is mandatory")
 	ret <- matrix(v,length(v),NROW(d),dimnames=list(names(v),rownames(d)))
@@ -410,17 +426,19 @@ time_series_experiments <- function(m,E,iv,input,out){
 			event_list <- NULL
 		} else {
 			stopifnot(!is.null(tr))
-			print(ev)
-			print(tr)
-			event_list <- list(time=ev$time,label=match(ev$transformation,rownames(tr))-1,dose=ev$dose)
+			event_list <- list(
+				time=as.double(ev$time),
+				label=as.integer(match(ev$transformation,rownames(tr))-1),
+				dose=as.double(ev$dose)
+			)
 		}
 		D[[i]] <- list(
 			measurements=cbind(time=d$time,as.data.frame(t(DATA))),
 			data=DATA,
-			input=input[,i],
-			initialTime=E$t0[i] %otherwise% min(d$time),
+			input=as.double(input[,i]),
+			initialTime=as.double(E$t0[i] %otherwise% min(d$time)),
 			initialState=iv[,i],
-			outputTimes=d$time,
+			outputTimes=as.double(d$time),
 			events=event_list
 		)
 	}
@@ -443,8 +461,12 @@ dose_response_experiments <- function(m,E,iv,input,out){
 		)  # this is a matrix
 		rownames(DATA) <- out
 		for (j in seq_along(ts)){
-			inputMatrix <- update_values(input[,i],d)
-			initialStateMatrix <- update_values(iv[,i],d)
+			u <- input[,i]
+			names(u) <- rownames(input)
+			inputMatrix <- update_values(u,d)
+			x <- iv[,i]
+			names(x) <- rownames(iv)
+			initialStateMatrix <- update_values(x,d)
 			ts[[j]] <- list(
 				outputTimes=tf[i] %otherwise% d$time[j],
 				measurements=d[j,,drop=FALSE],
