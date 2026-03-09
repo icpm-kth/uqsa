@@ -218,7 +218,7 @@ generateCodeFromFile <- function(fileList){
 #' @param body a character vector of additional content for the body of the function
 #' @param otherArgs additional arguments
 writeCFunction <- function(prefix, fName, defArgs=c("double t","const double y_[]"), retValue=NULL, defs=NULL, values=NULL, body=NULL, otherArgs="void *par", init0 = TRUE){
-	if (is.null(values)) return(character(0))
+	#if (is.null(values)) return(character(0))
 
 	if (missing(otherArgs)) {
 		pDefinition <- sprintf("\tdouble *p_=par;")
@@ -267,6 +267,11 @@ writeCFunction <- function(prefix, fName, defArgs=c("double t","const double y_[
 	))
 }
 
+## avoids double negatives
+blank <- function(ch){
+	return(!nzchar(ch))
+}
+
 eventCode <-function(odeModel){
 	if ("tf" %in% names(odeModel)){
 		C <- c(C,"",writeComment(c("Scheduled Events","EventLabel specifies which transformation to apply.","The scalar dose variable can be used in the transformation (on the right)")))
@@ -275,11 +280,12 @@ eventCode <-function(odeModel){
 		)
 		effect <- lapply(seq(NCOL(odeModel$tf)),\(i){
 			ev <- odeModel$tf[,i]
-			trivial <- names(ev) == ev
-			return(c(
-				sprintf("\tcase %s:",colnames(odeModel$tf)[i]),
-				sprintf("\t\t%s_[_%s] = %s;",affectedVector[!trivial],names(ev)[!trivial],ev[!trivial]),
-				sprintf("\tbreak;")
+			trivial <- (names(ev) == ev) | blank(ev)
+			return(
+				c(
+					sprintf("\tcase %s:",colnames(odeModel$tf)[i]),
+					sprintf("\t\t%s_[_%s] = %s;",affectedVector[!trivial],names(ev)[!trivial],ev[!trivial]),
+					sprintf("\tbreak;")
 				)
 			)
 		})
@@ -413,7 +419,8 @@ generateCode <- function(odeModel){
 			defArgs=c("double t", "double *y_"),
 			defs=c(cc,cp,cy,cx),
 			body=eventCode(odeModel),
-			otherArgs=c("double *p_","int EventLabel","double dose"))
+			otherArgs=c("double *p_","int EventLabel","double dose")
+		)
 	)
 	# event function
 	return(C)

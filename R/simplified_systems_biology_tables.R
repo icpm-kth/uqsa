@@ -346,7 +346,15 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 		CL <- NULL
 		xp <- c(formulae(m$Expression),formulae(m$Reaction))
 	}
-	ode <- list(vf=vf,par=par,var=iv,exp=xp,func=out,stoichiometric_matrix=nu,conservationLaws=CL)
+	if (is.finite(pmatch("Transformation",names(m)))){
+		tf <- character(length(iv)+length(par))
+		names(tf) <- c(names(par),names(iv))
+		tf <- update_values(tf,m$Transformation,"character")
+		attr(tf,"type") <- c(rep("par",length(par)),rep("var",length(iv)))
+	} else {
+		tf <- NULL
+	}
+	ode <- list(vf=vf,par=par,var=iv,exp=xp,func=out,stoichiometric_matrix=nu,conservationLaws=CL,tf=tf)
 	comment(ode) <- comment(m)
 	return(ode)
 }
@@ -362,32 +370,49 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 #' members of `v` (but not necessarily all).
 #' @param v a named vector
 #' @param d data.frame with column names that correspond to those of `v`
+#' @param as_type a character scalar indicating a type ('character','numeric','logical',etc.)
 #' @return a matrix of dimension length(v) × NROW(d)
-update_values <- function(v,d){
+update_values <- function(v,d,as_type="numeric"){
 	if (is.null(names(v))) stop("[update_values] v must be named")
+	if (is.null(d) || prod(dim(d))==0) stop("non-empty data.frame d is mandatory")
 	ret <- matrix(v,length(v),NROW(d),dimnames=list(names(v),rownames(d)))
 	for (i in seq(NCOL(ret))){
 		j <- names(v) %in% colnames(d)
 		if (any(j)){
-			ret[j,i] <- as.numeric(d[i,names(v)[j]])
+			ret[j,i] <- as(d[i,names(v)[j]],as_type)
 		}
 	}
 	return(ret)
 }
 
 time_series_experiments <- function(m,E,iv,input,out){
-	if (is.null(E)) return(NULL)
+	if (is.null(E) || NROW(E)==0) return(NULL)
 	D <- vector("list",NROW(E))
+	eventSchedule <- E$event
+	tr <- m$Transformation
+	if (is.null(tr) && !is.null(eventSchedule)){
+		stop("When an 'event' column is present in the table of experiments (Experiment.tsv), then a transformation table must exist (names «Transformation.tsv») as well.")
+	}
 	for (i in seq(NROW(E))){
 		d <- m[[rownames(E)[i]]]
+		ev <- m[[eventSchedule[i]]]
 		if (is.null(d)) {
 			message("no data provided for experiment ",rownames(E)[i])
+			DATA <- NULL
 		} else {
-			DATA <-parse_concise(
+			DATA <- parse_concise(
 				t(d[,colnames(d) %in% out, drop=FALSE]),
 				use.errors=TRUE
 			)  # this is a matrix
 			rownames(DATA) <- out
+		}
+		if (is.null(m[[eventSchedule[i]]])){
+			event_list <- NULL
+		} else {
+			stopifnot(!is.null(tr))
+			print(ev)
+			print(tr)
+			event_list <- list(time=ev$time,label=match(ev$transformation,rownames(tr))-1,dose=ev$dose)
 		}
 		D[[i]] <- list(
 			measurements=cbind(time=d$time,as.data.frame(t(DATA))),
@@ -395,15 +420,17 @@ time_series_experiments <- function(m,E,iv,input,out){
 			input=input[,i],
 			initialTime=E$t0[i] %otherwise% min(d$time),
 			initialState=iv[,i],
-			outputTimes=d$time
+			outputTimes=d$time,
+			events=event_list
 		)
 	}
 	names(D) <- rownames(E)
 	return(D)
 }
 
+## dose_response_experiments(m,E[l,,drop=FALSE],iv[,l,drop=FALSE],input[,l,drop=FALSE],out)
 dose_response_experiments <- function(m,E,iv,input,out){
-	if (is.null(E)) return(NULL)
+	if (is.null(E) || NROW(E)==0) return(NULL)
 	TS <- list() # list of time series experiments
 	t0 <- E$t0
 	tf <- E$tf
@@ -473,10 +500,14 @@ data_with_instructions <- function(m,o){
 		out <- rownames(m$Compound)
 	}
 	if (all(is.finite(pmatch('Input',names(m))))){
-		C <- o$conservationLaws$Constant
-		names(C) <- rownames(o$conservationLaws)
-		conservedConstants <- update_values(C,E)
-		rownames(conservedConstants) <- o$conservationLaws$ConstantName
+		if (is.null(o$conservationLaws)){
+			conservedConstants <- NULL
+		} else {
+			C <- o$conservationLaws$Constant
+			names(C) <- rownames(o$conservationLaws)
+			conservedConstants <- update_values(C,E)
+			rownames(conservedConstants) <- o$conservationLaws$ConstantName
+		}
 		input <- rbind(
 			update_values(values(m$Input),E),
 			conservedConstants
@@ -486,7 +517,7 @@ data_with_instructions <- function(m,o){
 	}
 	iv <- update_values(o$var,E)
 	if ("type" %in% colnames(E)){
-		l <- grepl("[Dd]ose ?[Rr]esponse",E$type)
+		l <- grepl("[Dd]ose[- ]?[Rr]esponse",E$type)
 	} else {
 		l <- logical(NROW(E))
 	}
