@@ -4,7 +4,7 @@
 \alias{modify<-}
 \title{Modifies a value}
 \usage{
-modify(x, i = seq_along(NROW(x)), j = seq_along(NCOL(x)), sign = +1) <- value
+modify(x, i = seq_along(NROW(x)), j = seq_along(NCOL(x)), sgn = +1) <- value
 }
 \arguments{
 \item{x}{a numeric value to be modified}
@@ -13,19 +13,24 @@ modify(x, i = seq_along(NROW(x)), j = seq_along(NCOL(x)), sign = +1) <- value
 
 \item{j}{column-indices of \code{x} to be modified}
 
-\item{sign}{modification}
+\item{sgn}{modification}
 }
 \value{
-\code{x+v}
+The value of x is modified additively ihn place: \code{x <- x+value}
 }
 \description{
 This function does the same as \code{x <- x + sign*value}, but without
-repeating x modify(x) <- 1 will add one to it. This is a
-replacement for the x += 1 syntax of C. This function exists only for
-aesthetic reasons.
+repeating \code{x}. The expression \code{modify(x) <- rnorm(length(x),0,1)}
+will add Gaussian noise to it. This is meant as a replacement for
+the \verb{x += 1} syntax of C, it exists only for aesthetic reasons.
 }
 \details{
-Specifically, this function should work for matrices.
+Specifically, this function should work for matrices, and it is
+possible to supply row and column index vectors: x\link{i,j} will be
+modified.
+
+This function is quite useful if \code{x} has a very long name,
+e.g. \code{experiments[[1]]$func}.
 }
 \examples{
  x <- matrix(seq(12),3,4)

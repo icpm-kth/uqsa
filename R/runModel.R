@@ -153,7 +153,8 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #' This is a shorter alternative to simulator.c (C backend). It also
 #' returns the log-likelihood, Fisher Information, and the gradient of
 #' the log-likelihood, under the assumption that the measurement error
-#' is Gaussian.
+#' is Gaussian. No attempt is made to parallelize this call, all
+#' simulations will be done in sequence.
 #'
 #' It returns a closure around:
 #'     - experiments,
@@ -164,7 +165,7 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #' parameters). The simulation will be done suing the rgsl backend.
 #'
 #' This version of the function does not use the parallel package at
-#' all and cannot add noise to the simulations.
+#' all and cannot add noise to the simulations (unlike simulator.c).
 #'
 #' @param experiments a list of experiments to simulate: inital
 #'     values, inputs, time vectors, initial times
@@ -176,12 +177,12 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'     parameter transformation can happen there.
 #' @param method the integration method as an integer (higher numbers
 #'     are simpler methods, lower numbers are more advanced methods, 0
-#'     = msbdf)
+#'     maps to 'msbdf')
 #' @param omit integer, omit optional return values, in this order:
 #'     Fisher Information, gradient of the log-likelihood, the
 #'     log-likelihood, output functions. Omission includes all
-#'     previous entries. 'omit = 1' omits only the Fisher Information,
-#'     omit=3, omits FI, grad-ll, and log-likelihood calculations.
+#'     previous entries. `omit = 1` omits only the Fisher Information,
+#'     `omit=3`, omits FI, grad-ll, and log-likelihood calculations.
 #' @export
 #' @return a closure that returns the model's output for a given
 #'     parameter vector, and approximate sensitivity matrices, for
@@ -197,17 +198,8 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'  #  yf <- simulate(parABC)
 simfi <- function(experiments, modelName, parMap=identity, method = 0, omit = 0){
 	N <- length(experiments)
-	if (omit<=3){ # create data matrices, if they don't exist
-		for (i in seq_along(experiments)){
-			if (!('data' %in% names(experiments[[i]])) && 'outputValues' %in% names(experiments[[i]])){
-				j <- sapply(experiments[[i]][['outputValues']],is.numeric)
-				experiments[[i]]$data = t(experiments[[i]][['outputValues']][,j])
-			}
-			if (!('stdv' %in% names(experiments[[i]])) && 'errorValues' %in% names(experiments[[i]])){
-				j <- sapply(experiments[[i]][['errorValues']],is.numeric)
-				experiments[[i]]$stdv = t(experiments[[i]][['errorValues']][,j])
-			}
-		}
+	if (omit<3){ # create data matrices, if they don't exist
+		for (E in experiments) stopifnot("data" %in% names(E))
 	}
 	return(
 		function(parABC){
@@ -238,107 +230,25 @@ simfi <- function(experiments, modelName, parMap=identity, method = 0, omit = 0)
 
 #' This creates a closure that simulates the model
 #'
-#' This is a shorter alternative to the runModel function (C backend).
+#' This function will use the [parallel::mclapply] to do the
+#' simulations simultaneously. Set `options(mc.cores=detectCores())`
+#' or a similar sensible value: `options(mc.cores=length(experiments))`
 #'
 #' It returns a closure around:
 #'     - experiments,
 #'     - the model, and
 #'     - parameter mapping
 #'
-#' The returned function depends only on parABC (the sampling
-#' parameters). The simulation will be done suing the rgsl backend.
+#' The returned function depends only on the parameter vector (or
+#' matrix if more than one simulation per experiment is desired). The
+#' parameter vector this simnulator accepts is probably derived from
+#' the sampling space of a Bayesian method (\theta), so in the list of
+#' arguments, it is called `parABC` or (parMCMC would also have been a
+#' valid choice). These sampling parameters can be mapped to values
+#' the simulator can use via `parMap`. `parModel <- parMap(parABC)`,
+#' where the ODE model is expected to work with `parModel`.
 #'
-#' @param experiments a list of experiments to simulate: inital values, inputs, time vectors, initial times
-#' @param modelName a string (with optional comment indicating an .so file) which points out the model to simulate
-#' @param parABC the parameters for the model, subject to change by parMap.
-#' @param parMap the model will be called with parMap(parABC); so any parameter transformation can happen there.
-#' @param noise boolean variable. If noise=TRUE, Gaussian noise is added to the output of the simulations. The standard
-#'              deviation of the Gaussian noise is equal to the measurement error. If noise=FALSE the output is the
-#'              deterministic solution of the ODE system. noise and sensitivity calculations are mutually exclusive.
-#' @export
-#' @return a closure that returns the model's output for a given parameter vector
-#' @examples
-#'  #  model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
-#'  #  experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
-#'  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
-#'
-#'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
-#'  #  simulate <- simulator.c(experiments, modelName,  parABC)
-#'  #  yf <- simulate(parABC)
-simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, approximateSensitivity = FALSE, method = 0){
-	require(rgsl)
-	if (noise){
-		sim <- function(parABC){
-			modelPar <- parMap(parABC)
-			yf <- unlist(
-				mclapply(
-					experiments,
-					function(EX) {
-						rgsl::r_gsl_odeiv2_outer(modelName, list(EX), as.matrix(modelPar), method=method)
-					}
-				),
-				recursive=FALSE)
-			stopifnot(length(experiments)==length(yf))
-			for(i in 1:length(experiments)){
-				out <- yf[[i]]$func
-				l <- dim(out)[2]
-				n <- ifelse(is.matrix(parABC),ncol(parABC),1)
-				sd <- as.matrix(experiments[[i]]$errorValues)
-				if(!is.null(sd)){
-					sd[is.na(sd)] <- 0.0
-					y <- mclapply(1:n, function(j) {return(out[,,j] + rnorm(l, 0, sd))})
-					yf[[i]]$func[1,,] <- do.call(cbind,y)
-				}
-			}
-			return(yf)
-		}
-	} else if (approximateSensitivity) {
-		sim <- function(parABC){
-			modelPar <- parMap(parABC)
-			yf <- unlist(
-				mclapply(
-					experiments,
-					function(EX) {
-						tryCatch(rgsl::r_gsl_odeiv2_outer_sens(modelName, list(EX), as.matrix(modelPar), method=method),
-							error = function(e) {prinmt(e); return(NA)})
-					}
-				), recursive=FALSE)
-			stopifnot(length(experiments)==length(yf))
-			return(yf)
-		}
-	} else {
-		sim <- function(parABC){
-			modelPar <- parMap(parABC)
-			yf <- unlist(
-				mclapply(
-					experiments,
-					function(EX) {
-						tryCatch(rgsl::r_gsl_odeiv2_outer(modelName, list(EX), as.matrix(modelPar), method=method),
-							error = function(e) {print(e); return(NA)})
-					}
-				), recursive=FALSE)
-			stopifnot(length(experiments)==length(yf))
-			return(yf)
-		}
-	}
-	return(sim)
-}
-
-
-#' This creates a closure that simulates the model, similar to simulator.c
-#'
-#' This is a shorter alternative to simulator.c (C backend).
-#'
-#' It returns a closure around:
-#'     - experiments,
-#'     - the model, and
-#'     - parameter mapping
-#'
-#' The returned function depends only on parABC (the sampling
-#' parameters). The simulation will be done suing the rgsl backend.
-#'
-#' This version of the function does not use the parallel package at
-#' all and cannot add noise to the simulations.
+#' Some return values are optional and omiting them saves time.
 #'
 #' @param experiments a list of experiments to simulate: inital
 #'     values, inputs, time vectors, initial times
@@ -348,77 +258,18 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 #'     parMap.
 #' @param parMap the model will be called with parMap(parABC); so any
 #'     parameter transformation can happen there.
-#' @export
-#' @return a closure that returns the model's output for a given
-#'     parameter vector, and approximate sensitivity matrices, for
-#'     each state variable, function, time-point, and parameter
-#'     vector.
-#' @examples
-#'  #  model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
-#'  #  experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
-#'  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
-#'
-#'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
-#'  #  simulate <- simc(experiments, modelName,  parABC)
-#'  #  yf <- simulate(parABC)
-simc <- function(experiments, modelName, parMap=identity, method = 0){
-	N <- length(experiments)
-	sim <- function(parABC){
-		modelPar <- parMap(parABC)
-		m <- NCOL(parABC)
-		yf <- rgsl::r_gsl_odeiv2_outer_sens(modelName, experiments, as.matrix(modelPar), method=method)
-		if (N==length(yf)) {
-			names(yf) <- names(experiments)
-		} else {
-			message(sprintf("experiments(%i) should be the same length as simulations(%i), but isn't.",length(experiments),length(yf)))
-		}
-		for (i in seq(N)){
-			for (j in seq(m)){
-				## state variables
-				l <- is.finite(yf[[i]]$stateSensitivity[[j]])
-				if (any(!l)){
-					message(sprintf("state-sensitivity approximation produced %i erroneous elements. Setting invalid elements to 0.0.",sum(!l)))
-					##print(yf[[i]]$stateSensitivity[[j]])
-					yf[[i]]$stateSensitivity[[j]][!l] <- 0.0
-				}
-				## functions
-				l <- is.finite(yf[[i]]$funcSensitivity[[j]])
-				if (any(!l)){
-					message(sprintf("function-sensitivity approximation produced %i erroneous elements. Setting invalid elements to 0.",sum(!l)))
-					##print(yf[[i]]$funcSensitivity[[j]])
-					yf[[i]]$funcSensitivity[[j]][!l] <- 0.0
-				}
-			}
-		}
-		return(yf)
-	}
-	return(sim)
-}
-
-#' This creates a closure that simulates the model, similar to simulator.c
-#'
-#' This is a shorter alternative to simulator.c (C backend).
-#'
-#' It returns a closure around:
-#'     - experiments,
-#'     - the model, and
-#'     - parameter mapping
-#'
-#' The returned function depends only on parABC/parMCMC (the sampling
-#' parameters). The simulation will be done suing the rgsl backend.
-#'
-#' This version of the function does not use the parallel package at
-#' all and cannot add noise to the simulations. It also doesn't
-#' perform sensitivty analysis.
-#'
-#' @param experiments a list of experiments to simulate: inital
-#'     values, inputs, time vectors, initial times
-#' @param modelName a string (with optional comment indicating an .so
-#'     file) which points out the model to simulate
-#' @param parABC the parameters for the model, subject to change by
-#'     parMap.
-#' @param parMap the model will be called with parMap(parABC); so any
-#'     parameter transformation can happen there.
+#' @param noise boolean variable. If `noise=TRUE`, Gaussian noise is
+#'     added to the output of the simulations. The standard deviation
+#'     of the Gaussian noise is equal to the measurement error. If
+#'     `noise=FALSE` the output is the deterministic solution of the ODE
+#'     system. noise and sensitivity calculations are mutually
+#'     exclusive.
+#' @param omit `omit=0` returns all optional return values form the
+#'     simulator, `omit=1` will not calculate the fisher information
+#'     (and thus not return it), `omit=2` will omit the gradient of
+#'     the log-likelihood, and `omit=3` will omit the likelihood
+#'     calculations alltogether. Omission is cumulative: `omit=3`
+#'     omits all the previously mentioned optional quantities.
 #' @export
 #' @return a closure that returns the model's output for a given
 #'     parameter vector
@@ -428,15 +279,69 @@ simc <- function(experiments, modelName, parMap=identity, method = 0){
 #'  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
 #'
 #'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
-#'  #  simulate <- simcf(experiments, modelName,  parABC)
+#'  #  simulate <- simulator.c(experiments, modelName,  parABC)
 #'  #  yf <- simulate(parABC)
-simcf <- function(experiments, modelName, parMap=identity, method = 0){
-	N <- length(experiments)
-	sim <- function(parABC){
-		modelPar <- parMap(parABC)
-		m <- NCOL(parABC)
-		yf <- rgsl::gsl_odeiv2_outer(name,experiments,modelPar,abs.tol,rel.tol,initial.step.size, method)
-		return(y)
+simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, omit=3, method = 0){
+	if (is.na(pmatch("data",names(experiments[[1]]))) && omit < 3){
+		warning(
+			sprintf(
+				"log-likelihood calculations were requested with omit=%i, but no data matrices are present in experiments: %s\nsetting omit to 3.",
+				omit,
+				paste(names(experiments[[1]]),collapse=", ")
+			)
+		)
+		omit <- 3 # override
+	}
+	if (noise){
+		sim <- function(parABC){
+			modelPar <- parMap(parABC)
+			yf <- unlist(
+				mclapply(
+					experiments,
+					function(EX) {
+						r_gsl_odeiv2_fi(
+							modelName,
+							list(EX),
+							as.matrix(modelPar),
+							method=method,
+							omit=min(omit,3)
+						)
+					}
+				),
+				recursive=FALSE
+			)
+			stopifnot(length(experiments)==length(yf))
+			for(i in seq_along(experiments)){
+				d <- dim(yf[[i]]$func)
+				sd <- standard_error_matrix(experiments[[i]]$data) %otherwise% experiments[[i]]$stdv
+				if (is.null(sd)) stop("failed to get standard error from experiments.")
+				sd[is.na(sd)] <- 0.0
+				yf[[i]]$func <- yf[[i]]$func + array(rnorm(prod(dim(sd)),0,sd),dim=d)
+			}
+			return(yf)
+		}
+	} else {
+		sim <- function(parABC){
+			modelPar <- parMap(parABC)
+			yf <- unlist(
+				mclapply(
+					experiments,
+					function(EX) {
+						tryCatch(
+							gsl_odeiv2_fi(
+								modelName,
+								list(EX),
+								as.matrix(modelPar),
+								method=method,
+								omit=min(omit,3)
+							),
+							error = function(e) {print(e); return(NA)}
+						)
+					}
+				), recursive=FALSE)
+			stopifnot(length(experiments)==length(yf))
+			return(yf)
+		}
 	}
 	return(sim)
 }
@@ -450,7 +355,7 @@ simcf <- function(experiments, modelName, parMap=identity, method = 0){
 #'
 #' ```
 #' modelName <- "test_ode_model"             # or some other model name
-#' comment(modelName) <- "test_ode_model.so"
+#' comment(modelName) <- "./test_ode_model.so"
 #' ```
 #'
 #' This function will not attempt to find a model file, other than in
@@ -470,7 +375,7 @@ simcf <- function(experiments, modelName, parMap=identity, method = 0){
 #'     "modelName.R". If the file name ends in .c, the c source will be
 #'     compiled to a shared library.
 #' @return modelName with an additional comment about which file to use for simulations
-checkModel <- function(modelName,modelFile=paste0(modelName,c('.so','_gvf.c')),OPTS=c("-O2")){
+checkModel <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.c')),OPTS=c("-O2")){
 	if (is.null(modelFile)) {
 		modelFile <- modelFile[file.exists(modelFile)]
 		modelFile <- modelFile[1]

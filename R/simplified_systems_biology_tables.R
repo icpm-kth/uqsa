@@ -1,6 +1,32 @@
 ## Here we define functions that are meant to replace SBtab, by making
 ## it as simple as possible, with no need to remember anything.
 
+#' Standard Error Matrix from an errors object
+#'
+#' If a matrix has an `errors` attribute, it is usually a vector.
+#' THis function returns the values of this attribute as a matrix (it
+#' preserves the dimensions of the host matrix).
+#'
+#' @param M a matrix with errors (uncertainties)
+#' @export
+#' @return A matrix similar to E, with standard error values
+#' @examples
+#' M <- matrix(seq(12),3,4,dimnames=liest(letters[seq(3)],LETTERS[seq(4)]))
+#' errors(M) <- abs(M*0.1 + 0.1)
+#' E <- standard_error_matrix(M)
+#' print(E)
+standard_error_matrix <- function(M){
+	if (is.matrix(M) && is(M,"errors")){
+		d <- dim(M)
+		E <- errors::errors(M)
+		dim(E) <- d
+		dimnames(E) <- dimnames(M)
+	} else {
+		E <- NULL
+	}
+	return(E)
+}
+
 #' model_from_tsv loads the content from a series of tsv files
 #'
 #' The argument can be either a series of tsv file-names, or a
@@ -95,22 +121,33 @@ formulae <- function(df){
 #' Modifies a value
 #'
 #' This function does the same as `x <- x + sign*value`, but without
-#' repeating x modify(x) <- 1 will add one to it. This is a
-#' replacement for the x += 1 syntax of C. This function exists only for
-#' aesthetic reasons.
+#' repeating `x`. The expression `modify(x) <- rnorm(length(x),0,1)`
+#' will add Gaussian noise to it. This is meant as a replacement for
+#' the `x += 1` syntax of C, it exists only for aesthetic reasons.
 #'
-#' Specifically, this function should work for matrices.
+#' Specifically, this function should work for matrices, and it is
+#' possible to supply row and column index vectors: x[i,j] will be
+#' modified.
+#'
+#' This function is quite useful if `x` has a very long name,
+#' e.g. `experiments[[1]]$func`.
+#'
 #' @param x a numeric value to be modified
 #' @param i row-indices of `x` to be modified
 #' @param j column-indices of `x` to be modified
-#' @param sign modification
-#' @return `x+v`
+#' @param sgn modification
+#' @return The value of x is modified additively ihn place: `x <- x+value`
+#' @export
 #' @examples
 #'  x <- matrix(seq(12),3,4)
 #'  modify(x,seq(2),seq(2)) <- 10
 #'  print(x)
-`modify<-` <- function(x,i=seq_along(NROW(x)),j=seq_along(NCOL(x)),sign=+1,value){
-	x[i,j] <- x[i,j] + sign*value
+`modify<-` <- function(x,i=seq_along(NROW(x)),j=seq_along(NCOL(x)),sgn=+1,value){
+	if (is.matrix(x)){
+		x[i,j] <- x[i,j] + sgn*value
+	} else {
+		x[i] <- x[i] + sgn*value
+	}
 	return(x)
 }
 

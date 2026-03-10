@@ -18,13 +18,13 @@ parameter transformation can happen there.}
 
 \item{method}{the integration method as an integer (higher numbers
 are simpler methods, lower numbers are more advanced methods, 0
-= msbdf)}
+maps to 'msbdf')}
 
 \item{omit}{integer, omit optional return values, in this order:
 Fisher Information, gradient of the log-likelihood, the
 log-likelihood, output functions. Omission includes all
-previous entries. 'omit = 1' omits only the Fisher Information,
-omit=3, omits FI, grad-ll, and log-likelihood calculations.}
+previous entries. \code{omit = 1} omits only the Fisher Information,
+\code{omit=3}, omits FI, grad-ll, and log-likelihood calculations.}
 
 \item{parABC}{the parameters for the model, subject to change by
 parMap.}
@@ -39,7 +39,8 @@ vector.
 This is a shorter alternative to simulator.c (C backend). It also
 returns the log-likelihood, Fisher Information, and the gradient of
 the log-likelihood, under the assumption that the measurement error
-is Gaussian.
+is Gaussian. No attempt is made to parallelize this call, all
+simulations will be done in sequence.
 }
 \details{
 It returns a closure around:
@@ -51,7 +52,7 @@ The returned function depends only on parABC (the sampling
 parameters). The simulation will be done suing the rgsl backend.
 
 This version of the function does not use the parallel package at
-all and cannot add noise to the simulations.
+all and cannot add noise to the simulations (unlike simulator.c).
 }
 \examples{
  #  model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))

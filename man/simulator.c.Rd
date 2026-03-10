@@ -9,28 +9,45 @@ simulator.c(
   modelName,
   parMap = identity,
   noise = FALSE,
-  approximateSensitivity = FALSE,
+  omit = 3,
   method = 0
 )
 }
 \arguments{
-\item{experiments}{a list of experiments to simulate: inital values, inputs, time vectors, initial times}
+\item{experiments}{a list of experiments to simulate: inital
+values, inputs, time vectors, initial times}
 
-\item{modelName}{a string (with optional comment indicating an .so file) which points out the model to simulate}
+\item{modelName}{a string (with optional comment indicating an .so
+file) which points out the model to simulate}
 
-\item{parMap}{the model will be called with parMap(parABC); so any parameter transformation can happen there.}
+\item{parMap}{the model will be called with parMap(parABC); so any
+parameter transformation can happen there.}
 
-\item{noise}{boolean variable. If noise=TRUE, Gaussian noise is added to the output of the simulations. The standard
-deviation of the Gaussian noise is equal to the measurement error. If noise=FALSE the output is the
-deterministic solution of the ODE system. noise and sensitivity calculations are mutually exclusive.}
+\item{noise}{boolean variable. If \code{noise=TRUE}, Gaussian noise is
+added to the output of the simulations. The standard deviation
+of the Gaussian noise is equal to the measurement error. If
+\code{noise=FALSE} the output is the deterministic solution of the ODE
+system. noise and sensitivity calculations are mutually
+exclusive.}
 
-\item{parABC}{the parameters for the model, subject to change by parMap.}
+\item{omit}{\code{omit=0} returns all optional return values form the
+simulator, \code{omit=1} will not calculate the fisher information
+(and thus not return it), \code{omit=2} will omit the gradient of
+the log-likelihood, and \code{omit=3} will omit the likelihood
+calculations alltogether. Omission is cumulative: \code{omit=3}
+omits all the previously mentioned optional quantities.}
+
+\item{parABC}{the parameters for the model, subject to change by
+parMap.}
 }
 \value{
-a closure that returns the model's output for a given parameter vector
+a closure that returns the model's output for a given
+parameter vector
 }
 \description{
-This is a shorter alternative to the runModel function (C backend).
+This function will use the \link[parallel:mclapply]{parallel::mclapply} to do the
+simulations simultaneously. Set \code{options(mc.cores=detectCores())}
+or a similar sensible value: \code{options(mc.cores=length(experiments))}
 }
 \details{
 It returns a closure around:
@@ -38,8 +55,16 @@ It returns a closure around:
 - the model, and
 - parameter mapping
 
-The returned function depends only on parABC (the sampling
-parameters). The simulation will be done suing the rgsl backend.
+The returned function depends only on the parameter vector (or
+matrix if more than one simulation per experiment is desired). The
+parameter vector this simnulator accepts is probably derived from
+the sampling space of a Bayesian method (\theta), so in the list of
+arguments, it is called \code{parABC} or (parMCMC would also have been a
+valid choice). These sampling parameters can be mapped to values
+the simulator can use via \code{parMap}. \code{parModel <- parMap(parABC)},
+where the ODE model is expected to work with \code{parModel}.
+
+Some return values are optional and omiting them saves time.
 }
 \examples{
  #  model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
