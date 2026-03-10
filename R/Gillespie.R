@@ -38,7 +38,7 @@ onlyNames <- function(formulaList){
 }
 
 is_empty <- function(b){
-	return(b == "NULL" | b == "_" | b == "Ø" | b == "\U00002205")
+	return(b == "NULL" | b == "_" | b == "Ø" | b == "\U00002205" | b=="")
 }
 
 #' This function returns a list of named stoichiometric vectors
@@ -85,7 +85,7 @@ stoichiometry <- function(formulaList){
 parameterConversion <- function(value, unit, stoichiometry){
 	order <- unlist(lapply(stoichiometry,sum))
 	l <- lapply(stoichiometry,length)
-	u <- lapply(unit,SBtabVFGEN::unit.from.string) # data.frames
+	u <- lapply(unit,unit.from.string) # data.frames
 	# 2 A -> B reactions
 	aa <- (l==1) & (order==2)
 	# unit conversion factor
