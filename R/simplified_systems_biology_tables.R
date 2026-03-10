@@ -476,8 +476,8 @@ dose_response_experiments <- function(m,E,iv,input,out){
 				outputTimes=as.double(tf[i] %otherwise% d$time[j]),
 				measurements=d[j,,drop=FALSE],
 				data=DATA[,j,drop=FALSE],
-				input=as.double(inputMatrix[,j]),
-				initialState=as.double(initialStateMatrix[,j]),
+				input=as.double(column(inputMatrix,j)),
+				initialState=as.double(column(initialStateMatrix,j)),
 				initialTime=as.double(E$t0[i])
 			) # several time series experiments per 1 dose response table
 		}
