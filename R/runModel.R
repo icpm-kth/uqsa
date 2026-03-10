@@ -470,13 +470,12 @@ simcf <- function(experiments, modelName, parMap=identity, method = 0){
 #'     "modelName.R". If the file name ends in .c, the c source will be
 #'     compiled to a shared library.
 #' @return modelName with an additional comment about which file to use for simulations
-checkModel <- function(modelName,modelFile=NULL,OPTS=c("-O2")){
+checkModel <- function(modelName,modelFile=paste0(modelName,c('.so','_gvf.c')),OPTS=c("-O2")){
 	if (is.null(modelFile)) {
-		modelFile <- paste0(modelName,c('.R','_gvf.c','.so'));
 		modelFile <- modelFile[file.exists(modelFile)]
-		stopifnot(!is.null(modelFile) && length(modelFile)>0)
 		modelFile <- modelFile[1]
 	}
+	stopifnot(length(modelFile)==1 && nzchar(modelFile))
 	if (grepl('[.]c$',modelFile,useBytes=TRUE)){
 		stopifnot(file.exists(modelFile))
 		message('building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).')

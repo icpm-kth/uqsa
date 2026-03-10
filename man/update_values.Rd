@@ -4,12 +4,14 @@
 \alias{update_values}
 \title{Updates the named values of vector \code{v} with values mentioned in data.frame d}
 \usage{
-update_values(v, d)
+update_values(v, d, as_type = "numeric")
 }
 \arguments{
 \item{v}{a named vector}
 
-\item{a}{data.frame with column names that correspond to those of \code{v}}
+\item{d}{data.frame with column names that correspond to those of \code{v}}
+
+\item{as_type}{a character scalar indicating a type ('character','numeric','logical',etc.)}
 }
 \value{
 a matrix of dimension length(v) × NROW(d)

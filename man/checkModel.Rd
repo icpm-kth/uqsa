@@ -4,7 +4,11 @@
 \alias{checkModel}
 \title{checkModel tries to establish the simulation file for a given model}
 \usage{
-checkModel(modelName, modelFile = NULL, OPTS = c("-O2"))
+checkModel(
+  modelName,
+  modelFile = paste0(modelName, c(".so", "_gvf.c")),
+  OPTS = c("-O2")
+)
 }
 \arguments{
 \item{modelName}{a string}

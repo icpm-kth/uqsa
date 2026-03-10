@@ -473,12 +473,12 @@ dose_response_experiments <- function(m,E,iv,input,out){
 			names(x) <- rownames(iv)
 			initialStateMatrix <- update_values(x,d)
 			ts[[j]] <- list(
-				outputTimes=tf[i] %otherwise% d$time[j],
+				outputTimes=as.double(tf[i] %otherwise% d$time[j]),
 				measurements=d[j,,drop=FALSE],
 				data=DATA[,j,drop=FALSE],
-				input=inputMatrix[,j],
-				initialState=initialStateMatrix[,j],
-				initialTime=E$t0[i]
+				input=as.double(inputMatrix[,j]),
+				initialState=as.double(initialStateMatrix[,j]),
+				initialTime=as.double(E$t0[i])
 			) # several time series experiments per 1 dose response table
 		}
 		names(ts) <- sprintf("%s_dose_%i",rownames(E)[i],seq_along(ts))
@@ -509,12 +509,12 @@ dose_response_experiments <- function(m,E,iv,input,out){
 #' @param o the ode derived from `m`
 #' @return a list of simulation instructions
 #' @export
-data_with_instructions <- function(m,o){
+experiments <- function(m,o){
 	if (!is.list(m)) {
 		stop("the first argument needs to be a list of file contents.")
 	}
 	if (is.finite(pmatch("Transformation",names(m))) && !is.null(o$conservationLaws)){
-		warninig(
+		warning(
 			"CONFLICT: This model seems to have event based transformations and conservation laws. ",
 			"These two concepts clash with one another if a compound is conserved, ",
 			"but also changed by scheduled events."
