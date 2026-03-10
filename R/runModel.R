@@ -299,7 +299,7 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 				mclapply(
 					experiments,
 					function(EX) {
-						r_gsl_odeiv2_fi(
+						gsl_odeiv2_fi(
 							modelName,
 							list(EX),
 							as.matrix(modelPar),
@@ -312,11 +312,10 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 			)
 			stopifnot(length(experiments)==length(yf))
 			for(i in seq_along(experiments)){
-				d <- dim(yf[[i]]$func)
 				sd <- standard_error_matrix(experiments[[i]]$data) %otherwise% experiments[[i]]$stdv
 				if (is.null(sd)) stop("failed to get standard error from experiments.")
 				sd[is.na(sd)] <- 0.0
-				yf[[i]]$func <- yf[[i]]$func + array(rnorm(prod(dim(sd)),0,sd),dim=d)
+				yf[[i]]$func <- yf[[i]]$func + array(rnorm(prod(dim(sd)),0,sd),dim=dim(yf[[i]]$func))
 			}
 			return(yf)
 		}
