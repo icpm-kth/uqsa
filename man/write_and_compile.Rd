@@ -22,3 +22,8 @@ This entire function can be replaced with a call to \code{cat()} and
 then compiling the written file in the system's shell (or via
 \link{checkModel})
 }
+\examples{
+cCode <- generateCode(m,o)             # a character vector
+modelName <- write_and_compile(cCode)  # commented name
+print(comment(modelName))
+}

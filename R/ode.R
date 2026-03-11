@@ -565,14 +565,7 @@ write_and_compile <- function(C){
 	} else {
 		stop("writing c-file to current working directory failed.")
 	}
-	so.file <- sprintf("./%s.so",comment(C))
-	modelName <- checkModel(comment(C),so.file)
-	if (file.exists(so.file)){
-		message(sprintf("'%s' was created.",so.file))
-	} else {
-		stop("shared library generation failed.")
-	}
-	return(modelName)
+	return(checkModel(comment(C),c.file))
 }
 
 #' Load an ODE model from a file
