@@ -553,8 +553,18 @@ generateRCode <- function(odeModel){
 #' @param C character vector with the code of this model
 #' @return the model's name with annotation about file names.
 #' @export
+#' @examples
+#' cCode <- generateCode(m,o)             # a character vector
+#' modelName <- write_and_compile(cCode)  # commented name
+#' print(comment(modelName))
 write_and_compile <- function(C){
-	cat(C,sep="\n",file=comment(C))
+	c.file <- sprintf("./%s_gvf.c",comment(C))
+	cat(C,sep="\n",file=c.file)
+	if (file.exists(c.file)){
+		message(sprintf("'%s' was created.",c.file))
+	} else {
+		stop("writing c-file to current working directory failed.")
+	}
 	so.file <- sprintf("./%s.so",comment(C))
 	modelName <- checkModel(comment(C),so.file)
 	if (file.exists(so.file)){
