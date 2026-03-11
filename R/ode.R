@@ -423,6 +423,7 @@ generateCode <- function(odeModel){
 		)
 	)
 	# event function
+	comment(C) <- comment(odeModel) %otherwise% modelName
 	return(C)
 }
 
@@ -540,6 +541,29 @@ generateRCode <- function(odeModel){
 	return(C)
 }
 
+#' Writes code to file and compiles
+#'
+#' This function accepts the code that was written by [generateCode],
+#' possibly changed by the user. It writes the contents to a c file
+#' named 'modelName_gvf.c'. This file is compiled to './modelName.so'.
+#'
+#' This entire function can be replaced with a call to `cat()` and
+#' then compiling the written file in the system's shell (or via
+#' [checkModel])
+#' @param C character vector with the code of this model
+#' @return the model's name with annotation about file names.
+#' @export
+write_and_compile <- function(C){
+	cat(C,sep="\n",file=comment(C))
+	so.file <- sprintf("./%s.so",comment(C))
+	modelName <- checkModel(comment(C),so.file)
+	if (file.exists(so.file)){
+		message(sprintf("'%s' was created.",so.file))
+	} else {
+		stop("shared library generation failed.")
+	}
+	return(modelName)
+}
 
 #' Load an ODE model from a file
 #'
