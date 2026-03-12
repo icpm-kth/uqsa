@@ -49,29 +49,6 @@ moleCountConversion <- function(unit) {
 	return(data.frame(lvpower=l, factor=f, effectively=new_unit, row.names=names(unit)))
 }
 
-#' Find the stoichiometry for a given parameter name
-#'
-#' Given a list representation of stoichiometry (list of named integer
-#' vectors), and a character vector of kinetic laws, this function
-#' returns the correct stoichiometry for the given parameter.
-#' @param p parameter name
-#' @param reactants stoichiometry of the reaction's left side
-#' @param products stoichiometry of the reaction's right side
-#' @param kinetic.law a character matrix of fluxes, column 1 for
-#'     forward reaction, column2 for backward reactions
-#' @return the stoichiometry entry that belongs to the given parameter
-find_parameter_reaction <- function(p,reactants,products,kinetic.law){
-	i <- grepl(paste("\\b",p,"\\b"),kinetic.law[,1])
-	j <- grepl(paste("\\b",p,"\\b"),kinetic.law[,2])
-	if (any(i)){
-		return(reactant[[i]])
-	}
-	if (any(j)){
-		return(products[[j]])
-	} else {
-		return(NULL)
-	}
-}
 
 #' Returns information about parameter conversion
 #'
@@ -91,11 +68,19 @@ find_parameter_reaction <- function(p,reactants,products,kinetic.law){
 #' @export
 parameterConversion <- function(unit, reactants, products, kinetic.law){
 	stopifnot(unit %has% "names")
-	order <- unlist(lapply(stoichiometry,sum))
-	l <- lapply(stoichiometry,length)
+	parST <- lapply(
+		names(unit),
+		\(x) {
+			find_parameter_reaction(x,reactants,products,kinetic.law)
+		}
+	)
+	order <- sapply(parST,sum)
+	l <- sapply(parST,length)
 	u <- lapply(unit,unit.from.string) # data.frames
+	print(u)
 	# 2 A -> B reactions
-	aa <- (l==1) & (order==2)
+	aa <- abs(order - l)
+	print(aa)
 	# unit conversion factor
 	f <- unlist(lapply(u,\(x) 10^sum(x$scale*x$exponent)))
 	# taking reaction order into account:
@@ -293,7 +278,7 @@ simple.unit <- function(u=NULL){
 }
 
 trimmed_split <- function(a,b,fixed=TRUE,...){
-	s <- trimws(unlist(strsplit(a,"/",fixed=fixed,...)))
+	s <- trimws(unlist(strsplit(a,b,fixed=fixed,...)))
 	l <- nzchar(s)
 	return(s[l])
 }

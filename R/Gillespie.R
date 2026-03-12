@@ -41,6 +41,30 @@ is_empty <- function(b){
 	return(b == "NULL" | b == "_" | b == "Ø" | b == "\U00002205" | b=="")
 }
 
+#' Find the stoichiometry for a given parameter name
+#'
+#' Given a list representation of stoichiometry (list of named integer
+#' vectors), and a character vector of kinetic laws, this function
+#' returns the correct stoichiometry for the given parameter.
+#' @param p parameter name
+#' @param reactants stoichiometry of the reaction's left side
+#' @param products stoichiometry of the reaction's right side
+#' @param kinetic.law a character matrix of fluxes, column 1 for
+#'     forward reaction, column2 for backward reactions
+#' @return the stoichiometry entry that belongs to the given parameter
+find_parameter_reaction <- function(p,reactants,products,kinetic.law){
+	i <- grepl(paste0("\\b",p,"\\b"),kinetic.law[,1])
+	j <- grepl(paste0("\\b",p,"\\b"),kinetic.law[,2])
+	if (any(i)){
+		return(reactants[[which(i)[1]]])
+	}
+	if (any(j)){
+		return(products[[which(j)[1]]])
+	} else {
+		return(NULL)
+	}
+}
+
 #' This function returns a list of named stoichiometric vectors
 #'
 #' Given an already split list of entries such as c("3 A","B"), this
@@ -131,9 +155,21 @@ parameterReaction <- function(reactionKinetic,parNames){
 	return(list(fwd=unlist(k_fwd),bwd=unlist(k_bwd)))
 }
 
+#' Initial count of reacting Compounds
+#'
+#' This function returns the molecule count apart from LV.
+#' This number must be multiplied by Avogadro's constant and volume.
+#'
+#' The multiplication with LV isn't done here, because this allows the
+#' user to change the volume of the system in the C-file, without
+#' re-generating it from a model. The same c-file can be re-used that
+#' way.
+#' @param m the model data.frames obtained from [model_from_tsv]
+#' @return numeric vector or character vector, depending on how the
+#'     initial concentration was provided
 initialCount <- function(m){
 	v <- values(m$Compound)
-	unit <- m$Compound$unit
+	unit <- units_from_table(m$Compound)
 	u <- lapply(unit,unit.from.string)
 	f <- unlist(lapply(u,\(x) 10^sum(x$scale*x$exponent)))
 	if (is.numeric(v)){
@@ -164,9 +200,9 @@ reaction_formula_from_stoichiometry <- function(reactants,products){
 #' @param Reaction a data.frame with a column named 'kinetic.law'
 flux_matrix <- function(Reaction){
 	kl <- ifelse(
-		grepl("-",KL,fixed=TRUE),
+		grepl("-",Reaction$kinetic.law,fixed=TRUE),
 		Reaction$kinetic.law,
-		paste0(KL," - 0.0")
+		paste0(Reaction$kinetic.law," - 0.0")
 	)
 	names(kl) <- rownames(Reaction)
 	return(
@@ -208,15 +244,21 @@ makeGillespieModel <- function(m){
 	names(cl) <- paste0(rownames(m$Reaction),"_fwd")
 	cr <- stoichiometry(strsplit(F[,2],"+",fixed=TRUE))
 	names(cr) <- paste0(rownames(m$Reaction),"_bwd")
-	k <- c(values(m$Parameter),values(m$Input))
-	u <- c(units_from_table(m$Parameter),units_from_table(m$Input))
+	k <- c(
+		linear_scale(values(m$Parameter),m$parameter$scale),
+		linear_scale(values(m$Input),m$Input$scale)
+	)
+	u <- c(
+		units_from_table(m$Parameter),
+		units_from_table(m$Input)
+	)
 	attr(k,"unit") <- u
 	kl <- flux_matrix(m$Reaction)
 	return(
 		list(
 			left=cl,
 			right=cr,
-			parConversion=parameterConversion(u,cl,cr,kl),
+			parConversion=moleCountConversion(u), #parameterConversion(u,cl,cr,kl),
 			initialCount=initialCount(m),
 			par=k,
 			expression=formulae(m$Expression),
@@ -316,9 +358,6 @@ spacing <- function(v,max.width=40){
 #' @return character vector with code
 #' @export
 generateGillespieCode <- function(sm,LV=6.02214076e+8){
-	RC <- trimws(unlist(strsplit(sm$kinetic.law,"-",fixed=TRUE)))
-	dim(RC) <- c(2,length(KL))
-	RC <- t(RC)
 	Definitions <- c(
 		"\t/* constants */",
 		sprintf(
@@ -330,11 +369,10 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 		),
 		"\t/* parameters */",
 		sprintf(
-			"\tdouble %s = c[_%s]; %*s /* %s */",
+			"\tdouble %s = c[_%s]; %*s /* */",
 			names(sm$par),
 			names(sm$par),
-			40 - 2*lengths(names(sm$par))," ",
-			sm$parConversion$effectively
+			40 - 2*lengths(names(sm$par))," "
 		),
 		"\t/*state variables */"
 	)
@@ -355,7 +393,7 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 		sprintf(
 			"\tdouble %s = %s;",
 			names(sm$expression),
-			replace_powers(formulae(sm$expression))
+			replace_powers(sm$expression)
 		)
 	)
 	C <- c(
@@ -378,7 +416,7 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 	"/* these enums make it possible to address vector elements by name, and automatically creates lengths for these vectors*/",
 	paste0("enum state {",paste0("_",names(sm$initialCount),collapse=", "),", numStateVariables};"),
 	paste0("enum parameter {",paste0("_",names(sm$par),collapse=", "),", numParameters};"),
-	paste0("enum reaction {",paste0("_",names(sm$kinetic.law),"_fwd",collapse=", "),", ",paste0("_",rownames(sb$Reaction),"_bwd",collapse=", "),", numReactions};"),
+	paste0("enum reaction {",paste0("_",rownames(sm$kinetic.law),"_fwd",collapse=", "),", ",paste0("_",rownames(sm$kinetic.law),"_bwd",collapse=", "),", numReactions};"),
 	paste0("enum outputFunctions {",paste0("_",names(sm$output),collapse=", "),", numFunctions};"),
 	"",
 	"int model_effects(double t, int *x, int j){",
@@ -409,7 +447,7 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 					rf
 				)
 			},
-			RC[,1],
+			sm$kinetic.law[,'fwd'],
 			rownames(sm$kinetic.law),
 			sm$reactionMultiplicityFWD,
 			reaction_formula_from_stoichiometry(sm$left,sm$right)
@@ -425,8 +463,8 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 					rf
 				)
 			},
-			RC[,2],
-			rownames(sb$Reaction),
+			sm$kinetic.law[,'bwd'],
+			rownames(sm$kinetic.law),
 			sm$reactionMultiplicityBWD,
 			reaction_formula_from_stoichiometry(sm$right,sm$left)
 		)
@@ -479,7 +517,7 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 	"/* We need to convert them.                                   */",
 	"int model_particle_count(double t, double *molarity, int *x){",
 	"\tif(!molarity || !x) return numStateVariables;",
-	sprintf("\tx[_%s] = lround(%g * molarity[_%s] * LV);",rownames(sb$Compound),ccc(sb),rownames(sb$Compound)),
+	sprintf("\tx[_%s] = lround(%g * molarity[_%s] * LV);",names(sm$initialCount),conc_to_count$factor,names(sm$initialCount)),
 	"\treturn 0;",
 	"}"
 	)

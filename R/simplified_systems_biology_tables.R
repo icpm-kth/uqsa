@@ -81,6 +81,9 @@ column <- function(m,j=1){
 #' @return a named numeric vector
 #' @export
 values <- function(df){
+	if (is.null(df)) return(NULL)
+	else stopifnot(is.data.frame(df))
+	##
 	if ("value" %in% colnames(df)){
 		v <- df$value
 	} else {
@@ -116,7 +119,7 @@ formulae <- function(df){
 	}
 	if (is.null(f)) stop("data.frame contains no formula column")
 	names(f) <- rownames(df)
-	attr(d,"unit") <- units_from_table(df)
+	attr(f,"unit") <- units_from_table(df)
 	return(f)
 }
 
@@ -199,11 +202,18 @@ stoichiometric_matrix <- function(m) {
 #' This function tries to find a similarly named attribute
 #' disregarding capitalization and using partila matching.
 #'
+#' The only way from this function to return NULL is when `x` is null
+#' (the object that supposedly has the attribute). For the purposes of
+#' this function , NULL objects are treated as optional things, and
+#' thus their attributes do not matter. Non-NULL objects that should
+#' have an attribute, but don't are considered erroneous.
+#'
 #' @param x an R object (variable with attributes)
 #' @param a the name of an attribute
 #' @return the value of the attribute: `attr(x,a)`
 #' @export
 `%@%` <- function(x,a){
+	if (is.null(x)) return(NULL)
 	stopifnot(is.character(a))
 	if (x %has% a){
 		return(attr(x,a))
