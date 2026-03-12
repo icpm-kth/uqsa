@@ -242,7 +242,7 @@ simfi <- function(experiments, modelName, parMap=identity, method = 0, omit = 0)
 #' The returned function depends only on the parameter vector (or
 #' matrix if more than one simulation per experiment is desired). The
 #' parameter vector this simnulator accepts is probably derived from
-#' the sampling space of a Bayesian method (\theta), so in the list of
+#' the sampling space of a Bayesian method θ, so in the list of
 #' arguments, it is called `parABC` or (parMCMC would also have been a
 #' valid choice). These sampling parameters can be mapped to values
 #' the simulator can use via `parMap`. `parModel <- parMap(parABC)`,

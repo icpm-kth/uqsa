@@ -1,3 +1,113 @@
+#' Get units from a data.frame column
+#'
+#' Given a data.frame this funciton retrieves the strings in the unit
+#' column named: unit, Unit, units (partial matching disregarding
+#' capitalization).
+#'
+#' The returned value uses the row names of the data.frame as names of
+#' the character vector of units.
+#' @param df a data.frame
+#' @param default default value if no unit column exists
+#' @return a character vector of units with names
+#' @export
+units_from_table <- function(df,default="1"){
+	stopifnot(is.data.frame(df))
+	pm <- pmatch("unit",tolower(colnames(df)))
+	if (any(is.finite(pm))){
+		u <- df[[pm]]
+	} else {
+		u <- rep(default,NROW(df))
+	}
+	names(u) <- rownames(df)
+	return(u)
+}
+
+#' This function calculates the conversion from moles to particle counts
+#'
+#' Given some molar quantity with a unit (character vector), this function
+#' calculates a conversion factor based on the SI prefixes used, as
+#' well as what the exponent of LV (Avogadro's constant * Volume)
+#' applies in this case.
+#'
+#' @param unit character vector, will be parsed for SI prefixes and to
+#'     determine the mole component
+#' @return a data.frame with an lvpower and factor component, with
+#'     names like the names of the unit vector
+moleCountConversion <- function(unit) {
+	u <- lapply(unit,unit.from.string)
+	f <- sapply(u,\(x) with(x,10^sum(scale*exponent)))
+	l <- sapply(u,\(x) with(x,sum(exponent*(kind=='mole'))))
+	new_unit <- sapply(
+		u,
+		function(x) {
+			x$scale<-0
+			l <- na.omit(pmatch(c("dimensionless","mole"),x$kind))
+			if (length(l) > 0 && all(is.finite(l))) x <- x[-l,]
+			return(unit_as_character(x))
+		}
+	)
+	return(data.frame(lvpower=l, factor=f, effectively=new_unit, row.names=names(unit)))
+}
+
+#' Find the stoichiometry for a given parameter name
+#'
+#' Given a list representation of stoichiometry (list of named integer
+#' vectors), and a character vector of kinetic laws, this function
+#' returns the correct stoichiometry for the given parameter.
+#' @param p parameter name
+#' @param reactants stoichiometry of the reaction's left side
+#' @param products stoichiometry of the reaction's right side
+#' @param kinetic.law a character matrix of fluxes, column 1 for
+#'     forward reaction, column2 for backward reactions
+#' @return the stoichiometry entry that belongs to the given parameter
+find_parameter_reaction <- function(p,reactants,products,kinetic.law){
+	i <- grepl(paste("\\b",p,"\\b"),kinetic.law[,1])
+	j <- grepl(paste("\\b",p,"\\b"),kinetic.law[,2])
+	if (any(i)){
+		return(reactant[[i]])
+	}
+	if (any(j)){
+		return(products[[j]])
+	} else {
+		return(NULL)
+	}
+}
+
+#' Returns information about parameter conversion
+#'
+#' Given parameters of a reaction kinetic coefficient model with
+#' concentrations as state variables, this function returns the
+#' parameters of the stochastic version of that model
+#'
+#' For this function, it is important that "2 A -> B" is not written
+#' as "A + A -> B" (this may be fixed later).
+#'
+#' @param unit of the kinetic parameters (a character vector), named.
+#' @param reactants a list of the stoichiometric constants of each
+#'     reaction, a list of integer vectors
+#' @param products a list of the stoichiometric constants of each
+#'     reaction, a list of integer vectors
+#' @return a vector of parameter conversion factors
+#' @export
+parameterConversion <- function(unit, reactants, products, kinetic.law){
+	stopifnot(unit %has% "names")
+	order <- unlist(lapply(stoichiometry,sum))
+	l <- lapply(stoichiometry,length)
+	u <- lapply(unit,unit.from.string) # data.frames
+	# 2 A -> B reactions
+	aa <- (l==1) & (order==2)
+	# unit conversion factor
+	f <- unlist(lapply(u,\(x) 10^sum(x$scale*x$exponent)))
+	# taking reaction order into account:
+	CF <- data.frame(
+		order=order,
+		lvpower=(1-order),
+		factor=f*(1+aa),
+		row.names=names(unit)
+	)
+	return(CF)
+}
+
 #' find unit category
 #'
 #' This function reads a unit, without SI prefix, and returns a string

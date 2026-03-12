@@ -91,6 +91,7 @@ values <- function(df){
 		v <- parse_concise(v)
 	}
 	names(v) <- rownames(df)
+	attr(v,"unit") <- units_from_table(df)
 	return(v)
 }
 
@@ -115,6 +116,7 @@ formulae <- function(df){
 	}
 	if (is.null(f)) stop("data.frame contains no formula column")
 	names(f) <- rownames(df)
+	attr(d,"unit") <- units_from_table(df)
 	return(f)
 }
 
@@ -193,13 +195,23 @@ stoichiometric_matrix <- function(m) {
 #'
 #' This function differs from `rlang::%@%` in that it stops if the
 #' attribute doesn't exist.
+#'
+#' This function tries to find a similarly named attribute
+#' disregarding capitalization and using partila matching.
+#'
 #' @param x an R object (variable with attributes)
 #' @param a the name of an attribute
 #' @return the value of the attribute: `attr(x,a)`
 #' @export
 `%@%` <- function(x,a){
-	stopifnot(x %has% a)
-	return(attr(x,a))
+	stopifnot(is.character(a))
+	if (x %has% a){
+		return(attr(x,a))
+	} else if (any(is.finite(pmatch(tolower(a),tolower(names(attributes(x))))))){
+		return(attributes(x)[[pmatch(tolower(a),tolower(names(attributes(x))))]])
+	} else {
+		stop(sprintf("Attribute «%s» not found in the list of objects's attributes: %s.\n",a,paste0(names(attributes(x)),collapse=", ")))
+	}
 }
 
 #' Interprets a character vector as names of logarithms
