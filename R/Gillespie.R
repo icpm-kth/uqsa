@@ -236,7 +236,7 @@ makeGillespieModel <- function(m){
 	F <- matrix(
 		c(
 			sub("*"," ",trimws(m$Reaction$reactants),fixed=TRUE),
-			sub("*"," ",trimws(m$Reaction$reactants),fixed=TRUE)
+			sub("*"," ",trimws(m$Reaction$products),fixed=TRUE)
 		),
 		ncol=2
 	)
@@ -276,18 +276,32 @@ reactionEffect <- function(sm){
 		unlist(
 			c(
 				mapply(
-				\(x,y,n) c(sprintf("\tcase _%s:",n),sprintf("\t\tx[_%s] -= %i;",names(x),x),sprintf("\t\tx[_%s] += %i;",names(y),y),sprintf("\t\tbreak;")),
-				sm$left,
-				sm$right,
-				names(sm$left),
-				SIMPLIFY=FALSE
+					\(x,y,n) {
+						c(
+							sprintf("\tcase _%s:",n),
+							sprintf("\t\tx[_%s] -= %i;",names(x),x),
+							sprintf("\t\tx[_%s] += %i;",names(y),y),
+							sprintf("\t\tbreak;")
+						)
+					},
+					sm$left,
+					sm$right,
+					names(sm$left),
+					SIMPLIFY=FALSE
 				),
 				mapply(
-				\(x,y,n) c(sprintf("\tcase _%s:",n),sprintf("\t\tx[_%s] -= %i;",names(x),x),sprintf("\t\tx[_%s] += %i;",names(y),y),sprintf("\t\tbreak;")),
-				sm$right,
-				sm$left,
-				names(sm$right),
-				SIMPLIFY=FALSE
+					\(x,y,n) {
+						c(
+							sprintf("\tcase _%s:",n),
+							sprintf("\t\tx[_%s] -= %i;",names(x),x),
+							sprintf("\t\tx[_%s] += %i;",names(y),y),
+							sprintf("\t\tbreak;")
+						)
+					},
+					sm$right,
+					sm$left,
+					names(sm$right),
+					SIMPLIFY=FALSE
 				)
 			)
 		)
