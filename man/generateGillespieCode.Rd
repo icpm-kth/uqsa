@@ -4,13 +4,12 @@
 \alias{generateGillespieCode}
 \title{Generate C Code to solve a model stochastically}
 \usage{
-generateGillespieCode(sb, LV = 602214076)
+generateGillespieCode(sm, LV = 602214076)
 }
 \arguments{
-\item{sb}{SBtab list of data-frames, as returned by
-\verb{SBtabVFGEN::sbtab_from_*()} functions}
-
 \item{LV}{Avogadro's Constant * volume (in litres)}
+
+\item{sb}{a stochatsic Gillespie model obtained via \code{makeGillespieModel}}
 }
 \value{
 character vector with code

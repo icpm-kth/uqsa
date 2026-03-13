@@ -383,10 +383,11 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 		),
 		"\t/* parameters */",
 		sprintf(
-			"\tdouble %s = c[_%s]; %*s /* */",
+			"\tdouble %s = c[_%s]; %*s /* originally: %s */",
 			names(sm$par),
 			names(sm$par),
-			40 - 2*lengths(names(sm$par))," "
+			40 - 2*lengths(names(sm$par))," ",
+			sm$par %@% "unit"
 		),
 		"\t/*state variables */"
 	)
@@ -497,11 +498,10 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 	"\tif(!x) return numStateVariables;",
 	Definitions,
 	sprintf(
-		"\tx[_%s] = lround(%s * LV); %*s /* %s %s */",
+		"\tx[_%s] = lround(%s * LV); %*s /* originally in %s */",
 		names(sm$initialCount),
 		as.character(sm$initialCount),
 		40-nchar(as.character(sm$initialCount))-nchar(names(sm$initialCount))," ",
-		as.character(sm$initialCount),
 		sm$initialCount %@% "unit"
 	),
 	"\treturn 0;",

@@ -4,10 +4,10 @@
 \alias{makeGillespieModel}
 \title{makeGillespieModel interprets the provided SBtab file as a stochastic model}
 \usage{
-makeGillespieModel(sb)
+makeGillespieModel(m)
 }
 \arguments{
-\item{sb}{list of data.frames}
+\item{m}{list of data.frames, obtained via \code{model_from_tsv()}}
 
 \item{LV}{Avogadro's constant L multiplied by the system's volume V.}
 }

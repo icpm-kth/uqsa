@@ -7,7 +7,9 @@
 scaleParameter(f, x, name, arg = "par")
 }
 \arguments{
-\item{f}{the value of the scaling factor (a numeric vector), derived from the unit of the knietic parameter and stoichiometry.}
+\item{f}{the value of the scaling factor (a numeric vector),
+derived from the unit of the kinetic parameter and
+stoichiometry.}
 
 \item{x}{the reaction order based exponent of LV}
 

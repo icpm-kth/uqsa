@@ -18,3 +18,13 @@ the value of the attribute: \code{attr(x,a)}
 This function differs from \verb{rlang::\%@\%} in that it stops if the
 attribute doesn't exist.
 }
+\details{
+This function tries to find a similarly named attribute
+disregarding capitalization and using partila matching.
+
+The only way from this function to return NULL is when \code{x} is null
+(the object that supposedly has the attribute). For the purposes of
+this function , NULL objects are treated as optional things, and
+thus their attributes do not matter. Non-NULL objects that should
+have an attribute, but don't are considered erroneous.
+}
