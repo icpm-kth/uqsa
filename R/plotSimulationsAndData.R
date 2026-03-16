@@ -15,18 +15,18 @@ ggplotTimeSeries <- function(simulations, experiments, nrow=NULL, ncol=NULL, plo
 	num.experiments <- length(simulations)
 
 	stopifnot(length(simulations) == length(experiments))
-	num.out.funcs <- NCOL(experiments[[1]]$outputValues)
+	num.out.funcs <- NCOL(experiments[[1]]$measurements)
 	p <- list()
 	for(i in seq(length(experiments))){
 		N <- dim(simulations[[i]]$func)[3]
-		oNames <- names(experiments[[i]][["outputValues"]])
+		oNames <- names(experiments[[i]][["measurements"]])
 		if ("measurementTimes" %in% names(experiments[[i]])){
 			t_ <- experiments[[i]][["measurementTimes"]]
 		} else {
 			t_ <- experiments[[i]][["outputTimes"]]
 		}
 		for(j in seq(num.out.funcs)){
-			df.experiments <- data.frame(t=t_, y=experiments[[i]][["outputValues"]][[j]])
+			df.experiments <- data.frame(t=t_, y=experiments[[i]][["measurements"]][[j]])
 			y <- as.numeric(simulations[[i]]$func[j,,])
 			df.simulations <- data.frame(t=rep(experiments[[i]][["outputTimes"]],N), y=y, sim=rep(seq(N),each=length(experiments[[i]][["outputTimes"]])))
 			p[[i]] <-
@@ -77,7 +77,7 @@ ggplotTimeSeries <- function(simulations, experiments, nrow=NULL, ncol=NULL, plo
 ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, type="boxes", plot.states=TRUE, ttf=identity, xl="t", yl.func=NULL, yl.state=NULL, MLE=1){
 	num.experiments <- length(experiments)
 	stopifnot(num.experiments == length(simulations))
-	num.of.funcs <- NCOL(experiments[[1]]$outputValues)
+	num.of.funcs <- NCOL(experiments[[1]]$measurements)
 	num.of.vars <- NROW(simulations[[1]]$state)
 	if (missing(ttf)){
 		t_txt <- xl
@@ -97,7 +97,7 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 
 	for(i in seq(length(experiments))){
 		N <- dim(simulations[[i]]$func)[3]
-		oNames <- names(experiments[[i]][["outputValues"]])
+		oNames <- names(experiments[[i]][["measurements"]])
 		if (is.null(var.names) && "initialState" %in% names(experiments[[i]])){
 			xNames <- names(experiments[[i]][["initialState"]])
 		} else if (is.null(var.names)){
@@ -106,7 +106,7 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 			xNames <- var.names
 		}
 		for(j in seq(num.of.funcs)){
-			z <- experiments[[i]][["outputValues"]][[j]]
+			z <- experiments[[i]][["measurements"]][[j]]
 			dz <- experiments[[i]][["errorValues"]][[j]]
 			if ("measurementTimes" %in% names(experiments[[i]])){
 				t_ <- ttf(experiments[[i]][["measurementTimes"]])
@@ -244,21 +244,21 @@ plotTimeSeries <- function(simulations, experiments, show.plot = TRUE){
   num.experiments <- length(simulations)
   num.simulations <- dim(simulations[[1]]$func)[3]
   stopifnot(num.experiments == length(experiments))
-  num.out.funcs <- dim(experiments[[1]]$outputValues)[2]
+  num.out.funcs <- dim(experiments[[1]]$measurements)[2]
 
   p <- list()
 
   for(i in 1:num.experiments){
     experiment <- experiments[[i]]
     for(output.idx in 1:num.out.funcs){
-      df.experiments <- data.frame(t=experiment[["outputTimes"]], y=experiment[["outputValues"]][[output.idx]])
+      df.experiments <- data.frame(t=experiment[["outputTimes"]], y=experiment[["measurements"]][[output.idx]])
       y <- c(simulations[[i]]$func[output.idx,,])
       df.simulations <- data.frame(t=rep(experiment[["outputTimes"]],num.simulations), y=y, sim=rep(1:num.simulations,each=length(experiment[["outputTimes"]])))
       p[[i]] <-
         ggplot(df.simulations,aes(x=t, y=y, group=sim)) +
         geom_line(color="blue", alpha = 0.1, size=1.5) +
         geom_point(data=df.experiments, aes(x=t, y=y), inherit.aes=FALSE) +
-        ggtitle(paste0("Experiment: ", names(experiments[i]), "\nOutput: ", names(experiment[["outputValues"]])[output.idx]))
+        ggtitle(paste0("Experiment: ", names(experiments[i]), "\nOutput: ", names(experiment[["measurements"]])[output.idx]))
     }
   }
   if(show.plot)  show(do.call(gridExtra::grid.arrange,p))
@@ -303,10 +303,10 @@ ggplotDoseResponse <- function(simulations, experiments, dose, show.plot = TRUE)
   num.experiments <- length(simulations)
   stopifnot(num.experiments == length(experiments))
   num.simulations <- dim(simulations[[1]]$func)[3]
-  num.out.funcs <- dim(experiments[[1]]$outputValues)[2]
+  num.out.funcs <- dim(experiments[[1]]$measurements)[2]
   p <- list()
   for(j in 1:num.out.funcs){
-    y.exp <- sapply(experiments, function(e) e$outputValues[[j]])
+    y.exp <- sapply(experiments, function(e) e$measurements[[j]])
     E.data.frame.exp <- data.frame(x=dose,y=y.exp)
     y.sim <- sapply(simulations, function(o) o$func[j,1,])
     E.data.frame.sim <- data.frame(x=(rep(dose,each=num.simulations)),y=c(y.sim))
@@ -316,7 +316,7 @@ ggplotDoseResponse <- function(simulations, experiments, dose, show.plot = TRUE)
     p[[j]] <-  p[[j]] +
       geom_point(data=E.data.frame.exp, aes(x=x,y=y)) +
       geom_point(color="red") +
-      labs(x = comment(dose), y = names(experiments[[1]][["outputValues"]])[j])
+      labs(x = comment(dose), y = names(experiments[[1]][["measurements"]])[j])
   }
   return(p)
 }

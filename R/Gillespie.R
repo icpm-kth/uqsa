@@ -566,9 +566,7 @@ simstoch <- function(experiments, model.so, parMap=identity){
 		return(NULL)
 	}
 	for (i in seq_along(experiments)){
-		if ("input" %in% names(experiments[[i]])){
-			cat(sprintf("Experiment %i, input has length: %i\n",i,length(experiments[[i]]$input)))
-		} else {
+		if (!("input" %in% names(experiments[[i]]))){
 			warning("experiments have no input parameters, defaults to numeric(0).")
 			experiments[[i]]$input <- numeric(0)
 		}

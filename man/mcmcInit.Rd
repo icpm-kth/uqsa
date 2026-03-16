@@ -8,8 +8,8 @@ mcmcInit(
   beta,
   parMCMC,
   simulate,
-  logLikelihood,
-  dprior,
+  logLikelihood = ll,
+  dprior = function(x) prod(rnorm(x)),
   gradLogLikelihood = NULL,
   gprior = NULL,
   fisherInformation = NULL

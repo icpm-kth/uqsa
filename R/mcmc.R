@@ -67,7 +67,7 @@ return(paste(
 #' @param fisherInformation a function that calculates the Fisher Information matrix
 #' @return the same starting parameter vector, but with attributes.
 #' @export
-mcmcInit <- function(beta,parMCMC,simulate,logLikelihood,dprior,gradLogLikelihood=NULL,gprior=NULL,fisherInformation=NULL){
+mcmcInit <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rnorm(x)),gradLogLikelihood=NULL,gprior=NULL,fisherInformation=NULL){
 	simulations <- simulate(parMCMC)
 	attr(parMCMC,"beta") <- beta
 	attr(parMCMC,"simulations") <- simulations
@@ -102,42 +102,6 @@ change_temperature <- function(b1,ll1,b2,ll2){
 	return(r<a)
 }
 
-#' Swap the end-points of two Markov chains
-#'
-#' This is a conditional swap, according to the rules of parallel
-#' tempering. This function is only useful if the Markov chains have
-#' returned to the global scope and one process will make the decision
-#' and perform the swap, i.e.: the current state of each chain is
-#' locally available.
-#'
-#' @export
-#' @param parMCMC a list of Markov chain end points, each entry
-#'     annotated with a temperature attribute
-#'     `attr(parMCMC[[i]],"beta")`
-#' @return a list with some members swapped
-swap_points_locally <- function(parMCMC){
-	nChains <- length(parMCMC)
-	L <- sapply(parMCMC,\(p) return(attr(p,"logLikelihood")))
-	B <- sapply(parMCMC,\(p) return(attr(p,"beta")))
-	H <- sapply(parMCMC,\(p) return(attr(p,"stepSize")))
-	for (j in seq_along(L)){
-		for (i in seq_along(L)) {
-			a <- exp((B[i]-B[j])*(L[j]-L[i]))
-			r <- runif(1)
-			if (r<a){
-				X <- parMCMC[[j]]
-				parMCMC[[j]] <- parMCMC[[i]]
-				parMCMC[[i]] <- X
-				# update all attributes
-				attr(parMCMC[[i]],"beta") <- B[i]
-				attr(parMCMC[[j]],"beta") <- B[j]
-				attr(parMCMC[[i]],"stepSize") <- H[i]
-				attr(parMCMC[[j]],"stepSize") <- H[j]
-			}
-		}
-	}
-	return(parMCMC)
-}
 
 #' Markov Chain Monte Carlo
 #'
@@ -160,6 +124,7 @@ swap_points_locally <- function(parMCMC){
 mcmc <- function(update){
 	M <- function(parMCMC,N=1000,eps=1e-4){
 		sample <- matrix(nrow=N,ncol=length(parMCMC))
+		colnames(sample) <- names(parMCMC)
 		ll <- numeric(N)
 		b <- numeric(N)
 		a <- logical(N)
@@ -181,94 +146,6 @@ mcmc <- function(update){
 	comment(M) <- "function(parMCMC,N=1000,eps=1e-4) where eps is the step-size (numeric scalar)"
 	return(M)
 }
-
-#' Communicate with other ranks and swap beta
-#'
-#' Given a current log-likelihood, temperature and step-size, this
-#' decides whether to send or receive the same variables from a
-#' neighboring process and swap temperatures with them.
-#'
-#' @param i MCMC iteration
-#' @param B inverse temperature (parallel tempering)
-#' @param LL log-likelihood value of current point
-#' @param H algorithm's step size (often called epsilon in literature)
-#' @param r MPI rank
-#' @param comm MPI communicator
-#' @param cs MPI comm size
-#' @export
-Rmpi_swap_temperatures <- function(i, B, LL, H, r, comm, cs){
-	if (r %% 2 == i %% 2) { # alternating, to swap with r-1 or r+1
-		Rmpi::mpi.send.Robj(LL, dest=(r+1)%%cs, tag=1, comm=comm)
-		Rmpi::mpi.send.Robj(B, dest=(r+1)%%cs, tag=2, comm=comm)
-		Rmpi::mpi.send.Robj(H, dest=(r+1)%%cs, tag=4, comm=comm)
-	} else { # get e(x)ternal objects, from the other chain
-		xLL <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=1, comm=comm)
-		xB <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=2, comm=comm)
-		xH <- Rmpi::mpi.recv.Robj(source=(r-1) %% cs, tag=4, comm=comm)
-	}
-	if (r %% 2 == i %% 2){
-		B <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=3, comm=comm)
-		H <- Rmpi::mpi.recv.Robj(source=(r+1)%%cs, tag=5, comm=comm)
-	} else if(change_temperature(B,LL,xB,xLL)){
-		Rmpi::mpi.send.Robj(B,dest=(r-1) %% cs, tag=3, comm=comm)
-		Rmpi::mpi.send.Robj(H,dest=(r-1) %% cs, tag=5, comm=comm)
-		swaps <- swaps + 1
-		B <- xB
-		H <- xH
-	} else {
-		Rmpi::mpi.send.Robj(xB,dest=(r-1) %% cs, tag=3, comm=comm)
-		Rmpi::mpi.send.Robj(xH,dest=(r-1) %% cs, tag=5, comm=comm)
-	}
-	return(list(B,LL,H))
-}
-
-#' Communicate with other ranks and swap beta
-#'
-#' Given a current log-likelihood, temperature and step-size, this
-#' decides whether to send or receive the same variables from a
-#' neighboring process and swap temperatures with them.
-#'
-#' Only one of the two communicating ranks is allowed to make the
-#' decision to swap, because a random variable is used to make this
-#' decision. Which rank will make this swap decision needs to be
-#' determined somehow. Currently we alternate this reposibility based
-#' on the current iteration `i`.
-#'
-#' @param i MCMC iteration
-#' @param B inverse temperature (parallel tempering)
-#' @param LL log-likelihood value of current point
-#' @param H algorithm's step size (often called epsilon in literature)
-#' @param r MPI rank
-#' @param comm MPI communicator
-#' @param cs MPI comm size
-#' @export
-pbdMPI_swap_temperatures <- function(i, B, LL, H, r, comm, cs){
-	## 1. either send LL, B, and H to neighbor or receive them
-	if (r %% 2 == i %% 2) { # alternating, to swap with r-1 or r+1
-		pbdMPI::send(LL, rank.dest=(r+1)%%cs, tag=1, comm=comm)
-		pbdMPI::send(B, rank.dest=(r+1)%%cs, tag=2, comm=comm)
-		pbdMPI::send(H, rank.dest=(r+1)%%cs, tag=4, comm=comm)
-	} else { # get e(x)ternal objects, from the other chain
-		xLL <- pbdMPI::recv(rank.source=(r-1) %% cs, tag=1, comm=comm)
-		xB <- pbdMPI::recv(rank.source=(r-1) %% cs, tag=2, comm=comm)
-		xH <- pbdMPI::recv(rank.source=(r-1) %% cs, tag=4, comm=comm)
-	}
-	## 2. either make a decision on swapping or accept the other rank's decision
-	if (r %% 2 == i %% 2){
-		B <- pbdMPI::recv(rank.source=(r+1)%%cs, tag=3, comm=comm)
-		H <- pbdMPI::recv(rank.source=(r+1)%%cs, tag=5, comm=comm)
-	} else if(change_temperature(B,LL,xB,xLL)){
-		pbdMPI::send(B,rank.dest=(r-1) %% cs, tag=3, comm=comm)
-		pbdMPI::send(H,rank.dest=(r-1) %% cs, tag=5, comm=comm)
-		B <- xB
-		H <- xH
-	} else {
-		pbdMPI::send(xB,rank.dest=(r-1) %% cs, tag=3, comm=comm)
-		pbdMPI::send(xH,rank.dest=(r-1) %% cs, tag=5, comm=comm)
-	}
-	return(list(B=B,LL=LL,H=H))
-}
-
 #' Broadcast to other ranks and swap temperatures with any of them
 #'
 #' Using this function, at most two ranks will swap.
@@ -337,6 +214,7 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 		r <- attr(comm,"rank") # 0..n-1
 		cs  <- attr(comm,"size")
 		sample <- matrix(nrow=N,ncol=length(parMCMC))
+		colnames(sample) <- names(parMCMC)
 		ll <- numeric(N)
 		b <- numeric(N)
 		a <- logical(N)
@@ -630,15 +508,15 @@ rmvnorm <- function(mean,precision){
 smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
 	stopifnot(parGiven %has% c("fisherInformation","gradLogLikelihood","gradLogPrior"))
 	stopifnot(!is.null(beta) && !any(is.na(beta)) && is.finite(beta))
-	fiGiven <- attr(parGiven,"fisherInformation")
-	gradLGiven <- attr(parGiven,"gradLogLikelihood")
-	gradPGiven <- attr(parGiven,"gradLogPrior")
+	fiGiven <- parGiven %@% "fisherInformation"
+	gradLGiven <- parGiven %@% "gradLogLikelihood"
+	gradPGiven <- parGiven %@% "gradLogPrior"
 	G0 <- fisherInformationPrior
 	G <- (beta^2*fiGiven)+G0
 	stopifnot(!is.null(G) && is.matrix(G))
 	#cat("is.invertible(G): ",is.invertible(G), " (rcond: ",rcond(G),").\n")
 	if (isTRUE(is.invertible(G))){
-		g <- solve(G,beta*gradLGiven+gradPGiven)
+		g <- solve(G,as.numeric(beta*gradLGiven+gradPGiven))
 		#Sigma <- solve(G)
 	} else {
 		stopifnot(is.matrix(G0) && isSymmetric(G0))
@@ -667,9 +545,9 @@ smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
 smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior,eps=1e-2){
 	stopifnot(parGiven %has% c("fisherInformation","gradLogLikelihood","gradLogPrior"))
 	stopifnot(!is.null(beta) && !any(is.na(beta)) && is.finite(beta))
-	fiGiven <- attr(parGiven,"fisherInformation")
-	gradLGiven <- attr(parGiven,"gradLogLikelihood")
-	gradPGiven <- attr(parGiven,"gradLogPrior")
+	fiGiven <- parGiven %@% "fisherInformation"
+	gradLGiven <- parGiven %@% "gradLogLikelihood"
+	gradPGiven <- parGiven %@% "gradLogPrior"
 	G0 <- fisherInformationPrior
 	G <- (beta^2*fiGiven)+G0
 	stopifnot(!is.null(G) && is.matrix(G))
@@ -768,7 +646,93 @@ metropolisUpdate <- function(simulate, experiments, logLikelihood, dprior, Sigma
 	return(U)
 }
 
-smmalaUpdate <- function(simulate, experiments, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior, parAcceptable=\(p) {TRUE}){
+#' Default Log-likelihood Function
+#'
+#' Extracts the `logLikelihood` value from the simulations attribute
+#' of the parMCMC argument, requires:
+#' - parMCMC has simulations attribute
+#' - simulations list includes logLikelihood values
+#'
+#' This function will take the ll-values claculated by the ode solver
+#' in this package, and return the sum of those values over all
+#' experiments. The ll-value the simulator returns is calculated with
+#' the assumption of a normal distribution on measurement errors.
+#'
+#' @param parMCMC a numeric vector, with attributes for MCMC, specifically smmala
+#' @return a scalar value: log(likelihood(data|parMCMC))
+#' @export
+ll <- function(parMCMC){
+	y <- parMCMC %@% "simulations"
+	return(sum(sapply(y,\(sim) sim$logLikelihood)))
+}
+
+#' Default Fisher Information Function
+#'
+#' Extracts the `FisherInformation` values from the simulations attribute
+#' of the parMCMC argument, requires:
+#' - parMCMC has simulations attribute
+#' - simulations list includes Fisher-Information values
+#'
+#' This function will take the fi-values claculated by the ode solver
+#' in this package, and return the sum of those values over all
+#' experiments. The gll-value the simulator returns is calculated with
+#' the assumption of a normal distribution on measurement errors.
+#'
+#' This function uses the log10ParMapJac(parMCMC) function by default,
+#' which assumes that sampling takes place in logarothmic space.
+#'
+#' @param parMCMC a numeric vector, with attributes for MCMC, specifically smmala
+#' @return a numeric vector: grad(log(likelihood(data|parMCMC)))
+#' @export
+gllf <- function(parMapJac=log10ParMapJac) {
+	return(
+		function(parMCMC){
+			g <- Reduce(
+				\(a,b) a+as.numeric(b$gradLogLikelihood[seq_along(parMCMC)]),
+				parMCMC %@% "simulations",
+				init=0.0
+			)
+			return(
+				as.numeric(g %*% parMapJac(parMCMC))
+			)
+		}
+	)
+}
+
+#' Default gradient-Log-likelihood Function
+#'
+#' Extracts the `gradLogLikelihood` values from the simulations attribute
+#' of the parMCMC argument, requires:
+#' - parMCMC has simulations attribute
+#' - simulations list includes gradLogLikelihood values
+#'
+#' This function will take the gll-values claculated by the ode solver
+#' in this package, and return the sum of those values over all
+#' experiments. The gll-value the simulator returns is calculated with
+#' the assumption of a normal distribution on measurement errors.
+#'
+#' This function uses the log10ParMapJac(parMCMC)
+#'
+#' @param parMCMC a numeric vector, with attributes for MCMC, specifically smmala
+#' @return a scalar value: log(likelihood(data|parMCMC))
+#' @export
+fi <- function(parMapJac=log10ParMapJac){
+	return(
+		function(parMCMC) {
+			i <- seq_along(parMCMC)
+			f <- Reduce(
+				\(a,b) a + b$FisherInformation[i,i,1],
+				parMCMC %@% "simulations",
+				init = 0.0
+			)
+			return(
+				t(parMapJac(parMCMC)) %*% f %*% parMapJac(parMCMC)
+			)
+		}
+	)
+}
+
+smmalaUpdate <- function(simulate, experiments, logLikelihood=ll, dprior=\(x) prod(dnorm(x)), gradLogLikelihood=gllf(log10ParMapJac), gprior=\(x) (-x), fisherInformation=fi, fisherInformationPrior=0, parAcceptable=\(p) all(is.finite(p))){
 	U <- function(parGiven, eps=1e-4){
 		stopifnot(parGiven %has% c("logLikelihood","prior","fisherInformation","gradLogLikelihood","gradLogPrior"))
 		fp <- fisherInformationPrior
@@ -864,97 +828,6 @@ mcmcUpdate <- function(simulate, experiments, logLikelihood, dprior, gradLogLike
 	}
 }
 
-#' Calculate Global Fisher Information
-#'
-#' Given a sample, this performs global sensitivity analysis, and then
-#' squares the sensitivity.
-#'
-#' @param Sample an MCMC sample, or ABC sample
-#' @param yf the simulations of the sample
-#' @param E experiments list
-fisherInformationFromGSA <- function(Sample,yf=NULL,E){
-	funcDim <- dim(yf[[1]]$func)
-	mcmcDim <- dim(Sample)
-	nF <- funcDim[1]
-	nT <- funcDim[2]
-	nP <- mcmcDim[2]
-	N <- mcmcDim[1] # sample size
-	stopifnot(N>nP)
-	n <- length(yf)
-	fi  <- matrix(0.0,nP,nP)
-	for (i in seq(n)){
-		outF <- aperm(yf[[i]]$func,c(3,1,2))
-		errF <- t(E[[i]]$errorValues)
-		errF[is.na(errF)] <- Inf
-		for (j in seq(nT)){
-			sigma <- matrix(errF[,j],nF,nP)
-			S <- globalSensitivity(Sample,outF[,,j])/sigma
-			fi  <-  fi + t(S) %*% S
-		}
-	}
-	return(fi)
-}
-
-#' Fisher Information from Sensitivity
-#'
-#' Given a list of simulation sensitivities, this function returns the
-#' fisher information (sum over all experiments). The actual work is
-#' done in the returned function that implicitly depends on the model,
-#' experiments, and parameter mapping
-#'
-#' return value: function(par, simulations, sensitivity) ->
-#' fisherInformation (matrix)
-#'
-#' where par refers to the model parameters
-#' (possibly transformed), and simulations performed with those
-#' parameters.
-#'
-#' @export
-#' @param experiments list of experiments, with inputs
-#' @param parMap mapping between MCMC variables and ODE parameters
-#' @param parMapJac the jacobian of the above map
-#' @return fisher information calculating funciton
-fisherInformationFunc <- function(experiments, parMap=identity, parMapJac=function (x) {diag(1,length(x))}){
-	nF <- NCOL(experiments[[1]]$outputValues)
-	l10 <- log(10)
-	F <- function(parMCMC){
-		simulations <- attr(parMCMC,"simulations")
-		np <- NROW(parMCMC)
-		fi  <- matrix(0.0,np,np)
-		for (i in seq(length(experiments))){
-			errF <- t(experiments[[i]]$errorValues)
-			if (any(is.na(errF))){
-				errF[is.na(errF)] <- Inf
-			}
-			nt <- length(experiments[[i]]$outputTimes)
-			for (j in seq(nt)){
-				sigma_j <- matrix(errF[,j],nF,np)
-				if (any(is.na(sigma_j))){
-					message(sprintf("sigma_j has invalid elements"));
-				}
-				# output function sensitivity:
-				Sh <- simulations[[i]]$funcSensitivity[[1]][,seq(np),j]
-				lNA <- is.na(Sh)
-				if (any(lNA)) {
-					Sh[lNA] <- 0.0
-				}
-				dim(Sh) <- c(nF,np)
-				pmj <- parMapJac(as.numeric(parMCMC))
-				Sh <- (Sh %*% pmj)/sigma_j
-				if (any(is.finite(Sh))){
-					fi  <-  fi + t(Sh) %*% Sh
-				}
-			}
-		}
-		lNAfi <- is.na(fi)
-		if (any(lNAfi)) {
-			fi[!is.finite(fi)] <- 0.0
-		}
-		return(fi)
-	}
-	return(F)
-}
-
 #' Default log-likelihood function
 #'
 #' This returns a function f(simulations), which maps simulation
@@ -974,27 +847,30 @@ fisherInformationFunc <- function(experiments, parMap=identity, parMapJac=functi
 #'     interface is: `simpleUserLLF(y,h,stdv,name=NULL)`, where each
 #'     of them is an N-M-matrix where N is the dimensionality of the
 #'     model output and M the number of data time-points.  Here, `y`
-#'     is `t(experiments[[i]]$outputValues)` and may contain NA
+#'     is `t(experiments[[i]]$data)` and may contain NA
 #'     values.  This function should also accept an optional _name_
 #'     argument (this is the name of the experiment this function is
 #'     currently called for).
-#' @return llf(parMCMC), a closure (function) of the mcmc-variable:
-#'     parMCMC; returns a scalar logLikelihood value. Alternatively,
-#'     the user can define such a function: parMCMC ->
-#'     log(Likelihood(parMCMC)), and use that during sampling. A test
-#'     simulation of p: y <- simulate(p) will reveal which values the
-#'     simulator produces.  These values will be attached to p during
-#'     sampling, as an attribute.  mcmcInit will attach the same
-#'     values for the initial Markov chain state.  The log-likelihood
-#'     function can use these attributes.
+#' @return `llf(parMCMC)`, a closure (function) of the mcmc-variable:
+#'     parMCMC; returns a scalar log-likelihood value. Alternatively,
+#'     the user can define such a function:
+#'     `parMCMC -> log(Likelihood(parMCMC))`,
+#'     and use that during sampling. A test simulation of `p`:
+#'     `y <- simulate(p)` will reveal which values the simulator produces.
+#'     These values will be attached to p during sampling, as an
+#'     attribute.  mcmcInit will attach the same values for the
+#'     initial Markov chain state.  The log-likelihood function can
+#'     use these attributes.
 #' @export
 logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	N <- length(experiments)
-	n.out <- sum(unlist(lapply(experiments,\(e) sum(!is.na(e$outputValues))))) # total number of valid values
+	n.out <- sum(unlist(lapply(experiments,\(e) sum(!is.na(e$data))))) # total number of valid values
 	message(sprintf("experiments contain %i non-missing values",n.out))
 	if (!is.null(simpleUserLLF)){
 		llf <- function(parMCMC){
-			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
+			if (!("simulations" %in% names(attributes(parMCMC)))) {
+				return(-Inf)
+			} else if (any(is.na(attr(parMCMC,"simulations")))) {
 				return(-Inf)
 			} else {
 				simulations <- attr(parMCMC,"simulations")
@@ -1002,14 +878,17 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 			n <- NCOL(parMCMC)
 			L <- rep(0,n)
 			for (i in seq(N)){
-				if (!("func" %in% names(simulations[[i]])) || any(is.na(simulations[[i]]$func))){
-					warning("no simulations attached to parameter vector: attr(parMCMC,'simulations') is missing.")
+				if (!("func" %in% names(simulations[[i]]))) {
+					warning("simulations contain no 'func' values (output function values, i.e. observables).")
+					return(-Inf)
+				} else if (any(is.na(simulations[[i]]$func))) {
+					warning("simultions contain NA values which shouldn't happen, normally.")
 					return(-Inf)
 				}
 				dimFunc <- dim(simulations[[i]]$func)
 				m <- head(dimFunc,2)
-				y <- t(experiments[[i]]$outputValues)
-				stdv <- t(experiments[[i]]$errorValues)
+				y <- experiments[[i]]$data %otherwise% t(experiments[[i]]$measurements)
+				stdv <- standard_error_matrix(y) %otherwise% t(experiments[[i]]$standardError)
 				for (k in seq(n)){
 					h <- simulations[[i]]$func[,,k]
 					dim(h) <- m
@@ -1033,8 +912,11 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 		}
 	} else {
 		llf <- function(parMCMC){
-			if (!("simulations" %in% names(attributes(parMCMC))) || any(is.na(attr(parMCMC,"simulations")))) {
+			if (!(parMCMC %has% "simulations")) {
 				warning("no simulations attached to parameter vector: attr(parMCMC,'simulations') is missing.")
+				return(-Inf)
+			} else if (any(is.na(attr(parMCMC,"simulations")))) {
+				warning("simulated values contain NA, which shouldn't happen normally.")
 				return(-Inf)
 			} else {
 				simulations <- attr(parMCMC,"simulations")
@@ -1048,8 +930,8 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 				}
 				dimFunc <- dim(simulations[[i]]$func)
 				m <- head(dimFunc,2)
-				y <- t(experiments[[i]]$outputValues)
-				stdv <- t(experiments[[i]]$errorValues)
+				y <- experiments[[i]]$data
+				stdv <- standard_error_matrix(y) %otherwise% t(experiments[[i]]$standardError)
 				for (k in seq(n)){
 					h <- simulations[[i]]$func[,,k]
 					dim(h) <- m
@@ -1087,6 +969,31 @@ log10ParMapJac <- function(parMCMC){
 	return(diag(10^(parMCMC) * log(10)))
 }
 
+#' LOG2 parameter mapping used by the MCMC module
+#'
+#' This map is used by the simulator to transform sampling variables
+#' into ODE-model porameters.
+#'
+#' @param parMCMC the sampling variables (numeric vector)
+#' @export
+log2ParMap <- function(parMCMC){
+	return(2^(parMCMC))
+}
+
+#' LOG2 parameter mapping, jacobian
+#'
+#' This map is used by the simulator to transform sampling variables
+#' into ODE-model porameters. As we often calculate sensitivites, we
+#' alos need the jacobian of the map, due to the chain rule of
+#' differentiation.
+#'
+#' @param parMCMC the sampling variables (numeric vector)
+#' @export
+log2ParMapJac <- function(parMCMC){
+	return(diag(2^(parMCMC) * log(2)))
+}
+
+
 #' NATURAL LOG parameter mapping used by the MCMC module
 #'
 #' This map is used by the simulator to transform sampling variables
@@ -1123,7 +1030,7 @@ logParMapJac <- function(parMCMC){
 gradLogLikelihoodFunc <- function(experiments,parMap=identity,parMapJac=function(x) {diag(1,length(x))})
 {
 	N <- length(experiments)
-	nF <- NCOL(experiments[[1]]$outputValues)
+	nF <- NROW(experiments[[1]]$data)
 	gradLL <- function(parMCMC){
 		simulations <- attr(parMCMC,"simulations")
 		np <- NROW(parMCMC) # the dimension of the MCMC variable (parMCMC)
@@ -1132,11 +1039,12 @@ gradLogLikelihoodFunc <- function(experiments,parMap=identity,parMapJac=function
 		for (i in seq(N)){
 			d <- dim(simulations[[i]]$func)
 			nt <- length(experiments[[i]]$outputTimes)
-			y <- t(experiments[[i]]$outputValues)
+			y <- experiments[[i]]$data
 			y[is.na(y)] <- 0.0
 			h <- simulations[[i]]$func[,,1]
 			dim(h) <- head(d,2)
-			stdv2 <- t(experiments[[i]]$errorValues)^2 # sigma^2
+			stdv <- standard_error_matrix(y)
+			stdv2 <- (stdv)^2 # sigma^2
 			stdv2[is.na(stdv2)] <- Inf
 			Sh <- simulations[[i]]$funcSensitivity[[1]]
 			for (j in seq(nt)){
@@ -1217,4 +1125,72 @@ simfiGaussianFILL <- function(ParMapJac=function (x) {diag(1,length(x))}){
 		return(t(J) %*% Reduce(\(a,b) a + b$FisherInformation[i,i,1], attr(parMCMC,"simulations"), init = 0.0) %*% J)
 	}
 	return(fi)
+}
+
+#' High Level SMMALA function
+#'
+#' This function uses default assumption everywhere and returns a
+#' function that will sample from the given model. This funciton will
+#' generate code, compile the code, create an ODE solver for it, infer
+#' the sampling space from the scale of the parameters, create all
+#' necessary functions to move in parameter space (gradients of
+#' likelihood and prior), as well as Fisher Information functions.
+#'
+#' @export
+#' @param m the model's TSV representation read via `model_from_tsv`
+#' @param o (optional) ode representation of `m`
+#' @param ex experiments of `m`, with simulation instructions for `o`.
+#' @return `smmala` a function of three arguments: p0, N, eps; where p0 is the starting point, N is the desired sample-size, and eps is the step size.
+high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o)){
+	o <- as_ode(m,cla=TRUE)
+	C <- generateCode(o)
+	odeModel <- write_and_compile(C)
+	message(comment(odeModel))
+
+	p <- values(m$Parameter)
+	if (all(m$Parameter$scale == "log10")){
+		parMap <- log10ParMap
+		parMapJac <- log10ParMapJac
+	} else if (all(m$Parameter$scale == "log2") || all(m$Parameter$scale == "ld")) {
+		parMap <- log2ParMap
+		parMapJac <- log2ParMapJac
+	} else if (all(m$Parameter$scale == "log") || all(m$Parameter$scale == "ln")){
+		parMap <- logParMap
+		parMapJac <- logParMapJac
+	} else {
+		parMap <- identity
+		parMapJac <- diag(rep(1.0,length(p)))
+	}
+
+	s <- simulator.c(ex,odeModel,parMap=parMap,omit=0)
+
+	dprior <- dNormalPrior(
+		mean=m$Parameter$median %otherwise% values(m$Parameter),
+		sd=m$Parameter$stdv %otherwise% m$Parameter$sd
+	)
+	gprior <- gNormalPrior(
+		mean=m$Parameter$median %otherwise% values(m$Parameter),
+		sd=m$Parameter$stdv %otherwise% m$Parameter$sd
+	)
+	parMCMC <- mcmcInit(
+		beta=1.0,
+		values(m$Parameter),
+		simulate=s,
+		dprior=dprior,
+		gradLogLikelihood=gllf(parMapJac),
+		gprior=gprior,
+		fisherInformation=fi(parMapJac)
+	)
+	smmala <- mcmc(
+		smmalaUpdate(
+			simulate=s,
+			experiments=ex,
+			dprior=dprior,
+			gprior=gprior,
+			fisherInformation=fi(log10ParMapJac),
+			fisherInformationPrior=diag(1.0/m$Parameter$stdv^2)
+		)
+	)
+	attr(smmala,"init") <- parMCMC
+	return(smmala)
 }

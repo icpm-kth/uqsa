@@ -17,7 +17,7 @@ makeObjective(
 
 \item{modelName}{and model storage file as comment}
 
-\item{distance}{a function that calculates ABC scores}
+\item{distance}{a function that calculates ABC scores (distance between data and simulations)}
 
 \item{parMap}{a function that transforms ABC variables into acceptable model parameters}
 
@@ -29,4 +29,13 @@ an objective function
 \description{
 the returned objective function has only one argument: the ABC
 variables that shall be mapped to ODE-model parameters.
+}
+\details{
+The user supplied distance function should accept three arguments:
+distance(SIM, DATA, STDV), all three matrices.  SIM is the model
+output (simulation), DATA is the measured data, while STDV
+represents the standard error of that measurement. All three have
+the same size: N×M, where N is the number of observables (outputs),
+and M is th enumber of measurement time-points (length of the
+time-series).
 }

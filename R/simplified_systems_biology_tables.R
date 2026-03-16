@@ -493,7 +493,7 @@ time_series_experiments <- function(m,E,iv,input,out){
 			)
 		}
 		D[[i]] <- list(
-			measurements=cbind(time=d$time,as.data.frame(t(DATA))),
+			measurements=as.data.frame(t(DATA)),
 			data=DATA,
 			input=as.double(input[,i]),
 			initialTime=as.double(E$t0[i] %otherwise% min(d$time)),

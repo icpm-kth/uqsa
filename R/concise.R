@@ -29,7 +29,7 @@
 parse_concise <- function(v,use.errors=requireNamespace("errors")){
 	d <- dim(v)
 	w <- .Call(concise,as.character(v))
-	w[,grep("NA",v,ignore.case=TRUE)] <- c(NA,NA)
+	w[,is.na(v) | grepl("NA",v,ignore.case=TRUE)] <- c(0,Inf)
 
 	if (use.errors){
 		w <- errors::set_errors(w[1,],w[2,])

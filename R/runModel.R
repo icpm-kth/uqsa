@@ -44,8 +44,8 @@ gsl_odeiv2_fi <- function(name,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.s
 		if ("initialState" %in% names(experiments[[i]]) && length(experiments[[i]]$initialState)==NROW(y[[i]]$state)){
 			dimnames(y[[i]]$state) <- list(names(experiments[[i]]$initialState),NULL,NULL)
 		}
-		if ("outputValues" %in% names(experiments[[i]]) && NCOL(experiments[[i]]$outputValues)==NROW(y[[i]]$func)){
-			dimnames(y[[i]]$func) <- list(names(experiments[[i]]$outputValues),NULL,NULL)
+		if ("data" %in% names(experiments[[i]]) && NROW(experiments[[i]]$data)==NROW(y[[i]]$func)){
+			dimnames(y[[i]]$func) <- c(dimnames(experiments[[i]]$data),NULL)
 		}
 	}
 	return(y)
@@ -94,8 +94,8 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 		if ("initialState" %in% names(experiments[[i]])){
 			dimnames(y[[i]]$state) <- list(names(experiments[[i]]$initialState),NULL,NULL)
 		}
-		if ("outputValues" %in% names(experiments[[i]])){
-			dimnames(y[[i]]$func) <- list(names(experiments[[i]]$outputValues),NULL,NULL)
+		if ("data" %in% names(experiments[[i]])){
+			dimnames(y[[i]]$func) <- c(dimnames(experiments[[i]]$data),NULL)
 		}
 	}
 	return(y)
@@ -477,10 +477,18 @@ defaultAcceptance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 #' the returned objective function has only one argument: the ABC
 #' variables that shall be mapped to ODE-model parameters.
 #'
+#' The user supplied distance function should accept three arguments:
+#' distance(SIM, DATA, STDV), all three matrices.  SIM is the model
+#' output (simulation), DATA is the measured data, while STDV
+#' represents the standard error of that measurement. All three have
+#' the same size: N×M, where N is the number of observables (outputs),
+#' and M is th enumber of measurement time-points (length of the
+#' time-series).
+#'
 #' @export
 #' @param experiments a list of simulation experiments
 #' @param modelName and model storage file as comment
-#' @param distance a function that calculates ABC scores
+#' @param distance a function that calculates ABC scores (distance between data and simulations)
 #' @param parMap a function that transforms ABC variables into acceptable model parameters
 #' @param simulate closure that simulates the model
 #' @return an objective function
@@ -500,7 +508,9 @@ makeObjective <- function(experiments,modelName=NULL,distance,parMap=identity,si
 		if (is.null(out)) return(S)
 		for(i in 1:N){
 			if (!is.null(experiments[[i]]) && !is.null(out[[i]])){
-				S[i,] <- unlist(mclapply(1:n, function(j) distance(out[[i]]$func[,,j], experiments[[i]]$outputValues, experiments[[i]]$errorValues)))
+				DATA <- experiments[[i]]$data
+				STDV <- standard_error_matrix(DATA) %otherwise% experiments[[i]]$standardError
+				S[i,] <- unlist(mclapply(1:n, function(j) distance(out[[i]]$func[,,j], DATA, STDV)))
 			}
 		}
 		return(S)
