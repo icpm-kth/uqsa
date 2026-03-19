@@ -622,7 +622,7 @@ int sensitivityApproximation(double t0, gsl_vector *t, gsl_vector *p, gsl_matrix
 	int n=Y->size2;
 	int l=p->size;
 	int f=ODE_func(0,NULL,NULL,NULL);
-	double tj,delta_t;
+	double tj,tj_1=t0,delta_t;
 	gsl_vector_view col, diag;
 	gsl_matrix *A=M.A;
 	gsl_matrix *LU=M.LU;
@@ -634,24 +634,27 @@ int sensitivityApproximation(double t0, gsl_vector *t, gsl_vector *p, gsl_matrix
 	gsl_matrix_view SY, SF; /* sensitivity matrices (array-views) */
 	int sign;
 	const double *y;
+	int status=GSL_SUCCESS;
 	if (m != Y->size1) fprintf(stderr,"[%s] t has length %i, but Y has %li rows.\n",__func__,m,Y->size1);
 
 	for (j=0;j<m;j++){
 		tj=gsl_vector_get(t,j);
-		delta_t=tj-t0;
-		t0=tj;
+		delta_t=tj-tj_1;
+		tj_1=tj;
 		y=gsl_matrix_ptr(Y,j,0);
 		ODE_jac(tj,y,A->data,NULL,p->data);                                           /* A <- df/dy */
 		ODE_jacp(tj,y,B->data,NULL,p->data);                                          /* B <- df/dp */
 		gsl_matrix_memcpy(LU,A);                                                      /* LU <- A */
 		// dirty hack .. maybe this will work better? Will not work if some eigenvalues are positive.
-		diag = gsl_matrix_diagonal(A);
+		diag = gsl_matrix_diagonal(LU);
 		gsl_vector_add_constant(&(diag.vector),-1e-9); // all eigenvalues should be negative, if some are close to zero, we force them
 		// .. dirty hack
-		gsl_linalg_LU_decomp(LU, P, &sign);                                           /* make P*A = L*U */
+		status=gsl_linalg_LU_decomp(LU, P, &sign);                                           /* make P*A = L*U */
+		if (status) printf("[%s] %s\n",__func__,gsl_strerror(status));
 		for (k=0;k<l;k++){
 			col=gsl_matrix_column(B,k);
-			gsl_linalg_LU_svx(LU, P, &(col.vector));                                    /* B <- A\B*/
+			status=gsl_linalg_LU_svx(LU, P, &(col.vector));                                    /* B <- A\B*/
+			if (status) printf("[%s] %s\n",__func__,gsl_strerror(status));
 		}
 		gsl_matrix_scale(A,delta_t);                                                  /* A <- (df/dy)*(t-t0)*/
 		gsl_linalg_exponential_ss(A,E,GSL_PREC_SINGLE);                               /* E <- exp(A*(t-t0))*/
@@ -670,9 +673,11 @@ int sensitivityApproximation(double t0, gsl_vector *t, gsl_vector *p, gsl_matrix
 		ODE_funcJac(tj,y,FA->data,p->data);
 		ODE_funcJacp(tj,y,M.Sf->data,p->data);
 
-		gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, FA, M.Sy, 1.0, M.Sf);
+		status=gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, FA, M.Sy, 1.0, M.Sf);
+		if (status) printf("[%s] %s\n",__func__,gsl_strerror(status));
 		SF=gsl_matrix_view_array(dFdp+f*l*j,l,f);
-		gsl_matrix_transpose_memcpy(&(SF.matrix),M.Sf);
+		status=gsl_matrix_transpose_memcpy(&(SF.matrix),M.Sf);
+		if (status) printf("[%s] %s\n",__func__,gsl_strerror(status));
 	}
 	return GSL_SUCCESS;
 }
@@ -689,9 +694,9 @@ double logLikelihood(Rdata experiment, double *f){
 	Rdata data=from_list(experiment,"data measuredData experimentalData");
 	Rdata stdv=getAttrib(data,install("errors"));
 	if (!IS_NUMERIC(stdv)){
-		stdv = from_list(experiment,"stdv standardError standardDeviationOfTheMean");
+		stdv = from_list(experiment,"stdv sd standardError standardDeviationOfTheMean");
 	}
-	Rdata time=from_list(experiment,"time outputTimes");
+	Rdata time=from_list(experiment,"time times t outputTimes");
 	double ll=0;
 	double d,s;
 	int i;
@@ -715,13 +720,13 @@ double logLikelihood(Rdata experiment, double *f){
 /*            = exp(-0.5*((f-d)/sd)**2 - 0.5*(log(2*pi*sd)))       */
 /* grad(log(Likelihood)) = ((d-f)/(sd*sd))*df/dp */
 int gradLogLikelihood(double *gll, Rdata experiment, double *func, double *funcSens, size_t m, gsl_vector *v){
-	Rdata data=from_list(experiment,"data measuredData experimentalData");
+	Rdata data=from_list(experiment,"data measurements measuredData experimentalData");
 	Rdata stdv=getAttrib(data,install("errors"));
 	if (!IS_NUMERIC(stdv)){
-		stdv = from_list(experiment,"stdv standardError standardDeviationOfTheMean");
+		stdv = from_list(experiment,"stdv sd standardError standardDeviationOfTheMean");
 	}
 	//Rdata stdv=from_list(experiment,"stdv standardError standardDeviationOfTheMean");
-	Rdata time=from_list(experiment,"time outputTimes");
+	Rdata time=from_list(experiment,"time times t outputTimes");
 	int nt=length(time);
 	int n=v->size;
 	gsl_vector_view d,s,g,f;
@@ -755,12 +760,12 @@ int gradLogLikelihood(double *gll, Rdata experiment, double *func, double *funcS
 /* for solve(Sigma) == diag(sd**(-2))                              */
 /* with Sf_sd[,j] = Sf[,j]/sd -> FisherInf = t(Sf_sd)*Sf_sd        */
 int FisherInformation(double *FI, Rdata experiment, double *funcSens, gsl_matrix *Sf_sd){
-	Rdata data=from_list(experiment,"data measuredData");
+	Rdata data=from_list(experiment,"data measurements measuredData");
 	Rdata stdv=getAttrib(data,install("errors"));
 	if (!IS_NUMERIC(stdv)){
-		stdv = from_list(experiment,"stdv standardError standardDeviationOfTheMean");
+		stdv = from_list(experiment,"stdv sd standardError standardDeviationOfTheMean");
 	}
-	Rdata time=from_list(experiment,"time OutputTimes");
+	Rdata time=from_list(experiment,"time times t outputTimes OutputTimes");
 	int nt=length(time);
 	int n=Sf_sd->size2; //ODE_func(0,NULL,NULL,NULL);
 	int m=Sf_sd->size1;
@@ -857,7 +862,7 @@ r_gsl_odeiv2_outer_fi(
 	gsl_odeiv2_driver *driver = gsl_odeiv2_driver_alloc_y_new(&sys,T,h,abs_tol,rel_tol);
 	for (i=0; i<N; i++){
 		iv = from_list(VECTOR_ELT(experiments,i),"initial_value initialState initialValue initialValues");
-		t = from_list(VECTOR_ELT(experiments,i),"time outputTimes t");
+		t = from_list(VECTOR_ELT(experiments,i),"time times outputTimes t");
 		t0 = REAL(AS_NUMERIC(from_list(VECTOR_ELT(experiments,i),"intial_time initialTime t0 T0")))[0];
 		ev = event_from_R(from_list(VECTOR_ELT(experiments,i),"event events scheduledEvents scheduledEvent scheduled_event"));
 		initial_value = gsl_matrix_row(Y0,0);
@@ -1116,7 +1121,7 @@ r_gsl_odeiv2_outer_CRNN(
 	gsl_odeiv2_driver *driver = gsl_odeiv2_driver_alloc_y_new(&sys,T,h,abs_tol,rel_tol);
 	for (i=0; i<N; i++){
 		iv = from_list(VECTOR_ELT(experiments,i),"initial_value initialState initialValue initialValues");
-		t = from_list(VECTOR_ELT(experiments,i),"time outputTimes t");
+		t = from_list(VECTOR_ELT(experiments,i),"time times t outputTimes");
 		t0 = asReal(AS_NUMERIC(from_list(VECTOR_ELT(experiments,i),"intial_time initialTime t0 T0")));
 		ev = event_from_R(from_list(VECTOR_ELT(experiments,i),"event events scheduledEvents scheduledEvent scheduled_event"));
 		initial_value = gsl_vector_view_array(REAL(iv),ny);

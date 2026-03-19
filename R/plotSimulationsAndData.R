@@ -199,6 +199,10 @@ plotTimeSeriesBase <- function(simulations, experiments, nmax=NULL, by=1, ylimit
 		oNames <- names(experiments[[i]]$measurements)
 		for (j in seq(n[1])){
 			d <- experiments[[i]]$data[j,] %otherwise% experiments[[i]]$measurements[[j]]
+			if (is(d,"errors")){
+				e <- errors(d)
+				d[is.infinite(e)]<-NA
+			}
 			if (is.null(ylimit) || !all(is.finite(ylimit[[j]]))){
 				yl <- c(min(d - 1e-1,na.rm=TRUE),max(d + 1e-1,na.rm=TRUE))
 			} else {

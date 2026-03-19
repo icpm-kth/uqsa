@@ -8,6 +8,8 @@ conservation_law_analysis(nu, iv, verbose = FALSE)
 }
 \arguments{
 \item{nu}{stoichiometric matrix}
+
+\item{iv}{initial values}
 }
 \value{
 a list of conservation laws

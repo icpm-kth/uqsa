@@ -564,7 +564,7 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 	)
 }
 
-metropolisUpdate <- function(simulate, experiments, logLikelihood, dprior, Sigma=NULL, parAcceptable=\(p) {TRUE}){
+metropolisUpdate <- function(simulate, experiments, logLikelihood=ll, dprior=\(x) prod(dnorm(x)), Sigma=NULL, parAcceptable=\(p) {all(is.finite(p))}){
 	if (!is.null(Sigma)){
 		cSigma <- chol(Sigma)
 	}
@@ -732,7 +732,7 @@ fi <- function(parMapJac=log10ParMapJac){
 	)
 }
 
-smmalaUpdate <- function(simulate, experiments, logLikelihood=ll, dprior=\(x) prod(dnorm(x)), gradLogLikelihood=gllf(log10ParMapJac), gprior=\(x) (-x), fisherInformation=fi, fisherInformationPrior=0, parAcceptable=\(p) all(is.finite(p))){
+smmalaUpdate <- function(simulate, experiments, logLikelihood=ll, dprior=\(x) prod(dnorm(x)), gradLogLikelihood=gllf(log10ParMapJac), gprior=\(x) (-x), fisherInformation=fi(log10ParMapJac), fisherInformationPrior=0, parAcceptable=\(p) all(is.finite(p))){
 	U <- function(parGiven, eps=1e-4){
 		stopifnot(parGiven %has% c("logLikelihood","prior","fisherInformation","gradLogLikelihood","gradLogPrior"))
 		fp <- fisherInformationPrior
@@ -817,7 +817,7 @@ smmalaUpdate <- function(simulate, experiments, logLikelihood=ll, dprior=\(x) pr
 #'     return and the model will not be simulated.
 #' @return a function that returns possibly updated states of the
 #'     Markov chain
-mcmcUpdate <- function(simulate, experiments, logLikelihood, dprior, gradLogLikelihood=NULL, gprior=NULL, fisherInformation=NULL, fisherInformationPrior=NULL, Sigma=NULL, parAcceptable=\(p) {TRUE}){
+mcmcUpdate <- function(simulate, experiments, logLikelihood=ll, dprior=\(x) prod(dnorm(x)), gradLogLikelihood=NULL, gprior=NULL, fisherInformation=NULL, fisherInformationPrior=NULL, Sigma=NULL, parAcceptable=\(p) {TRUE}){
 	if (is.null(Sigma) && !is.null(fisherInformationPrior)) {
 		Sigma <- solve(fisherInformationPrior)
 	}
@@ -1140,26 +1140,32 @@ simfiGaussianFILL <- function(ParMapJac=function (x) {diag(1,length(x))}){
 #' @param m the model's TSV representation read via `model_from_tsv`
 #' @param o (optional) ode representation of `m`
 #' @param ex experiments of `m`, with simulation instructions for `o`.
-#' @return `smmala` a function of three arguments: p0, N, eps; where p0 is the starting point, N is the desired sample-size, and eps is the step size.
-high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o)){
-	o <- as_ode(m,cla=TRUE)
+#' @param x initial point of the markov chain, pre in itialized to
+#'     have the right attributes.
+#' @return `smmala` a function of three arguments: p0, N, eps; where
+#'     p0 is the starting point, N is the desired sample-size, and eps
+#'     is the step size. This function has an attribute called "init",
+#'     with a pre-initialized starting point.
+high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=values(m$Parameter)){
 	C <- generateCode(o)
 	odeModel <- write_and_compile(C)
 	message(comment(odeModel))
-
-	p <- values(m$Parameter)
 	if (all(m$Parameter$scale == "log10")){
+		message("The parameters are given in log10-scale, so the simulator will do the reverse transformation: 10^p.")
 		parMap <- log10ParMap
 		parMapJac <- log10ParMapJac
 	} else if (all(m$Parameter$scale == "log2") || all(m$Parameter$scale == "ld")) {
+		message("The parameters are given in log2-scale, so the simulator will do the reverse transformation: 2^p.")
 		parMap <- log2ParMap
 		parMapJac <- log2ParMapJac
 	} else if (all(m$Parameter$scale == "log") || all(m$Parameter$scale == "ln")){
+		message("The parameters are given in log-scale, so the simulator will do the reverse transformation: exp(p).")
 		parMap <- logParMap
 		parMapJac <- logParMapJac
 	} else {
+		message("The parameters are given in linear scale, they will be used as is.")
 		parMap <- identity
-		parMapJac <- diag(rep(1.0,length(p)))
+		parMapJac <- diag(rep(1.0,length(x)))
 	}
 
 	s <- simulator.c(ex,odeModel,parMap=parMap,omit=0)
@@ -1174,7 +1180,7 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o)){
 	)
 	parMCMC <- mcmcInit(
 		beta=1.0,
-		values(m$Parameter),
+		x,
 		simulate=s,
 		dprior=dprior,
 		gradLogLikelihood=gllf(parMapJac),
@@ -1187,10 +1193,119 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o)){
 			experiments=ex,
 			dprior=dprior,
 			gprior=gprior,
-			fisherInformation=fi(log10ParMapJac),
+			fisherInformation=fi(parMapJac),
 			fisherInformationPrior=diag(1.0/m$Parameter$stdv^2)
 		)
 	)
 	attr(smmala,"init") <- parMCMC
 	return(smmala)
+}
+
+
+#' High Level Metropolis function
+#'
+#' This function uses default assumption everywhere and returns a
+#' function that will sample from the given model. This funciton will
+#' generate code, compile the code, create an ODE solver for it, infer
+#' the sampling space from the scale of the parameters, create all
+#' necessary functions to move in parameter space (gradients of
+#' likelihood and prior), as well as Fisher Information functions.
+#'
+#' @export
+#' @param m the model's TSV representation read via `model_from_tsv`
+#' @param o (optional) ode representation of `m`
+#' @param ex experiments of `m`, with simulation instructions for `o`.
+#' @param x initial point of the markov chain, pre in itialized to
+#'     have the right attributes.
+#' @param beta for parallel tempering, the log-likelihood will have a
+#'     factor of `beta` applied to it
+#' @return `smmala` a function of three arguments: p0, N, eps; where
+#'     p0 is the starting point, N is the desired sample-size, and eps
+#'     is the step size. This function has an attribute called "init",
+#'     with a pre-initialized starting point.
+high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x=values(m$Parameter), beta=1.0){
+	C <- generateCode(o)
+	odeModel <- write_and_compile(C)
+	message(comment(odeModel))
+	if (all(m$Parameter$scale == "log10")){
+		message("The parameters are given in log10-scale, so the simulator will do the reverse transformation: 10^p.")
+		parMap <- log10ParMap
+		parMapJac <- log10ParMapJac
+	} else if (all(m$Parameter$scale == "log2") || all(m$Parameter$scale == "ld")) {
+		message("The parameters are given in log2-scale, so the simulator will do the reverse transformation: 2^p.")
+		parMap <- log2ParMap
+		parMapJac <- log2ParMapJac
+	} else if (all(m$Parameter$scale == "log") || all(m$Parameter$scale == "ln")){
+		message("The parameters are given in log-scale, so the simulator will do the reverse transformation: exp(p).")
+		parMap <- logParMap
+		parMapJac <- logParMapJac
+	} else {
+		message("The parameters are given in linear scale, they will be used as is.")
+		parMap <- identity
+		parMapJac <- diag(rep(1.0,length(x)))
+	}
+
+	s <- simulator.c(ex,odeModel,parMap=parMap,omit=2)
+	stdv <- m$Parameter$stdv %otherwise% m$Parameter$sd %otherwise% m$Parameter$sigma
+	if (is.null(stdv))
+		stop("no parameter standard deviation (sigma) provided in parameter table")
+	dprior <- dNormalPrior(
+		mean=m$Parameter$median %otherwise% m$Parameter$mean %otherwise% m$Parameter$mu %otherwise% values(m$Parameter),
+		sd=stdv
+	)
+	parMCMC <- mcmcInit(
+		beta=beta,
+		x,
+		simulate=s,
+		dprior=dprior
+	)
+	metropolis <- mcmc(
+		metropolisUpdate(
+			simulate=s,
+			experiments=ex,
+			dprior=dprior,
+			Sigma=diag(stdv^2)
+		)
+	)
+	attr(metropolis,"init") <- parMCMC
+	return(metropolis)
+}
+
+#' Find a good Step-Size for a given MCMC Algorithm
+#'
+#' Given a closure `MCMC(p,N,eps)`, where `p` is the initial
+#' Markov-chain position, `N` a sample-size, and `eps` a step-size,
+#' this function finds a good value for eps.
+#'
+#' It will take 100 sample points repeatedly, until an acceptance of
+#' `target_acceptance` is reached (defaults to 25%). The step-size is
+#' decreased if acceptance is very low and increased when it is too
+#' high.
+#'
+#' This function will do at most
+#'
+#' @param MCMC a Markov chain Monte Carlo closure (function)
+#' @param parMCMC initial position of the Markov chain, has to be
+#'     initialized with [mcmcInit].
+#' @param target_acceptance a scalar value for the desired acceptance
+#'     rate, some algorithms are most efficient with 20% to 30%
+#'     acceptance, some work well with a very high acceptance.
+#' @param iter.max maximum number of iterations until the function has
+#'     to return.
+#' @return optimal step size
+#' @export
+tune_step_size <- function(MCMC,parMCMC=attr(MCMC,"init"),target_acceptance=0.25, iter.max=6){
+	h <- 1e-2
+	A <- target_acceptance
+	for (i in seq(iter.max)){
+		X <- MCMC(parMCMC,100,h)
+		a <- X %@% "acceptanceRate"
+		message(sprintf("acceptance rate: %g, step-size: %g;",a,h))
+		if (abs(a-A) < 3e-2) {
+			break
+		} else {
+			h <- h*(2 * a^2/(A^2 + a^2) + 0.01)
+		}
+	}
+	return(h)
 }

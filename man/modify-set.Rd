@@ -26,7 +26,7 @@ the \verb{x += 1} syntax of C, it exists only for aesthetic reasons.
 }
 \details{
 Specifically, this function should work for matrices, and it is
-possible to supply row and column index vectors: x\link{i,j} will be
+possible to supply row and column index vectors: \code{x[i,j]} will be
 modified.
 
 This function is quite useful if \code{x} has a very long name,

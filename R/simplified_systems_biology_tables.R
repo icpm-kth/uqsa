@@ -63,7 +63,7 @@ model_from_tsv <- function(src="."){
 #' @param j a column index
 #' @return a named vector
 column <- function(m,j=1){
-	v <- m[,j]
+	v <- as.double(m[,j])
 	names(v) <- rownames(m)
 	return(v)
 }
@@ -85,9 +85,9 @@ values <- function(df){
 	else stopifnot(is.data.frame(df))
 	##
 	if ("value" %in% colnames(df)){
-		v <- df$value
+		v <- as.double(df$value)
 	} else {
-		v <- df[[grep("[Vv]alue",colnames(df))[1]]]
+		v <- as.double(df[[grep("[Vv]alue",colnames(df))[1]]])
 	}
 	if (is.null(v)) stop("data.frame contains no values column.")
 	if (is.character(v)){
@@ -131,7 +131,7 @@ formulae <- function(df){
 #' the `x += 1` syntax of C, it exists only for aesthetic reasons.
 #'
 #' Specifically, this function should work for matrices, and it is
-#' possible to supply row and column index vectors: x[i,j] will be
+#' possible to supply row and column index vectors: `x[i,j]` will be
 #' modified.
 #'
 #' This function is quite useful if `x` has a very long name,
@@ -300,6 +300,7 @@ linear_scale <- function(x,str_scale=""){
 #' Given a stoichiometric matrix, this function performs model
 #' reduction via linear algebra operations, with [pracma::null].
 #' @param nu stoichiometric matrix
+#' @param iv initial values
 #' @useDynLib uqsa, lstrtod
 #' @return a list of conservation laws
 #' @export
@@ -322,7 +323,7 @@ conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
 				break
 			}
 		}
-		j <- l[-k]
+		j <- l[l!=k]
 		if (C[i,k]!=1){
 			Text <- paste0(
 				sprintf("(%s_ConservedConst - (",nm[k]),
@@ -405,6 +406,7 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 		reaction(vf,r[[i]],p[[i]]) <- flux[i]
 	}
 	if (as.logical(cla)){
+		IV <- update_values(iv,m$Experiment)
 		CL <- conservation_law_analysis(nu,iv)
 		iv <- iv[-CL$Eliminates]
 		cq <- CL$Formula
@@ -492,10 +494,12 @@ time_series_experiments <- function(m,E,iv,input,out){
 				dose=as.double(ev$dose)
 			)
 		}
+		inp <- as.double(input[,i])
+		names(inp) <- rownames(input)
 		D[[i]] <- list(
 			measurements=as.data.frame(t(DATA)),
 			data=DATA,
-			input=as.double(input[,i]),
+			input=inp,
 			initialTime=as.double(E$t0[i] %otherwise% min(d$time)),
 			initialState=iv[,i],
 			outputTimes=as.double(d$time),
@@ -535,8 +539,8 @@ dose_response_experiments <- function(m,E,iv,input,out){
 				outputTimes=as.double(tf[i] %otherwise% d$time[j]),
 				measurements=d[j,,drop=FALSE],
 				data=DATA[,j,drop=FALSE],
-				input=as.double(column(inputMatrix,j)),
-				initialState=as.double(column(initialStateMatrix,j)),
+				input=column(inputMatrix,j),
+				initialState=column(initialStateMatrix,j),
 				initialTime=as.double(E$t0[i])
 			) # several time series experiments per 1 dose response table
 		}
@@ -594,21 +598,25 @@ experiments <- function(m,o){
 	}
 	if (all(is.finite(pmatch('Input',names(m))))){
 		if (is.null(o$conservationLaws)){
-			conservedConstants <- NULL
+			ConservedConst <- NULL
 		} else {
-			C <- o$conservationLaws$Constant
-			names(C) <- rownames(o$conservationLaws)
-			conservedConstants <- update_values(C,E)
-			rownames(conservedConstants) <- o$conservationLaws$ConstantName
+			iv <- update_values(values(m$Compound),m$Experiment)
+			C <- o$conservationLaws %@% "lawMatrix"
+			stopifnot(all(rownames(C)==rownames(iv)))
+			ConservedConst <- pracma::flipud(t(C) %*% iv)
+			rownames(ConservedConst) <- o$conservationLaws$ConstantName
+			iv <- iv[-o$conservationLaws$Eliminates,]
 		}
 		input <- rbind(
 			update_values(values(m$Input),E),
-			conservedConstants
+			ConservedConst
 		)
 	} else {
 		input <- NULL
 	}
-	iv <- update_values(o$var,E)
+	if (is.null(o$conservationLaws)){
+		iv <- update_values(o$var,E)
+	}
 	if ("type" %in% colnames(E)){
 		l <- grepl("[Dd]ose[- ]?[Rr]esponse",E$type)
 	} else {

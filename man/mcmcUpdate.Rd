@@ -7,8 +7,8 @@
 mcmcUpdate(
   simulate,
   experiments,
-  logLikelihood,
-  dprior,
+  logLikelihood = ll,
+  dprior = function(x) prod(dnorm(x)),
   gradLogLikelihood = NULL,
   gprior = NULL,
   fisherInformation = NULL,
