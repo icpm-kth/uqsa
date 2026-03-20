@@ -58,6 +58,20 @@ int (*ODE_default)(double t, void *par);
 int (*ODE_init)(double t, double *y_, void *par);
 int (*ODE_event)(double t, double *y_, void *par, int EventLabel, double dose);
 
+union symbol {
+	void *ptr;
+	int (*ODE_vf)(double t, const double y_[], double f_[], void *par);
+	int (*ODE_jac)(double t, const double y_[], double *jac_, double *dfdt_, void *par);
+	int (*ODE_jacp)(double t, const double y_[], double *jacp_, double *dfdt_, void *par);
+	int (*ODE_func)(double t, const double y_[], double *func_, void *par);
+	int (*ODE_funcJac)(double t, const double y_[], double *funcJac_, void *par);
+	int (*ODE_funcJacp)(double t, const double y_[], double *funcJacp_, void *par);
+	int (*ODE_default)(double t, void *par);
+	int (*ODE_init)(double t, double *y_, void *par);
+	int (*ODE_event)(double t, double *y_, void *par, int EventLabel, double dose);
+};
+
+
 void transition_matrix(gsl_matrix *Ji, gsl_matrix *Jf, double ti, double tf, gsl_matrix *phi);
 
 typedef enum {SCALE,DIAG,MATVEC} tf_t;
@@ -277,23 +291,6 @@ void event_free(struct event **ev){
 	}
 }
 
-/* Loads a function from an `.so` file, using `dlsym()`.
-	 Optionally, this
-	 function frees the storage assosiated with the name of the
-	 function.*/
-void *load_or_warn(void *lib, /* file pointer, previously opened via `dlopen()` */
- char *name) /* function to be loaded from file */
-{
-  if (!lib || !name) return NULL;
-	void *symbol=dlsym(lib,name);
-	if (symbol) {
-		return symbol;
-	} else {
-		return NULL;
-	}
-}
-
-
 /* Loads the ODE system from an `.so` file, the file is given by name,
 	 the returned structure is intended for the `gsl_odeiv2` library of
 	 solvers. The jacobian dfdx is loaded alongside the right hand side;
@@ -311,37 +308,47 @@ load_system(
 	char *symbol_name=malloc(m+32); // symbol name in .so
 	char *suffix=pcpy(symbol_name,model_name,m);
 	*suffix='\0';
-
+	union symbol convert;
 	if (lib){
 		*((char*) pcpy(suffix,"_vf",3))='\0';
-		if ((ODE_vf=load_or_warn(lib,symbol_name))==NULL){
+		if ((convert.ptr=dlsym(lib,symbol_name))==NULL){
 			fprintf(stderr,"[%s] loading «%s» is required.\n",__func__,symbol_name);
 			free(symbol_name);
 			return sys;
 		}
+		ODE_vf = convert.ODE_vf;
+
 		*((char*) pcpy(suffix,"_jac",4))='\0';
-		ODE_jac=load_or_warn(lib,symbol_name);
+		convert.ptr = dlsym(lib,symbol_name);
+		ODE_jac = convert.ODE_jac;
 
 		*((char*) pcpy(suffix,"_jacp",5))='\0';
-		ODE_jacp = load_or_warn(lib,symbol_name);
+		convert.ptr = dlsym(lib,symbol_name);
+		ODE_jacp = convert.ODE_jacp;
 
 		*((char*) pcpy(suffix,"_func",5))='\0';
-		ODE_func = load_or_warn(lib,symbol_name);
+		convert.ptr = dlsym(lib,symbol_name);
+		ODE_func = convert.ODE_func;
 
 		*((char*) pcpy(suffix,"_funcJac",8))='\0';
-		ODE_funcJac = load_or_warn(lib,symbol_name);
+		convert.ptr = dlsym(lib,symbol_name);
+		ODE_funcJac = convert.ODE_funcJac;
 
 		*((char*) pcpy(suffix,"_funcJacp",9))='\0';
-		ODE_funcJacp = load_or_warn(lib,symbol_name);
+		convert.ptr = dlsym(lib,symbol_name);
+		ODE_funcJacp = convert.ODE_funcJacp;
 
 		*((char*) pcpy(suffix,"_default",8))='\0';
-		ODE_default = load_or_warn(lib,symbol_name);
+		convert.ptr = dlsym(lib,symbol_name);
+		ODE_default = convert.ODE_default;
 
 		*((char*) pcpy(suffix,"_init",5))='\0';
-		ODE_init = load_or_warn(lib,symbol_name);
+		convert.ptr = dlsym(lib,symbol_name);
+		ODE_init = convert.ODE_init;
 
 		*((char*) pcpy(suffix,"_event",6))='\0';
-		ODE_event = load_or_warn(lib,symbol_name);
+		convert.ptr = dlsym(lib,symbol_name);
+		ODE_event = convert.ODE_event;
 	} else {
 		fprintf(stderr,"[%s] library «%s» could not be loaded: %s\n",__func__,model_so,dlerror());
 		return sys;
@@ -1039,7 +1046,7 @@ int testcall_CRNN(gsl_odeiv2_system sys){
 int CRNN_debug_print(double t, double *y, struct par p){
 	if (!ODE_default || !ODE_vf || !ODE_jac) return GSL_FAILURE;
 	int numStateVar=ODE_vf(0,NULL,NULL,NULL);
-	int numReaction=ODE_default(0,NULL);
+	//int numReaction=ODE_default(0,NULL);
 	int numFunction=ODE_func(0,NULL,NULL,NULL);
 	gsl_vector *f = gsl_vector_alloc(numStateVar);
 	gsl_vector *F = gsl_vector_alloc(numFunction);

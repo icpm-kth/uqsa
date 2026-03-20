@@ -1304,7 +1304,7 @@ tune_step_size <- function(MCMC,parMCMC=attr(MCMC,"init"),target_acceptance=0.25
 		if (abs(a-A) < 3e-2) {
 			break
 		} else {
-			h <- h*(2 * a^2/(A^2 + a^2) + 0.01)
+			h <- h*max(2*a^2/(A^2 + a^2),0.001)
 		}
 	}
 	return(h)

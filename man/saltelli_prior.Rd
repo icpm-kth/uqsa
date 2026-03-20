@@ -2,8 +2,7 @@
 % Please edit documentation in R/sensitivity.R
 \name{saltelli_prior}
 \alias{saltelli_prior}
-\title{Outpts the random sample on which to perform the Sobol-Homma-Saltelli global sensitivity
-analysis}
+\title{Sample for the Sobol-Homma-Saltelli Global Sensitivity Analysis}
 \usage{
 saltelli_prior(nSamples, rprior)
 }
@@ -17,12 +16,12 @@ a list with the components \code{M1}, \code{M2} (both matrices) and \code{N} (a
 3D-array).
 }
 \description{
-Each parameter vector has length nPars,
-The sample consists of two random (nSamples x nPars) matrices M1,
-M2 and a third (nSamples x nPars x nPars) array N. N consists of
-nPars copies of M2, except that in each M2-matrix one column has
-been replaced by the corresponding column of M1. M1 and M2 consists
-of random numbers from a normal distribution.
+Each parameter vector has length nPars, The sample consists of two
+random (nSamples x nPars) matrices M1, M2 and a third (nSamples x
+nPars x nPars) array N. N consists of nPars copies of M2, except
+that in each M2-matrix one column has been replaced by the
+corresponding column of M1. M1 and M2 consists of random numbers
+from a normal distribution.
 }
 \details{
 These matrices provide prior distribution samples to be further

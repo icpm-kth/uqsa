@@ -15,6 +15,8 @@
 #' @return `M\[i,j\]` the mean of each `observable\[j\]` in `bin\[i\]`
 observable.mean.in.bin <- function(id,outputSample){
 	d<-dim(outputSample)
+	print(length(id))
+	print(d)
 	stopifnot(length(id)==d[1])
 	n<-max(id)
 	bin.mean <- matrix(NA,n,d[2])
@@ -58,8 +60,8 @@ sum.of.bin.variance  <- function(hst,binMeans,totalMean){
 #' @param outputSample a matrix, with rows of outputs (row-index is the sample index)
 #' @param nBins number of bins, if unset defaults to the default of the hist function
 #' @export
-#' @return sensitivity `S\[i,j\]` of `output\[i\]` with respect to `parameter\[j\]`
-gsa_binning<-function(parSample,outputSample,nBins="Sturges"){
+#' @return sensitivity `S[i,j]` of `output[i]` with respect to `parameter[j]`
+gsa_binning <- function(parSample,outputSample,nBins="Sturges"){
 	isNA <- apply(is.na(outputSample),1,any)
 	parSample <- parSample[!isNA,,drop=FALSE]
 	outputSample <- outputSample[!isNA,,drop=FALSE]
@@ -130,15 +132,14 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 }
 
 
-#' Outpts the random sample on which to perform the Sobol-Homma-Saltelli global sensitivity
-#' analysis
+#' Sample for the Sobol-Homma-Saltelli Global Sensitivity Analysis
 #'
-#' Each parameter vector has length nPars,
-#' The sample consists of two random (nSamples x nPars) matrices M1,
-#' M2 and a third (nSamples x nPars x nPars) array N. N consists of
-#' nPars copies of M2, except that in each M2-matrix one column has
-#' been replaced by the corresponding column of M1. M1 and M2 consists
-#' of random numbers from a normal distribution.
+#' Each parameter vector has length nPars, The sample consists of two
+#' random (nSamples x nPars) matrices M1, M2 and a third (nSamples x
+#' nPars x nPars) array N. N consists of nPars copies of M2, except
+#' that in each M2-matrix one column has been replaced by the
+#' corresponding column of M1. M1 and M2 consists of random numbers
+#' from a normal distribution.
 #'
 #' These matrices provide prior distribution samples to be further
 #' processed by the simulator, similar to this:
