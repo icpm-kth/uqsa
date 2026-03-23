@@ -96,7 +96,12 @@ writeCFunction <- function(prefix, fName, defArgs=c("double t","const double y_[
 	if (!is.null(retValue) && grepl("\\by_",arguments)) {
 		errValue <- sprintf("\tif (!y_ || !%s) return %i;",retValue[1],length(values))
 	} else {
-		errValue <- switch(fName,default=sprintf("\tif (!p_) return numParam;"),event=sprintf("\tif (!y_ || EventLabel<0) return numEvents;"),NULL)
+		errValue <- switch(
+			fName,
+			default=sprintf("\tif (!p_) return numParam;"),
+			event=sprintf("\tif (!y_ || EventLabel<0) return numEvents;"),
+			NULL
+		)
 	}
 	if (init0) {
 		zeroBuffer<-sprintf("\tmemset(%s,0,sizeof(double)*%i); /* initialize with 0.0 */",retValue[1],length(values))
@@ -275,14 +280,18 @@ generateCode <- function(odeModel){
 			defArgs="double t",
 			retValue="y_",
 			defs=c(cc,cp),
-			values=odeModel$var),"",
-		writeCFunction(modelName,"event",
-			defArgs=c("double t", "double *y_"),
-			defs=c(cc,cp,cy,cx),
-			body=eventCode(odeModel),
-			otherArgs=c("double *p_","int EventLabel","double dose")
+			values=odeModel$var)
 		)
-	)
+	if ("tf" %in% names(odeModel) && !is.null(odeModel$tf)){
+		C <- c(C,"",
+			writeCFunction(modelName,"event",
+				defArgs=c("double t", "double *y_"),
+				defs=c(cc,cp,cy,cx),
+				body=eventCode(odeModel),
+				otherArgs=c("double *p_","int EventLabel","double dose")
+			)
+		)
+	}
 	# event function
 	comment(C) <- comment(odeModel) %otherwise% modelName
 	return(C)

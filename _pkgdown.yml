@@ -17,8 +17,6 @@ navbar:
     articles:
       text: Documentation
       menu:
-      - text: Model Format
-        href: articles/SBtab.html
       - text: Importing Models
         href: articles/models.html
       - text: Importing Data

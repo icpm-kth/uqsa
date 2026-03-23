@@ -21,10 +21,19 @@ of the parMCMC argument, requires:
 }
 }
 \details{
-This function will take the gll-values claculated by the ode solver
-in this package, and return the sum of those values over all
-experiments. The gll-value the simulator returns is calculated with
-the assumption of a normal distribution on measurement errors.
+This function will take the Fisher-Information-matrices claculated
+by the ode solver in this package, and return the sum of those
+values over all experiments. The gll-value the simulator returns is
+calculated with the assumption of a normal distribution on
+measurement errors.
 
-This function uses the log10ParMapJac(parMCMC)
+This function uses the log10ParMapJac(parMCMC) function by default,
+which assumes that sampling takes place in logarithmic space with
+base 10.
+
+Like \link{ll} and \link{gllf} this function does almost no work, it merely
+sums up the FI values calculated during simulation, but it also
+performs a transformation of the Fisher Information Matrix, taking
+the parameter-mapping between the sampling-space and
+model-parameter-space into account.
 }

@@ -11,6 +11,7 @@
 #' @return a character vector of units with names
 #' @export
 units_from_table <- function(df,default="1"){
+	if (is.null(df)) return(NULL)
 	stopifnot(is.data.frame(df))
 	pm <- pmatch("unit",tolower(colnames(df)))
 	if (any(is.finite(pm))){

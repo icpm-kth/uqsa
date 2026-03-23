@@ -34,7 +34,7 @@ the user can define such a function:
 and use that during sampling. A test simulation of \code{p}:
 \code{y <- simulate(p)} will reveal which values the simulator produces.
 These values will be attached to p during sampling, as an
-attribute.  mcmcInit will attach the same values for the
+attribute.  \link{mcmc_init} will attach the same values for the
 initial Markov chain state.  The log-likelihood function can
 use these attributes.
 }

@@ -4,24 +4,14 @@
 \alias{makeObjective}
 \title{creates Objective functions from ingredients}
 \usage{
-makeObjective(
-  experiments,
-  modelName = NULL,
-  distance,
-  parMap = identity,
-  simulate = NULL
-)
+makeObjective(experiments, simulate, distance = defaultDistance)
 }
 \arguments{
 \item{experiments}{a list of simulation experiments}
 
-\item{modelName}{and model storage file as comment}
+\item{simulate}{closure that simulates the model}
 
 \item{distance}{a function that calculates ABC scores (distance between data and simulations)}
-
-\item{parMap}{a function that transforms ABC variables into acceptable model parameters}
-
-\item{simulate}{closure that simulates the model}
 }
 \value{
 an objective function

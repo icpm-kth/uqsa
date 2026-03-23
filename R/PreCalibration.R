@@ -43,21 +43,35 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1, p=0.05,
 	n <- dim(prePar)
 	# split work
 	dim(prePar) <- c(n[1],n[2]/nCores,nCores)
-	preDelta<-unlist(mclapply(1:nCores, function(j) {apply(objectiveFunction(prePar[,,j]),2,max)}))
+	preDelta<-unlist(
+		mclapply(
+			seq(nCores),
+			function(j) {
+				apply(objectiveFunction(prePar[,,j]),2,max)
+			}
+		)
+	)
 	dim(prePar) <- n
 	# With the following loop we repeat the process and keep the npc best parameters and deltas
-	for( i in 1:rep){
-		p<-t(rprior(npc))
+	for(i in seq(rep)){
+		p <- t(rprior(npc))
 		newPrePar <- cbind(prePar, p)
-		dim(p)<-c(n[1],n[2]/nCores,nCores)
-		d <- unlist(mclapply(1:nCores,function(j) {apply(objectiveFunction(p[,,j]),2,max)}))
+		dim(p) <- c(n[1],n[2]/nCores,nCores)
+		d <- unlist(
+			mclapply(
+				seq(nCores),
+				function(j) {
+					apply(objectiveFunction(p[,,j]),2,max)
+				}
+			)
+		)
 		newPreDelta <- c(preDelta,d)
 		dim(p) <- n
-		ix <- order(newPreDelta)[1:npc]
+		ix <- order(newPreDelta)[seq(npc)]
 		preDelta <- newPreDelta[ix]
 		prePar <- newPrePar[,ix]
 	}
-	
+
 	M <- getMCMCPar(prePar, preDelta, p=p, sfactor=sfactor, delta = delta, num=num)
 	return(list(prePar=prePar, preDelta=preDelta, Sigma=M$Sigma, startPar=M$startPar))
 }

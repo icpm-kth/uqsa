@@ -15,7 +15,7 @@ tune_step_size(
 \item{MCMC}{a Markov chain Monte Carlo closure (function)}
 
 \item{parMCMC}{initial position of the Markov chain, has to be
-initialized with \link{mcmcInit}.}
+initialized with \link{mcmc_init}.}
 
 \item{target_acceptance}{a scalar value for the desired acceptance
 rate, some algorithms are most efficient with 20\% to 30\%

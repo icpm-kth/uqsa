@@ -424,12 +424,12 @@ checkModel <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.c
 #' simulation results).
 #' @param funcSim a matrix, contains model solution (output values),
 #'     columns of output vectors
-#' @param dataVAL a data.frame of experimental data
-#' @param dataERR a data.frame of measurement errors, if available,
+#' @param dataVAL a matrix of experimental data, shaped like funcSim
+#' @param dataERR a matrix of measurement errors, if available,
 #'     defaults to the maximum data value.
 defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 	if (all(is.finite(funcSim))){
-		distance <- mean(abs(funcSim-t(dataVAL))/t(dataERR), na.rm=TRUE)
+		distance <- mean(abs(funcSim-dataVAL)/dataERR, na.rm=TRUE)
 	} else {
 		distance <- Inf
 	}
@@ -487,31 +487,29 @@ defaultAcceptance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 #'
 #' @export
 #' @param experiments a list of simulation experiments
-#' @param modelName and model storage file as comment
-#' @param distance a function that calculates ABC scores (distance between data and simulations)
-#' @param parMap a function that transforms ABC variables into acceptable model parameters
 #' @param simulate closure that simulates the model
+#' @param distance a function that calculates ABC scores (distance between data and simulations)
 #' @return an objective function
-makeObjective <- function(experiments,modelName=NULL,distance,parMap=identity,simulate=NULL)
-{
-	if (is.null(simulate) && !is.null(modelName)){
-		simulate <- function(par){
-			return(runModel(experiments, modelName,  par, parMap))
-		}
-	}
-	N <- length(experiments)
+makeObjective <- function(experiments,simulate,distance=defaultDistance){
 	Objective <- function(parABC){
 		out <- simulate(parABC)
-		n <- ifelse(is.matrix(parABC),ncol(parABC),1)
-		S <- matrix(Inf,nrow=N,ncol=n)
+		S <- matrix(Inf,nrow=length(experiments),ncol=NCOL(parABC))
 		rownames(S) <- names(experiments)
 		if (is.null(out)) return(S)
-		for(i in 1:N){
-			if (!is.null(experiments[[i]]) && !is.null(out[[i]])){
-				DATA <- experiments[[i]]$data
-				STDV <- standard_error_matrix(DATA) %otherwise% experiments[[i]]$standardError
-				S[i,] <- unlist(mclapply(1:n, function(j) distance(out[[i]]$func[,,j], DATA, STDV)))
-			}
+		stopifnot(length(out) == length(experiments))
+		for(i in seq_along(experiments)){
+			DATA <- experiments[[i]]$data
+			STDV <- standard_error_matrix(DATA) %otherwise% experiments[[i]]$standardError
+			S[i,] <- unlist(
+				mclapply(
+					seq(NCOL(parABC)),
+					function(j) {
+						FUNC <- out[[i]]$func[,,j]
+						dim(FUNC) <- dim(DATA)
+						distance(FUNC, DATA, STDV)
+					}
+				)
+			)
 		}
 		return(S)
 	}

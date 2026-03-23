@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-library(rgsl)
+
 library(uqsa)
 library(pbdMPI)
 
@@ -26,114 +26,48 @@ if (length(a)>0){
 h <- 0.01                  # step size
 modelName <- "AKAP79"
 comment(modelName) <- "./AKAP79.so"
-sb <- readRDS(file="AKAP79-sb.RDS")
-ex <- readRDS(file="AKAP79-ex.RDS")
+ex <- readRDS("AKAP79-ex.RDS")
 
-for (i in seq_along(ex)){
-	t_ <- ex[[i]]$outputTimes
-	nt <- length(t_)
-	BY <- 10 # take every BYth point
-	D <- t(ex[[i]]$outputValues)
-	D[is.na(D)] <- 0.0
-	SD <- D*0.05+apply(D,1,FUN=max,na.rm=TRUE)*0.05 #t(ex[[i]]$errorValues)
-	SD[is.na(SD)] <- Inf
-	ex[[i]]$time <- t_[seq(1,nt,by=BY)]
-	ex[[i]]$data <- D[,seq(1,nt,by=BY),drop=FALSE]
-	ex[[i]]$stdv <- SD[,seq(1,nt,by=BY),drop=FALSE]
-}
+f <- uqsa_example(modelName)
+m <- model_from_tsv(f)
 
-parMCMC <- log10(sb$Parameter[["!DefaultValue"]])
-stopifnot("!Max" %in% names(sb$Parameter))
-stopifnot("!Min" %in% names(sb$Parameter))
-mu <- 0.5*(log10(sb$Parameter[["!Max"]])+log10(sb$Parameter[["!Min"]]))
-stdv <- 0.5*(log10(sb$Parameter[["!Max"]])-log10(sb$Parameter[["!Min"]]))
+parMCMC <- values(m$Parameter)
+mu <- m$Parameter$median
+stdv <- m$Parameter$stdv
+
 stopifnot(length(mu)==length(stdv))
 stopifnot(length(parMCMC)==length(mu))
 
 dprior <- dNormalPrior(mean=mu,sd=stdv)
 rprior <- rNormalPrior(mean=mu,sd=stdv)
+gprior <- gNormalPrior(mean=mu,sd=stdv)
 
-gprior <- \(p) {return(-1.0*(p-parMCMC)/stdv^2)}
 ## ----simulate-----------------------------------------------------------------
-sim <- simfi(ex,modelName,log10ParMap) # or simulator.c
-
-## log-likelihood
-llf <- function(parMCMC){
-	i <- seq_along(parMCMC)
-	J <- log10ParMapJac(parMCMC)
-	return(Reduce(\(a,b) a + b$logLikelihood[1], attr(parMCMC,"simulations"), init = 0.0))
-}
-
-## gradient of the log-likelihood
-gllf <- function(parMCMC){
-	i <- seq_along(parMCMC)
-	J <- log10ParMapJac(parMCMC)
-	return(as.numeric(Reduce(\(a,b) a + b$gradLogLikelihood[i,1], attr(parMCMC,"simulations"), init = 0.0) %*% J))
-}
-
-## Fisher Information
-fi <- function(parMCMC){
-	i <- seq_along(parMCMC)
-	J <- log10ParMapJac(parMCMC)
-	return(t(J) %*% Reduce(\(a,b) a + b$FisherInformation[i,i,1], attr(parMCMC,"simulations"), init = 0.0) %*% J)
-}
+sim <- simulator.c(ex,modelName,log10ParMap)
 
 ## ----update-------------------------------------------------------------------
-smmala <- mcmcUpdate(
+smmala <- smmala_update(
 	simulate=sim,
-	experiments=ex,
-	logLikelihood=llf,
 	dprior=dprior,
-	gradLogLikelihood=gllf,
-	gprior,
+	gradLogLikelihood=gprior,
 	fisherInformation=fi,
 	fisherInformationPrior=diag(1.0/stdv^2)
 )
 
 ## ----mcmc-method--------------------------------------------------------------
 MC <- mcmc(smmala)
-ptSMMALA <- mcmc_mpi(smmala,comm=comm,swapDelay=0,swapFunc=pbdMPI_bcast_reduce_temperatures)
-## ----init---------------------------------------------------------------------
-	x <- mcmcInit(
-		beta,
-		parMCMC,
-		simulate=sim,
-		logLikelihood=llf,
-		dprior,
-		gllf,
-		gprior,
-		fi
-	)
+ptSMMALA <- mcmc_mpi(
+	smmala,
+	comm=comm,
+	swapDelay=0,
+	swapFunc=pbdMPI_bcast_reduce_temperatures
+)
 
-## beta,parMCMC,simulate,logLikelihood,dprior,gradLogLikelihood=NULL,gprior=NULL,fisherInformation=NULL
-A <- function(a) { # step-size adjuster
-    return(0.5 + a^4/(0.25^4 + a^4))
-}
-
-## ----converge-and-adapt-------------------------------------------------------
-if (r==0){
-	cat(sprintf("%10s  %12s %16s %16s\n","rank","iteration","acceptance","step size"))
-	cat(sprintf("%10s  %12s %16s %16s\n","----","---------","----------","---------"))
-}
+h <- tune_step_size(MC)
 
 for (j in seq(2)){
-	for (i in seq(6)){
-		s <- MC(x,100,h)           # evaluate rate of acceptance
-		a <- attr(s,"acceptanceRate")
-		h <- h*A(a)                # adjust h up or down
-		x <- attr(s,"lastPoint")   # start next iteration from last point
-		cat(sprintf("%10i  %12i %16.4f %16.4g\n",r,i,a,h)) # cat(sprintf("rank: %02i; iteration: %02i; a: %f; h: %g\n",r,i,a,h))
-	}
 	pbdMPI::barrier()
-	## ---- here, the sampling happens
-	s <- ptSMMALA(x,N,h) # the main amount of work is done here
-	saveRDS(s,file=sprintf("AKAP79-pt-smmala-sample-%i-rank-%i.RDS",j,r))
-	## ---- when all are done, we load the sampled points from the files but only for the right temperature:
-	pbdMPI::barrier()
-	f <- dir(pattern=sprintf("^AKAP79-pt-smmala-sample-%i-rank-.*RDS$",j))
-	X <- uqsa::gatherSample(f,beta)
-	saveRDS(X,file=sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.RDS",j,r))
-	x <- mcmcInit(
+	x <- mcmc_init(
 		beta,
 		as.numeric(tail(X,1)), # last row
 		simulate=sim,
@@ -143,6 +77,13 @@ for (j in seq(2)){
 		gprior,
 		fi
 	)
+	## ---- here, the sampling happens
+	s <- ptSMMALA(x,N,h) # the main amount of work is done here
+	saveRDS(s,file=sprintf("AKAP79-pt-smmala-sample-%i-rank-%i.RDS",j,r))
+	pbdMPI::barrier()
+	f <- dir(pattern=sprintf("^AKAP79-pt-smmala-sample-%i-rank-.*RDS$",j))
+	X <- uqsa::gatherSample(f,beta)
+	saveRDS(X,file=sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.RDS",j,r))
 }
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)

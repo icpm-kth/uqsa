@@ -67,7 +67,7 @@ return(paste(
 #' @param fisherInformation a function that calculates the Fisher Information matrix
 #' @return the same starting parameter vector, but with attributes.
 #' @export
-mcmcInit <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rnorm(x)),gradLogLikelihood=NULL,gprior=NULL,fisherInformation=NULL){
+mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rnorm(x)),gradLogLikelihood=NULL,gprior=NULL,fisherInformation=NULL){
 	simulations <- simulate(parMCMC)
 	attr(parMCMC,"beta") <- beta
 	attr(parMCMC,"simulations") <- simulations
@@ -564,7 +564,38 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 	)
 }
 
-metropolisUpdate <- function(simulate, experiments, logLikelihood=ll, dprior=\(x) prod(dnorm(x)), Sigma=NULL, parAcceptable=\(p) {all(is.finite(p))}){
+#' Metropolis Update is an MCMC update function
+#'
+#' During Markov chain Monte Carlo a given parameter needs to be
+#' updated, the model needs to be simulated at the updated point.
+#'
+#' Using the simulations, and an acceptance rule, the proposed update
+#' is either accepted or rejected.
+#'
+#' This function returns a closure `metropolis`, with only `parMCMC`
+#' as it's sole argument: `parProposal <- metropolis(parGiven)`
+#'
+#' An optional argument to this function is `parAcceptable`, during
+#' sampling, when `metropolis` is called as the update function, and
+#' `parAcceptable(parProposal)` returns `FALSE`, then metropolis
+#' shortcuts to `retrun(parGiven)` without performing simulations.
+#'
+#' This function can be used to weed out parameter combinations that
+#' would result in obviously nonsensical simulations without wasting
+#' CPU-time.
+#'
+#' @export
+#' @param simulate a function that simulates the model
+#' @param logLikelihood a function that returns the log-likelihood
+#'     value given the paramegter value, with simulations attached to
+#'     the parameter as an attreibute (probably a closure)
+#' @param dprior a function that returns the prior density of the
+#'     given parameter vector
+#' @param Sigma the transition kernel's covariance matrix.
+#' @param parAcceptable a function that can be used to reject a
+#'     proposal based on the values of the parameters alone (shortcut
+#'     to rejection, sans simulation)
+metropolis_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(x)), Sigma=NULL, parAcceptable=\(p) {all(is.finite(p))}){
 	if (!is.null(Sigma)){
 		cSigma <- chol(Sigma)
 	}
@@ -653,10 +684,13 @@ metropolisUpdate <- function(simulate, experiments, logLikelihood=ll, dprior=\(x
 #' - parMCMC has simulations attribute
 #' - simulations list includes logLikelihood values
 #'
-#' This function will take the ll-values claculated by the ode solver
-#' in this package, and return the sum of those values over all
-#' experiments. The ll-value the simulator returns is calculated with
-#' the assumption of a normal distribution on measurement errors.
+#' This function will take the log-likelihood-values claculated by the
+#' ode solver in this package, and return the sum of those values over
+#' all experiments. The value the simulator returns is calculated
+#' with the assumption of a normal distribution on measurement errors.
+#'
+#' This function does almost no work, it merely sums up the values
+#' calculated during simulation.
 #'
 #' @param parMCMC a numeric vector, with attributes for MCMC, specifically smmala
 #' @return a scalar value: log(likelihood(data|parMCMC))
@@ -666,20 +700,28 @@ ll <- function(parMCMC){
 	return(sum(sapply(y,\(sim) sim$logLikelihood)))
 }
 
-#' Default Fisher Information Function
+#' Default gradient-log-likelihood Function
 #'
 #' Extracts the `FisherInformation` values from the simulations attribute
 #' of the parMCMC argument, requires:
 #' - parMCMC has simulations attribute
 #' - simulations list includes Fisher-Information values
 #'
-#' This function will take the fi-values claculated by the ode solver
-#' in this package, and return the sum of those values over all
-#' experiments. The gll-value the simulator returns is calculated with
-#' the assumption of a normal distribution on measurement errors.
+#' This function will take the log-likelihood gradient values
+#' claculated by the ode solver in this package, and return the sum of
+#' those vectors over all experiments. The gll-value the simulator
+#' returns is calculated with the assumption of a normal distribution
+#' on measurement errors.
 #'
 #' This function uses the log10ParMapJac(parMCMC) function by default,
-#' which assumes that sampling takes place in logarothmic space.
+#' which assumes that sampling takes place in logarithmic space with
+#' base 10.
+#'
+#' Like [ll] this function does almost no work, it merely sums up the
+#' gradient values calculated during simulation, but it also performs a
+#' transformation of the gradient vector, taking the
+#' parameter-mapping between the sampling-space and
+#' model-parameter-space into account.
 #'
 #' @param parMCMC a numeric vector, with attributes for MCMC, specifically smmala
 #' @return a numeric vector: grad(log(likelihood(data|parMCMC)))
@@ -706,12 +748,21 @@ gllf <- function(parMapJac=log10ParMapJac) {
 #' - parMCMC has simulations attribute
 #' - simulations list includes gradLogLikelihood values
 #'
-#' This function will take the gll-values claculated by the ode solver
-#' in this package, and return the sum of those values over all
-#' experiments. The gll-value the simulator returns is calculated with
-#' the assumption of a normal distribution on measurement errors.
+#' This function will take the Fisher-Information-matrices claculated
+#' by the ode solver in this package, and return the sum of those
+#' values over all experiments. The gll-value the simulator returns is
+#' calculated with the assumption of a normal distribution on
+#' measurement errors.
 #'
-#' This function uses the log10ParMapJac(parMCMC)
+#' This function uses the log10ParMapJac(parMCMC) function by default,
+#' which assumes that sampling takes place in logarithmic space with
+#' base 10.
+#'
+#' Like [ll] and [gllf] this function does almost no work, it merely
+#' sums up the FI values calculated during simulation, but it also
+#' performs a transformation of the Fisher Information Matrix, taking
+#' the parameter-mapping between the sampling-space and
+#' model-parameter-space into account.
 #'
 #' @param parMCMC a numeric vector, with attributes for MCMC, specifically smmala
 #' @return a scalar value: log(likelihood(data|parMCMC))
@@ -725,14 +776,60 @@ fi <- function(parMapJac=log10ParMapJac){
 				parMCMC %@% "simulations",
 				init = 0.0
 			)
+			J <- parMapJac(parMCMC) 
 			return(
-				t(parMapJac(parMCMC)) %*% f %*% parMapJac(parMCMC)
+				t(J) %*% f %*% J
 			)
 		}
 	)
 }
 
-smmalaUpdate <- function(simulate, experiments, logLikelihood=ll, dprior=\(x) prod(dnorm(x)), gradLogLikelihood=gllf(log10ParMapJac), gprior=\(x) (-x), fisherInformation=fi(log10ParMapJac), fisherInformationPrior=0, parAcceptable=\(p) all(is.finite(p))){
+#' SMMALA Update is an MCMC update function
+#'
+#' During Markov chain Monte Carlo a given parameter needs to be
+#' updated, the model needs to be simulated at the updated point.
+#'
+#' Using the simulations, and an acceptance rule, the proposed update
+#' is either accepted or rejected.
+#'
+#' This function returns a closure `smmala`, with only `parMCMC`
+#' as it's sole argument: `parProposal <- smmala(parGiven)`
+#'
+#' An optional argument to this function is `parAcceptable`, during
+#' sampling, when `metropolis` is called as the update function, and
+#' `parAcceptable(parProposal)` returns `FALSE`, then metropolis
+#' shortcuts to `retrun(parGiven)` without performing simulations.
+#'
+#' This function can be used to weed out parameter combinations that
+#' would result in obviously nonsensical simulations without wasting
+#' CPU-time.
+#'
+#' The argument `fisherInformationPrior` is really the precision of
+#' the prior (a constant matrix). It's role is additive to the
+#' fisherInformation and is used to regularize the _final_ Fisher
+#' Information Matrix (makes it invertible).
+#'
+#' @export
+#' @param simulate a function that simulates the model
+#' @param logLikelihood a function that returns the log-likelihood
+#'     value given the paramegter value, with simulations attached to
+#'     the parameter as an attreibute (probably a closure)
+#' @param dprior a function that returns the prior density of the
+#'     given parameter vector
+#' @param gradLogLikelihood any function that calculates or estimates
+#'     the gradient of the log-likelihood function, for the chosen
+#'     parameter mapping. Function must take one argument (the MCMC
+#'     variable)
+#' @param gprior a function that returns the gradient of the log-prior
+#'     distribution.
+#' @param fisherInformation a function that estimates the Fisher
+#'     Information for a given MCMC variable (parMCMC).
+#' @param fisherInformationPrior a constant fisherInformation of the
+#'     prior distribution (or rather, the precision of the prior)
+#' @param parAcceptable a function that can be used to reject a
+#'     proposal based on the values of the parameters alone (shortcut
+#'     to rejection, sans simulation)
+smmala_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(x)), gradLogLikelihood=gllf(log10ParMapJac), gprior=\(x) (-x), fisherInformation=fi(log10ParMapJac), fisherInformationPrior=0, parAcceptable=\(p) all(is.finite(p))){
 	U <- function(parGiven, eps=1e-4){
 		stopifnot(parGiven %has% c("logLikelihood","prior","fisherInformation","gradLogLikelihood","gradLogPrior"))
 		fp <- fisherInformationPrior
@@ -793,11 +890,8 @@ smmalaUpdate <- function(simulate, experiments, logLikelihood=ll, dprior=\(x) pr
 #' call the variables parMCMC (parABC), or
 #' par{Current|Given|Proposal}, and similar.
 #'
-#' @export
 #' @param simulate a function that simulates the model for a given
 #'     parMCMC
-#' @param experiments the list of experiments (with simulation
-#'     instructions)
 #' @param logLikelihood a function that calculates log-likelihood
 #'     values for given parMCMC
 #' @param dprior prior density function
@@ -817,14 +911,14 @@ smmalaUpdate <- function(simulate, experiments, logLikelihood=ll, dprior=\(x) pr
 #'     return and the model will not be simulated.
 #' @return a function that returns possibly updated states of the
 #'     Markov chain
-mcmcUpdate <- function(simulate, experiments, logLikelihood=ll, dprior=\(x) prod(dnorm(x)), gradLogLikelihood=NULL, gprior=NULL, fisherInformation=NULL, fisherInformationPrior=NULL, Sigma=NULL, parAcceptable=\(p) {TRUE}){
+automatic_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(x)), gradLogLikelihood=NULL, gprior=NULL, fisherInformation=NULL, fisherInformationPrior=NULL, Sigma=NULL, parAcceptable=\(p) {TRUE}){
 	if (is.null(Sigma) && !is.null(fisherInformationPrior)) {
 		Sigma <- solve(fisherInformationPrior)
 	}
 	if (is.null(gradLogLikelihood)) { # Metropolis Hastings
-		return(metropolisUpdate(simulate, experiments, logLikelihood, dprior, Sigma=Sigma, parAcceptable=parAcceptable))
+		return(metropolis_update(simulate, logLikelihood, dprior, Sigma=Sigma, parAcceptable=parAcceptable))
 	} else {
-		return(smmalaUpdate(simulate, experiments, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior, parAcceptable))
+		return(smmala_update(simulate, logLikelihood, dprior, gradLogLikelihood, gprior, fisherInformation, fisherInformationPrior, parAcceptable))
 	}
 }
 
@@ -858,7 +952,7 @@ mcmcUpdate <- function(simulate, experiments, logLikelihood=ll, dprior=\(x) prod
 #'     and use that during sampling. A test simulation of `p`:
 #'     `y <- simulate(p)` will reveal which values the simulator produces.
 #'     These values will be attached to p during sampling, as an
-#'     attribute.  mcmcInit will attach the same values for the
+#'     attribute.  [mcmc_init] will attach the same values for the
 #'     initial Markov chain state.  The log-likelihood function can
 #'     use these attributes.
 #' @export
@@ -1082,50 +1176,6 @@ simfiGaussianLogLikelihood <- function(init = 0.0){
 	return(llf)
 }
 
-#' SMMALA -- Extract the gradient of the log-likelihood from the simfi solver's return value
-#'
-#' This function extracts the approximate gradient of the log-likelihood and
-#' transforms the gradient using the Jacobian of the parameter map
-#' between Markov chain variables and model parameters.
-#'
-#' The `simfi()` gradient is with respect to the raw model parameters
-#'
-#' @param ParMapJac Jacobian of the parMap function
-#' @export
-#' @return the gradient of the Gaussian log-likelihood with respect to
-#'     the MCMC variable
-simfiGaussianGradLogLikelihood <- function(ParMapJac=function (x) {diag(1,length(x))}){
-	gllf <- function(parMCMC){
-		i <- seq_along(parMCMC)
-		J <- ParMapJac(parMCMC)
-		return(as.numeric(Reduce(\(a,b) a + b$gradLogLikelihood[i,1], attr(parMCMC,"simulations"), init = 0.0) %*% J))
-	}
-	return(gllf)
-}
-
-#' SMMALA -- Extract the approximate Fisher infomration from the simfi results
-#'
-#' This function extracts the approximate Fisher information matrix `G`
-#' of the log-likelihood and transforms it using the
-#' Jacobian of the parameter map between Markov chain variables and
-#' model parameters.
-#'
-#' The `simfi()` values are with respect to the raw model parameters,
-#' while this function rephrases them in terms of the Markov chain's
-#' position.
-#'
-#' @param ParMapJac Jacobian of the parMap function
-#' @export
-#' @return the approximate Fisher information of the Gaussian log-likelihood with respect to
-#'     the MCMC variable, useful for SMMALA
-simfiGaussianFILL <- function(ParMapJac=function (x) {diag(1,length(x))}){
-	fi <- function(parMCMC){
-		i <- seq_along(parMCMC)
-		J <- ParMapJac(parMCMC)
-		return(t(J) %*% Reduce(\(a,b) a + b$FisherInformation[i,i,1], attr(parMCMC,"simulations"), init = 0.0) %*% J)
-	}
-	return(fi)
-}
 
 #' High Level SMMALA function
 #'
@@ -1178,7 +1228,7 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 		mean=m$Parameter$median %otherwise% values(m$Parameter),
 		sd=m$Parameter$stdv %otherwise% m$Parameter$sd
 	)
-	parMCMC <- mcmcInit(
+	parMCMC <- mcmc_init(
 		beta=1.0,
 		x,
 		simulate=s,
@@ -1253,7 +1303,7 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 		mean=m$Parameter$median %otherwise% m$Parameter$mean %otherwise% m$Parameter$mu %otherwise% values(m$Parameter),
 		sd=stdv
 	)
-	parMCMC <- mcmcInit(
+	parMCMC <- mcmc_init(
 		beta=beta,
 		x,
 		simulate=s,
@@ -1286,7 +1336,7 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 #'
 #' @param MCMC a Markov chain Monte Carlo closure (function)
 #' @param parMCMC initial position of the Markov chain, has to be
-#'     initialized with [mcmcInit].
+#'     initialized with [mcmc_init].
 #' @param target_acceptance a scalar value for the desired acceptance
 #'     rate, some algorithms are most efficient with 20% to 30%
 #'     acceptance, some work well with a very high acceptance.

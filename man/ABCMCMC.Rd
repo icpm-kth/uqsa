@@ -13,7 +13,7 @@ ABCMCMC(
   dprior,
   batchSize = 100,
   parAcceptable = function(p) {
-     return(TRUE)
+     all(is.finite(p))
  }
 )
 }

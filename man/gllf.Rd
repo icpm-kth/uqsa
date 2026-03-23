@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{gllf}
 \alias{gllf}
-\title{Default Fisher Information Function}
+\title{Default gradient-log-likelihood Function}
 \usage{
 gllf(parMapJac = log10ParMapJac)
 }
@@ -21,11 +21,19 @@ of the parMCMC argument, requires:
 }
 }
 \details{
-This function will take the fi-values claculated by the ode solver
-in this package, and return the sum of those values over all
-experiments. The gll-value the simulator returns is calculated with
-the assumption of a normal distribution on measurement errors.
+This function will take the log-likelihood gradient values
+claculated by the ode solver in this package, and return the sum of
+those vectors over all experiments. The gll-value the simulator
+returns is calculated with the assumption of a normal distribution
+on measurement errors.
 
 This function uses the log10ParMapJac(parMCMC) function by default,
-which assumes that sampling takes place in logarothmic space.
+which assumes that sampling takes place in logarithmic space with
+base 10.
+
+Like \link{ll} this function does almost no work, it merely sums up the
+gradient values calculated during simulation, but it also performs a
+transformation of the gradient vector, taking the
+parameter-mapping between the sampling-space and
+model-parameter-space into account.
 }

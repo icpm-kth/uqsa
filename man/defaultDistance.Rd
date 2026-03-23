@@ -10,9 +10,9 @@ defaultDistance(funcSim, dataVAL, dataERR = max(dataVAL))
 \item{funcSim}{a matrix, contains model solution (output values),
 columns of output vectors}
 
-\item{dataVAL}{a data.frame of experimental data}
+\item{dataVAL}{a matrix of experimental data, shaped like funcSim}
 
-\item{dataERR}{a data.frame of measurement errors, if available,
+\item{dataERR}{a matrix of measurement errors, if available,
 defaults to the maximum data value.}
 }
 \description{

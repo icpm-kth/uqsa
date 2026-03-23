@@ -112,6 +112,7 @@ values <- function(df){
 #' @param df a data.frame with a "formula" column
 #' @return character vector with names taken from the row names of df
 formulae <- function(df){
+	if (is.null(df)) return(NULL)
 	if ("formula" %in% colnames(df)){
 		f <- df$formula
 	} else {
@@ -447,6 +448,7 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 #' @param as_type a character scalar indicating a type ('character','numeric','logical',etc.)
 #' @return a matrix of dimension length(v) × NROW(d)
 update_values <- function(v,d,as_type="numeric"){
+	if (is.null(v)) return(NULL)
 	if (is.matrix(v) && NCOL(v)==1) {
 		v <- column(v,1)
 	}
@@ -465,12 +467,8 @@ update_values <- function(v,d,as_type="numeric"){
 time_series_experiments <- function(m,E,iv,input,out){
 	if (is.null(E) || NROW(E)==0) return(NULL)
 	D <- vector("list",NROW(E))
-	eventSchedule <- E$event
+	eventSchedule <- E$event %otherwise% character(NROW(E))
 	tr <- m$Transformation
-	if (is.null(tr) && !is.null(eventSchedule)){
-		stop("When an 'event' column is present in the table of experiments (Experiment.tsv), ",
-			 "then a transformation table must exist (named «Transformation.tsv») as well.")
-	}
 	for (i in seq(NROW(E))){
 		d <- m[[rownames(E)[i]]]
 		ev <- m[[eventSchedule[i]]]
@@ -496,8 +494,10 @@ time_series_experiments <- function(m,E,iv,input,out){
 		}
 		inp <- as.double(input[,i])
 		names(inp) <- rownames(input)
+		df <- as.data.frame(t(DATA))
+		colnames(df) <- out
 		D[[i]] <- list(
-			measurements=as.data.frame(t(DATA)),
+			measurements=df,
 			data=DATA,
 			input=inp,
 			initialTime=as.double(E$t0[i] %otherwise% min(d$time)),
@@ -596,27 +596,20 @@ experiments <- function(m,o){
 	} else {
 		out <- rownames(m$Compound)
 	}
-	if (all(is.finite(pmatch('Input',names(m))))){
-		if (is.null(o$conservationLaws)){
-			ConservedConst <- NULL
-		} else {
-			iv <- update_values(values(m$Compound),m$Experiment)
-			C <- o$conservationLaws %@% "lawMatrix"
-			stopifnot(all(rownames(C)==rownames(iv)))
-			ConservedConst <- pracma::flipud(t(C) %*% iv)
-			rownames(ConservedConst) <- o$conservationLaws$ConstantName
-			iv <- iv[-o$conservationLaws$Eliminates,]
-		}
-		input <- rbind(
-			update_values(values(m$Input),E),
-			ConservedConst
-		)
-	} else {
-		input <- NULL
-	}
+
+	iv <- update_values(values(m$Compound),m$Experiment) # by default
+	input <- update_values(values(m$Input),E)
 	if (is.null(o$conservationLaws)){
-		iv <- update_values(o$var,E)
+		ConservedConst <- NULL
+	} else {
+		C <- o$conservationLaws %@% "lawMatrix"
+		stopifnot(all(rownames(C)==rownames(iv)))
+		ConservedConst <- pracma::flipud(t(C) %*% iv)
+		rownames(ConservedConst) <- o$conservationLaws$ConstantName
+		iv <- iv[-o$conservationLaws$Eliminates,]        # updated
 	}
+	input <- rbind(input, ConservedConst)
+
 	if ("type" %in% colnames(E)){
 		l <- grepl("[Dd]ose[- ]?[Rr]esponse",E$type)
 	} else {

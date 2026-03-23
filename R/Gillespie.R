@@ -554,31 +554,34 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 #' but one is the same between the experiments and one is different
 #' between different experiments: `modelParam <- c(mcmcParam, inputParam)`
 #'
-#' @param experiments list of expperiments, same as for the deterministic solvers.
+#' @param ex list of experiments, same as for the deterministic solvers.
 #' @param model.so compiled C code for the model, this has to be a path with at least one slash in it, e.g.: ./model.so
 #' @param parameters a numeric vector of appropriate size
 #' @export
-#' @return simulation result list
+#' @return a closure that simulates the model in `model.so`
 #' @useDynLib uqsa gillespie
-simstoch <- function(experiments, model.so, parMap=identity){
+simstoch <- function(ex, model.so, parMap=identity){
 	if (!file.exists(model.so)) {
 		warning(sprintf("model.so «%s» not found.",model.so))
 		return(NULL)
 	}
-	for (i in seq_along(experiments)){
-		if (!("input" %in% names(experiments[[i]]))){
-			warning("experiments have no input parameters, defaults to numeric(0).")
-			experiments[[i]]$input <- numeric(0)
+	for (i in seq_along(ex)){
+		if (!("input" %in% names(ex[[i]]))){
+			warning("ex have no input parameters, defaults to numeric(0).")
+			ex[[i]]$input <- numeric(0)
 		}
 	}
-	return(function(parMCMC){
-		p <- as.matrix(parMap(parMCMC))
-		y <- .Call(gillespie, model.so, experiments, p)
-		names(y) <- names(experiments)
-		for (i in seq_along(y)){
-			rownames(y[[i]]$state) <- names(experiments[[i]]$initialState)
-			rownames(y[[i]]$func) <- names(experiments[[i]]$outputValues)
+	return(
+		function(parMCMC){
+			p <- as.matrix(parMap(parMCMC))
+			y <- .Call(gillespie, model.so, ex, p)
+			names(y) <- names(ex)
+			stopifnot(length(y) == length(ex))
+			for (i in seq_along(y)){
+				rownames(y[[i]]$state) <- names(ex[[i]]$initialState)
+				rownames(y[[i]]$func) <- rownames(ex[[i]]$data)
+			}
+			return(y)
 		}
-		return(y)
-	})
+	)
 }

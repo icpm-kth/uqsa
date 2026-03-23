@@ -2,7 +2,7 @@
 % Please edit documentation in R/prior.R
 \name{dCopulaPrior}
 \alias{dCopulaPrior}
-\title{copulaPrior creates a prior probability density function}
+\title{dCopulaPrior creates a prior probability density function}
 \usage{
 dCopulaPrior(Copula)
 }

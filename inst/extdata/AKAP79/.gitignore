@@ -1,4 +1,11 @@
-.Rhistory
-.DS_Store
-.Rbuildignore
+*.c
 *.so
+*.tex
+*.log
+*.out
+*.aux
+*.pdf
+*.png
+*.RDS
+*.html
+*.ods

@@ -3,160 +3,172 @@ title: "Simulate the AKAR4 deterministic model"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE, eval=TRUE,
+knitr::opts_chunk$set(cache = FALSE, eval=TRUE,
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
 ```{r setup}
-require(SBtabVFGEN)
 library(uqsa)
+library(errors)
 ```
 
-This article provides code to simulate the AKAR4 deterministic model (one time, no sampling). Specifically, given a vector of initial conditions and a default parameter, we simulate the time evolution of the concentrations of compounds in the system.
+This article provides code to simulate the AKAR4 deterministic model
+(one time, no sampling). Specifically, given a vector of initial
+conditions and a default parameter, we simulate the time evolution of
+the concentrations of compounds in the system.
 
-In this article, we are simulating the AKAR4 model with default parameters which are not expected to fit the data.
+In this article, we are simulating the AKAR4 model with default
+parameters which are not expected to fit the data perfectly.
 
 # Load the Model
 
 The following instructions allow you to load all information needed to simulate the AKAR4 model in R. More details on each of the following commands can be found in the article ["Build your own model"](user_model.html).
 
-```{r, eval = FALSE}
-# Load the files with information on AKAR4 model and corresponding experimental data
-modelFiles <- uqsa_example("AKAR4",full.names=TRUE)
+```{r, eval = TRUE}
+f <- uqsa_example("AKAR4") # TSV files
+m <- model_from_tsv(f)     # data.frames
+o <- as_ode(m)             # list
+C <- generateCode(o)       # character vector
 
-# Save the information from the files into the R variable 'SBtab'
-SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
-
-# Convert the model into an ordinary differential equation
-odeModel <- SBtabVFGEN::sbtab_to_vfgen(SBtab)
-
-# Function 'checkModel' returns the model name and compiles the files that will be used to run the ODE solver
-modelName <- checkModel("AKAR4",uqsa_example("AKAR4",pat="_gvf[.]c$"))
-
-# This will print the file that will be used to run the ODE simulations
-comment(modelName)
-
+modelName <- write_and_compile(C)
 ```
 
+This is the created file that will be used in simulations:
 
-```{r, eval = TRUE, include = FALSE}
-
-# Load the files with information on AKAR4 model and corresponding experimental data
-modelFiles <- uqsa_example("AKAR4",full.names=TRUE)
-
-# Save the information from the files into the R variable 'SBtab'
-SBtab <- SBtabVFGEN::sbtab_from_tsv(modelFiles)
-
-# Convert the model into an ordinary differential equation
-odeModel <- SBtabVFGEN::sbtab_to_vfgen(SBtab)
-
-# Function 'checkModel' returns the model name and compiles the files that will be used to run the ODE solver
-modelName <- checkModel("AKAR4",uqsa_example("AKAR4",pat="_gvf[.]c$"))
-
-# This will print the file that will be used to run the ODE simulations
-comment(modelName)
+```{r shared-library}
+print(comment(modelName))
 ```
 
-The AKAR4 deterministic model is an ODE model that describes the evolution in time of the concentrations of compounds in the system. The following R commands will print the names of the compounds in the system and the corresponding default initial conditions.
+The AKAR4 deterministic model is an ODE model that describes the
+evolution in time of the concentrations of compounds in the
+system. The following R commands will print the names of the compounds
+in the system and the corresponding default initial conditions.
 
 ```{r}
-# Names of compounds
-SBtab$Compound[["!Name"]]
+# Compounds or "Species"
+values(m$Compound)
 
-# Default initial conditions
-SBtab$Compound[["!InitialValue"]]
+# Parameters
+values(m$Parameter)
 ```
 
-
-The ODE system that will be used to run simulations from the AKAR4 model is derived from the reactions in the AKAR4 model:
+The ODE system that will be used to run simulations from the AKAR4
+model is derived from the reactions in the AKAR4 model:
 
 ```{r}
 # Reactions in the AKAR4 system
-SBtab$Reaction
+m$Reaction
 ```
 
 # Load Experiments (data)
 
-The following R commands show how to load experimental data saved in the R variable `SBtab`. This also includes instructions for the simulator.
+We create simulation instructions from `m` for `o`:
 
 ```{r, experiments}
-# Save experimental data into the R variable 'experiments' 
-experiments <- sbtab.data(SBtab)
+ex <- experiments(m,o)
+```
 
-# 'experiments' is a list of length n (= number of experiments)
-# For example, this will show the initial state in experiment 1
-print(experiments[[1]]$initialState)
+This variable includes information about the initial value problem (for the ODE):
+
+```{r, iv}
+print(ex[[1]]$initialState)
+```
+
+But, also the measured data, as a matrix:
+
+```{r, data}
+print(dim(ex[[1]]$data))
+cat(
+	sprintf("%30s: %i","number of outputs",NROW(m$Output)),
+	sprintf("%30s: %i","number of measurement times",length(ex[[1]]$outputTimes)),
+	sep="\n"
+)
+```
+
+Also available as `data.frame`:
+
+```{r, data-frame}
+print(head(ex[[1]]$measurements))
 ```
 
 # Simulate
 
-Here we show how to simulate the AKAR4 ODE model using the same conditions that were used in each of the experiments. In AKAR4, the 3 experiments differ only in the initial conditions. In larger models, different experiments may also have different *inputs*, and this will be also taken into account when running the R commands below.
+Here we show how to simulate the AKAR4 ODE model using the same
+conditions that were used in each of the experiments. In AKAR4, the 3
+experiments differ only in the initial conditions. In larger models,
+different experiments may also have different *inputs*, and this will
+be also taken into account when running the R commands below.
 
-Function `simulator.c` will output a function (variable `sim` in the code below) that will allow us to simulate the AKAR4 ODE model (specified through the input argument `modelName`) given the experimental conditions saved in `experiments`.
-
-```{r}
-# This will make a function `sim`, which will always simulate the scenarios described in the `experiments` list, but for user supplied parameters
-sim <- simulator.c(experiments,modelName)
-
-
-# If function `simulator.c` is called with the argument `noise=TRUE`, measurement errors are simulated and added to the trajectory
-sim_with_noise <- simulator.c(experiments,modelName, noise = TRUE)
-```
-
-The variable `sim` just created is a function that requires a parameter `p` as input argument. The output of function `sim` is the simulation of the ODE model given the parameter `p`.
+Function `simulator.c` will output a function (variable `simulate` in
+the code below) that will allow us to simulate the AKAR4 ODE model
+(specified through the input argument `modelName`) given the
+experimental conditions saved in `ex`.
 
 ```{r}
-# This function returns the default parameter (which is not expected to fit the experimental data)
-p <- AKAR4_default()
-
-# Simulate the model and save the simulations in variable 'y'
-y <- sim(p)
-
-# Simulate the model with simulated measurement noise
-y_with_noise <- sim_with_noise(p)
+simulate <- simulator.c(ex,modelName)
+simulate_noise <- simulator.c(ex,modelName, noise = TRUE)
 ```
 
+The variable `simulate` is a function that requires a parameter `p` as
+input argument. The output of function `simulate` is the simulation of
+all experiments in `ex` using the ODE model `o` (written as C code to
+a file):
 
-In the AKAR4 example we have a list of 3 experiments, thus function `sim` simulates the system 3 times, each time considering the specific initial condition of the corresponding experiment. The output of function `sim` (here saved in the variable `y`) is a list of 3 elements, corresponding to the 3 experimental conditions. Each element of the list is in turn a list with the following elements:
+```{r}
+p <- values(m$Parameter)
 
-* `state` (simulated trajectory of the ODE system)
-* `func` (the corresponding output of the system given the computed `state`)
-* `cpuSeconds` (simulation runtime)
+y <- simulate(p)
+
+y_noisy <- simulate_noise(p)
+```
+
+In the AKAR4 example we have a list of 3 experiments, thus function
+`simulate` simulates the entire system 3 times, each time considering
+the specific initial condition of the corresponding experiment. The
+output of `simulate` (`y`) is a list of `length(ex)` elements,
+corresponding to the 3 experimental conditions. Each element of the
+list is in turn a list with at least these elements:
+
+- `state` (simulated trajectory of the ODE system)
+- `func` (the corresponding output of the system given the computed `state`)
+- `cpuSeconds` (simulation runtime)
+- `status`
 
 # Plot
 
-Here we plot the results of the simulations.
+Here we plot the results of one of the simulations.
 
 ```{r, plotting}
 E <- 2 # which experiment to plot
 
 # experimental data for experiment E
-out <- experiments[[E]]$outputValues$AKAR4pOUT
+out <- ex[[E]]$outputValues$AKAR4pOUT
 
 # measurement error for experiment E
-err <- experiments[[E]]$errorValues$AKAR4pOUT
+err <- ex[[E]]$errorValues$AKAR4pOUT
 
 # measurements time points
-tm <- experiments[[E]]$outputTime
+tm <- ex[[E]]$outputTime
 
 # Plot simulations
 par(bty='n',xaxp=c(80,200,4))
-plot(tm,                      # time points
-     y[[E]]$func[1,,1],       # simulated trajectory
-     type='l',
-     ylim=c(90,200), ylab="AKAR4p",
-     xlab="t",
-     main=sprintf("Experiment %i",E),
-     lwd=2.5,
-     col="purple"
+plot(
+	as.errors(tm),    # time points
+	ex[[E]]$data,      # data points (as errorbars)
+	ylim=c(95,200),
+	ylab="AKAR4p",
+	xlab="t",
+	main=sprintf("Experiment %i: %s",E,names(ex)[E])
 )
 
-# Plot experimental data with error bars
-points(tm,out)
-arrows(x0=tm,x1=tm,y0=out,y1=out+err,angle=90,length=0.025)
-arrows(x0=tm,x1=tm,y0=out,y1=out-err,angle=90,length=0.025)
+lines(
+	tm,              # time points
+	y[[E]]$func[1,,1], # simulated trajectory
+	col="purple",
+	lwd=2
+)
 ```
 
 
@@ -165,59 +177,56 @@ We now run the same code to plot the simulations with noise `y_with_noise`.
 ```{r}
 E <- 2 # which experiment to plot
 
-# experimental data for experiment E
-out <- experiments[[E]]$outputValues$AKAR4pOUT
-
-# measurement error for experiment E
-err <- experiments[[E]]$errorValues$AKAR4pOUT
-
-# measurements time points
-tm <- experiments[[E]]$outputTime
-
 # Plot simulations
 par(bty='n',xaxp=c(80,200,4))
-plot(tm,                                 # time points
-     y_with_noise[[E]]$func[1,,1],       # simulated trajectory
-     type='l',
-     ylim=c(90,200), ylab="AKAR4p",
-     xlab="t",
-     main=sprintf("Experiment %i",E),
-     lwd=2.5,
-     col="purple"
+plot(
+	as.errors(tm),       # time points
+	ex[[E]]$data,        # data
+	ylim=c(95,200),
+	ylab="AKAR4p",
+	xlab="t",
+	main=sprintf("%s Simulated with noise",names(ex)[E])
 )
 
-# Plot experimental data with error bars
-points(tm,out)
-arrows(x0=tm,x1=tm,y0=out,y1=out+err,angle=90,length=0.025)
-arrows(x0=tm,x1=tm,y0=out,y1=out-err,angle=90,length=0.025)
+lines(
+	tm,                  # time points
+	y_noisy[[E]]$func,   # simulated trajectory
+	lwd=2.5,
+	col="purple"
+)
 ```
 
 ## Plots with ggplot2
 
-The following code plots simulations and data using an alternative function, from the package [ggplot2](https://ggplot2.tidyverse.org/).
+The following code plots simulations and data using an alternative
+function, from the package [ggplot2](https://ggplot2.tidyverse.org/).
 
 ```{r, ggplot}
 require(ggplot2)
 
-D<-data.frame(time=experiments[[E]]$outputTime,
-              AKAR4p=experiments[[E]]$outputValues$AKAR4pOUT,
-              AKAR4pERR=experiments[[E]]$errorValues$AKAR4pOUT,
-              sim=y[[E]]$func[1,,1])
+D <- data.frame(
+	time=ex[[E]]$outputTime,
+	AKAR4p=as.numeric(ex[[E]]$data),
+	AKAR4pERR=errors(ex[[E]]$data),
+	sim=as.numeric(y[[E]]$func)
+)
 ggplot(D) +
   geom_linerange(mapping=aes(x=time,y=AKAR4p,ymin=AKAR4p-AKAR4pERR,ymax=AKAR4p+AKAR4pERR),na.rm=TRUE) +
   geom_point(mapping=aes(x=time,y=AKAR4p),na.rm=TRUE) +
   geom_line(mapping=aes(x=time,y=sim),color="purple",lwd=1.2)
 ```
 
-Plots for the simulations with noise `y_with_noise`.
+Plots for the simulations with noise `y_noisy`.
 
 ```{r}
 require(ggplot2)
+D <- data.frame(
+	time=ex[[E]]$outputTime,
+	AKAR4p=as.numeric(ex[[E]]$data),
+	AKAR4pERR=errors(ex[[E]]$data),
+	sim=as.numeric(y_noisy[[E]]$func)
+)
 
-D<-data.frame(time=experiments[[E]]$outputTime,
-              AKAR4p=experiments[[E]]$outputValues$AKAR4pOUT,
-              AKAR4pERR=experiments[[E]]$errorValues$AKAR4pOUT,
-              sim=y_with_noise[[E]]$func[1,,1])
 ggplot(D) +
   geom_linerange(mapping=aes(x=time,y=AKAR4p,ymin=AKAR4p-AKAR4pERR,ymax=AKAR4p+AKAR4pERR),na.rm=TRUE) +
   geom_point(mapping=aes(x=time,y=AKAR4p),na.rm=TRUE) +

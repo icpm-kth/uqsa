@@ -37,19 +37,19 @@
 #' @param batchSize number of chain samples to produce to save one sample (if batchSize=100, we save one sample every 100 samples that we produce)
 #' @return a list containing a sample matrix and a vector of scores
 #'     (values of delta for each sample)
-ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, batchSize = 100, parAcceptable=\(p){return(TRUE)}){
+ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, batchSize = 100, parAcceptable=\(p){all(is.finite(p))}){
   cat("Started chain.\n")
-  Sigma1 <- 0.25*diag(diag(Sigma0))
+  Sigma1 <- diag(0.25*diag(Sigma0))
   curDelta <- Inf
   np <- length(startPar)
   curPar  <- startPar
   curDelta <- max(objectiveFunction(curPar))
   if(is.na(curDelta)){
-    cat("*** [ABCMCMC] curDelta is NA. Replacing it with Inf ***\n")
+    cat("*** [ABCMCMC] initial distance is NA. Replacing it with Inf ***\n")
     curDelta <- Inf
   }
   curPrior <- dprior(curPar)
-  draws <- matrix(NA, nSims,np)
+  draws <- matrix(NA, nSims, np, dimnames=list(NULL,names(startPar)))
   scores <- rep(NA, nSims)
 
   n <- 0
@@ -68,7 +68,9 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
       }
       cat(paste0("Regularization of proposal covariance matrix (nRegularizations = ", nRegularizations,")\n"))
 
-      Sigma0 <- solve(solve(Sigma0)+solve(0.1*norm(Sigma0)*diag(1,np,np)))
+      Sigma0 <- solve(
+				solve(Sigma0)+solve(0.1*norm(Sigma0)*diag(1,np,np))
+			)
       Sigma1 <- 0.25*diag(diag(Sigma0))
       draws <- matrix(NA, nSims,np)
       scores <- rep(NA, nSims)
@@ -98,7 +100,14 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
     }
   }
   #cat("Finished chain.\n")
-  return(list(draws = draws, scores = scores, acceptanceRate = acceptedSamples/n, nRegularizations = nRegularizations))
+  return(
+		list(
+			draws = draws,
+			scores = scores,
+			acceptanceRate = acceptedSamples/n,
+			nRegularizations = nRegularizations
+		)
+	)
 }
 
 #' Updates Parameter Values
