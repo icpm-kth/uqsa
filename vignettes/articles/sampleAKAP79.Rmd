@@ -54,6 +54,7 @@ Load the simulation instructions for `o`:
 
 ```{r experiments}
 ex <- experiments(m,o)
+saveRDS(ex,file="AKAP79-ex.RDS")
 ```
 
 There is a high-level function that does most of what we need to do automatically:

@@ -23,7 +23,6 @@ if (length(a)>0){
       N <- 50000           # default sample size
 }
 
-h <- 0.01                  # step size
 modelName <- "AKAP79"
 comment(modelName) <- "./AKAP79.so"
 ex <- readRDS("AKAP79-ex.RDS")
@@ -50,7 +49,6 @@ smmala <- smmala_update(
 	simulate=sim,
 	dprior=dprior,
 	gradLogLikelihood=gprior,
-	fisherInformation=fi,
 	fisherInformationPrior=diag(1.0/stdv^2)
 )
 
@@ -65,25 +63,30 @@ ptSMMALA <- mcmc_mpi(
 
 h <- tune_step_size(MC)
 
+x <- mcmc_init(
+	beta,
+	values(m$Parameter),
+	simulate=sim,
+	dprior,
+	gprior,
+)
+
 for (j in seq(2)){
 	pbdMPI::barrier()
-	x <- mcmc_init(
-		beta,
-		as.numeric(tail(X,1)), # last row
-		simulate=sim,
-		logLikelihood=llf,
-		dprior,
-		gllf,
-		gprior,
-		fi
-	)
 	## ---- here, the sampling happens
-	s <- ptSMMALA(x,N,h) # the main amount of work is done here
-	saveRDS(s,file=sprintf("AKAP79-pt-smmala-sample-%i-rank-%i.RDS",j,r))
+	X <- ptSMMALA(x,N,h) # the main amount of work is done here
+	saveRDS(X,file=sprintf("AKAP79-pt-smmala-sample-%i-rank-%i.RDS",j,r))
 	pbdMPI::barrier()
 	f <- dir(pattern=sprintf("^AKAP79-pt-smmala-sample-%i-rank-.*RDS$",j))
-	X <- uqsa::gatherSample(f,beta)
-	saveRDS(X,file=sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.RDS",j,r))
+	Z <- uqsa::gatherSample(f,beta)
+	saveRDS(Z,file=sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.RDS",j,r))
+	x <- mcmc_init(
+		beta,
+		tail(Z,1),
+		simulate=sim,
+		dprior,
+		gprior,
+	)
 }
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)
