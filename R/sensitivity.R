@@ -15,8 +15,6 @@
 #' @return `M\[i,j\]` the mean of each `observable\[j\]` in `bin\[i\]`
 observable.mean.in.bin <- function(id,outputSample){
 	d<-dim(outputSample)
-	print(length(id))
-	print(d)
 	stopifnot(length(id)==d[1])
 	n<-max(id)
 	bin.mean <- matrix(NA,n,d[2])
