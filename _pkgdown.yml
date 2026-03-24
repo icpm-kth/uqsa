@@ -62,10 +62,6 @@ navbar:
         - text: CRNN
         - text: CRNN models
           href: articles/crnn.html
-        - text: -------
-        - text: Extra
-        - text: More examples...
-          href: articles/extraExamples.html
     reference:
         text: Function reference
         href: reference/index.html
@@ -89,7 +85,6 @@ reference:
   - gsa_binning
   - gsa_saltelli
   - saltelli_prior
-  - importReactionsSSA
   - is.invertible
   - log10ParMap
   - log10ParMapJac
@@ -98,12 +93,10 @@ reference:
   - makeGillespieModel
   - makeIndepCopula
   - makeObjective
-  - makeObjectiveSSA
   - mcmc
-  - mcmcInit
-  - mcmcUpdate
+  - mcmc_init
+  - automatic_update
   - parUpdate
-  - plotSimualtionsFromSBtab
   - preCalibration
   - replace_powers
   - rCopulaPrior
@@ -111,7 +104,6 @@ reference:
   - rUniformPrior
   - sensitivity.graph
   - showPosterior
-  - simulator.stoch
   - simstoch
   - simulator.c
   - uqsa_example
@@ -123,22 +115,20 @@ reference:
   - change_temperature
   - loadSample_mpi
   - mcmc_mpi
-  - simc
   - yacasMath
   - yJacobian
 - title: "SMMALA specific functions"
   desc: "helper functions"
   contents:
   - simfi
-  - simfiGaussianLogLikelihood
-  - simfiGaussianGradLogLikelihood
-  - simfiGaussianFILL
+  - ll
+  - gllf
+  - fi
   - gsl_odeiv2_fi
 - title: "Experimental functions"
   desc: "for the stochastic solver (wip)"
   contents:
   - makeGillespieModel
-  - ccc
   - generateGillespieCode
   - onlyCoefficients
   - onlyNames
@@ -148,34 +138,62 @@ reference:
 - title: "Internal Functions"
   desc: "not exported functions"
   contents:
-  - generateCodeFromFile
-  - match.coefficients
-  - match.names
   - observable.mean.in.bin
-  - parameter.from.kinetic.law
-  - parse.formula
-  - parse.kinetic
-  - propensity
   - sum.of.bin.variance
   - uqsa-package
   - getDose
   - plotTimeSeries
-  - Rmpi_swap_temperatures
-  - fisherInformationFromGSA
-  - fisherInformationFunc
   - gatherSample
   - gradLogLikelihoodFunc
-  - gradLog_NormalPrior
+  - gNormalPrior
   - "%has%"
-  - loadODE
   - loadSubSample_mpi
   - logLikelihoodFunc
-  - parameters_from_expressions_func
   - pbdMPI_bcast_reduce_temperatures
-  - pbdMPI_swap_temperatures
   - sampleWithNoise
-  - simcf
-  - swap_points_locally
   - writeCFunction
   - ggplotDoseResponse
   - plotTimeSeriesBase
+  - CRNN
+  - as_ode
+  - "base<-"
+  - column
+  - conservation_law_analysis
+  - experiments
+  - find_parameter_reaction
+  - flux_matrix
+  - formulae
+  - gatherReplicas
+  - "%as%"
+  - "%@%"
+  - gsl_odeiv2_CRNN
+  - high_level_metropolis
+  - high_level_smmala
+  - initialCount
+  - linear_scale
+  - log2ParMap
+  - log2ParMapJac
+  - metropolis_update
+  - model_from_tsv
+  - modify<-
+  - moleCountConversion
+  - parameterReaction
+  - parse_concise
+  - pcDist
+  - "reaction<-"
+  - scrnn
+  - simfiGaussianLogLikelihood
+  - simple.unit
+  - smmala_update
+  - standard_error_matrix
+  - tune_step_size
+  - unit.from.string
+  - unit.id
+  - unit.info
+  - unit.kind
+  - unit.scale
+  - unit_as_character
+  - units_from_table
+  - update_values
+  - values
+  - write_and_compile
