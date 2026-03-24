@@ -67,7 +67,7 @@ smmala <- high_level_smmala(m,o,ex,p)
 # Plain Sample
 
 ```{r, quick-sample}
-h <- tune_step_size(smmala)
+h <- tune_step_size(smmala,p)
 X <- smmala(smmala %@% "init",1000,h)
 ```
 
