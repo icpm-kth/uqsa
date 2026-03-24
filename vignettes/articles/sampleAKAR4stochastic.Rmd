@@ -12,6 +12,7 @@ knitr::opts_chunk$set(cache = FALSE,
 
 ```{r packages}
 library(uqsa)
+library(errors)
 library(parallel)
 ```
 
@@ -96,16 +97,16 @@ good initial values and algorithmic hyperparameters for the ABCMCMC
 chains.
 
 ```{r precalibration}
-nChains <- 4
+nChains <- detectCores()
 pC <- preCalibration(
-    objFunc,
-    1000,
-    rprior,
-    rep=1,
-    p=0.01,
-    sfactor=0.1,
-    delta=0.5,
-    num=nChains
+	objFunc,
+	1000,
+	rprior,
+	rep=1,
+	p=0.01,
+	sfactor=0.05,
+	delta=0.5,
+	num=nChains
 )
 ```
 
@@ -115,10 +116,10 @@ Next we check the results of pre-calibration:
 Sigma <- pC$Sigma
 startPar <- pC$startPar
 for(j in seq(nChains)){
-    cat("Chain", j, "\n")
-    cat("\tMin distance of starting parameter for chain",j," = ", min(objFunc(startPar[,j])),"\n")
-    cat("\tMean distance of starting parameter for chain",j," = ", mean(objFunc(startPar[,j])),"\n")
-    cat("\tMax distance of starting parameter for chain",j," = ", max(objFunc(startPar[,j])),"\n")
+	cat("Chain", j, "\n")
+	cat("\tMin distance of starting parameter for chain",j," = ", min(objFunc(startPar[,j])),"\n")
+	cat("\tMean distance of starting parameter for chain",j," = ", mean(objFunc(startPar[,j])),"\n")
+	cat("\tMax distance of starting parameter for chain",j," = ", max(objFunc(startPar[,j])),"\n")
 }
 ```
 
@@ -130,9 +131,8 @@ function. Running this code will take approximately 10 minutes on an
 
 ```{r abc}
 t_ <- Sys.time()
-cl <- parallel::makeForkCluster(nChains, outfile="outputMessagesABCMCMC.txt")
-out_ABCMCMC <- parallel::parLapply(
-	cl,
+options(mc.cores = nChains)
+res <- mclapply(
 	seq(nChains),
 	function(j) {
 		tryCatch(
@@ -151,16 +151,14 @@ out_ABCMCMC <- parallel::parLapply(
 		)
 	}
 )
-stopCluster(cl)
 
 print(difftime(Sys.time(),t_))
-
 ```
 
 Collect the fork-cluster results:
 
 ```{r collect}
-ABCMCMCoutput <- do.call(Map, c(rbind,out_ABCMCMC))
+ABCMCMCoutput <- do.call(Map, c(rbind,res))
 colnames(ABCMCMCoutput$draws) <- names(par_val)
 ```
 

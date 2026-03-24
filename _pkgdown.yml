@@ -66,134 +66,146 @@ navbar:
         text: Function reference
         href: reference/index.html
 reference:
-- title: "User Functions"
-  desc: "exported functions"
+- title: "Model and data"
+  desc: "Functions for loading model and data and construct a mathematical model (ODE or stochastic) and corresponding code."
   contents:
-  - ABCMCMC
-  - checkFitWithPreviousExperiments
-  - checkModel
-  - determinePrefix
-  - dCopulaPrior
-  - dNormalPrior
-  - dUniformPrior
-  - defaultAcceptance
-  - defaultDistance
-  - fitCopula
-  - generateCode
-  - generateRCode
-  - getMCMCPar
-  - gsa_binning
-  - gsa_saltelli
-  - saltelli_prior
-  - is.invertible
-  - log10ParMap
-  - log10ParMapJac
-  - logParMap
-  - logParMapJac
-  - makeGillespieModel
-  - makeIndepCopula
-  - makeObjective
-  - mcmc
-  - mcmc_init
-  - automatic_update
-  - parUpdate
-  - preCalibration
-  - replace_powers
-  - rCopulaPrior
-  - rNormalPrior
-  - rUniformPrior
-  - sensitivity.graph
-  - showPosterior
-  - simstoch
-  - simulator.c
   - uqsa_example
-  - "%otherwise%"
-  - smmala_move
-  - smmala_move_density
-  - ggplotTimeSeries
-  - ggplotTimeSeriesStates
-  - change_temperature
-  - loadSample_mpi
-  - mcmc_mpi
-  - yacasMath
-  - yJacobian
-- title: "SMMALA specific functions"
-  desc: "helper functions"
-  contents:
-  - simfi
-  - ll
-  - gllf
-  - fi
-  - gsl_odeiv2_fi
-- title: "Experimental functions"
-  desc: "for the stochastic solver (wip)"
-  contents:
+  - model_from_tsv
+  - as_ode
+  - generateCode
+  - write_and_compile
   - makeGillespieModel
   - generateGillespieCode
-  - onlyCoefficients
-  - onlyNames
-  - parameterConversion
-  - stoichiometry
-  - scaleParameter
-- title: "Internal Functions"
-  desc: "not exported functions"
-  contents:
-  - observable.mean.in.bin
-  - sum.of.bin.variance
-  - uqsa-package
-  - getDose
-  - plotTimeSeries
-  - gatherSample
-  - gradLogLikelihoodFunc
-  - gNormalPrior
-  - "%has%"
-  - loadSubSample_mpi
-  - logLikelihoodFunc
-  - pbdMPI_bcast_reduce_temperatures
-  - sampleWithNoise
-  - writeCFunction
-  - ggplotDoseResponse
-  - plotTimeSeriesBase
-  - CRNN
-  - as_ode
-  - "base<-"
-  - column
-  - conservation_law_analysis
+  - generateRCode
+  - values
   - experiments
-  - find_parameter_reaction
-  - flux_matrix
-  - formulae
-  - gatherReplicas
-  - "%as%"
-  - "%@%"
-  - gsl_odeiv2_CRNN
-  - high_level_metropolis
-  - high_level_smmala
-  - initialCount
-  - linear_scale
-  - log2ParMap
-  - log2ParMapJac
-  - metropolis_update
-  - model_from_tsv
-  - modify<-
-  - moleCountConversion
-  - parameterReaction
-  - parse_concise
-  - pcDist
-  - "reaction<-"
-  - scrnn
-  - simfiGaussianLogLikelihood
-  - simple.unit
-  - smmala_update
   - standard_error_matrix
-  - tune_step_size
+  - checkModel
+  - conservation_law_analysis
+  - parameterConversion
+  - replace_powers
+  - stoichiometry
   - unit.from.string
   - unit.id
   - unit.info
-  - unit.kind
-  - unit.scale
   - unit_as_character
   - units_from_table
+  - yJacobian
+  - yacasMath
+- title: "Simulations"
+  desc: "Functions for simulating the model"
+  contents:
+  - simulator.c
+  - simstoch
+  - simfi
+  - scrnn
+  - gsl_odeiv2_fi
+  - gsl_odeiv2_CRNN
+- title: "Prior"
+  desc: "Functions for constructing priors"
+  contents:
+  - rNormalPrior
+  - rUniformPrior
+  - rCopulaPrior
+  - dNormalPrior
+  - dUniformPrior
+  - dCopulaPrior
+  - gNormalPrior
+  - fitCopula
+  - makeIndepCopula
+  - sampleWithNoise
+- title: "Uncertainty quantification - likelihood based"
+  desc: "MCMC methods for Bayesian parameter inference"
+  contents:
+  - mcmc
+  - mcmc_init
+  - mcmc_mpi
+  - metropolis_update
+  - high_level_metropolis
+  - smmala_update
+  - smmala_move
+  - smmala_move_density
+  - high_level_smmala
+  - logLikelihoodFunc
+  - gradLogLikelihoodFunc
+  - ll
+  - gllf
+  - fi
+  - tune_step_size
+  - change_temperature
+  - pbdMPI_bcast_reduce_temperatures
+  - loadSubSample_mpi
+  - loadSample_mpi
+  - gatherSample
+  - gatherReplicas
+- title: "Uncertainty quantification - ABC"
+  desc: "Approximate Bayesian Computation (ABC) MCMC for parameter inference"
+  contents:
+  - makeObjective
+  - preCalibration
+  - ABCMCMC
+  - checkFitWithPreviousExperiments
+- title: "Global Sensitivity Analysis"
+  contents:
+  - gsa_binning
+  - gsa_saltelli
+  - saltelli_prior
+- title: "Parameter mappings"
+  desc: "Parameter transformations from sampling space back to model space"
+  contents:
+  - logParMap
+  - logParMapJac
+  - log10ParMap
+  - log10ParMapJac
+  - log2ParMap
+  - log2ParMapJac
+- title: "Operators and helper functions"
+  contents:
+  - "%@%"
+  - "%as%"
+  - "%has%"
+  - "%otherwise%"
+  - determinePrefix
+- title: "Plotting functions"
+  contents:
+  - pcDist
+  - plotTimeSeries
+  - plotTimeSeriesBase
+  - sensitivity.graph
+  - showPosterior
+- title: "Internal functions"
+  contents:
+  - "modify<-"
+  - getDose
+  - ggplotDoseResponse
+  - ggplotTimeSeries
+  - ggplotTimeSeriesStates
+  - onlyCoefficients
+  - onlyNames
+  - parUpdate
+  - simfiGaussianLogLikelihood
+  - CRNN
+  - automatic_update
+  - "base<-"
+  - column
+  - defaultAcceptance
+  - defaultDistance
+  - find_parameter_reaction
+  - flux_matrix
+  - formulae
+  - getMCMCPar
+  - initialCount
+  - is.invertible
+  - linear_scale
+  - moleCountConversion
+  - observable.mean.in.bin
+  - parameterReaction
+  - parse_concise
+  - "reaction<-"
   - update_values
-  - values
-  - write_and_compile
+  - writeCFunction
+  - scaleParameter
+  - simple.unit
+  - sum.of.bin.variance
+  - unit.kind
+  - unit.scale
