@@ -44,7 +44,9 @@ navbar:
           href: articles/simAKAR4stochastic.html
         - text: UQ on deterministic AKAR4
           href: articles/sampleAKAR4.html
-        - text: UQ on stochasic AKAR4
+        - text: UQ on stochasic AKAR4 -- ABCSMC
+          href: articles/smcAKAR4.html
+        - text: UQ on stochasic AKAR4 -- ABCMCMC
           href: articles/sampleAKAR4stochastic.html
         - text: GSA on AKAR4
           href: articles/GSA_AKAR4.html

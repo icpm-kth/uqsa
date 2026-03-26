@@ -157,7 +157,7 @@ for(i in seq_along(par_val)){
 
 ## State Trajectories
 
-```{r trajectories, fig.height=20, out.width="100%"}
+```{r trajectories, fig.height=16, out.width="100%"}
 t_initial <- Sys.time()
 Z <- posterior$draws
 y <- s(t(Z)) # using the stochastic simulator one final time
@@ -168,7 +168,21 @@ cat(difftime(t_final,t_initial,units="min")," minutes")
 par(mfrow=c(3,1))
 for (i in seq_along(ex)){
 	tm <- ex[[i]]$outputTimes
-	plot(as.errors(tm),ex[[i]]$data,xlab="time",ylab="AKAR4p",main=names(ex)[i])
-	matplot(tm,drop(y[[i]]$func),type='s',col=rgb(0,0,1,0.1),add=TRUE)
+	plot(     # the data (errorbars)
+		as.errors(tm),
+		ex[[i]]$data,
+		xlab="time",
+		ylab="AKAR4p",
+		main=names(ex)[i]
+	)
+	matplot(  # the simulation
+		tm,
+		drop(y[[i]]$func),
+		type='s',
+		col=rgb(0,0,1,0.1),
+		lty=1,
+		lwd=2,
+		add=TRUE
+	)
 }
 ```
