@@ -567,7 +567,6 @@ simstoch <- function(ex, model.so, parMap=identity){
 	}
 	for (i in seq_along(ex)){
 		if (!("input" %in% names(ex[[i]]))){
-			warning("ex have no input parameters, defaults to numeric(0).")
 			ex[[i]]$input <- numeric(0)
 		}
 	}

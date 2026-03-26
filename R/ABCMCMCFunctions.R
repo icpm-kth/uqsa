@@ -19,8 +19,13 @@
 #' boundaries, this function will draw a sample of parameters from the
 #' posterior probability density of the given problem.
 #'
-#' Initially this function performs a similar job as an optimizer, and
-#' then transitions to MCMC sampling.
+#' Normally, ABC would produce a highly auto-correlated sample,
+#' wasting lots of disk-space; `batchSize` can be used to thin out the
+#' sample, recording every batchSize-th point: with `batchSize=100`,
+#' we perform 100 updates to the Markov chain variable and then save
+#' the state to the sample. Higher batchSize numbers improve the
+#' apparent quality of the sample, but create more work per sampled
+#' point.
 #'
 #' @export
 #' @param objectiveFunction function that, given a (vectorial)
@@ -34,81 +39,75 @@
 #' @param delta ABC acceptance threshold
 #' @param dprior a function that returns prior probability density
 #'     values
-#' @param batchSize number of chain samples to produce to save one sample (if batchSize=100, we save one sample every 100 samples that we produce)
+#' @param batchSize number of points to produce to record one point
+#' @param allow.reg allow regularization (logical), if TRUE, then
+#'     Sigma will be made smaller once a very low acceptance rate is
+#'     detected: one accepted update per batch
 #' @return a list containing a sample matrix and a vector of scores
 #'     (values of delta for each sample)
-ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, batchSize = 100, parAcceptable=\(p){all(is.finite(p))}){
-  cat("Started chain.\n")
-  Sigma1 <- diag(0.25*diag(Sigma0))
-  curDelta <- Inf
-  np <- length(startPar)
-  curPar  <- startPar
-  curDelta <- max(objectiveFunction(curPar))
-  if(is.na(curDelta)){
-    cat("*** [ABCMCMC] initial distance is NA. Replacing it with Inf ***\n")
-    curDelta <- Inf
-  }
-  curPrior <- dprior(curPar)
-  draws <- matrix(NA, nSims, np, dimnames=list(NULL,names(startPar)))
-  scores <- rep(NA, nSims)
+ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, batchSize = 100, parAcceptable=\(p){all(is.finite(p))},allow.reg = FALSE){
+	cat("Started chain.\n")
+	Sigma1 <- diag(0.25*diag(Sigma0))
+	curDelta <- Inf
+	np <- length(startPar)
+	## current vlaues
+	curPar  <- startPar
+	curDelta <- max(objectiveFunction(curPar))
+	stopifnot(is.finite(curDelta))
 
-  n <- 0
-  acceptedSamples <- 0
-  nRegularizations <- 0
-  while (n/batchSize < nSims){
-    if(n %% batchSize == 0 && acceptedSamples<0.00005*n){
-      nRegularizations <- nRegularizations + 1
-      if(nRegularizations >= 5){
-        timeStr <- Sys.time()
-        timeStr <- gsub(":","_", timeStr)
-        timeStr <- gsub(" ","_", timeStr)
-        save(draws, file = paste0("AbortedChainAfterRegularization_",timeStr,".RData"))
-        warning(paste0("Stuck chain (nRegularizations = ", nRegularizations,")\n"))
-        return(list(draws = c(), scores = c(), acceptanceRate = c(), nRegularizations = nRegularizations))
-      }
-      cat(paste0("Regularization of proposal covariance matrix (nRegularizations = ", nRegularizations,")\n"))
+	curPrior <- dprior(curPar)
+	draws <- matrix(NA, nSims, np, dimnames=list(NULL,names(startPar)))
+	scores <- rep(NA, nSims)
 
-      Sigma0 <- solve(
+	nRegularizations <- 0
+	accRate <- 0.0
+	for (i in seq(nSims)) {
+		a <- 0
+		message(i)
+		for (j in seq(batchSize)) {
+			## candidate values:
+			if (runif(1)<=0.95) {
+				canPar <- MASS::mvrnorm(n=1, curPar, Sigma0)
+			} else {
+				canPar <- MASS::mvrnorm(n=1, curPar, Sigma1)
+			}
+			out <- parUpdate(
+				objectiveFunction,
+				curPar,
+				canPar,
+				curDelta,
+				curPrior,
+				delta,
+				dprior,
+				parAcceptable
+			)
+			curPar <- out$curPar
+			curDelta <- out$curDelta
+			curPrior <- out$curPrior
+			a <- a + out$acceptance
+		}
+		accRate <- accRate + a
+		if (a <= 1 && as.logical(allow.reg)){
+			nRegularizations <- nRegularizations + 1
+			Sigma0 <- solve(
 				solve(Sigma0)+solve(0.1*norm(Sigma0)*diag(1,np,np))
 			)
-      Sigma1 <- 0.25*diag(diag(Sigma0))
-      draws <- matrix(NA, nSims,np)
-      scores <- rep(NA, nSims)
-      n <- 0
-      acceptedSamples <- 0
-    }
-
-    if(runif(1)<=0.95){
-      canPar <- MASS::mvrnorm(n=1, curPar, Sigma0)
-    }else{
-      canPar <- MASS::mvrnorm(n=1, curPar, Sigma1)
-    }
-
-    out <- parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior, parAcceptable)
-    curPar <- out$curPar
-    curDelta <- out$curDelta
-    curPrior <- out$curPrior
-    acceptedSamples <- acceptedSamples + out$acceptance
-
-    n <- n+1
-    if(n %% batchSize == 0){
-      draws[n/batchSize,]  <- curPar
-      scores[n/batchSize] <- curDelta
-    }
-    if(n %% 10000 == 0){
-      cat("\nn =", n)
-    }
-  }
-  #cat("Finished chain.\n")
-  return(
+			Sigma1 <- diag(0.25*diag(Sigma0))
+		}
+		draws[i,]  <- curPar
+		scores[i] <- curDelta
+	}
+	accRate <- accRate/(nSims*batchSize)
+	return(
 		list(
 			draws = draws,
 			scores = scores,
-			acceptanceRate = acceptedSamples/n,
+			acceptanceRate = accRate,
 			nRegularizations = nRegularizations
 		)
 	)
 }
+
 
 #' Updates Parameter Values
 #'
@@ -132,25 +131,31 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
 #' @param parAcceptable user-specified constraint function, must return a scalar Boolean
 #' @return updated values for curPar, curDelta, and curPrior
 parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior, parAcceptable){
-
-  canPrior <- dprior(canPar)
-
-  acceptance <- (runif(1) <= canPrior/curPrior) && parAcceptable(canPar)
-  if(acceptance){
-    canDelta <- max(objectiveFunction(canPar))
-    if(is.na(canDelta)){
-      cat("\n[parUpdate] canDelta is NA. Replacing it with Inf")
-      canDelta <- Inf
-    }
-    if (canDelta <= max(delta, curDelta)){
-      curDelta <- canDelta
-      curPrior <- canPrior
-      curPar <- canPar
-    } else {
-      acceptance <- FALSE
-    }
-  }
-  return(list(curPar=curPar, curDelta=curDelta, curPrior=curPrior, acceptance=acceptance))
+	## candidate's prior
+	canPrior <- dprior(canPar)
+	acceptance <- (runif(1) <= canPrior/curPrior) && parAcceptable(canPar)
+	if (acceptance){
+		canDelta <- max(objectiveFunction(canPar))
+		if (is.na(canDelta)) {
+			warning("[parUpdate] candidate's distance-value is NA. Replacing it with Inf")
+			canDelta <- Inf
+		}
+		if (canDelta <= max(delta, curDelta)){
+			curDelta <- canDelta
+			curPrior <- canPrior
+			curPar <- canPar
+		} else {
+			acceptance <- FALSE
+		}
+	}
+	return(
+		list(
+			curPar=curPar,
+			curDelta=curDelta,
+			curPrior=curPrior,
+			acceptance=acceptance
+		)
+	)
 }
 
 

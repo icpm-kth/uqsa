@@ -4,7 +4,7 @@
 \alias{modify<-}
 \title{Modifies a value}
 \usage{
-modify(x, i = seq_along(NROW(x)), j = seq_along(NCOL(x)), sgn = +1) <- value
+modify(x, i = seq(NROW(x)), j = seq(NCOL(x)), sgn = +1) <- value
 }
 \arguments{
 \item{x}{a numeric value to be modified}

@@ -499,13 +499,13 @@ makeObjective <- function(experiments,simulate,distance=defaultDistance){
 		stopifnot(length(out) == length(experiments))
 		for(i in seq_along(experiments)){
 			DATA <- experiments[[i]]$data
-			STDV <- standard_error_matrix(DATA) %otherwise% experiments[[i]]$standardError
+			STDV <- standard_error_matrix(DATA) %otherwise% experiments[[i]]$standardError %otherwise% 1.0
 			S[i,] <- unlist(
 				mclapply(
-					seq(NCOL(parABC)),
+					seq_len(NCOL(parABC)),
 					function(j) {
 						FUNC <- out[[i]]$func[,,j]
-						dim(FUNC) <- dim(DATA)
+						dim(FUNC) <- dim(DATA) # if there is just one output
 						distance(FUNC, DATA, STDV)
 					}
 				)

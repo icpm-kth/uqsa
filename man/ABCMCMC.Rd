@@ -14,7 +14,8 @@ ABCMCMC(
   batchSize = 100,
   parAcceptable = function(p) {
      all(is.finite(p))
- }
+ },
+  allow.reg = FALSE
 )
 }
 \arguments{
@@ -35,7 +36,11 @@ transition kernel}
 \item{dprior}{a function that returns prior probability density
 values}
 
-\item{batchSize}{number of chain samples to produce to save one sample (if batchSize=100, we save one sample every 100 samples that we produce)}
+\item{batchSize}{number of points to produce to record one point}
+
+\item{allow.reg}{allow regularization (logical), if TRUE, then
+Sigma will be made smaller once a very low acceptance rate is
+detected: one accepted update per batch}
 }
 \value{
 a list containing a sample matrix and a vector of scores
@@ -47,6 +52,11 @@ boundaries, this function will draw a sample of parameters from the
 posterior probability density of the given problem.
 }
 \details{
-Initially this function performs a similar job as an optimizer, and
-then transitions to MCMC sampling.
+Normally, ABC would produce a highly auto-correlated sample,
+wasting lots of disk-space; \code{batchSize} can be used to thin out the
+sample, recording every batchSize-th point: with \code{batchSize=100},
+we perform 100 updates to the Markov chain variable and then save
+the state to the sample. Higher batchSize numbers improve the
+apparent quality of the sample, but create more work per sampled
+point.
 }

@@ -148,7 +148,7 @@ formulae <- function(df){
 #'  x <- matrix(seq(12),3,4)
 #'  modify(x,seq(2),seq(2)) <- 10
 #'  print(x)
-`modify<-` <- function(x,i=seq_along(NROW(x)),j=seq_along(NCOL(x)),sgn=+1,value){
+`modify<-` <- function(x,i=seq(NROW(x)),j=seq(NCOL(x)),sgn=+1,value){
 	if (is.matrix(x)){
 		x[i,j] <- x[i,j] + sgn*value
 	} else {
