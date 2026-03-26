@@ -1,0 +1,168 @@
+---
+title: "UQ for AKAR4 (stochastic model)"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(cache = FALSE,
+  eval=TRUE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r packages}
+library(uqsa)
+library(errors)
+library(parallel)
+```
+
+We use a particle filter (aka SMC) on the stochastic AKAR4 model,
+combined with ABC (due to the stochasticity of the model)
+
+For information about the stochastic model, please read the article
+[Simulate AKAR4 stochastically](simAKAR4stochastic.html).
+
+# Load the Model
+
+This model is included with the package, as one of the example models.
+
+```{r load-files}
+f <- uqsa_example("AKAR4")
+m <- model_from_tsv(f)
+o <- as_ode(m,cla=FALSE)
+ex <- experiments(m,o)
+```
+
+## Make a Stochastic Version of AKAR4
+
+```{r write}
+sm <- makeGillespieModel(m)
+C <- generateGillespieCode(sm)
+cat(C,sep="\n",file="AKAR4_st.c")
+modelName <- checkModel("AKAR4","AKAR4_st.c")
+```
+
+To simulate the stochastic reaction network model we use the
+*Gillespie algorithm*.
+
+# Define MCMC settings
+
+```{r configure}
+# scale to determine prior values
+defRange <- 1000
+par_val <- values(m$Parameter)
+
+# Define Lower and Upper Limits for logUniform prior distribution for the parameters
+ll <- c(par_val/defRange)
+ul <- c(par_val*defRange)
+ll = log10(ll) # log10-scale
+ul = log10(ul) # log10-scale
+
+# Define the prior distribution. In this case Uniform(ll,ul)
+dprior <- dUniformPrior(ll, ul) # dprior evaluates the prior density function
+rprior <- rUniformPrior(ll, ul) # rprior generates random samples from the prior
+```
+
+# Generate an objective function
+
+The objective function simulates the model, to do this it needs a
+simulator, it also needs direct access to the data, so `ex` is also an
+explicit arument for `makeObjective`:
+
+```{r makeObjective}
+s <- simstoch(
+	ex,
+	model.so=comment(modelName),
+	parMap=logParMap
+)
+objFunc <- makeObjective(ex,s)
+```
+
+Test evaluation of the objective function:
+
+```{r test-evaluation}
+d <- objFunc(log10(values(m$Parameter)))
+print(d)
+```
+
+It returns a vector of distance values (one per simulation
+experiment). But, when supplied with several parameters, it returns
+several columns:
+
+```{r test-matrix-evaluation}
+D <- objFunc(t(rprior(7)))
+print(D)
+```
+
+# Run ABCSMC
+
+We launch the particle filter from the prior (cold start), and pick
+resonable values for `delta` (the ABC distance threshold).
+
+The data has measurement errors (standard error). The distance
+function takes the standard error into account, so the distances
+returned are relative, and expected to be close to 1. The function
+`ABCSMC` accepts two values for `delta`, an initial guess that is very
+permissive and a final value that triggers the SMC algorithm to
+terminate.
+
+```{r abcsmc}
+t_initial <- Sys.time()
+options(mc.cores = detectCores())
+X <- rprior(10000)
+posterior <- ABCSMC(
+	objFunc,
+	startPar=t(X),
+	Sigma=cov(X),
+	delta=c(initial=3,final=0.5),
+	dprior=dprior
+)
+t_final <- Sys.time()
+
+cat(difftime(t_final,t_initial))
+```
+
+# Visualize the sampled parameters
+
+The parameter-values in `ABCMCMCoutput$draws` are approximate samples
+from the posterior distribution, given the experiments.
+
+The sampled three dimensional parameters for the AKAR4 model can be
+visualized via pairs of scatter plots, or two dimensional binning:
+
+```{r pairs, out.width="100%", fig.width=12, fig.height=12, dpi=100}
+if (requireNamespace(hexbin)){
+	hexbin::hexplom(posterior$draws, xbins = 16)
+} else {
+	pairs(posterior$draws, pch=20)
+}
+```
+
+## Marhinals
+
+The marginal distributions of each parameter in the parameter vector
+can be visualized via histograms as follows.
+
+```{r marginals}
+for(i in seq_along(par_val)){
+	hist(
+		ABCMCMCoutput$draws[,i],
+		breaks = 20,
+		main=names(par_val)[i],
+		xlab = "Value in log scale"
+	)
+}
+```
+
+## State Trajectories
+
+```{r trajectories, fig.height=20, out.width="100%"}
+Z <- posterior$draws
+y <- s(t(Z)) # using the stochastic simulator one final time
+par(3,1)
+for (i in seq_along(ex)){
+	tm <- ex[[i]]$outputTimes
+	plot(as.errors(tm),ex[[i]]$data,xlab="time",ylab="AKAR4p",main=names(ex)[i])
+	matplot(tm,y[[i]]$func,type='s',col=rgb(0,0,1,0.1))
+}
+```
