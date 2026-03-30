@@ -12,3 +12,6 @@ replace_powers(v)
 \description{
 replace_powers
 }
+\examples{
+print(replace_powers(c("2^3.1","10^-6","x^2")))
+}

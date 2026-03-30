@@ -38,4 +38,30 @@ This function calls a C function which solves an initial value
 problem, calculates the sensitivity of the solution, log-likelihood
 value \code{ll}, gradient of \code{ll} amd Fisher-Information.
 }
+\examples{
+\donttest{
+  requireNamespace("errors")
+  f <- uqsa_example("AKAR4")
+  m <- model_from_tsv(f)
+  o <- as_ode(m)
+  ex <- experiments(m,o)
+  C <- generateCode(o)
+  modelName <- checkModel("AKAR4","./AKAR4.c")
+  y <- gsl_odeiv2_fi(modelName,ex,values(m$Parameter))
+  print(length(y))
+  print(names(y[[1]]))
+  par(mfrow=c(length(ex),1))
+  for (i in seq_along(y)){
+      plot(
+          errors::as.errors(ex[[i]]$outputTimes),
+          ex[[i]]$data,
+          xlab="time",
+          ylab=rownames(y[[i]]$data)[1],
+          main=names(ex)[i],
+          ylim=c(100,200)
+      )
+      lines(ex[[i]]$outputTimes,drop(y[[i]]$func),col='red')
+  }
+}
+}
 \keyword{ODE}

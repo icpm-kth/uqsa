@@ -11,7 +11,7 @@
 #' @export
 #' @return A matrix similar to E, with standard error values
 #' @examples
-#' M <- matrix(seq(12),3,4,dimnames=liest(letters[seq(3)],LETTERS[seq(4)]))
+#' M <- matrix(seq(12),3,4,dimnames=list(letters[seq(3)],LETTERS[seq(4)]))
 #' errors(M) <- abs(M*0.1 + 0.1)
 #' E <- standard_error_matrix(M)
 #' print(E)
@@ -111,6 +111,12 @@ values <- function(df){
 #'
 #' @param df a data.frame with a "formula" column
 #' @return character vector with names taken from the row names of df
+#' @export
+#' @examples
+#' df <- data.frame(formula=c("exp(x)","10^x","2*x + 3"),row.names=c("f1","f2",'f3'))
+#' formulae(df)
+#' df <- data.frame(value=c("exp(x)","10^x","2*x + 3"),row.names=c("f1","f2",'f3'))
+#' formulae(df)
 formulae <- function(df){
 	if (is.null(df)) return(NULL)
 	if ("formula" %in% colnames(df)){
@@ -142,7 +148,8 @@ formulae <- function(df){
 #' @param i row-indices of `x` to be modified
 #' @param j column-indices of `x` to be modified
 #' @param sgn modification
-#' @return The value of x is modified additively ihn place: `x <- x+value`
+#' @param value a numeric value of appropriate size, depending on `i` and `j`
+#' @return The value of x is modified additively ihn place: `x <- x + sgn*value`
 #' @export
 #' @examples
 #'  x <- matrix(seq(12),3,4)
@@ -170,8 +177,9 @@ formulae <- function(df){
 #' @param i a subset of values in x, defaults to all values of x
 #' @param value the base of the logarithm x was provided in
 #' @return x will be changed to be in linear space
+#' @export
 #' @examples
-#'  x <- 1
+#'  x <- 2
 #'  base(x) <- 10
 #'  print(x)
 `base<-` <- function(x,i=seq_along(x),value){
@@ -179,11 +187,36 @@ formulae <- function(df){
 	return(x)
 }
 
-stoichiometric_matrix <- function(m) {
-	nu <- matrix(0,NROW(m$Compound),NROW(m$Reaction),dimnames=list(rownames(m$Compound),rownames(m$Reaction)))
+#' The stoichiometric matrix of a reaction network
+#'
+#' Given a model, described in tabular form (`m` is a list of
+#' data-frames). The stoichiometric matrix is the linear map between
+#' the model's flux vector and the ODE's right-gand-side vector field.
+#' If the flux vector is `rr <- flux(t,x,p)`, which maps the state
+#' variables `x` and parameters `p` to the reaction rate `rr` of each
+#' reaction. The stoichiometric matrix `nu` (ν), will map the reaction
+#' rates to the rate of change of the state variables: dx/dt := nu %*%
+#' flux(t,x,p).
+#'
+#' The matrix is usually sparse, but not extremely big. This function
+#' attaches a sparse version of the same information as attributes to
+#' the return-value, as two lists, for convenience.
+#'
+#' @param m list of data frames with at least the 'Reaction' table,
+#'     and the 'Compound' table
+#' @param compound.names all names of the reacting compounds
+#' @export
+#' @return the stoichimetric matrix, with some additional attributes.
+#' @examples
+#' the_reaction <- "A + B <=> C"
+#' m <- list(
+#'     Reaction=data.frame(reactants=c("A+B"),products=c("C"))
+#' )
+#' nu <- stoichiometric_matrix(m,c("A","B","C"))
+stoichiometric_matrix <- function(m,compound.names=rownames(m$Compound)) {
+	nu <- matrix(0,length(compound.names),NROW(m$Reaction),dimnames=list(compound.names,rownames(m$Reaction)))
 	reactants <- stoichiometry(lapply(strsplit(m$Reaction$reactants,"+",fixed=TRUE),trimws))
 	products <- stoichiometry(lapply(strsplit(m$Reaction$products,"+",fixed=TRUE),trimws))
-	f <- m$Reaction$kinetic.law
 	for (j in seq_along(reactants)){
 		r <- reactants[[j]]
 		p <- products[[j]]
@@ -213,6 +246,10 @@ stoichiometric_matrix <- function(m) {
 #' @param a the name of an attribute
 #' @return the value of the attribute: `attr(x,a)`
 #' @export
+#' @examples
+#' x <- 1
+#' attr(x,"unit") <- "m"
+#' print(x %@% "unit")
 `%@%` <- function(x,a){
 	if (is.null(x)) return(NULL)
 	stopifnot(is.character(a))
@@ -240,7 +277,13 @@ stoichiometric_matrix <- function(m) {
 #' @param x values
 #' @param str_scale character vector
 #' @return a copy of `x`,  transformed in to linear space
-linear_scale <- function(x,str_scale=""){
+#' @examples
+#' \dontrun{
+#' x <- c(1,2,3)
+#' attr(x,"scale") <- c("log10","log2","log")
+#' print(linear_scale(x))
+#' }
+linear_scale <- function(x,str_scale=attr(x,"scale")){
 	if (is.character(str_scale)){
 		# general case: logXX
 		l <- grepl("^log[0-9]+$",str_scale)
@@ -267,13 +310,17 @@ linear_scale <- function(x,str_scale=""){
 #' @param vf a named character vector of the right length (number of state variables)
 #' @param r a named vector of stoichiometric coefficients for the reactants
 #' @param p a named vector of stoichiometric coefficients for the products
+#' @param value a reaction rate (string)
 #' @return updated vf
 #' @examples
+#' \dontrun{
 #' Reaction <- "A + B <=> C"
 #' r <- c(A=1,B=1)
 #' p <- c(C=1)
 #' vf <- c(A="",B="",C="") # empty
 #' reaction(vf,r,p) <- "A*B-C"
+#' print(vf)
+#' }
 `reaction<-` <- function(vf,r,p,value){
 	stopifnot(r %has% "names")
 	stopifnot(p %has% "names")
@@ -302,9 +349,17 @@ linear_scale <- function(x,str_scale=""){
 #' reduction via linear algebra operations, with [pracma::null].
 #' @param nu stoichiometric matrix
 #' @param iv initial values
+#' @param verbose if `TRUE`, this function will print the conservation laws on screen
 #' @useDynLib uqsa, lstrtod
 #' @return a list of conservation laws
 #' @export
+#' @examples
+#' f <- uqsa_example("AKAR4")
+#' m <- model_from_tsv(f)
+#' nu <- stoichiometric_matrix(m)
+#' CL <- conservation_law_analysis(nu,values(m$Compound))
+#' print(names(CL))
+#' print(CL[,c('value','Formula')])
 conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
 	C <- pracma::rref(t(pracma::nullspace(t(nu))))
 	stopifnot(norm(C %*% nu)<1e-6)
@@ -350,7 +405,6 @@ conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
 		}
 		allText[i] <- Text
 	}
-	if (any(diff(c(1,2,4,11,14))==0)) stop("conservation law analysis is trying to replace the same compound several times.")
 	CL <- data.frame(
 		Eliminates=rev(K),
 		value=rev(C %*% iv),
@@ -390,6 +444,12 @@ conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
 #'     right-hand-side (vector field) of the ODE, this is the main
 #'     result of this function.
 #' @export
+#' @examples
+#' f <- uqsa_example("AKAR4")
+#' m <- model_from_tsv(f)
+#' o <- as_ode(m)
+#' print(names(o))
+#' print(o$vf)
 as_ode <- function(m,cla=requireNamespace("pracma")){
 	iv <- values(m$Compound)
 	pv <- values(m$Parameter)
@@ -447,6 +507,14 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 #' @param d data.frame with column names that correspond to those of `v`
 #' @param as_type a character scalar indicating a type ('character','numeric','logical',etc.)
 #' @return a matrix of dimension length(v) × NROW(d)
+#' @examples
+#' \dontrun{
+#' f <- uqsa_example("AKAR4")
+#' m <- model_from_tsv(f)
+#' iv <- values(m$Compound)
+#' IV <- update_values(iv,m$Experiments)
+#' print(IV)
+#' }
 update_values <- function(v,d,as_type="numeric"){
 	if (is.null(v)) return(NULL)
 	if (is.matrix(v) && NCOL(v)==1) {
@@ -510,7 +578,6 @@ time_series_experiments <- function(m,E,iv,input,out){
 	return(D)
 }
 
-## dose_response_experiments(m,E[l,,drop=FALSE],iv[,l,drop=FALSE],input[,l,drop=FALSE],out)
 dose_response_experiments <- function(m,E,iv,input,out){
 	if (is.null(E) || NROW(E)==0) return(NULL)
 	TS <- list() # list of time series experiments
@@ -572,6 +639,13 @@ dose_response_experiments <- function(m,E,iv,input,out){
 #' @param o the ode derived from `m`
 #' @return a list of simulation instructions
 #' @export
+#' @examples
+#' f <- uqsa_example("AKAR4")
+#' m <- model_from_tsv(f)
+#' o <- as_ode(m)
+#' ex <- experiments(m,o)
+#' print(names(ex))
+#' print(ex[[1]]$input)
 experiments <- function(m,o){
 	if (!is.list(m)) {
 		stop("the first argument needs to be a list of file contents.")

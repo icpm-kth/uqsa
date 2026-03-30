@@ -308,47 +308,50 @@ load_system(
 	char *symbol_name=malloc(m+32); // symbol name in .so
 	char *suffix=pcpy(symbol_name,model_name,m);
 	*suffix='\0';
-	union symbol convert;
+	union symbol conversion;
 	if (lib){
 		*((char*) pcpy(suffix,"_vf",3))='\0';
-		if ((convert.ptr=dlsym(lib,symbol_name))==NULL){
+		if ((conversion.ptr=dlsym(lib,symbol_name))==NULL){
 			fprintf(stderr,"[%s] loading «%s» is required.\n",__func__,symbol_name);
+			fprintf(stderr,"%p: %p\n",lib,conversion.ptr);
 			free(symbol_name);
 			return sys;
+		} else {
+			 fprintf(stderr,"[%s] model so: %s (%p)\n",__func__,model_so,conversion.ptr);
 		}
-		ODE_vf = convert.ODE_vf;
+		ODE_vf = conversion.ODE_vf;
 
 		*((char*) pcpy(suffix,"_jac",4))='\0';
-		convert.ptr = dlsym(lib,symbol_name);
-		ODE_jac = convert.ODE_jac;
+		conversion.ptr = dlsym(lib,symbol_name);
+		ODE_jac = conversion.ODE_jac;
 
 		*((char*) pcpy(suffix,"_jacp",5))='\0';
-		convert.ptr = dlsym(lib,symbol_name);
-		ODE_jacp = convert.ODE_jacp;
+		conversion.ptr = dlsym(lib,symbol_name);
+		ODE_jacp = conversion.ODE_jacp;
 
 		*((char*) pcpy(suffix,"_func",5))='\0';
-		convert.ptr = dlsym(lib,symbol_name);
-		ODE_func = convert.ODE_func;
+		conversion.ptr = dlsym(lib,symbol_name);
+		ODE_func = conversion.ODE_func;
 
 		*((char*) pcpy(suffix,"_funcJac",8))='\0';
-		convert.ptr = dlsym(lib,symbol_name);
-		ODE_funcJac = convert.ODE_funcJac;
+		conversion.ptr = dlsym(lib,symbol_name);
+		ODE_funcJac = conversion.ODE_funcJac;
 
 		*((char*) pcpy(suffix,"_funcJacp",9))='\0';
-		convert.ptr = dlsym(lib,symbol_name);
-		ODE_funcJacp = convert.ODE_funcJacp;
+		conversion.ptr = dlsym(lib,symbol_name);
+		ODE_funcJacp = conversion.ODE_funcJacp;
 
 		*((char*) pcpy(suffix,"_default",8))='\0';
-		convert.ptr = dlsym(lib,symbol_name);
-		ODE_default = convert.ODE_default;
+		conversion.ptr = dlsym(lib,symbol_name);
+		ODE_default = conversion.ODE_default;
 
 		*((char*) pcpy(suffix,"_init",5))='\0';
-		convert.ptr = dlsym(lib,symbol_name);
-		ODE_init = convert.ODE_init;
+		conversion.ptr = dlsym(lib,symbol_name);
+		ODE_init = conversion.ODE_init;
 
 		*((char*) pcpy(suffix,"_event",6))='\0';
-		convert.ptr = dlsym(lib,symbol_name);
-		ODE_event = convert.ODE_event;
+		conversion.ptr = dlsym(lib,symbol_name);
+		ODE_event = conversion.ODE_event;
 	} else {
 		fprintf(stderr,"[%s] library «%s» could not be loaded: %s\n",__func__,model_so,dlerror());
 		return sys;
@@ -1127,7 +1130,7 @@ r_gsl_odeiv2_outer_CRNN(
 	int np = length(lparameters);
 	gsl_odeiv2_driver *driver = gsl_odeiv2_driver_alloc_y_new(&sys,T,h,abs_tol,rel_tol);
 	for (i=0; i<N; i++){
-		iv = from_list(VECTOR_ELT(experiments,i),"initial_value initialState initialValue initialValues");
+		iv = from_list(VECTOR_ELT(experiments,i),"initial_value initialState initialValue initialValues iv");
 		t = from_list(VECTOR_ELT(experiments,i),"time times t outputTimes");
 		t0 = asReal(AS_NUMERIC(from_list(VECTOR_ELT(experiments,i),"intial_time initialTime t0 T0")));
 		ev = event_from_R(from_list(VECTOR_ELT(experiments,i),"event events scheduledEvents scheduledEvent scheduled_event"));
@@ -1142,7 +1145,6 @@ r_gsl_odeiv2_outer_CRNN(
 		F=PROTECT(alloc3DArray(REALSXP,nf,nt,M));
 		for (j=0;j<nf*nt*M;j++) REAL(F)[j]=NA_REAL;   /* initialize to NA */
 		for (k=0;k<M;k++){
-
 			p.l = (REAL(lparameters)+np*k);
 			y=gsl_matrix_view_array(REAL(AS_NUMERIC(Y))+(nt*ny*k),nt,ny);
 			ct0=clock();

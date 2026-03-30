@@ -87,13 +87,13 @@ reference:
   - parameterConversion
   - replace_powers
   - stoichiometry
+  - stoichiometric_matrix
   - unit.from.string
   - unit.id
   - unit.info
   - unit_as_character
   - units_from_table
   - yJacobian
-  - yacasMath
 - title: "Simulations"
   desc: "Functions for simulating the model"
   contents:
@@ -146,6 +146,7 @@ reference:
   - makeObjective
   - preCalibration
   - ABCMCMC
+  - ABCSMC
   - checkFitWithPreviousExperiments
 - title: "Global Sensitivity Analysis"
   contents:
@@ -190,7 +191,6 @@ reference:
   - automatic_update
   - "base<-"
   - column
-  - defaultAcceptance
   - defaultDistance
   - find_parameter_reaction
   - flux_matrix
@@ -205,7 +205,6 @@ reference:
   - parse_concise
   - "reaction<-"
   - update_values
-  - writeCFunction
   - scaleParameter
   - simple.unit
   - sum.of.bin.variance

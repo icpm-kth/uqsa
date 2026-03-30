@@ -38,7 +38,28 @@
 #' @param messages a logical value indicating whether log messages should be printed
 #' @return a list containing a sample matrix and a vector of scores
 #'     (values of delta for each sample)
-ABCSMC <- function(objectiveFunction, startPar, Sigma, dprior, delta=c(2,0.5),  parAcceptable=\(p){all(is.finite(p))}, messages=FALSE){
+#' @examples
+#' \dontrun{
+#'   library(parallel)
+#'   f <- uqsa_example("AKAR4")
+#'   m <- model_from_tsv(f)
+#'   ex <- experiments(m,as_ode(m,cla=FALSE))
+#'   G <- makeGillespieModel(m)
+#'   C <- generateGillespieCode(G)
+#'   cat(C,file="test.c",sep='\n')
+#'   modelName <- checkModel("AKAR4","./test.c")
+#'   options(mc.cores=detectCores())
+#'   muX <- m$Parameter$value
+#'   sdX <- m$Parameter$stdv
+#'   rprior <- rNormalPrior(log(muX^2/(muX^2+sdX^2)),sqrt(log(1+sdX^2/muX^2)))
+#'   dprior <- dNormalPrior(log(muX^2/(muX^2+sdX^2)),sqrt(log(1+sdX^2/muX^2)))
+#'   s <- simstoch(ex,comment(modelName),logParMap)
+#'   O <- makeObjective(ex,s)
+#'   X <- rprior(1000)
+#'   colnames(X) <- rownames(m$Parameter)
+#'   posterior <- ABCSMC(O,t(X),Sigma=cov(X),dprior=dprior,delta=c(0.5,1.5))
+#' }
+ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(startPar), dprior, delta=c(2,0.5),  parAcceptable=\(p){all(is.finite(p))}, messages=FALSE){
 	delta <- sort(delta,decreasing=TRUE) # in case someone enters a range for delta, e.g. c(0.1,0.9) rather than c(initial,final)
 	initialDelta <- delta[1]
 	if (length(delta)>1){

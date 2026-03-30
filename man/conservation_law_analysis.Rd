@@ -10,6 +10,8 @@ conservation_law_analysis(nu, iv, verbose = FALSE)
 \item{nu}{stoichiometric matrix}
 
 \item{iv}{initial values}
+
+\item{verbose}{if \code{TRUE}, this function will print the conservation laws on screen}
 }
 \value{
 a list of conservation laws
@@ -17,4 +19,12 @@ a list of conservation laws
 \description{
 Given a stoichiometric matrix, this function performs model
 reduction via linear algebra operations, with \link[pracma:nullspace]{pracma::null}.
+}
+\examples{
+f <- uqsa_example("AKAR4")
+m <- model_from_tsv(f)
+nu <- stoichiometric_matrix(m)
+CL <- conservation_law_analysis(nu,values(m$Compound))
+print(names(CL))
+print(CL[,c('value','Formula')])
 }

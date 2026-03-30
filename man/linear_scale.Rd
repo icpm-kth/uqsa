@@ -4,7 +4,7 @@
 \alias{linear_scale}
 \title{Interprets a character vector as names of logarithms}
 \usage{
-linear_scale(x, str_scale = "")
+linear_scale(x, str_scale = attr(x, "scale"))
 }
 \arguments{
 \item{x}{values}
@@ -27,5 +27,12 @@ The words in \code{str_scale} name a logarithm, e.g. "log10". Currently understo
 \item log10
 \item log2, ld
 \item ln, log
+}
+}
+\examples{
+\dontrun{
+x <- c(1,2,3)
+attr(x,"scale") <- c("log10","log2","log")
+print(linear_scale(x))
 }
 }

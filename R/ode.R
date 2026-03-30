@@ -6,7 +6,7 @@
 #' @param v a chcarcter vector with math expressions
 #' @param reverse do the reverse operation
 #' @return a character vector with yacas math
-#' @export
+#' @noRd
 yacasMath <- function(v,reverse=FALSE) {
 	r <- c("exp","sin","cos","tan","log")
 	y <- c("Exp","Sin","Cos","Tan","Ln")
@@ -29,10 +29,16 @@ yacasMath <- function(v,reverse=FALSE) {
 #' Given a named character array of math expressions and a vector of
 #' independent variables, this function calculates the Jacobian matrix
 #' of the math expressions with respect to the variables.
+#'
 #' @param f a character vector of length n
 #' @param x a character vector of length m
 #' @return a character matrix (n×m) with derivatives `df[i]/dx[j]`
 #' @export
+#' @examples
+#' f <- c("2*x*y","exp(-k*x)")
+#' x <- c("x","y")
+#' J <- yJacobian(f,x)
+#' print(J)
 yJacobian <- function(f,x){
 	f <- yacasMath(f)
 	x <- yacasMath(x)
@@ -49,6 +55,8 @@ yJacobian <- function(f,x){
 #' @export
 #' @param v a character vector
 #' @useDynLib uqsa, replace_pow=replace_pow
+#' @examples
+#' print(replace_powers(c("2^3.1","10^-6","x^2")))
 replace_powers <- function(v){
 	w<-.Call(replace_pow,as.character(v))
 	return(w)
@@ -78,6 +86,8 @@ cOffset <- \(d) {seq(0,NROW(d)-1)}
 #' @param values a character vecotor with values or mathematic formulae to return.
 #' @param body a character vector of additional content for the body of the function
 #' @param otherArgs additional arguments
+#' @noRd
+#' @return a character array that includes the function
 writeCFunction <- function(prefix, fName, defArgs=c("double t","const double y_[]"), retValue=NULL, defs=NULL, values=NULL, body=NULL, otherArgs="void *par", init0 = TRUE){
 	#if (is.null(values)) return(character(0))
 
@@ -133,7 +143,24 @@ writeCFunction <- function(prefix, fName, defArgs=c("double t","const double y_[
 	))
 }
 
-## avoids double negatives
+#' blank is TRUE where a character array is the empty string
+#'
+#' This function avoid double negatives in code, because nzchar stands
+#' for non-zero-char, and thus not-non-zero
+#'
+#' ```
+#' if (!nzchar(x))
+#' ```
+#' becomes
+#' ```
+#' if (blank(x))
+#' ```
+#'
+#' @param ch a character vector
+#' @return logcal array indicating where the array is equal to `""`
+#' @noRd
+#' @examples
+#' print(blank(c("a","","","","c")))
 blank <- function(ch){
 	return(!nzchar(ch))
 }
@@ -169,20 +196,25 @@ eventCode <-function(odeModel){
 #' Write C code
 #'
 #' This function expects a list of character vectors, as returned by
-#' SBtabVFGEN::sbtab_to_vfgen. This list describes an ODE model
-#' (initial values, default parameters, transformation events, output
-#' functions).  This function uses this information, calculates
-#' Jacobians via Ryacas and returns a character vector with C source
-#' code for the solvers in the GNU Scientific Library (GSL).
+#' `as_ode()`. This list describes an ODE model (initial values,
+#' default parameters, transformation events, output functions).  This
+#' function uses this information, calculates Jacobians via Ryacas and
+#' returns a character vector with C source code for the solvers in
+#' the GNU Scientific Library (GSL).
 #'
 #' The value can be written to a file:
 #' `cat(generateCode(odeModel),sep="\n",file=...)`. This file can be
-#' compiled into a shared library and used by the solvers in the
-#' icpm-kth/rgsl package.
+#' compiled into a shared library.
 #'
-#' @param odeModel a list, as returned from `SBtabVFGEN::sbtab_to_vfgen()`
+#' @param odeModel a list that represents an ODE
 #' @export
-#' @return a character vector with the generated code, one vector-element is one line of code.
+#' @return a character vector with the generated code, one
+#'     vector-element is one line of code.
+#' @examples
+#' f <- uqsa_example("AKAR4")
+#' m <- model_from_tsv(f)
+#' C <- generateCode(as_ode(m))
+#' cat(head(C,12),sep='\n')
 generateCode <- function(odeModel){
 	warning("This function will start a background yacas process via Ryacas.\nThere is currently no working way to reset/restart that process.\n It is therefore not advisable to generate the code for two different models in the same R session.\nThe definitions for the two models will be mixed up. ")
 	modelName <- comment(odeModel) %otherwise% "model"
@@ -324,11 +356,10 @@ writeRFunction <- function(prefix,fName,ret,value,arguments=c('t','state','param
 	)
 }
 
-
 #' Write R code
 #'
 #' This function expects a list of character vectors, as returned by
-#' `SBtabVFGEN::sbtab_to_vfgen`. This list describes an ODE model
+#' `as_ode`. This list describes an ODE model
 #' (initial values, default parameters, transformation events, output
 #' functions).  This function uses this information, calculates
 #' Jacobians via Ryacas and returns a character vector with R source
@@ -338,9 +369,15 @@ writeRFunction <- function(prefix,fName,ret,value,arguments=c('t','state','param
 #' `cat(generateRCode(odeModel),sep="\n",file=...)`. This file can be
 #' sourced later.
 #'
-#' @param odeModel a list, as returned from `SBtabVFGEN::sbtab_to_vfgen()`
+#' @param odeModel a list of named character vectors with math
+#'     expressions (which work as R code)
 #' @export
-#' @return a character vector with the generated code, one vector-element is one line of code.
+#' @return a character vector with the generated code, one
+#'     vector-element is one line of code.
+#' @examples
+#' f <- uqsa_example("AKAR4")
+#' m <- model_from_tsv(f)
+#' generateRCode(as_ode(m))
 generateRCode <- function(odeModel){
 	modelName <- comment(odeModel) %otherwise% "model"
 	# simplify a data.frame with two columns to a named character vector, assuming it's name/value pairs
@@ -424,9 +461,11 @@ generateRCode <- function(odeModel){
 #' @return the model's name with annotation about file names.
 #' @export
 #' @examples
-#' cCode <- generateCode(m,o)             # a character vector
-#' modelName <- write_and_compile(cCode)  # commented name
-#' print(comment(modelName))
+#' \dontrun{
+#'   cCode <- generateCode(m,o)             # a character vector
+#'   modelName <- write_and_compile(cCode)  # commented name
+#'   print(comment(modelName))
+#' }
 write_and_compile <- function(C){
 	c.file <- sprintf("./%s_gvf.c",comment(C))
 	cat(C,sep="\n",file=c.file)

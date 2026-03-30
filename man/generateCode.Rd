@@ -7,22 +7,28 @@
 generateCode(odeModel)
 }
 \arguments{
-\item{odeModel}{a list, as returned from \code{SBtabVFGEN::sbtab_to_vfgen()}}
+\item{odeModel}{a list that represents an ODE}
 }
 \value{
-a character vector with the generated code, one vector-element is one line of code.
+a character vector with the generated code, one
+vector-element is one line of code.
 }
 \description{
 This function expects a list of character vectors, as returned by
-SBtabVFGEN::sbtab_to_vfgen. This list describes an ODE model
-(initial values, default parameters, transformation events, output
-functions).  This function uses this information, calculates
-Jacobians via Ryacas and returns a character vector with C source
-code for the solvers in the GNU Scientific Library (GSL).
+\code{as_ode()}. This list describes an ODE model (initial values,
+default parameters, transformation events, output functions).  This
+function uses this information, calculates Jacobians via Ryacas and
+returns a character vector with C source code for the solvers in
+the GNU Scientific Library (GSL).
 }
 \details{
 The value can be written to a file:
 \code{cat(generateCode(odeModel),sep="\\n",file=...)}. This file can be
-compiled into a shared library and used by the solvers in the
-icpm-kth/rgsl package.
+compiled into a shared library.
+}
+\examples{
+f <- uqsa_example("AKAR4")
+m <- model_from_tsv(f)
+C <- generateCode(as_ode(m))
+cat(head(C,12),sep='\n')
 }

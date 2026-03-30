@@ -17,8 +17,5 @@ prints the interpretation on screen, rather than returning it as a
 data.frame
 }
 \examples{
-> unit.info("km/h",unit.from.string("km/h"))
-«km/h» has been interpreted as:
-(1 × metre×10^(3))^(1)
-(60 × second×10^(0))^(-1)
+print(unit.info("km/h",unit.from.string("km/h")))
 }

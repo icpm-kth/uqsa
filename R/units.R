@@ -109,8 +109,7 @@ parameterConversion <- function(unit, reactants, products, kinetic.law){
 #'     metre, kilogram, gram, ampere, candela, second, kelvin, hour,
 #'     molarity, dimensionless. defaults to dimensionless.
 #' @examples
-#' >  unit.kind("meter")
-#' [1] "metre"
+#' print(unit.kind("meter"))
 unit.kind <- function(kind){
 	stopifnot(is.character(kind) && length(kind)==1)
 	if (grepl("^(l|L|litre|liter)$",kind)){
@@ -151,10 +150,7 @@ unit.kind <- function(kind){
 #' @param prefix a string, e.g.: "M", "mega", "m", "milli", "µ", "micro", etc.
 #' @return an integer that corresponds to the prefix, defaults to 0.
 #' @examples
-#' > unit.scale("M")
-#' [1] 6
-#' > unit.scale("µ")
-#' [1] -6
+#' print(unit.scale("M"))
 unit.scale <- function(prefix){
 	stopifnot(is.character(prefix) && length(prefix)==1)
 	if (grepl("^G$|^giga$",prefix)){
@@ -196,14 +192,9 @@ unit.scale <- function(prefix){
 #' @param prnt logical switch: if TRUE, the name will be printed.
 #' @return unit.id string
 #' @examples
-#' > unit.id("s^9")
-#' [1] "s_to_the_power_of_9"
-#'
-#' > unit.id("cm^2")
-#' [1] "cm_square"
-#'
-#' > unit.id("1/s")
-#" [1] "one_over_s"
+#' print(unit.id("s^9"))
+#' print(unit.id("cm^2"))
+#' print(unit.id("1/s"))
 unit.id <- function(unit.str,prnt=FALSE){
 	uid <- unit.str
 	uid <- sub("^1$","dimensionless",uid)
@@ -311,19 +302,9 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 #'     as hours (kind=second, multiplier=60)
 #' @export
 #' @examples
-#' > unit.from.string("m/s")
-#'   scale multiplier exponent   kind
-#' 1     0          1        1  metre
-#' 2     0          1       -1 second
-#'
-#' > unit.from.string("micromolarity")
-#'   scale multiplier exponent  kind
-#' 1    -6          1        1  mole
-#' 2     0          1       -1 litre
-#'
-#' > unit.from.string("µM")
-#'   scale multiplier exponent     kind
-#' 1    -6          1        1 molarity
+#' print(unit.from.string("m/s"))
+#' print(unit.from.string("micromolarity"))
+#' print(unit.from.string("µM"))
 unit.from.string <- function(unit.str){
 	if (!is.character(unit.str)){
 		print(unit.str)
@@ -410,10 +391,7 @@ unit_as_character <- function(unit){
 #' @param unit optionally, the data.frame that describes the unit
 #' @export
 #' @examples
-#' > unit.info("km/h",unit.from.string("km/h"))
-#' «km/h» has been interpreted as:
-#'	(1 × metre×10^(3))^(1)
-#'	(60 × second×10^(0))^(-1)
+#' print(unit.info("km/h",unit.from.string("km/h")))
 unit.info <- function(unit.str,unit=unit.from.string(unit.str)){
 	Info <- sprintf(
 		"(%g × %s×10^(%i))^(%i)",
@@ -445,10 +423,12 @@ unit.info <- function(unit.str,unit=unit.from.string(unit.str)){
 #' @return a numeric value y: val*originalUnit = y*targetUnit, the
 #'     target unit is attached to the returned value, as a comment.
 #' @examples
-#' y <- "21 cm" %as% "inches"
-#' y <- "12 μmol/L" %as% "mol/L"
-#' print(comment(y))
-#' y <- "12 mol/m^3" %as% "mmol/L"
+#' \dontrun{
+#'   y <- "21 cm" %as% "inches"
+#'   y <- "12 μmol/L" %as% "mol/L"
+#'   print(comment(y))
+#'   y <- "12 mol/m^3" %as% "mmol/L"
+#' }
 `%as%` <- function(txtUnit,target){
 	if (system2("command",args=c("-v","units"),stderr=FALSE,stdout=FALSE)){
 		warning("The 'units' utility must be installed (system program, not R).")

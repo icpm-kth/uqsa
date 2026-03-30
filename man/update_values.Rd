@@ -25,3 +25,12 @@ in \code{v} for that row's context. Example: the rows can be different
 experinemnts, with each experiment assigning new values to some
 members of \code{v} (but not necessarily all).
 }
+\examples{
+\dontrun{
+f <- uqsa_example("AKAR4")
+m <- model_from_tsv(f)
+iv <- values(m$Compound)
+IV <- update_values(iv,m$Experiments)
+print(IV)
+}
+}

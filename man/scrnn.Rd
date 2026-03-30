@@ -53,3 +53,18 @@ with M columns. In that case, one simulation per column is
 performed. The stoichiometry and modifiers remain unchanged
 throughout.
 }
+\examples{
+\donttest{
+  f <- uqsa_example("AKAR4")
+  m <- model_from_tsv(f)
+  ex <- experiments(m,as_ode(m,cla=FALSE))
+  nu <- stoichiometric_matrix(m)
+  l <- matrix(c(log(values(m$Parameter)),0),2,2,dimnames=list(rownames(m$Reaction),c("fwd","bwd")))
+  C <- CRNN(NCOL(nu),initialValues=values(m$Compound),funcValues=formulae(m$Output))
+  cat(C,file="./AKAR4_CRNN.c",sep='\n')
+  modelName <- checkModel("AKAR4","./AKAR4_CRNN.c")
+  s <- scrnn(ex, modelName)
+  p <- list(l=l,nu=nu,m=nu*0)
+  y <- s(p)
+}
+}

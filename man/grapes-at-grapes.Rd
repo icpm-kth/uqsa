@@ -28,3 +28,8 @@ this function , NULL objects are treated as optional things, and
 thus their attributes do not matter. Non-NULL objects that should
 have an attribute, but don't are considered erroneous.
 }
+\examples{
+x <- 1
+attr(x,"unit") <- "m"
+print(x \%@\% "unit")
+}

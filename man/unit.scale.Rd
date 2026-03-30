@@ -17,8 +17,5 @@ This function reads a prefix from a string and returns the exponent
 (base-10) that this prefix represents.
 }
 \examples{
-> unit.scale("M")
-[1] 6
-> unit.scale("µ")
-[1] -6
+print(unit.scale("M"))
 }

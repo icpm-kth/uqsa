@@ -18,7 +18,7 @@ THis function returns the values of this attribute as a matrix (it
 preserves the dimensions of the host matrix).
 }
 \examples{
-M <- matrix(seq(12),3,4,dimnames=liest(letters[seq(3)],LETTERS[seq(4)]))
+M <- matrix(seq(12),3,4,dimnames=list(letters[seq(3)],LETTERS[seq(4)]))
 errors(M) <- abs(M*0.1 + 0.1)
 E <- standard_error_matrix(M)
 print(E)

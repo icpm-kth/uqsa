@@ -29,3 +29,17 @@ the same size: N×M, where N is the number of observables (outputs),
 and M is th enumber of measurement time-points (length of the
 time-series).
 }
+\examples{
+\donttest{
+  f <- uqsa_example("AKAR4")
+  m <- model_from_tsv(f)
+  o <- as_ode(m)
+  ex <- experiments(m,o)
+  C <- generateCode(o)
+  cat(C,sep='\n',file='./AKAR4.c')
+  modelName <- checkModel("AKAR4","./AKAR4.c")
+  s <- simulator.c(ex,modelName)
+  objFunc <- makeObjective(ex,s)
+  print(objFunc(values(m$Parameter)))
+}
+}

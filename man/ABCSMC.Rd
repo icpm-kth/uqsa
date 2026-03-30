@@ -7,7 +7,7 @@
 ABCSMC(
   objectiveFunction,
   startPar,
-  Sigma,
+  Sigma = 2 * cov(startPar),
   dprior,
   delta = c(2, 0.5),
   parAcceptable = function(p) {
@@ -64,4 +64,26 @@ The Objective-Function \code{objectiveFuntion(P)} should return a matrix
 with \code{n} rows, where \code{n} is the number of simulation experiments
 (and thus data-sets), and \code{m} columns, where \code{m} is the number of
 parameterizations \code{NCOL(P)}.
+}
+\examples{
+\dontrun{
+  library(parallel)
+  f <- uqsa_example("AKAR4")
+  m <- model_from_tsv(f)
+  ex <- experiments(m,as_ode(m,cla=FALSE))
+  G <- makeGillespieModel(m)
+  C <- generateGillespieCode(G)
+  cat(C,file="test.c",sep='\n')
+  modelName <- checkModel("AKAR4","./test.c")
+  options(mc.cores=detectCores())
+  muX <- m$Parameter$value
+  sdX <- m$Parameter$stdv
+  rprior <- rNormalPrior(log(muX^2/(muX^2+sdX^2)),sqrt(log(1+sdX^2/muX^2)))
+  dprior <- dNormalPrior(log(muX^2/(muX^2+sdX^2)),sqrt(log(1+sdX^2/muX^2)))
+  s <- simstoch(ex,comment(modelName),logParMap)
+  O <- makeObjective(ex,s)
+  X <- rprior(1000)
+  colnames(X) <- rownames(m$Parameter)
+  posterior <- ABCSMC(O,t(X),Sigma=cov(X),dprior=dprior,delta=c(0.5,1.5))
+}
 }

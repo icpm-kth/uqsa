@@ -18,6 +18,31 @@
 #' @export
 #' @keywords ODE
 #' @useDynLib uqsa r_gsl_odeiv2_outer_fi
+#' @examples
+#' \donttest{
+#'   requireNamespace("errors")
+#'   f <- uqsa_example("AKAR4")
+#'   m <- model_from_tsv(f)
+#'   o <- as_ode(m)
+#'   ex <- experiments(m,o)
+#'   C <- generateCode(o)
+#'   modelName <- checkModel("AKAR4","./AKAR4.c")
+#'   y <- gsl_odeiv2_fi(modelName,ex,values(m$Parameter))
+#'   print(length(y))
+#'   print(names(y[[1]]))
+#'   par(mfrow=c(length(ex),1))
+#'   for (i in seq_along(y)){
+#'       plot(
+#'           errors::as.errors(ex[[i]]$outputTimes),
+#'           ex[[i]]$data,
+#'           xlab="time",
+#'           ylab=rownames(y[[i]]$data)[1],
+#'           main=names(ex)[i],
+#'           ylim=c(100,200)
+#'       )
+#'       lines(ex[[i]]$outputTimes,drop(y[[i]]$func),col='red')
+#'   }
+#' }
 gsl_odeiv2_fi <- function(name,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3, method=0, omit=0){
 	if (is.character(comment(name))){
 		so <- comment(name)
@@ -78,15 +103,28 @@ gsl_odeiv2_fi <- function(name,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.s
 #' @export
 #' @keywords ODE
 #' @useDynLib uqsa r_gsl_odeiv2_outer_CRNN
+#' @examples
+#' \dontrun{
+#'   f <- uqsa_example("AKAR4")
+#'   m <- model_from_tsv(f)
+#'   ex <- experiments(m,as_ode(m,cla=FALSE))
+#'   nu <- stoichiometric_matrix(m)
+#'   l <- matrix(c(log(values(m$Parameter)),0),2,2,dimnames=list(rownames(m$Reaction),c("fwd","bwd")))
+#'   C <- CRNN(NCOL(nu),initialValues=values(m$Compound),funcValues=formulae(m$Output))
+#'   cat(C,file="./AKAR4_CRNN.c",sep='\n')
+#'   modelName <- checkModel("AKAR4","./AKAR4_CRNN.c")
+#'   y <- gsl_odeiv2_CRNN(modelName,ex,l,nu,nu*0)
+#' }
 gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0){
 	if (is.character(comment(name))){
 		so <- comment(name)
 	} else {
 		so <- paste0("./",name,".so")
 		comment(name)<-so
+		message("looking for ", so)
 	}
 	if (!file.exists(so)){
-            warning(sprintf("[r_gsl_odeiv2_outer] for model name «%s», in directory «%s» file «%s» not found.",name,getwd(),so))
+            warning(sprintf("[gsl_odeiv2_CRNN] for model name «%s», in directory «%s» file «%s» not found.",name,getwd(),so))
 	}
 	if (!is.matrix(l)) l <- as.matrix(p)
 	y <- .Call(r_gsl_odeiv2_outer_CRNN,name,experiments,l,nu,m,abs.tol,rel.tol,initial.step.size,method)
@@ -130,6 +168,20 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 #'     rk1imp, rk8pd, rkck, rkf45, rk4, rk2
 #' @return closure that maps one argument (p) to simulation results (y).
 #' @export
+#' @examples
+#' \donttest{
+#'   f <- uqsa_example("AKAR4")
+#'   m <- model_from_tsv(f)
+#'   ex <- experiments(m,as_ode(m,cla=FALSE))
+#'   nu <- stoichiometric_matrix(m)
+#'   l <- matrix(c(log(values(m$Parameter)),0),2,2,dimnames=list(rownames(m$Reaction),c("fwd","bwd")))
+#'   C <- CRNN(NCOL(nu),initialValues=values(m$Compound),funcValues=formulae(m$Output))
+#'   cat(C,file="./AKAR4_CRNN.c",sep='\n')
+#'   modelName <- checkModel("AKAR4","./AKAR4_CRNN.c")
+#'   s <- scrnn(ex, modelName)
+#'   p <- list(l=l,nu=nu,m=nu*0)
+#'   y <- s(p)
+#' }
 scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$nu, modifiers=\(p) p$m, method = 0){
 	N <- length(experiments)
 	sim <- function(parMCMC){
@@ -146,7 +198,6 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 	}
 	return(sim)
 }
-
 
 #' This creates a closure that simulates the model, similar to simulator.c
 #'
@@ -189,13 +240,17 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'     each state variable, function, time-point, and parameter
 #'     vector.
 #' @examples
-#'  #  model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
-#'  #  experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
-#'  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
-#'
-#'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
-#'  #  simulate <- simfi(experiments, modelName,  parABC)
-#'  #  yf <- simulate(parABC)
+#' \donttest{
+#'   f <- uqsa_example("AKAR4")
+#'   m <- model_from_tsv(f)
+#'   o <- as_ode(m)
+#'   ex <- experiments(m,o)
+#'   C <- generateCode(o)
+#'   cat(C,sep='\n',file='./AKAR4_gvf.c')
+#'   modelName <- checkModel(comment(m),'./AKAR4_gvf.c')
+#'   s <- simfi(ex,modelName)
+#'   y <- s(values(m$Parameter)) # simulates
+#' }
 simfi <- function(experiments, modelName, parMap=identity, method = 0, omit = 0){
 	N <- length(experiments)
 	if (omit<3){ # create data matrices, if they don't exist
@@ -274,13 +329,17 @@ simfi <- function(experiments, modelName, parMap=identity, method = 0, omit = 0)
 #' @return a closure that returns the model's output for a given
 #'     parameter vector
 #' @examples
-#'  #  model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
-#'  #  experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
-#'  #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
-#'
-#'  #  modelName <- checkModel("<insert_model_name>_gvf.c")
-#'  #  simulate <- simulator.c(experiments, modelName,  parABC)
-#'  #  yf <- simulate(parABC)
+#' \donttest{
+#'   requireNamespace("errors")
+#'   f <- uqsa_example("AKAR4")
+#'   m <- model_from_tsv(f)
+#'   o <- as_ode(m)
+#'   ex <- experiments(m,o)
+#'   C <- generateCode(o)
+#'   modelName <- checkModel("AKAR4","./AKAR4.c")
+#'   s <- simulator.c(ex,modelName)
+#'   y <- s(values(m$Parameter))
+#' }
 simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, omit=3, method = 0){
 	if (is.na(pmatch("data",names(experiments[[1]]))) && omit < 3){
 		warning(
@@ -374,6 +433,12 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 #'     "modelName.R". If the file name ends in .c, the c source will be
 #'     compiled to a shared library.
 #' @return modelName with an additional comment about which file to use for simulations
+#' @examples
+#' \dontrun{
+#'   modelName <- checkModel("AKAR4","./AKAR4_gvf.c") # compiles the model
+#'   modelName <- checkModel("AKAR4","./AKAR4.so")    # only checks whether ./AKAR4.so exists
+#'   comment(modelName)                               # will be "./AKAR4.so" in either case
+#' }
 checkModel <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.c')),OPTS=c("-O2")){
 	if (is.null(modelFile)) {
 		modelFile <- modelFile[file.exists(modelFile)]
@@ -427,6 +492,8 @@ checkModel <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.c
 #' @param dataVAL a matrix of experimental data, shaped like funcSim
 #' @param dataERR a matrix of measurement errors, if available,
 #'     defaults to the maximum data value.
+#' @examples
+#' d <- defaultDistance(seq(7),seq(7)+rnorm(7,0,0.1),rep(0.1,7))
 defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 	if (all(is.finite(funcSim))){
 		distance <- mean(abs(funcSim-dataVAL)/dataERR, na.rm=TRUE)
@@ -435,42 +502,6 @@ defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 	}
 	return(distance)
 }
-
-#' default ABC acceptance probability function for one experiment
-#'
-#' if each experiment corresponds to one simulation and is fully
-#' quanitified by itself, then calculating the overall distance
-#' between data and experiment can be done one by one. This function
-#' describes the default way a simulation is compared to data.
-#'
-#' If the data is more complex, and two or more simulations are needed
-#' to calculate one distance value then the objective-Function needs
-#' to be entirely user-supplied. This is the case with experiments
-#' that have a "control" -- this is needed when the measurement is in
-#' arbitrary units and only makes sense comparatively to a secondary
-#' (control) scenario.
-#'
-#' This function will be used if none is provided by the user.
-#'
-#' The funcSim values need to be supplied as a matrix of size N×T with
-#' N the length of the model's output vectors and T the amount of
-#' measurement times (this is how the rgsl package returns the
-#' simulation results).
-#' @param funcSim a matrix, contains model solution (output values),
-#'     columns of output vectors
-#' @param dataVAL a data.frame of experimental data
-#' @param dataERR a data.frame of measurement errors, if available,
-#'     defaults to the maximum data value.
-defaultAcceptance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
-	n <- prod(dim(funcSim))
-	if (all(is.finite(funcSim))){
-		ABCP <- exp(-0.5*sum((abs(funcSim-t(dataVAL))/t(dataERR))^2, na.rm=TRUE))#/(sqrt(2*pi)^n*prod(as.numeric(dataERR)))
-	} else {
-		ABCP <- 0.0
-	}
-	return(ABCP)
-}
-
 
 #' creates Objective functions from ingredients
 #'
@@ -490,6 +521,19 @@ defaultAcceptance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 #' @param simulate closure that simulates the model
 #' @param distance a function that calculates ABC scores (distance between data and simulations)
 #' @return an objective function
+#' @examples
+#' \donttest{
+#'   f <- uqsa_example("AKAR4")
+#'   m <- model_from_tsv(f)
+#'   o <- as_ode(m)
+#'   ex <- experiments(m,o)
+#'   C <- generateCode(o)
+#'   cat(C,sep='\n',file='./AKAR4.c')
+#'   modelName <- checkModel("AKAR4","./AKAR4.c")
+#'   s <- simulator.c(ex,modelName)
+#'   objFunc <- makeObjective(ex,s)
+#'   print(objFunc(values(m$Parameter)))
+#' }
 makeObjective <- function(experiments,simulate,distance=defaultDistance){
 	Objective <- function(parABC){
 		out <- simulate(parABC)

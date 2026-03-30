@@ -7,14 +7,16 @@
 generateRCode(odeModel)
 }
 \arguments{
-\item{odeModel}{a list, as returned from \code{SBtabVFGEN::sbtab_to_vfgen()}}
+\item{odeModel}{a list of named character vectors with math
+expressions (which work as R code)}
 }
 \value{
-a character vector with the generated code, one vector-element is one line of code.
+a character vector with the generated code, one
+vector-element is one line of code.
 }
 \description{
 This function expects a list of character vectors, as returned by
-\code{SBtabVFGEN::sbtab_to_vfgen}. This list describes an ODE model
+\code{as_ode}. This list describes an ODE model
 (initial values, default parameters, transformation events, output
 functions).  This function uses this information, calculates
 Jacobians via Ryacas and returns a character vector with R source
@@ -24,4 +26,9 @@ code for the deSolve package.
 The value can be written to a file:
 \code{cat(generateRCode(odeModel),sep="\\n",file=...)}. This file can be
 sourced later.
+}
+\examples{
+f <- uqsa_example("AKAR4")
+m <- model_from_tsv(f)
+generateRCode(as_ode(m))
 }

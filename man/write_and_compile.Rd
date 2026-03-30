@@ -23,7 +23,9 @@ then compiling the written file in the system's shell (or via
 \link{checkModel})
 }
 \examples{
-cCode <- generateCode(m,o)             # a character vector
-modelName <- write_and_compile(cCode)  # commented name
-print(comment(modelName))
+\dontrun{
+  cCode <- generateCode(m,o)             # a character vector
+  modelName <- write_and_compile(cCode)  # commented name
+  print(comment(modelName))
+}
 }

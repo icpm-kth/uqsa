@@ -25,6 +25,5 @@ SBML. This normalizes the various ways to write the same unit:
 The unit kind of "m" is "metre", the kind of "g" is "gram".
 }
 \examples{
->  unit.kind("meter")
-[1] "metre"
+print(unit.kind("meter"))
 }

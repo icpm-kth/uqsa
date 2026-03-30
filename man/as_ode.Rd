@@ -40,3 +40,10 @@ It has the components:
 There can be additional components describing measured data for
 this model.
 }
+\examples{
+f <- uqsa_example("AKAR4")
+m <- model_from_tsv(f)
+o <- as_ode(m)
+print(names(o))
+print(o$vf)
+}

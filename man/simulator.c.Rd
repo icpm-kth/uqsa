@@ -67,11 +67,15 @@ where the ODE model is expected to work with \code{parModel}.
 Some return values are optional and omiting them saves time.
 }
 \examples{
- #  model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
- #  experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
- #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
-
- #  modelName <- checkModel("<insert_model_name>_gvf.c")
- #  simulate <- simulator.c(experiments, modelName,  parABC)
- #  yf <- simulate(parABC)
+\donttest{
+  requireNamespace("errors")
+  f <- uqsa_example("AKAR4")
+  m <- model_from_tsv(f)
+  o <- as_ode(m)
+  ex <- experiments(m,o)
+  C <- generateCode(o)
+  modelName <- checkModel("AKAR4","./AKAR4.c")
+  s <- simulator.c(ex,modelName)
+  y <- s(values(m$Parameter))
+}
 }

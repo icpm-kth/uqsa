@@ -42,3 +42,10 @@ model using the correct compiler and options for your system.
 In any case, this function stops execution if the model file
 doesn't exist, because simulations are not possible.
 }
+\examples{
+\dontrun{
+  modelName <- checkModel("AKAR4","./AKAR4_gvf.c") # compiles the model
+  modelName <- checkModel("AKAR4","./AKAR4.so")    # only checks whether ./AKAR4.so exists
+  comment(modelName)                               # will be "./AKAR4.so" in either case
+}
+}

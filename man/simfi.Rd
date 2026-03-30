@@ -55,11 +55,15 @@ This version of the function does not use the parallel package at
 all and cannot add noise to the simulations (unlike simulator.c).
 }
 \examples{
- #  model.sbtab <- SBtabVFGEN::sbtab_from_tsv(dir(pattern="[.]tsv$"))
- #  experiments <- SBtabVFGEN::sbtab.data(model.sbtab)
- #  parABC <- SBtabVFGEN::sbtab.quantity(model.sbtab$Parameter)
-
- #  modelName <- checkModel("<insert_model_name>_gvf.c")
- #  simulate <- simfi(experiments, modelName,  parABC)
- #  yf <- simulate(parABC)
+\donttest{
+  f <- uqsa_example("AKAR4")
+  m <- model_from_tsv(f)
+  o <- as_ode(m)
+  ex <- experiments(m,o)
+  C <- generateCode(o)
+  cat(C,sep='\n',file='./AKAR4_gvf.c')
+  modelName <- checkModel(comment(m),'./AKAR4_gvf.c')
+  s <- simfi(ex,modelName)
+  y <- s(values(m$Parameter)) # simulates
+}
 }

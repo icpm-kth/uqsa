@@ -26,7 +26,7 @@ If \code{x} was provided in logarithmic space, then it is an exponent to
 the given base (value).
 }
 \examples{
- x <- 1
+ x <- 2
  base(x) <- 10
  print(x)
 }

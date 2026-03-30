@@ -29,9 +29,13 @@ writeComment <- function(x) {
 #' @param funcValues named character vector, can be any valid C
 #'     expression (one line) of the available state variables (the
 #'     names can be used literally).
+#' @param model.name the prefix of all created model functions: CRNN_vf, CRNN_jac, ...
 #' @export
 #' @return a character vector suitable for writing to a file (.c)
-CRNN <- function(numReactions,initialValues,funcValues){
+#' @examples
+#' C <- CRNN(4,c(A=1,B=2,C=3),c(out="A+B+C"),model.name="testmodel")
+#' cat(head(C),sep='\n')
+CRNN <- function(numReactions,initialValues,funcValues, model.name="CRNN"){
 	headers <- c('stdlib.h','math.h','string.h','gsl/gsl_errno.h','gsl/gsl_odeiv2.h','gsl/gsl_math.h')
 	C <- sprintf("#include <%s>",headers) # will be return value
 	C <- c(C,"",
@@ -99,7 +103,7 @@ CRNN <- function(numReactions,initialValues,funcValues){
 		""
 	)
 	C <- c(C,
-		"int CRNN_flux(double t, double *y, double *fwdFlux, double *bwdFlux, struct par *p){",
+		sprintf("int %s_flux(double t, double *y, double *fwdFlux, double *bwdFlux, struct par *p){", model.name),
 		"\tdouble *nu=p->nu;",
 		"\tdouble *l=p->l;",
 		"\tdouble *m=p->m;",
@@ -134,14 +138,14 @@ CRNN <- function(numReactions,initialValues,funcValues){
 		"}"
 	)
 	C <- c(C,
-		"int CRNN_vf(double t, double *y, double *f, void *par){",
+		sprintf("int %s_vf(double t, double *y, double *f, void *par){", model.name),
 		"\tif (!y || !f) return(numStV);",
 		"\tint i,j;",
 		"\tstruct par *p = par;",
 		"\tdouble *nu=p->nu;",
 		"\tdouble fwdFlux[numRct];",
 		"\tdouble bwdFlux[numRct];",
-		"\tCRNN_flux(t,y,fwdFlux,bwdFlux,p);",
+		sprintf("\t%s_flux(t,y,fwdFlux,bwdFlux,p);", model.name),
 		"\tfor (i = 0; i < numStV; i++){",
 		"\t\tf[i] = 0.0;",
 		"/*\t\tif (y[i]<1e-10) fprintf(stderr,\"[%s] warning: y[%i] is too low: %g\\n\",__func__,i,y[i]);*/",
@@ -154,7 +158,7 @@ CRNN <- function(numReactions,initialValues,funcValues){
 		"}"
 	)
 	C <- c(C,"",
-		"int CRNN_func(double t, double *y, double *func, void *par){",
+		sprintf("int %s_func(double t, double *y, double *func, void *par){", model.name),
 		"\tif (!y || !func) return numFun;",
 		"\tstruct par *p=par;",
 		sprintf("\tdouble %s = y[_%s];",names(initialValues),names(initialValues)),
@@ -162,7 +166,7 @@ CRNN <- function(numReactions,initialValues,funcValues){
 		"\treturn GSL_SUCCESS;",
 		"}")
 	C <- c(C,"",
-		"int CRNN_jac(double t, double *y, double *jac, double dfdt[], void *par){",
+		sprintf("int %s_jac(double t, double *y, double *jac, double dfdt[], void *par){", model.name),
 		"\tif (!y || !jac) return numStV*numStV;",
 		"\tint i,j,k;",
 		"\tstruct par *p=par;",
@@ -171,7 +175,7 @@ CRNN <- function(numReactions,initialValues,funcValues){
 		"\tdouble *m=p->m;",
 		"\tdouble fwdFlux[numRct];",
 		"\tdouble bwdFlux[numRct];",
-		"\tCRNN_flux(t,y,fwdFlux,bwdFlux,p);",
+		sprintf("\t%s_flux(t,y,fwdFlux,bwdFlux,p);", model.name),
 		"\tfor (i = 0; i < numStV; i++){",
 		"\t\tfor (j = 0; j < numStV; j++) {",
 		"\t\t\tjac[i*numStV+j]=0;",
@@ -188,7 +192,7 @@ CRNN <- function(numReactions,initialValues,funcValues){
 	## initial values:
 	C <- c(C,"",
 		writeComment(c("These are the default initial conditions for y.","They may depend on the parameters,","and time of initialization t.")),
-		"int CRNN_init(double t, double *y, void *par){",
+		sprintf("int %s_init(double t, double *y, void *par){", model.name),
 		"\tif(!y || !par) return(numStV);",
 		"\tstruct par *p=par;",
 		sprintf("\ty[_%s] = %g;",names(initialValues),initialValues),
@@ -198,7 +202,7 @@ CRNN <- function(numReactions,initialValues,funcValues){
 	## default parameter values:
 	C <- c(C,"",
 		writeComment(c("These are default values for the parameters.","They may depend on the initialization time t.")),
-		"int CRNN_default(double t, void *par){",
+		sprintf("int %s_default(double t, void *par){", model.name),
 		"\tif(!par) return numRct;",
 		"\tdouble *p=par;",
 		"/*\tIt is a bit unclear what to do here for CRNNs, as they have more complex parameters. */",

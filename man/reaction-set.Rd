@@ -12,6 +12,8 @@ reaction(vf, r, p) <- value
 \item{r}{a named vector of stoichiometric coefficients for the reactants}
 
 \item{p}{a named vector of stoichiometric coefficients for the products}
+
+\item{value}{a reaction rate (string)}
 }
 \value{
 updated vf
@@ -29,9 +31,12 @@ The reactants, e.g.: \code{c(A=2,B=1)} name which state variables are affected b
 The products, e.g.: \code{c(C=1)} name which state variables are affected positively by the flux.
 }
 \examples{
+\dontrun{
 Reaction <- "A + B <=> C"
 r <- c(A=1,B=1)
 p <- c(C=1)
 vf <- c(A="",B="",C="") # empty
 reaction(vf,r,p) <- "A*B-C"
+print(vf)
+}
 }

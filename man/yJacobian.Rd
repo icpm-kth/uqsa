@@ -19,3 +19,9 @@ Given a named character array of math expressions and a vector of
 independent variables, this function calculates the Jacobian matrix
 of the math expressions with respect to the variables.
 }
+\examples{
+f <- c("2*x*y","exp(-k*x)")
+x <- c("x","y")
+J <- yJacobian(f,x)
+print(J)
+}

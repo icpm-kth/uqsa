@@ -22,3 +22,9 @@ some other spellings will also work as fallback. As a fallback
 "the value of x is 'y/2+1'", even though it is not an atomic value
 (but an expression).
 }
+\examples{
+df <- data.frame(formula=c("exp(x)","10^x","2*x + 3"),row.names=c("f1","f2",'f3'))
+formulae(df)
+df <- data.frame(value=c("exp(x)","10^x","2*x + 3"),row.names=c("f1","f2",'f3'))
+formulae(df)
+}

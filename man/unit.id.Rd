@@ -20,11 +20,7 @@ creates a name from a unit, converting math/symbols to text. The
 returned value should work as an SBML unit id.
 }
 \examples{
-> unit.id("s^9")
-[1] "s_to_the_power_of_9"
-
-> unit.id("cm^2")
-[1] "cm_square"
-
-> unit.id("1/s")
+print(unit.id("s^9"))
+print(unit.id("cm^2"))
+print(unit.id("1/s"))
 }

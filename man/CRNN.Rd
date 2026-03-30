@@ -4,7 +4,7 @@
 \alias{CRNN}
 \title{CRNN creates C code for a chemical reaction neural network}
 \usage{
-CRNN(numReactions, initialValues, funcValues)
+CRNN(numReactions, initialValues, funcValues, model.name = "CRNN")
 }
 \arguments{
 \item{numReactions}{the number of reversible mass action law
@@ -16,6 +16,8 @@ used as the neames of the reacting compounds.}
 \item{funcValues}{named character vector, can be any valid C
 expression (one line) of the available state variables (the
 names can be used literally).}
+
+\item{model.name}{the prefix of all created model functions: CRNN_vf, CRNN_jac, ...}
 }
 \value{
 a character vector suitable for writing to a file (.c)
@@ -38,4 +40,8 @@ Note: In addition to the state variables, the function values can
 also reference the log-parameters of the model as \code{l[i]}, where \code{i} is
 a 0-based offset to the reaction \code{i}; the backward rate, is stored at
 position \code{l[i+numRct]}.
+}
+\examples{
+C <- CRNN(4,c(A=1,B=2,C=3),c(out="A+B+C"),model.name="testmodel")
+cat(head(C),sep='\n')
 }

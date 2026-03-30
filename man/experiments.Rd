@@ -33,3 +33,11 @@ with something that the model does. In such cases, don't use this function.
 
 The instructions must be organised in a table called Experiment(s).
 }
+\examples{
+f <- uqsa_example("AKAR4")
+m <- model_from_tsv(f)
+o <- as_ode(m)
+ex <- experiments(m,o)
+print(names(ex))
+print(ex[[1]]$input)
+}
