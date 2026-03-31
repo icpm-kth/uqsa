@@ -302,6 +302,7 @@ load_system(
  const char *model_so) /* the path to the shared library that contains the model. */
 {
 	void *lib=dlopen(model_so,RTLD_LAZY);
+	const char *err_msg = dlerror();
 	gsl_odeiv2_system sys={NULL,NULL,0,NULL};
 	size_t n,l;
 	size_t m=strlen(model_name);
@@ -353,7 +354,12 @@ load_system(
 		conversion.ptr = dlsym(lib,symbol_name);
 		ODE_event = conversion.ODE_event;
 	} else {
-		fprintf(stderr,"[%s] library «%s» could not be loaded: %s\n",__func__,model_so,dlerror());
+		fprintf(stderr,"[%s] library «%s» could not be loaded: %s\n",__func__,model_so,err_msg);
+		if (err_msg){
+			Rf_error("[dlopen] %s.",err_msg);
+		} else {
+			Rf_error("[dlopen] unknown error.");
+		}
 		return sys;
 	}
 	n=ODE_vf(0,NULL,NULL,NULL);

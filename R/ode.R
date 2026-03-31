@@ -1,3 +1,241 @@
+#' Interpret a model as an ODE
+#'
+#' This function accepts a list generated from a collection of TSV
+#' files (or a similar format) and interprets the contents as an
+#' ordinary differential equation (ODE).
+#'
+#' The argument `m` can be obtained via `model_from_tsv()`.
+#' It has the components:
+#' - `m$Constant`
+#' - `m$Parameter`
+#' - `m$Input`
+#' - `m$Expression`
+#' - `m$Compound`
+#' - `m$Reaction`
+#' - `m$Experiment`
+#'
+#' There can be additional components describing measured data for
+#' this model.
+#' @param m a list of data.frames, each corresponding to a TSV file or
+#'     sheet in a spreadsheet.
+#' @param cla a Boolean value indicating whether conservation law
+#'     analysis should be performed.
+#' @return a list that contains a summary of this model interpreted as
+#'     an ODE, crucially, the list contains the element `vf`, the
+#'     right-hand-side (vector field) of the ODE, this is the main
+#'     result of this function.
+#' @export
+#' @examples
+#' f <- uqsa_example("AKAR4")
+#' m <- model_from_tsv(f)
+#' o <- as_ode(m)
+#' print(names(o))
+#' print(o$vf)
+as_ode <- function(m,cla=requireNamespace("pracma")){
+	iv <- values(m$Compound)
+	pv <- values(m$Parameter)
+	xp <- c(formulae(m$Expression),formulae(m$Reaction))
+	inp <- values(m$Input)
+	par <- c(linear_scale(pv,m$Parameter$scale),linear_scale(inp,m$Input$scale))
+	out <- formulae(m$Output)
+	nu <- stoichiometric_matrix(m)
+	flux <- formulae(m$Reaction)
+	vf <- character(NROW(iv))
+	names(vf) <- names(iv)
+	r <- nu %@% 'reactants'
+	p <- nu %@% 'products'
+	for (i in seq_along(flux)){
+		reaction(vf,r[[i]],p[[i]]) <- flux[i]
+	}
+	if (as.logical(cla)){
+		IV <- update_values(iv,m$Experiment)
+		CL <- conservation_law_analysis(nu,iv)
+		iv <- iv[-CL$Eliminates]
+		cq <- CL$Formula
+		names(cq) <- rownames(CL)
+		xp <- c(formulae(m$Expression),cq,formulae(m$Reaction))
+		C <- CL$Constant
+		names(C) <- CL$ConstantName
+		par <- c(par,C)
+		vf <- vf[-CL$Eliminates]
+	} else {
+		CL <- NULL
+		xp <- c(formulae(m$Expression),formulae(m$Reaction))
+	}
+	if (is.finite(pmatch("Transformation",names(m)))){
+		tf <- character(length(iv)+length(par))
+		names(tf) <- c(names(par),names(iv))
+		tf <- update_values(tf,m$Transformation,"character")
+		attr(tf,"type") <- c(rep("par",length(par)),rep("var",length(iv)))
+	} else {
+		tf <- NULL
+	}
+	ode <- list(
+		vf=vf,
+		par=par,
+		var=iv,
+		exp=xp,
+		func=out,
+		stoichiometric_matrix=nu,
+		conservationLaws=CL,
+		tf=tf,
+		name=comment(m),
+		c.path=NULL,  # path of the .c file
+		c.date=NULL,  # date and time of writing the c file
+		so.path=NULL, # path to the so.file
+		so.date=NULL  # date and time of writing the so file
+	)
+	class(ode) <- "ode"
+	comment(ode) <- comment(m)
+	return(ode)
+}
+
+#' Print a summary about the ode
+#'
+#' An ODE model was crteated by `as_ode` can be summarized here,
+#' including information about the compiled version of the model.
+#'
+#' The ode model is for the most part a list of named vectors and
+#' matrices which together encode the mathematical structure of the
+#' ode.
+#'
+#' @param o the ode
+#' @return NULL
+#' @export
+#' @examples
+#' \donttest{
+#'   f <- uqsa_example("AKAR4")
+#'   m <- model_from_tsv(f)
+#'   o <- as_ode(m)
+#'   print(o)
+#' }
+print.ode <- function(o){
+	cat(
+		sprintf("%26s : %s","Model name",o$name),
+		sprintf("%26s : %s [%s]","C file",o$c.path,o$c.date),
+		sprintf("%26s : %s [%s]","shared library",o$so.path,o$c.date),
+		sprintf("%26s : %i","Number of state variables",length(o$var)),
+		sprintf("%26s : %i","Number of parameters",length(o$par)),
+		sprintf("%26s : %i","Number of outputs",length(o$func)),
+		sprintf("%26s : %i","Conservation laws",NROW(o$conservationLaws)),
+		sprintf("%26s : %s","Transformations",ifelse(is.null(o$tf),"no","yes")),
+		sep="\n"
+	)
+}
+
+#' Add information about compiled code
+#'
+#' Adds the path of the shared library (.so file) to the ODE model.
+#'
+#' @param o the ode (list of named arrays and matrices)
+#' @param value the path to the compiled model
+#' @return modified o, with information about compiled code
+`so.path<-` <- function(o,value){
+	if (!is.character(value) || length(value)>1) stop("Value must be a character scalar")
+	if (!file.exists(value)) warning(sprintf("File %s does not exist",value))
+	o$so.path <- value
+	o$so.date <- file.info(value)$ctime
+	return(o)
+}
+
+#' Add information about the model's C code
+#'
+#' Adds the location of the model's C code (a file).
+#'
+#' @param o the ode (list of named arrays and matrices)
+#' @param value the path to the compiled model
+#' @return modified o, with information about compiled code
+`c.path<-` <- function(o,value){
+	if (!is.character(value) || length(value)>1) stop("Value must be a character scalar")
+	if (!file.exists(value)) warning(sprintf("File %s does not exist",value))
+	o$c.path <- value
+	o$c.date <- file.info(value)$ctime
+	return(o)
+}
+
+#' Add information about compiled code
+#'
+#' Adds the path of the shared library (.so file) to the ODE model.
+#'
+#' @param o the ode (list of named arrays and matrices)
+#' @return modified o, with information about compiled code
+so.path <- function(o){
+	f <- o$so.path
+	if (!file.exists(f)) warning(sprintf("File %s does not exist anymore.",f))
+	return(f)
+}
+
+#' Retrieve information about the model's C code
+#'
+#' Returns the location of the model's C code (a file).
+#'
+#' @param o the ode (list of named arrays and matrices)
+#' @return the path where the c code is stored
+c.path <- function(o){
+	f <- o$c.path
+	if (!file.exists(f)) warning(sprintf("File %s does not exist anymore",f))
+	return(f)
+}
+
+#' Compile C code to shared library
+#'
+#' Calls `R CMD SHLIB` to create the model's shared library.
+#'
+#' @param file the c file that is to be compiled, OR an ode object
+#'     with a c.file defined and recorded in it.
+shlib <- function(file){
+	if (is(file,"ode")) {
+		so_name <- file$name
+		file <- c.path(file)
+	} else {
+		so_name <- sub("[.]c$","",basename(file))
+	}
+	if (is.null(file)) stop("No C file specified")
+	if (!file.exists(file)) stop(sprintf("%s does not exist.",file))
+
+	so <- file.path(dirname(file), paste0(so_name, .Platform$dynlib.ext))
+	cflags <- system2("pkg-config", c("--cflags", "gsl"), stdout = TRUE)
+	libs <- system2("pkg-config", c("--libs", "gsl"), stdout = TRUE)
+	compile_env <- c(
+		if (nzchar(cflags)) sprintf("PKG_CPPFLAGS='%s'",cflags),
+		if (nzchar(libs)) sprintf("PKG_LIBS='%s'", libs)
+	)
+	print(compile_env)
+	status <- system2(
+		command = file.path(R.home("bin"), "R"),
+		args = c("CMD", "SHLIB",file),
+		env = compile_env,
+		stdout = TRUE,
+		stderr = TRUE,
+		wait = TRUE
+	)
+	if (!file.exists(so)) {
+		cat(status)
+		warning(sprintf("Building %s failed.",so))
+	}
+	return(so)
+}
+
+
+#' Write the C code to a file
+#'
+#' This function does not compile the code, it only writes it to a
+#' file in a temporary location (tempdir). By default, the name of the
+#' file will contain the hash of the entire code.
+#'
+#' @param C the code to write, as a character array.
+#' @param model.name a string with no special characters, will be used in the file name
+#' @param file override the default file name (based on hashing)
+#' @return the path of the written file
+write_c_code <- function(C, model.name=comment(C), file=file.path(tempdir(),digest::digest(C,"xxh3_64"),paste0(model.name,".c"))){
+	cat(sprintf("Writing file: %s\n",file))
+	if (!dir.exists(dirname(file))){
+		dir.create(dirname(file),recursive=TRUE)
+	}
+	cat(C,sep="\n",file=file)
+	return(file)
+}
+
 #' yacasMath converts math to Ryacas compatible math
 #'
 #' Given a string like `"exp(2*x)"` this function returns a string that
