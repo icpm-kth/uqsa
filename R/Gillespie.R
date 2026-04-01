@@ -113,6 +113,7 @@ stoichiometry <- function(formulaList){
 #' @return list with two named components: fwd, bwd; each is a named
 #'     vector of integers, th enames are taken from parNames, the
 #'     integer indicates a reaction.
+#' @noRd
 parameterReaction <- function(reactionKinetic,parNames){
 	N <- length(reactionKinetic)
 	RC <- ifelse(
@@ -182,7 +183,27 @@ initialCount <- function(m){
 	return(IC)
 }
 
+#' This determines a printable reaction Fomrula from the Stoichiometry
+#' of the Reaction Netowrk.
+#'
+#' Given a list of reactants and products, this function will print a
+#' reaction fomrula for each list item.
+#'
+#' The stoichiometry (sparse representation), consists of two lists,
+#' giving the names and quantities for each reaction.
+#'
+#' @param reactants a list of named numeric vector
+#' @param products a list of named numeric vectors
+#' @return a character vector with reaction formulas
+#' @noRd
+#' @examples
+#' rf <- reaction_formula_from_stoichiometry(
+#'   list(c(A=1,B=2),c(C=3)),
+#'   list(c(C=3),c(A=1,B=2))
+#' )
+#' cat(rf,sep="\n")
 reaction_formula_from_stoichiometry <- function(reactants,products){
+	stopifnot(length(reactants)==length(products))
 	return(
 		paste(
 			sapply(reactants,FUN=\(r) paste(sprintf("%i %s",r,names(r)),collapse=" + ")),
@@ -198,6 +219,9 @@ reaction_formula_from_stoichiometry <- function(reactants,products){
 #' the forward flux and backward flux from the kinetic.law column.
 #'
 #' @param Reaction a data.frame with a column named 'kinetic.law'
+#' @return a matrix with two columns, forward fluxes and backward
+#'     fluxes, and as many rows as there are reactions.
+#' @noRd
 flux_matrix <- function(Reaction){
 	kl <- ifelse(
 		grepl("-",Reaction$kinetic.law,fixed=TRUE),
@@ -206,32 +230,48 @@ flux_matrix <- function(Reaction){
 	)
 	names(kl) <- rownames(Reaction)
 	return(
-		t(matrix(
-			trimws(
-				unlist(
-					strsplit(kl,"-",fixed=TRUE)
-				)
-			),
-			nrow=2,
-			dimnames=list(c('fwd','bwd'),rownames(Reaction))
-		))
+		t(
+			matrix(
+				trimws(
+					unlist(strsplit(kl,"-",fixed=TRUE))
+				),
+				nrow=2,
+				dimnames=list(c('fwd','bwd'),rownames(Reaction))
+			)
+		)
 	)
 }
 
-#' makeGillespieModel interprets the provided SBtab file as a stochastic model
+#' Interprets the provided model as a stochastic model
 #'
-#' The SBtab file is assumed to describe a reaction network.  The
-#' systems biology information is assumed to be concentrations and
-#' rate coefficients.
+#' The chemical master equation can be simulated as a Markov jump
+#' process (or continuous time Markov chain). One of the stochastic
+#' solver algorithms is the Gillespie algorithm. This function return
+#' sa data structure that can be used to generate code for the
+#' Gillespie solver in this package.
+#'
+#' This function interprets the contionuous model `m` as a discrete
+#' state model with molecule counts and propensities. For this reason,
+#' we need to specify a volume for the simulations to take place in.
+#'
+#' The model `m` is assumed to describe a reaction network, as a list
+#' of data.frames (as retuned by [model_from_tsv]).  The systems
+#' biology information in the file is assumed to be concentrations and
+#' rate coefficients, regardless of the interpretation this function
+#' will derive from it. This is to make the model format of the TSV
+#' file fairly uniform and independent of how we want to solve the
+#' derived equations, be it ODE or CME.
+#'
+#' Like the ode object, the returned object can also store the paths
+#' of files we create for this model, with: [c.path<-], and [so.path<-]
 #'
 #' With the information provided with the rate coefficient units and a
 #' volume, this function tries to convert everything to Gillespie rate
 #' constants.
 #' @param m list of data.frames, obtained via `model_from_tsv()`
-#' @param LV Avogadro's constant L multiplied by the system's volume V.
 #' @return a list containing the interpreted model.
 #' @export
-makeGillespieModel <- function(m){
+as_cme <- function(m){
 	rev <- as.logical(m$Reaction[["is.reversible"]])
 	F <- matrix(
 		c(
@@ -254,20 +294,52 @@ makeGillespieModel <- function(m){
 	)
 	attr(k,"unit") <- u
 	kl <- flux_matrix(m$Reaction)
-	return(
-		list(
-			left=cl,
-			right=cr,
-			parConversion=moleCountConversion(u), #parameterConversion(u,cl,cr,kl),
-			initialCount=initialCount(m),
-			par=k,
-			expression=formulae(m$Expression),
-			reactionMultiplicityFWD=sapply(cl,\(x) 1+sum(x-1)),
-			reactionMultiplicityBWD=sapply(cr,\(x) 1+sum(x-1)),
-			const=values(m$Constant),
-			kinetic.law=kl,
-			output=formulae(m$Output)
-		)
+	CME <- list(
+		left=cl,
+		right=cr,
+		parConversion=moleCountConversion(u), #parameterConversion(u,cl,cr,kl),
+		initialCount=initialCount(m),
+		par=k,
+		expression=formulae(m$Expression),
+		reactionMultiplicityFWD=sapply(cl,\(x) 1+sum(x-1)),
+		reactionMultiplicityBWD=sapply(cr,\(x) 1+sum(x-1)),
+		const=values(m$Constant),
+		kinetic.law=kl,
+		output=formulae(m$Output),
+		c.path=NULL,
+		c.date=NULL,
+		so.path=NULL,
+		so.date=NULL,
+		name=comment(m)
+	)
+	class(CME) <- "cme"
+	return(CME)
+}
+
+#' Print a Summary about the CME model
+#'
+#' This information printed on screen omits the deatls about the
+#' interactions, only the lengths of the vectors included in the data
+#' structure `CME`.
+#'
+#' @param cmeModel a model created by [as_cme]
+#' @return Nil
+#' @export
+#' @examples
+#' f <- uqsa_example("AKAR4")
+#' m <- model_from_tsv(f)
+#' cmeModel <- as_cme(m)
+#' print(cmeModel)
+print.cme <- function(cmeModel){
+	cat(
+		sprintf("%26s : %s","Name",cmeModel$name),
+		sprintf("%26s : %s [%s]","C file",cmeModel$c.path,cmeModel$c.date),
+		sprintf("%26s : %s [%s]","shared library",cmeModel$so.path,cmeModel$so.date),
+		sprintf("%26s : %i","Number of state variables",length(cmeModel$initialCount)),
+		sprintf("%26s : %i","Number of parameters",length(cmeModel$par)),
+		sprintf("%26s : %i","Number of outputs",length(cmeModel$output)),
+		sprintf("%26s : %i","Number of constants",length(cmeModel$const)),
+		sep="\n"
 	)
 }
 
@@ -333,6 +405,7 @@ padding <- function(v,upper.bound=40){
 #' @param x the reaction order based exponent of LV
 #' @param name the name of the parameter
 #' @return string with scaling instructions (C)
+#' @noRd
 scaleParameter <- function(f,x,name,arg="par"){
 	return(
 		paste0(
@@ -358,19 +431,28 @@ spacing <- function(v,max.width=40){
 #' Generate C Code to solve a model stochastically
 #'
 #' This function tries to generate code for a stochastic solver, but
-#' assumming that the SBtab model is written in terms of
-#' concentrations and rate coefficients.
+#' assumming that the systems biology model is written in terms of
+#' concentrations and rate coefficients. The stochastic model `sm` is
+#' of the type returned by `as_cme`.
 #'
-#' The model is interpreted by `stochasticModel()`, parameters found
-#' in reaction kinetics are converted to stochastic parameters.
-#' Input parameters are not converted.
+#' The arameters found in reaction kinetics are converted to
+#' stochastic parameters.  Input parameters are not converted.
 #'
-#' The default system size is 1 femtolitre.
+#' The default system volume is 1 femtolitre.  As volumes are quite
+#' small in cellular systems, we specify L * V, where L is Avogadro's
+#' constant, sometimes written as $N_\text{A}$. The volume V needs to
+#' be given in a unit that is compatible with the concentration unit
+#' (disregarding SI-prefixes). If the concentrations are given in nM
+#' (nanomole/L), then the volume needs to be in litres. Whenever the
+#' volume is a very small number (and Avogadro's constant just is a
+#' very big number), as a product, they often become a reasonable in
+#' scale.  the default is `round(log10(LV)) = 9` (+24 for Avogadro's
+#' constant L and -15 for the volume V).
 #'
 #' @param sb a stochatsic Gillespie model obtained via `makeGillespieModel`
 #' @param LV Avogadro's Constant * volume (in litres)
 #' @return character vector with code
-#' @export
+#' @noRd
 generateGillespieCode <- function(sm,LV=6.02214076e+8){
 	Definitions <- c(
 		"\t/* constants */",
@@ -554,15 +636,30 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 #' but one is the same between the experiments and one is different
 #' between different experiments: `modelParam <- c(mcmcParam, inputParam)`
 #'
-#' @param ex list of experiments, same as for the deterministic solvers.
-#' @param model.so compiled C code for the model, this has to be a path with at least one slash in it, e.g.: ./model.so
+#' The path to the shared library, is required to contain at least one
+#' slash in it, e.g.: "./model.so", "/tmp/Rsdkljhskjdhf/model.so" But,
+#' not just "model.so", otherwise the shared library is interpreted as
+#' a system library by `dlopen()` (it will not be found).
+#'
+#' @param ex list of experiments, same as for the deterministic
+#'     solvers.
+#' @param cmeModel Either the cmeModel from [as_cme], with a shared
+#'     library path stored inside, or the path to the so file
 #' @param parameters a numeric vector of appropriate size
 #' @export
 #' @return a closure that simulates the model in `model.so`
 #' @useDynLib uqsa gillespie
-simstoch <- function(ex, model.so, parMap=identity){
+simstoch <- function(ex, cmeModel, parMap=identity){
+	if (is.character(cmeModel)) {
+		model.so <- cmeModel
+	} else if (is(cmeModel,"cme")) {
+		model.so <- so.path(cmeModel)
+	}
+	if (!grepl("/",model.so)) {
+		stop(sprintf("The shared library path must have at least one slash: %s",model.so))
+	}
 	if (!file.exists(model.so)) {
-		warning(sprintf("model.so «%s» not found.",model.so))
+		warning(sprintf("The file «%s» does not exist.",model.so))
 		return(NULL)
 	}
 	for (i in seq_along(ex)){

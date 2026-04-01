@@ -73,9 +73,10 @@ Some return values are optional and omiting them saves time.
   m <- model_from_tsv(f)
   o <- as_ode(m)
   ex <- experiments(m,o)
-  C <- generateCode(o)
-  modelName <- checkModel("AKAR4","./AKAR4.c")
-  s <- simulator.c(ex,modelName)
+  C <- generate_code(o)
+  c.path(o) <- write_c_code(C)
+  so.path(o) <- shlib(o)
+  s <- simulator.c(ex,o)
   y <- s(values(m$Parameter))
 }
 }

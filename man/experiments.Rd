@@ -4,12 +4,14 @@
 \alias{experiments}
 \title{Extract Measured Data and Simulation Experiment Instructions}
 \usage{
-experiments(m, o)
+experiments(m, o = NULL)
 }
 \arguments{
-\item{m}{the model (with data), as obtained via \code{model_from_tsv()}, or similar.}
+\item{m}{the model (with data), as obtained via \code{model_from_tsv()},
+or similar.}
 
-\item{o}{the ode derived from \code{m}}
+\item{o}{the ode derived from \code{m}, only necessary if the
+experiments need to take conservation laws into account}
 }
 \value{
 a list of simulation instructions
@@ -30,6 +32,14 @@ If the data is very indirectly related to the model, then we don't
 interpret the data files themselves and the user needs to write a
 specialized likelihood function to relate the raw data in the files
 with something that the model does. In such cases, don't use this function.
+
+The simulation experiments returned here, include model input
+parameters. Whenever conservation law analysis is perfomed, the
+conserved constants are set as input parameters, because the
+conserved amount can differ between experiments. For this reason
+the Experiment table is interpreted differently in the presence of
+conservation laws. Otherwise (no conservation laws), the \code{o}
+parameter can be omitted.
 
 The instructions must be organised in a table called Experiment(s).
 }

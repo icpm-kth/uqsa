@@ -7,7 +7,7 @@
 \method{c}{`path<-`}(o, value)
 }
 \arguments{
-\item{o}{the ode (list of named arrays and matrices)}
+\item{o}{the ODE , or CME model}
 
 \item{value}{the path to the compiled model}
 }
@@ -15,5 +15,7 @@
 modified o, with information about compiled code
 }
 \description{
-Adds the location of the model's C code (a file).
+Adds the location of the model's C code (a file). The model is
+typically a list of named numeric and named character vectors,
+which describe the (interpreted) model.
 }

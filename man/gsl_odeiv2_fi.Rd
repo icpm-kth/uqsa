@@ -5,7 +5,7 @@
 \title{simulates an ode model with extra work}
 \usage{
 gsl_odeiv2_fi(
-  name,
+  odeModel,
   experiments,
   p,
   abs.tol = 1e-06,
@@ -16,9 +16,13 @@ gsl_odeiv2_fi(
 )
 }
 \arguments{
-\item{name}{the name of the ODE model to simulate (a shared library of the same name will be dynamically loaded and needs to be created first)}
+\item{odeModel}{the name of the ODE model to simulate (a shared library
+of the same name will be dynamically loaded and needs to be
+created first). Alternatively this can be the ode object
+created by \link{as_ode}, with a shared library path attached to it.}
 
-\item{experiments}{a list of \code{N} simulation experiments (time, parameters, initial value, events)}
+\item{experiments}{a list of \code{N} simulation experiments (time,
+parameters, initial value, events)}
 
 \item{p}{a matrix of parameters with M columns}
 
@@ -26,17 +30,38 @@ gsl_odeiv2_fi(
 
 \item{rel.tol}{relative tolerance, real scalar}
 
-\item{initial.step.size}{initial value for the step size; the step size will adapt to a value that observes the tolerances, real scalar}
+\item{initial.step.size}{initial value for the step size; the step
+size will adapt to a value that observes the tolerances, real
+scalar}
 
-\item{omit}{an integer that indicates how many of these to omit in this order: fisher information, gradient of the log-likelihood, log-likelihood}
+\item{omit}{an integer that indicates how many of these to omit in
+this order: fisher information, gradient of the log-likelihood,
+log-likelihood}
 }
 \value{
-a list of the solution trajectories \verb{y(t;p)} for all experiments (named like the experiments), as well as the output functions
+a list of the solution trajectories \verb{y(t;p)} for all
+experiments (named like the experiments), as well as the output
+functions
 }
 \description{
 This function calls a C function which solves an initial value
 problem, calculates the sensitivity of the solution, log-likelihood
 value \code{ll}, gradient of \code{ll} amd Fisher-Information.
+}
+\details{
+The model is always simulated using a shared library. The path to
+the shared library can be passed in three different ways:
+\enumerate{
+\item Character vector: \code{odeModel <- c("AKAKR4","/tmp/path/AKAR4.so")}
+\item A comment: \code{comment(odeModel) <- "/tmp/path/AKAR4.so"}
+\item As part of the ode object:
+}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{odeModel <- as_ode(m)`
+so.path(odeModel) <- "/tmp/path/AKAR4.so"
+}\if{html}{\out{</div>}}
+
+The shared library needs to be created first. Either with \verb{R CMD SHLIB}, \link{shlib}, or manually on the system's command line (bash, zsh, etc.).
 }
 \examples{
 \donttest{
@@ -45,9 +70,11 @@ value \code{ll}, gradient of \code{ll} amd Fisher-Information.
   m <- model_from_tsv(f)
   o <- as_ode(m)
   ex <- experiments(m,o)
-  C <- generateCode(o)
-  modelName <- checkModel("AKAR4","./AKAR4.c")
-  y <- gsl_odeiv2_fi(modelName,ex,values(m$Parameter))
+  C <- generate_code(o)
+  c.path(o) <- write_c_code(C)
+  so.path(o) <- shlib(o)
+  print(o)
+  y <- gsl_odeiv2_fi(o,ex,values(m$Parameter))
   print(length(y))
   print(names(y[[1]]))
   par(mfrow=c(length(ex),1))

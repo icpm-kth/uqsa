@@ -7,11 +7,12 @@
 so.path(o)
 }
 \arguments{
-\item{o}{the ode (list of named arrays and matrices)}
+\item{o}{the ODE, or CME model}
 }
 \value{
 modified o, with information about compiled code
 }
 \description{
 Adds the path of the shared library (.so file) to the ODE model.
+The model is typically a list of named arrays and matrices.
 }

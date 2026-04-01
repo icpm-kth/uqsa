@@ -4,12 +4,14 @@
 \alias{simstoch}
 \title{Simulate stochastic model}
 \usage{
-simstoch(ex, model.so, parMap = identity)
+simstoch(ex, cmeModel, parMap = identity)
 }
 \arguments{
-\item{ex}{list of experiments, same as for the deterministic solvers.}
+\item{ex}{list of experiments, same as for the deterministic
+solvers.}
 
-\item{model.so}{compiled C code for the model, this has to be a path with at least one slash in it, e.g.: ./model.so}
+\item{cmeModel}{Either the cmeModel from \link{as_cme}, with a shared
+library path stored inside, or the path to the so file}
 
 \item{parameters}{a numeric vector of appropriate size}
 }
@@ -30,4 +32,9 @@ optimization variables) and also known parameters (aka the input
 parameters). The model itself does not distinguish between the two,
 but one is the same between the experiments and one is different
 between different experiments: \code{modelParam <- c(mcmcParam, inputParam)}
+
+The path to the shared library, is required to contain at least one
+slash in it, e.g.: "./model.so", "/tmp/Rsdkljhskjdhf/model.so" But,
+not just "model.so", otherwise the shared library is interpreted as
+a system library by \code{dlopen()} (it will not be found).
 }

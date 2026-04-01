@@ -7,14 +7,38 @@
 #' problem, calculates the sensitivity of the solution, log-likelihood
 #' value `ll`, gradient of `ll` amd Fisher-Information.
 #'
-#' @param name the name of the ODE model to simulate (a shared library of the same name will be dynamically loaded and needs to be created first)
-#' @param experiments a list of `N` simulation experiments (time, parameters, initial value, events)
+#' The model is always simulated using a shared library. The path to
+#' the shared library can be passed in three different ways:
+#'
+#' 1. Character vector: `odeModel <- c("AKAKR4","/tmp/path/AKAR4.so")`
+#' 2. A comment: `comment(odeModel) <- "/tmp/path/AKAR4.so"`
+#' 3. As part of the ode object:
+#' ```
+#' odeModel <- as_ode(m)`
+#' so.path(odeModel) <- "/tmp/path/AKAR4.so"
+#' ```
+#'
+#' The shared library needs to be created first. Either with `R CMD
+#' SHLIB`, [shlib], or manually on the system's command line (bash, zsh, etc.).
+#'
+#' @param odeModel the name of the ODE model to simulate (a shared library
+#'     of the same name will be dynamically loaded and needs to be
+#'     created first). Alternatively this can be the ode object
+#'     created by [as_ode], with a shared library path attached to it.
+#' @param experiments a list of `N` simulation experiments (time,
+#'     parameters, initial value, events)
 #' @param p a matrix of parameters with M columns
 #' @param abs.tol absolute tolerance, real scalar
 #' @param rel.tol relative tolerance, real scalar
-#' @param initial.step.size initial value for the step size; the step size will adapt to a value that observes the tolerances, real scalar
-#' @param omit an integer that indicates how many of these to omit in this order: fisher information, gradient of the log-likelihood, log-likelihood
-#' @return a list of the solution trajectories `y(t;p)` for all experiments (named like the experiments), as well as the output functions
+#' @param initial.step.size initial value for the step size; the step
+#'     size will adapt to a value that observes the tolerances, real
+#'     scalar
+#' @param omit an integer that indicates how many of these to omit in
+#'     this order: fisher information, gradient of the log-likelihood,
+#'     log-likelihood
+#' @return a list of the solution trajectories `y(t;p)` for all
+#'     experiments (named like the experiments), as well as the output
+#'     functions
 #' @export
 #' @keywords ODE
 #' @useDynLib uqsa r_gsl_odeiv2_outer_fi
@@ -25,9 +49,11 @@
 #'   m <- model_from_tsv(f)
 #'   o <- as_ode(m)
 #'   ex <- experiments(m,o)
-#'   C <- generateCode(o)
-#'   modelName <- checkModel("AKAR4","./AKAR4.c")
-#'   y <- gsl_odeiv2_fi(modelName,ex,values(m$Parameter))
+#'   C <- generate_code(o)
+#'   c.path(o) <- write_c_code(C)
+#'   so.path(o) <- shlib(o)
+#'   print(o)
+#'   y <- gsl_odeiv2_fi(o,ex,values(m$Parameter))
 #'   print(length(y))
 #'   print(names(y[[1]]))
 #'   par(mfrow=c(length(ex),1))
@@ -43,20 +69,22 @@
 #'       lines(ex[[i]]$outputTimes,drop(y[[i]]$func),col='red')
 #'   }
 #' }
-gsl_odeiv2_fi <- function(name,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3, method=0, omit=0){
-	if (is.character(comment(name))){
-		so <- comment(name)
-	} else {
-		so <- paste0("./",name,".so")
-		comment(name) <- so
-	}
-	if (!file.exists(so)){
-            warning(sprintf("[r_gsl_odeiv2_outer] for model name «%s», in directory «%s» file «%s» not found.",name,getwd(),so))
+gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3, method=0, omit=0){
+	if (is(odeModel,"ode")){
+		so <- so.path(odeModel)
+		odeModel <- odeModel$name
+		comment(odeModel) <- so
+	} else if (is.character(odeModel) && length(odeModel)==2){
+		l <- endsWith(odeModel,".so")
+		so <- odeModel[l]
+		name <- odeModel[!l]
+		odeModel <- name
+		comment(odeModel) <- so
 	}
 	if (!is.matrix(p)) p <- as.matrix(p)
 	y <- .Call(
 		r_gsl_odeiv2_outer_fi,
-		name,
+		odeModel,
 		experiments,
 		p,
 		abs.tol,
@@ -111,9 +139,10 @@ gsl_odeiv2_fi <- function(name,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.s
 #'   nu <- stoichiometric_matrix(m)
 #'   l <- matrix(c(log(values(m$Parameter)),0),2,2,dimnames=list(rownames(m$Reaction),c("fwd","bwd")))
 #'   C <- CRNN(NCOL(nu),initialValues=values(m$Compound),funcValues=formulae(m$Output))
-#'   cat(C,file="./AKAR4_CRNN.c",sep='\n')
-#'   modelName <- checkModel("AKAR4","./AKAR4_CRNN.c")
-#'   y <- gsl_odeiv2_CRNN(modelName,ex,l,nu,nu*0)
+#'   c.file <- tempfile("AKAR4_",fileext=".c")
+#'   cat(C,file=c.file,sep='\n')
+#'   so.file <- shlib(c.file,model.name="AKAR4")
+#'   y <- gsl_odeiv2_CRNN(so.file,ex,l,nu,nu*0)
 #' }
 gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0){
 	if (is.character(comment(name))){
@@ -176,8 +205,10 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 #'   nu <- stoichiometric_matrix(m)
 #'   l <- matrix(c(log(values(m$Parameter)),0),2,2,dimnames=list(rownames(m$Reaction),c("fwd","bwd")))
 #'   C <- CRNN(NCOL(nu),initialValues=values(m$Compound),funcValues=formulae(m$Output))
-#'   cat(C,file="./AKAR4_CRNN.c",sep='\n')
-#'   modelName <- checkModel("AKAR4","./AKAR4_CRNN.c")
+#'   c.file <- tempfile("AKAR4_CRNN_",fileext=".c")
+#'   cat(C,file=c.file,sep='\n')
+#'   modelName <- "AKAR4"
+#'   comment(modelName) <- shlib(c.file,model.name="AKAR4")
 #'   s <- scrnn(ex, modelName)
 #'   p <- list(l=l,nu=nu,m=nu*0)
 #'   y <- s(p)
@@ -220,8 +251,9 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'
 #' @param experiments a list of experiments to simulate: inital
 #'     values, inputs, time vectors, initial times
-#' @param modelName a string (with optional comment indicating an .so
-#'     file) which points out the model to simulate
+#' @param odeModel Either the ode object created by [as_ode] (with a
+#'     shared library field inserted), or a string (with a comment
+#'     indicating an .so file) which points out the model to simulate
 #' @param parABC the parameters for the model, subject to change by
 #'     parMap.
 #' @param parMap the model will be called with parMap(parABC); so any
@@ -246,13 +278,26 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'   o <- as_ode(m)
 #'   ex <- experiments(m,o)
 #'   C <- generateCode(o)
-#'   cat(C,sep='\n',file='./AKAR4_gvf.c')
-#'   modelName <- checkModel(comment(m),'./AKAR4_gvf.c')
-#'   s <- simfi(ex,modelName)
+#'   ## as an alternative to the uqsa functions, we can use R builtins as well:
+#'   c.file <- tempfile("AKAR4_",fileext=".c")
+#'   cat(C,sep='\n',file=c.file)
+#'   so.file <- shlib(c.file)
+#'   s <- simfi(ex,c("AKAR4",so.file))
 #'   y <- s(values(m$Parameter)) # simulates
 #' }
-simfi <- function(experiments, modelName, parMap=identity, method = 0, omit = 0){
+simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0){
 	N <- length(experiments)
+	if (is(odeModel,"ode")){
+		so <- so.path(odeModel)
+		odeModel <- odeModel$name
+		comment(odeModel) <- so
+	} else if (is.character(odeModel) && length(odeModel)==2){
+		l <- endsWith(odeModel,".so")
+		so <- odeModel[l]
+		name <- odeModel[!l]
+		odeModel <- name
+		comment(odeModel) <- so
+	}
 	if (omit<3){ # create data matrices, if they don't exist
 		for (E in experiments) stopifnot("data" %in% names(E))
 	}
@@ -261,7 +306,7 @@ simfi <- function(experiments, modelName, parMap=identity, method = 0, omit = 0)
 			modelPar <- parMap(parABC)
 			m <- NCOL(parABC)
 			yf <- gsl_odeiv2_fi(
-				modelName,
+				odeModel,
 				experiments,
 				as.matrix(modelPar),
 				method=method,
@@ -335,9 +380,10 @@ simfi <- function(experiments, modelName, parMap=identity, method = 0, omit = 0)
 #'   m <- model_from_tsv(f)
 #'   o <- as_ode(m)
 #'   ex <- experiments(m,o)
-#'   C <- generateCode(o)
-#'   modelName <- checkModel("AKAR4","./AKAR4.c")
-#'   s <- simulator.c(ex,modelName)
+#'   C <- generate_code(o)
+#'   c.path(o) <- write_c_code(C)
+#'   so.path(o) <- shlib(o)
+#'   s <- simulator.c(ex,o)
 #'   y <- s(values(m$Parameter))
 #' }
 simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, omit=3, method = 0){
@@ -404,42 +450,48 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 	return(sim)
 }
 
-#' checkModel tries to establish the simulation file for a given model
+#' Establish the Existence of a simulation file for a given model
 #'
-#' This function returns the model name, with some additional comments
-#' about the file
+#' If a shared library doens't exit, this function makes one using
+#' only `cc` and `pkg-config` via `system2` calls. This function
+#' returns the model name, with some additional comments about the
+#' file to use for simulations.
 #'
 #' As an alternative to this function, it is sufficient to write
 #'
 #' ```
-#' modelName <- "test_ode_model"             # or some other model name
-#' comment(modelName) <- "./test_ode_model.so"
+#' modelName <- "test_ode_model"               # or some other model name
+#' comment(modelName) <- "./test_ode_model.so" # must exist
 #' ```
 #'
 #' This function will not attempt to find a model file, other than in
-#' the current directory. But, `checkModel` will compile a GSL
+#' the current directory. But, `check_model` will compile a GSL
 #' compatible C source file into a shared object if `modelFile` ends
 #' with `.c` and stop if that doesn't work. The compiler is called
 #' using a system call, which may be incorrect for your system -- if
 #' this funciton fails, you'll have to make the shared library of the
 #' model using the correct compiler and options for your system.
 #'
+#' In contrast to [shlib], this function bypasses `R CMD SHLIB`
+#' entierly and makes the shared library using only standard command
+#' line tools.
+#'
 #' In any case, this function stops execution if the model file
 #' doesn't exist, because simulations are not possible.
 #'
-#' @export
 #' @param modelName a string
 #' @param modelFile a string, if the model file is different from
 #'     "modelName.R". If the file name ends in .c, the c source will be
 #'     compiled to a shared library.
 #' @return modelName with an additional comment about which file to use for simulations
+#' @noRd
 #' @examples
 #' \dontrun{
-#'   modelName <- checkModel("AKAR4","./AKAR4_gvf.c") # compiles the model
-#'   modelName <- checkModel("AKAR4","./AKAR4.so")    # only checks whether ./AKAR4.so exists
-#'   comment(modelName)                               # will be "./AKAR4.so" in either case
+#'   modelName <- check_model("AKAR4","./AKAR4_gvf.c") # compiles the model
+#'   modelName <- check_model("AKAR4","./AKAR4.so")    # only checks whether ./AKAR4.so exists
+#'   comment(modelName)                                # will be "./AKAR4.so" in either case
 #' }
-checkModel <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.c')),OPTS=c("-O2")){
+check_model <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.c')),OPTS=c("-O2")){
 	if (is.null(modelFile)) {
 		modelFile <- modelFile[file.exists(modelFile)]
 		modelFile <- modelFile[1]
@@ -447,10 +499,11 @@ checkModel <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.c
 	stopifnot(length(modelFile)==1 && nzchar(modelFile))
 	if (grepl('[.]c$',modelFile,useBytes=TRUE)){
 		stopifnot(file.exists(modelFile))
+		D <- dirname(modelFile)
 		message('building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).')
 		LIBS <- "`pkg-config --libs gsl`"
 		CFLAGS <- "-shared -fPIC `pkg-config --cflags gsl`"
-		so <- sprintf("./%s.so",modelName)
+		so <- file.path(D,sprintf("%s.so",modelName))
 		command_args <- sprintf("%s %s -o '%s' '%s' %s",CFLAGS,paste(OPTS,collapse=" "),so,modelFile,LIBS)
 		message(paste("cc",command_args))
 		system2("cc",command_args)
@@ -492,6 +545,7 @@ checkModel <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.c
 #' @param dataVAL a matrix of experimental data, shaped like funcSim
 #' @param dataERR a matrix of measurement errors, if available,
 #'     defaults to the maximum data value.
+#' @export
 #' @examples
 #' d <- defaultDistance(seq(7),seq(7)+rnorm(7,0,0.1),rep(0.1,7))
 defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
@@ -527,10 +581,10 @@ defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 #'   m <- model_from_tsv(f)
 #'   o <- as_ode(m)
 #'   ex <- experiments(m,o)
-#'   C <- generateCode(o)
-#'   cat(C,sep='\n',file='./AKAR4.c')
-#'   modelName <- checkModel("AKAR4","./AKAR4.c")
-#'   s <- simulator.c(ex,modelName)
+#'   C <- generate_code(o)
+#'   c.path(o) <- write_c_code(C)
+#'   so.path(o) <- shlib(o)
+#'   s <- simulator.c(ex,o)
 #'   objFunc <- makeObjective(ex,s)
 #'   print(objFunc(values(m$Parameter)))
 #' }

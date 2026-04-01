@@ -58,9 +58,10 @@ problem, derived from a CRNN.
   nu <- stoichiometric_matrix(m)
   l <- matrix(c(log(values(m$Parameter)),0),2,2,dimnames=list(rownames(m$Reaction),c("fwd","bwd")))
   C <- CRNN(NCOL(nu),initialValues=values(m$Compound),funcValues=formulae(m$Output))
-  cat(C,file="./AKAR4_CRNN.c",sep='\n')
-  modelName <- checkModel("AKAR4","./AKAR4_CRNN.c")
-  y <- gsl_odeiv2_CRNN(modelName,ex,l,nu,nu*0)
+  c.file <- tempfile("AKAR4_",fileext=".c")
+  cat(C,file=c.file,sep='\n')
+  so.file <- shlib(c.file,model.name="AKAR4")
+  y <- gsl_odeiv2_CRNN(so.file,ex,l,nu,nu*0)
 }
 }
 \keyword{ODE}

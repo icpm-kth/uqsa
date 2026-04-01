@@ -557,9 +557,19 @@ dose_response_experiments <- function(m,E,iv,input,out){
 #' specialized likelihood function to relate the raw data in the files
 #' with something that the model does. In such cases, don't use this function.
 #'
+#' The simulation experiments returned here, include model input
+#' parameters. Whenever conservation law analysis is perfomed, the
+#' conserved constants are set as input parameters, because the
+#' conserved amount can differ between experiments. For this reason
+#' the Experiment table is interpreted differently in the presence of
+#' conservation laws. Otherwise (no conservation laws), the `o`
+#' parameter can be omitted.
+#'
 #' The instructions must be organised in a table called Experiment(s).
-#' @param m the model (with data), as obtained via `model_from_tsv()`, or similar.
-#' @param o the ode derived from `m`
+#' @param m the model (with data), as obtained via `model_from_tsv()`,
+#'     or similar.
+#' @param o the ode derived from `m`, only necessary if the
+#'     experiments need to take conservation laws into account
 #' @return a list of simulation instructions
 #' @export
 #' @examples
@@ -569,7 +579,7 @@ dose_response_experiments <- function(m,E,iv,input,out){
 #' ex <- experiments(m,o)
 #' print(names(ex))
 #' print(ex[[1]]$input)
-experiments <- function(m,o){
+experiments <- function(m,o=NULL){
 	if (!is.list(m)) {
 		stop("the first argument needs to be a list of file contents.")
 	}
@@ -596,7 +606,7 @@ experiments <- function(m,o){
 
 	iv <- update_values(values(m$Compound),m$Experiment) # by default
 	input <- update_values(values(m$Input),E)
-	if (is.null(o$conservationLaws)){
+	if (missing(o) || is.null(o) || is.null(o$conservationLaws)){
 		ConservedConst <- NULL
 	} else {
 		C <- o$conservationLaws %@% "lawMatrix"
@@ -616,5 +626,6 @@ experiments <- function(m,o){
 		time_series_experiments(m,E[!l,,drop=FALSE],iv[,!l,drop=FALSE],input[,!l,drop=FALSE],out),
 		dose_response_experiments(m,E[l,,drop=FALSE],iv[,l,drop=FALSE],input[,l,drop=FALSE],out)
 	)
+	class(D) <- "experiments"
 	return(D)
 }

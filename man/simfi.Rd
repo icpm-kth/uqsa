@@ -4,14 +4,15 @@
 \alias{simfi}
 \title{This creates a closure that simulates the model, similar to simulator.c}
 \usage{
-simfi(experiments, modelName, parMap = identity, method = 0, omit = 0)
+simfi(experiments, odeModel, parMap = identity, method = 0, omit = 0)
 }
 \arguments{
 \item{experiments}{a list of experiments to simulate: inital
 values, inputs, time vectors, initial times}
 
-\item{modelName}{a string (with optional comment indicating an .so
-file) which points out the model to simulate}
+\item{odeModel}{Either the ode object created by \link{as_ode} (with a
+shared library field inserted), or a string (with a comment
+indicating an .so file) which points out the model to simulate}
 
 \item{parMap}{the model will be called with parMap(parABC); so any
 parameter transformation can happen there.}
@@ -61,9 +62,11 @@ all and cannot add noise to the simulations (unlike simulator.c).
   o <- as_ode(m)
   ex <- experiments(m,o)
   C <- generateCode(o)
-  cat(C,sep='\n',file='./AKAR4_gvf.c')
-  modelName <- checkModel(comment(m),'./AKAR4_gvf.c')
-  s <- simfi(ex,modelName)
+  ## as an alternative to the uqsa functions, we can use R builtins as well:
+  c.file <- tempfile("AKAR4_",fileext=".c")
+  cat(C,sep='\n',file=c.file)
+  so.file <- shlib(c.file)
+  s <- simfi(ex,c("AKAR4",so.file))
   y <- s(values(m$Parameter)) # simulates
 }
 }

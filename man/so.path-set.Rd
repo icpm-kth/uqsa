@@ -7,7 +7,7 @@
 so.path(o) <- value
 }
 \arguments{
-\item{o}{the ode (list of named arrays and matrices)}
+\item{o}{the ODE (list of named arrays and matrices), or CME model}
 
 \item{value}{the path to the compiled model}
 }

@@ -7,7 +7,7 @@
 \method{c}{path}(o)
 }
 \arguments{
-\item{o}{the ode (list of named arrays and matrices)}
+\item{o}{the ODE, or CME model}
 }
 \value{
 the path where the c code is stored
