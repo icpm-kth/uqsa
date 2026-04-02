@@ -74,8 +74,8 @@ Some return values are optional and omiting them saves time.
   o <- as_ode(m)
   ex <- experiments(m,o)
   C <- generate_code(o)
-  c.path(o) <- write_c_code(C)
-  so.path(o) <- shlib(o)
+  c_path(o) <- write_c_code(C)
+  so_path(o) <- shlib(o)
   s <- simulator.c(ex,o)
   y <- s(values(m$Parameter))
 }

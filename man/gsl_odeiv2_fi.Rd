@@ -58,7 +58,7 @@ the shared library can be passed in three different ways:
 }
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{odeModel <- as_ode(m)`
-so.path(odeModel) <- "/tmp/path/AKAR4.so"
+so_path(odeModel) <- "/tmp/path/AKAR4.so"
 }\if{html}{\out{</div>}}
 
 The shared library needs to be created first. Either with \verb{R CMD SHLIB}, \link{shlib}, or manually on the system's command line (bash, zsh, etc.).
@@ -71,8 +71,8 @@ The shared library needs to be created first. Either with \verb{R CMD SHLIB}, \l
   o <- as_ode(m)
   ex <- experiments(m,o)
   C <- generate_code(o)
-  c.path(o) <- write_c_code(C)
-  so.path(o) <- shlib(o)
+  c_path(o) <- write_c_code(C)
+  so_path(o) <- shlib(o)
   print(o)
   y <- gsl_odeiv2_fi(o,ex,values(m$Parameter))
   print(length(y))

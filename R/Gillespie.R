@@ -263,7 +263,7 @@ flux_matrix <- function(Reaction){
 #' derived equations, be it ODE or CME.
 #'
 #' Like the ode object, the returned object can also store the paths
-#' of files we create for this model, with: [c.path<-], and [so.path<-]
+#' of files we create for this model, with: [c_path<-], and [so_path<-]
 #'
 #' With the information provided with the rate coefficient units and a
 #' volume, this function tries to convert everything to Gillespie rate
@@ -306,9 +306,9 @@ as_cme <- function(m){
 		const=values(m$Constant),
 		kinetic.law=kl,
 		output=formulae(m$Output),
-		c.path=NULL,
+		c_path=NULL,
 		c.date=NULL,
-		so.path=NULL,
+		so_path=NULL,
 		so.date=NULL,
 		name=comment(m)
 	)
@@ -333,8 +333,8 @@ as_cme <- function(m){
 print.cme <- function(cmeModel){
 	cat(
 		sprintf("%26s : %s","Name",cmeModel$name),
-		sprintf("%26s : %s [%s]","C file",cmeModel$c.path,cmeModel$c.date),
-		sprintf("%26s : %s [%s]","shared library",cmeModel$so.path,cmeModel$so.date),
+		sprintf("%26s : %s [%s]","C file",cmeModel$c_path,cmeModel$c.date),
+		sprintf("%26s : %s [%s]","shared library",cmeModel$so_path,cmeModel$so.date),
 		sprintf("%26s : %i","Number of state variables",length(cmeModel$initialCount)),
 		sprintf("%26s : %i","Number of parameters",length(cmeModel$par)),
 		sprintf("%26s : %i","Number of outputs",length(cmeModel$output)),
@@ -653,7 +653,7 @@ simstoch <- function(ex, cmeModel, parMap=identity){
 	if (is.character(cmeModel)) {
 		model.so <- cmeModel
 	} else if (is(cmeModel,"cme")) {
-		model.so <- so.path(cmeModel)
+		model.so <- so_path(cmeModel)
 	}
 	if (!grepl("/",model.so)) {
 		stop(sprintf("The shared library path must have at least one slash: %s",model.so))

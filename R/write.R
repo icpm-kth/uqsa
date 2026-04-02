@@ -37,7 +37,7 @@ generate_code <- function(Model,language="C", LV=6.02214076e+8){
 #' of the c code to be compiled, or alternatively an object that has
 #' this information stored within it. The models returned by [as_cme]
 #' and [as_ode] can both carry this information, attach it via
-#' [c.path<-].
+#' [c_path<-].
 #'
 #' @param file the c file that is to be compiled, OR an ODE/CME object
 #'     with a c.file defined and recorded in it.
@@ -46,10 +46,10 @@ generate_code <- function(Model,language="C", LV=6.02214076e+8){
 shlib <- function(file){
 	if (is(file,"ode")) {
 		so_name <- file$name
-		file <- c.path(file)
+		file <- c_path(file)
 	} else if (is(file,"cme")) {
 		so_name <- file$name
-		file <- c.path(file)
+		file <- c_path(file)
 	} else {
 		so_name <- sub("[.]c$","",basename(file))
 	}
@@ -92,7 +92,7 @@ shlib <- function(file){
 #' @param file override the default file name (based on hashing)
 #' @export
 #' @return the path of the written file
-write_c_code <- function(C, model.name=comment(C), file=file.path(tempdir(),digest::digest(C,"xxh3_64"),paste0(model.name,".c"))){
+write_c_code <- function(C, model.name=comment(C), file=file.path(tempdir(),digest::digest(C,"xxhash64"),paste0(model.name,".c"))){
 	cat(sprintf("Writing file: %s\n",file))
 	if (!dir.exists(dirname(file))){
 		dir.create(dirname(file),recursive=TRUE)

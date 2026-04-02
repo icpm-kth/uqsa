@@ -80,9 +80,9 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 		conservationLaws=CL,
 		tf=tf,
 		name=comment(m),
-		c.path=NULL,  # path of the .c file
+		c_path=NULL,  # path of the .c file
 		c.date=NULL,  # date and time of writing the c file
-		so.path=NULL, # path to the so.file
+		so_path=NULL, # path to the so.file
 		so.date=NULL  # date and time of writing the so file
 	)
 	class(ode) <- "ode"
@@ -112,8 +112,8 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 print.ode <- function(o){
 	cat(
 		sprintf("%26s : %s","Model name",o$name),
-		sprintf("%26s : %s [%s]","C file",o$c.path,o$c.date),
-		sprintf("%26s : %s [%s]","shared library",o$so.path,o$c.date),
+		sprintf("%26s : %s [%s]","C file",o$c_path,o$c.date),
+		sprintf("%26s : %s [%s]","shared library",o$so_path,o$c.date),
 		sprintf("%26s : %i","Number of state variables",length(o$var)),
 		sprintf("%26s : %i","Number of parameters",length(o$par)),
 		sprintf("%26s : %i","Number of outputs",length(o$func)),
@@ -131,10 +131,10 @@ print.ode <- function(o){
 #' @param value the path to the compiled model
 #' @export
 #' @return modified o, with information about compiled code
-`so.path<-` <- function(o,value){
+`so_path<-` <- function(o,value){
 	if (!is.character(value) || length(value)>1) stop("Value must be a character scalar")
 	if (!file.exists(value)) warning(sprintf("File %s does not exist",value))
-	o$so.path <- value
+	o$so_path <- value
 	o$so.date <- file.info(value)$ctime
 	return(o)
 }
@@ -149,10 +149,10 @@ print.ode <- function(o){
 #' @param value the path to the compiled model
 #' @export
 #' @return modified o, with information about compiled code
-`c.path<-` <- function(o,value){
+`c_path<-` <- function(o,value){
 	if (!is.character(value) || length(value)>1) stop("Value must be a character scalar")
 	if (!file.exists(value)) warning(sprintf("File %s does not exist",value))
-	o$c.path <- value
+	o$c_path <- value
 	o$c.date <- file.info(value)$ctime
 	return(o)
 }
@@ -165,8 +165,8 @@ print.ode <- function(o){
 #' @param o the ODE, or CME model
 #' @export
 #' @return modified o, with information about compiled code
-so.path <- function(o){
-	f <- o$so.path
+so_path <- function(o){
+	f <- o$so_path
 	if (!file.exists(f)) warning(sprintf("File %s does not exist anymore.",f))
 	return(f)
 }
@@ -178,9 +178,9 @@ so.path <- function(o){
 #' @param o the ODE, or CME model
 #' @export
 #' @return the path where the c code is stored
-c.path <- function(o){
-	f <- o$c.path
-	if (!file.exists(f)) warning(sprintf("File %s does not exist anymore",f))
+c_path <- function(o){
+	f <- o$c_path
+	if (is.null(f) || !file.exists(f)) warning(sprintf("File %s does not exist (anymore).",f))
 	return(f)
 }
 

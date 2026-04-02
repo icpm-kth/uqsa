@@ -59,14 +59,14 @@ f <- uqsa_example("AKAR4") # or some other files
 m <- model_from_tsv(f)
 cmeModel <- as_cme(m)
 C <- generate_code(cmeModel,LV=1e8)
-c.path(cmeModel) <- write_c_code(C,LV=1e8)
-so.path(cmeModel) <- shlib(cmeModel)
+c_path(cmeModel) <- write_c_code(C)
+so_path(cmeModel) <- shlib(cmeModel)
 ```
 
 The `shlib` function creates a shared library, and stores the path to
 it in the `cmeModel` object.
 
-To write the code, we decide on a value for `LV`: Avogadro's number
+To generate the code, we decide on a value for `LV`: Avogadro's number
 multiplied by the system's volume. Higher numbers mean more particles
 (more reactions per time-span). This mumber can be changed directly in
 the source code of the model (the C file), afterwards, because it is
@@ -102,10 +102,10 @@ st <- simstoch(ex,cmeModel)
 y <- st(p)
 ```
 
-The second argument can also be the path to the shared library. If it is `cmeModel`, the path is extracted from it using: 
+The second argument can also be the path to the shared library. If it is `cmeModel`, the path is extracted from it using:
 
 ```{r path-print}
-print(so.path(cmeModel))
+print(so_path(cmeModel))
 ```
 
 ## Plot the results
@@ -113,7 +113,7 @@ print(so.path(cmeModel))
 ```{r plot-simstoch, fig.height=12, fig.width=7, out.width="100%"}
 tm <- ex[[1]]$outputTimes
 
-par(bty="n")
+par(mfrow=c(3,1),bty="n")
 for (i in seq_along(ex)){
 plot(
 	as.errors(tm),
@@ -146,5 +146,4 @@ if (require(rbenchmark)){
 	)
 	print(BM)
 }
-
 ```

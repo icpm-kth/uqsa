@@ -73,8 +73,8 @@ parameterizations \code{NCOL(P)}.
   ex <- experiments(m,as_ode(m,cla=FALSE))
   G <- as_cme(m)         # for Gillespie solver
   C <- generate_code(G)
-  c.path(G) <- write_c_code(C)
-  so.path(G) <- shlib(G)
+  c_path(G) <- write_c_code(C)
+  so_path(G) <- shlib(G)
   options(mc.cores=detectCores())
   muX <- m$Parameter$value
   sdX <- m$Parameter$stdv

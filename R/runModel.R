@@ -15,7 +15,7 @@
 #' 3. As part of the ode object:
 #' ```
 #' odeModel <- as_ode(m)`
-#' so.path(odeModel) <- "/tmp/path/AKAR4.so"
+#' so_path(odeModel) <- "/tmp/path/AKAR4.so"
 #' ```
 #'
 #' The shared library needs to be created first. Either with `R CMD
@@ -50,8 +50,8 @@
 #'   o <- as_ode(m)
 #'   ex <- experiments(m,o)
 #'   C <- generate_code(o)
-#'   c.path(o) <- write_c_code(C)
-#'   so.path(o) <- shlib(o)
+#'   c_path(o) <- write_c_code(C)
+#'   so_path(o) <- shlib(o)
 #'   print(o)
 #'   y <- gsl_odeiv2_fi(o,ex,values(m$Parameter))
 #'   print(length(y))
@@ -71,7 +71,7 @@
 #' }
 gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3, method=0, omit=0){
 	if (is(odeModel,"ode")){
-		so <- so.path(odeModel)
+		so <- so_path(odeModel)
 		odeModel <- odeModel$name
 		comment(odeModel) <- so
 	} else if (is.character(odeModel) && length(odeModel)==2){
@@ -288,7 +288,7 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0){
 	N <- length(experiments)
 	if (is(odeModel,"ode")){
-		so <- so.path(odeModel)
+		so <- so_path(odeModel)
 		odeModel <- odeModel$name
 		comment(odeModel) <- so
 	} else if (is.character(odeModel) && length(odeModel)==2){
@@ -381,8 +381,8 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0){
 #'   o <- as_ode(m)
 #'   ex <- experiments(m,o)
 #'   C <- generate_code(o)
-#'   c.path(o) <- write_c_code(C)
-#'   so.path(o) <- shlib(o)
+#'   c_path(o) <- write_c_code(C)
+#'   so_path(o) <- shlib(o)
 #'   s <- simulator.c(ex,o)
 #'   y <- s(values(m$Parameter))
 #' }
@@ -582,8 +582,8 @@ defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 #'   o <- as_ode(m)
 #'   ex <- experiments(m,o)
 #'   C <- generate_code(o)
-#'   c.path(o) <- write_c_code(C)
-#'   so.path(o) <- shlib(o)
+#'   c_path(o) <- write_c_code(C)
+#'   so_path(o) <- shlib(o)
 #'   s <- simulator.c(ex,o)
 #'   objFunc <- makeObjective(ex,s)
 #'   print(objFunc(values(m$Parameter)))

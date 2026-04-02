@@ -21,5 +21,5 @@ The first argument can be a raw character scalar with just the path
 of the c code to be compiled, or alternatively an object that has
 this information stored within it. The models returned by \link{as_cme}
 and \link{as_ode} can both carry this information, attach it via
-\link{c.path<-}.
+\link{c_path<-}.
 }

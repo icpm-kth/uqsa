@@ -33,7 +33,7 @@ file fairly uniform and independent of how we want to solve the
 derived equations, be it ODE or CME.
 
 Like the ode object, the returned object can also store the paths
-of files we create for this model, with: \link{c.path<-}, and \link{so.path<-}
+of files we create for this model, with: \link{c_path<-}, and \link{so_path<-}
 
 With the information provided with the rate coefficient units and a
 volume, this function tries to convert everything to Gillespie rate
