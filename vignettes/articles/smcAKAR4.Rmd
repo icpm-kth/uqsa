@@ -134,7 +134,7 @@ visualized via pairs of scatter plots, or two dimensional binning:
 ```{r pairs, out.width="100%", fig.width=12, fig.height=12, dpi=100}
 Z <- posterior$draws
 if (requireNamespace("rgl")){
-	plot3d(
+	rgl::plot3d(
 		Z[,1],Z[,2],Z[,3],
 		xlab=names(par_val)[1],
 		ylab=names(par_val)[2],
@@ -142,7 +142,7 @@ if (requireNamespace("rgl")){
 		type='p',
 		col=rgb(0,0,1,0.5)
 	)
-	rglwidget()
+	rgl::rglwidget()
 } else if (requireNamespace("hexbin")){
 	hexbin::hexplom(posterior$draws, xbins = 24)
 } else {
