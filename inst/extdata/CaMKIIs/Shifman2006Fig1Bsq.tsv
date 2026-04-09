@@ -1,5 +1,4 @@
-!!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableType='QuantityMatrix' TableName='Shifman2006Fig1Bsq' TableTitle='[Nair 2014 Figure 12.3D] CaN-CaM' 		
-!TimePoint	!Time	>CaPerCaM	~CaPerCaM
+id	time	CaPerCaM	CaPerCaM
 E1D0	10	0.011	0.3985
 E1D1	20	1.196	0.3985
 E1D2	30	1.464	0.3985

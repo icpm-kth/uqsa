@@ -1,3 +1,2 @@
-!!SBtab	SBtabVersion='1.0'  Document='CaMKII' TableType='Quantity'  TableName='TurnOn'
-!TimePoint	!Time	!Transformation
+id	time	transformation
 Act0	0	Activation

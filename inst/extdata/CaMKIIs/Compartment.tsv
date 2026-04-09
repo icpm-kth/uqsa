@@ -1,3 +1,2 @@
-!!SBtab	SBtabVersion='1.0' Document='CaMKIIs' TableType='Quantity' TableName='Compartment' TableTitle='SBML Compartments'
-!ID	!Name	!Size	!Unit
-synapse	synapse	1	liter
+id	Size	unit
+synapse	1e-15	liter

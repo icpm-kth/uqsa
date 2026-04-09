@@ -1,5 +1,4 @@
-!!SBtab	TableName='Compound' TableType='Compound' TableTitle='CaMKIIs Compounds' SBtabVersion='1.0' Document='CaMKIIs'				
-!ID	!Unit	!InitialValue	!IsConstant	!Type	!Location
+id	unit	value	is constant	type	location
 CaM_Ca1	micromole/litre	0	FALSE	kinetic	synapse
 CaM_Ca2	micromole/litre	0	FALSE	kinetic	synapse
 CaM_Ca3	micromole/litre	0	FALSE	kinetic	synapse

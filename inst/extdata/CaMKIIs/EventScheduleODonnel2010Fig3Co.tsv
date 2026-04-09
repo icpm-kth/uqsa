@@ -1,5 +1,4 @@
-!!SBtab	Document='CaMKIIs' TableName='EventScheduleODonnel2010Fig3Co'		
-!TimePoint	!Time	!Transformation	!Dose
+id	time	transformation	dose
 ODTP01	0	CaMSeq	1
 ODTP02	10	CaMSeq	26.9
 ODTP03	20	CaMSeq	67.6
