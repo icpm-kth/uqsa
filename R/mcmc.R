@@ -9,7 +9,7 @@
 #' @return a, or b if a is NULL
 #' @export
 `%otherwise%` <- function(a,b){
-	if (is.null(a) || any(is.na(a))) {
+	if (is.null(a) || any(is.na(a)) || length(a)==0) {
 		return(b)
 	} else {
 		return(a)

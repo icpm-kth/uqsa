@@ -2,14 +2,15 @@
 title: "SMMALA and CaMKII"
 ---
 
-```{r, include = FALSE}
-    knitr::opts_chunk$set(eval=FALSE,
+```{r, include = FALSE, eval=TRUE}
+knitr::opts_chunk$set(
+  eval=TRUE,
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
-```{r setup, eval=TRUE}
+```{r setup}
 library(uqsa)
 ```
 
@@ -65,8 +66,7 @@ schedule that applies a certain dose of base calcium or calmodulin
 sequence of base Ca levels (dose column):
 
 ```
-!!SBtab	Document='CaMKIIs' TableName='EventScheduleShifman2006Fig1Bsq'		
-!TimePoint  !Time  !Transformation  !Dose
+id       time  transformation       dose
 ShTP01      0      CaSeq            364
 ShTP02      10     CaSeq            2305
 ShTP03      20     CaSeq            2548
@@ -87,11 +87,15 @@ ShTP20      190    CaSeq            34101
 The transformation event CaSeq is defined in the third row of `Transformation.tsv` (named `CaSeq`):
 
 ```
-!!SBtab	Document='CaMKIIs' TableName='Transformation'			
-!ID     >CaBase  >CaM_0
+id      CaBase   CaM_0
 CaSeq   dose     CaM_0
 CaMSeq  CaBase   dose
 ```
+
+where the column-header identifies the quantity to set, and the
+expressions below provide the value. The special variable `dose` is a
+scalar that can be set for each event in the schedule (previous
+table).
 
 We represent each experiment as a time series, even though the data
 sets were originally represented as dose response curves (a map
@@ -104,8 +108,7 @@ changes with each dose of base-level Ca).
 The table of experiments looks like this (truncated):
 
 ```
-!!SBtab	SbtabVersion='1.0'	TableType='QuantityMatrix'	TableName='Experiments'	Document='CaMKIIs'
-!ID                 !Type        >PP1_0  >CaMKII_0  >CaM_0  >PP2B_0  >isOn  !T0  !Event
+id                  type         PP1_0   CaMKII_0   CaM_0   PP2B_0   isOn    t0  event
 Bradshaw2003Fig2E   Time Series  0       200        2000    0        TRUE   -60  EventScheduleBradshaw2003Fig2E
 Shifman2006Fig1Bsq  Time Series  0       5000       5000    0        TRUE   -60  EventScheduleShifman2006Fig1Bsq
 ODonnel2010Fig3Co   Time Series  0       0          0       100      FALSE  -60  EventScheduleODonnel2010Fig3Co
@@ -116,58 +119,69 @@ Stemmer1993Fig2Afc  Time Series  0       0          25000   0        TRUE   -60 
 
 ## Simulation
 
-During a simulation, these doses will create a staircase of equilibria:
+During a simulation, these doses will create a staircase of (local) equilibria:
 
-```{r CaMKIIs, eval=TRUE}
+```{r CaMKIIs}
 library(parallel)
 
-f  <- uqsa::uqsa_example("CaMKIIs")
-sb <- SBtabVFGEN::sbtab_from_tsv(f)
-ex <- SBtabVFGEN::sbtab.data(sb)
+f  <- uqsa_example("CaMKIIs")
+m <- model_from_tsv(f)
+o <- as_ode(m)
+ex <- experiments(m,o)
+C <- generate_code(o)
+c_path(o) <- write_c_code(C)
+so_path(o) <- shlib(o)
+
 print(length(ex))
 options(mc.cores = length(ex))
-cfile <- uqsa::uqsa_example(comment(sb),f="c")
-modelName <- uqsa::checkModel(comment(sb),cfile)
-rfile <- uqsa::uqsa_example(comment(sb),pat=sprintf("^%s[.]R$",comment(sb)))
-source(rfile)
 
-p <- CaMKIIs_default()
-u <- ex[[1]]$input
-par <- head(p,-length(u))
+p <- values(m$Parameter) # in log-space
+stopifnot(all(m$Parameter$scale=="ln"))
+```
 
-## This is a simulation with time points inserted between the measurement times,
-## to see what happens in-between them
+## A Time-Dense Simulation
+
+This is a simulation with time points inserted between the measurement times,
+to see what happens in-between them:
+
+```{r time-expansion}
 for (i in seq_along(ex)){
 	t_ <- ex[[i]]$outputTimes
-	ex[[i]]$measurementTimes <- t_
-	ex[[i]]$outputTimes <- sort(c(t_,seq(0,max(t_),length.out=length(t_)*10)))
+	ex[[i]]$measurementTimes <- t_ # save old values for later
+	ex[[i]]$outputTimes <- sort(
+		c(
+			t_,
+			seq(0,max(t_),length.out=length(t_)*10)
+		)  # 10x time-points
+	)
 }
 
-s <- uqsa::simulator.c(ex,modelName,method = rgsl::integrationMethod("msadams"))
-y <- s(as.matrix(par))
+s <- simulator.c(ex, o, parMap=logParMap, method = 1)
+y <- s(p)
 
 cpuSeconds <- unlist(lapply(y,\(l) l$cpuSeconds))
 names(cpuSeconds) <- names(ex)
 
 print(cpuSeconds)
+```
 
-if (length(y)==length(ex)){
-	par(mfrow=c(2,3),bty="n")
-	for (i in seq_along(ex)){
-		o <- apply(is.na(ex[[i]]$outputValues),2,any)
-		t_<-ex[[i]]$outputTimes
-		f_<-y[[i]]$func[!o,,1]
-		m_<-ex[[i]]$measurementTimes
-		v_<-as.numeric(ex[[i]]$outputValues[[which(!o)]])
-		e_<-as.numeric(ex[[i]]$errorValues[[which(!o)]])
-		yl <- names(ex[[i]]$outputValues)[which(!o)]
-		if (!any(is.na(f_))){
-			plot(t_,f_,type='l',xlab='time',ylab=yl,main=names(ex)[i])
-			arrows(m_,v_,m_,v_+e_,angle=90,length=0.01)
-			points(m_,v_,pch=1)
-			arrows(m_,v_,m_,v_-e_,angle=90,length=0.01)
-		}
-	}
+Next, we plot the results of that dense simulation:
+
+```{r plot-dense-time-series, out.width="100%", fig.height=7, fig.width=5}
+par(mfrow=c(3,2),bty="n")
+for (i in seq_along(ex)){
+	j  <- rownames(m$Output) %in% colnames(ex[[i]]$measurements)
+	t_ <-ex[[i]]$outputTimes
+	f_ <-y[[i]]$func[j,,1]
+	m_ <-ex[[i]]$measurementTimes
+	plot(
+		errors::as.errors(m_),
+		ex[[i]]$data[j,],
+		main=names(ex)[i],
+		xlab="t",
+		ylab=rownames(m$Output)[j]
+	)
+	lines(t_,f_,col='red')
 }
 ```
 
@@ -191,7 +205,7 @@ This Table-screenshot shows that some of the integration methods fail
 to return a solution for some of the simulated scenarios, even with
 the default parameters. These methods should be excluded from
 MCMC. The remaining methods perform very differently. Some of these
-methods may fail for parameter-vectors proposed during MCMC. 
+methods may fail for parameter-vectors proposed during MCMC.
 
 This al means that the posterior distribution depends on the used
 solver: no solution from the chosen solver means that the liklelihood
@@ -252,8 +266,7 @@ longer time, this is a less efficient approach. The advantage is that
 it avoids event schedules and transformations entirely.
 
 ```
-!!SBtab	SbtabVersion='1.0'	Document='CaMKII'	TableType='QuantityMatrix'	TableName='Experiments'
-!ID                 !Type          >Ca_set  >PP1_0  >CaMKII_0  >CaM_0  >PP2B_0  >cab  !T0   !Event  !Time
+id                  type           Ca_set   PP1_0   CaMKII_0   CaM_0   PP2B_0   cab    t0   event   time
 Bradshaw2003Fig2E   Dose Response  -1       0       200        2000    0        0     -100  TurnOn  600
 Shifman2006Fig1Bsq  Dose Response  -1       0       5000       5000    0        0     -100  TurnOn  600
 ODonnel2010Fig3Co   Dose Response  0        0       0          -1      100      0     -100  TurnOn  600
@@ -265,75 +278,69 @@ Stemmer1993Fig2Afc  Dose Response  -1       0       0          25000   0        
 The data files look different, they map inputs to outputs, rather than time to outputs:
 
 ```
-!!SBtab Document='CaMKII' TableType='QuantityMatrix' TableName='Bradshaw2003Fig2E'
-!ID    >Ca_set  >AutoCaMKII  ~AutoCaMKII
-E0D0   175.8    1.04         11.9953
-E0D1   236      1.38         11.9953
-E0D2   313.3    1.04         11.9953
-E0D3   426.6    1.04         11.9953
-E0D4   564.9    1.04         11.9953
-E0D5   749.9    3.46         11.9953
-E0D6   1006.9   7.63         11.9953
-E0D7   1336.6   29.47        11.9953
-E0D8   1794.7   60.34        11.9953
-E0D9   2349.6   82.19        11.9953
-E0D10  3198.9   93.98        11.9953
-E0D11  4246.2   95.37        11.9953
-E0D12  5623.4   102.65       11.9953
-E0D13  7568.3   95.37        11.9953
-E0D14  10303.9  100.92       11.9953
-E0D15  13489.6  98.15        11.9953
-E0D16  18113.4  103          11.9953
+id     Ca_set   AutoCaMKII
+E0D0   175.8    1.04;11.9953
+E0D1   236      1.38;11.9953
+E0D2   313.3    1.04;11.9953
+E0D3   426.6    1.04;11.9953
+E0D4   564.9    1.04;11.9953
+E0D5   749.9    3.46;11.9953
+E0D6   1006.9   7.63;11.9953
+E0D7   1336.6   29.47;11.9953
+E0D8   1794.7   60.34;11.9953
+E0D9   2349.6   82.19;11.9953
+E0D10  3198.9   93.98;11.9953
+E0D11  4246.2   95.37;11.9953
+E0D12  5623.4   102.65;11.9953
+E0D13  7568.3   95.37;11.9953
+E0D14  10303.9  100.92;11.9953
+E0D15  13489.6  98.15;11.9953
+E0D16  18113.4  103;11.9953
 ```
 
-And there are no events at all. This sequence of Ca doses will be
-converted to one time series experiment per line; the dose `!ID` will
-be used as the experiment name.
+In this version of the model, there are no events at all. This sequence of Ca doses will be
+converted to one time series experiment per line; the dose `id` will
+be used as part of the experiment name.
 
-In this version each point is treated as an independent measurement,
+Each point is treated as an independent measurement,
 unrelated to its neighbors. The doses and data points can be in any order.
 
-```{r CaMKII, eval=TRUE}
-f  <- uqsa::uqsa_example("CaMKII")
-sb <- SBtabVFGEN::sbtab_from_tsv(f)
-ex <- SBtabVFGEN::sbtab.data(sb)
+```{r CaMKII}
+f  <- uqsa_example("CaMKII") # no 's'
+m <- model_from_tsv(f)
+o <- as_ode(m)
+ex <- experiments(m,o)
 print(length(ex))
 
-options(mc.cores = parallel::detectCores())
-cfile <- uqsa::uqsa_example(comment(sb),f="c")[1]
-modelName <- uqsa::checkModel(comment(sb),cfile)
-rfile <- uqsa::uqsa_example(comment(sb),pat=sprintf("^%s[.]R$",comment(sb)))[1]
-source(rfile)
+options(mc.cores = detectCores())
+c_path(o) <- write_c_code(generate_code(o))
+so_path(o) <- shlib(o)
+p <- values(m$Parameter)
+```
 
-p <- CaMKII_default()
-u <- ex[[1]]$input
-par <- head(p,-length(u))
-i <- which(startsWith(names(ex),"E0"))
+Simulate a subset of experiments (those that start with E0):
 
-## simulate the first subset:
-s <- uqsa::simulator.c(ex[i],modelName,method = rgsl::integrationMethod("msadams"))
-y <- s(as.matrix(par))
+```{r restrict-set}
+i <- which(startsWith(names(ex),"Bradshaw"))
+s <- simulator.c(ex[i],o,parMap=logParMap,method = 1)
+y <- s(p)
 
 cpuSeconds <- unlist(lapply(y,\(l) l$cpuSeconds))
 names(cpuSeconds) <- names(ex[i])
 
 print(cpuSeconds)
 ```
+Plot the dose response, by collecting it from the solution::
 
-```{r plots, eval=TRUE}
-o <- which(!is.na(ex[[head(i,1)]]$outputValues[1,]))
+```{r plots}
+j <- rownames(m$Output) %in% colnames(ex[[i[1]]]$measurements)
 Ca <- unlist(lapply(ex[i],\(x) x$input['Ca_set']))
-f_ <- unlist(lapply(y[i],\(y) y$func[o,1,1]))
-v_ <- unlist(lapply(ex[i],\(x) x$outputValues[[o]]))
-e_ <- unlist(lapply(ex[i],\(x) x$errorValues[[o]]))
+f_ <- unlist(lapply(y,\(y) y$func[j,1,1]))
+v_ <- unlist(lapply(ex[i],\(x) x$data[j,1]))
 
 par(bty="n",xlog=TRUE)
-yLabel <- names(ex[[1]]$outputValues)[o]
-E <- rownames(sb$Experiments)
-plot(Ca,f_,pch=2,xlab='Ca',ylab=yLabel,main=E[1],ylim=c(0,120),log="x")
-arrows(Ca,v_,Ca,v_+e_,angle=90,length=0.1)
-points(Ca,v_,pch=1)
-arrows(Ca,v_,Ca,v_-e_,angle=90,length=0.1)
+plot(Ca,v_,main=names(ex)[i[1]],xlab="Ca",ylab=paste(rownames(m$Output)[j],collapse=" "),log="x")
+points(Ca,f_,pch=2,log="x",col="red4")
 ```
 
 Here the triangles represent the independent simulation results.

@@ -159,7 +159,7 @@ formulae <- function(df){
 	if (is.matrix(x)){
 		x[i,j] <- x[i,j] + sgn*value
 	} else {
-		x[i] <- x[i] + sgn*value
+		x[i] <- x[i] + sgn*value[i]
 	}
 	return(x)
 }
@@ -186,6 +186,17 @@ formulae <- function(df){
 	x[i] <- exp(log(value)*x[i])
 	return(x)
 }
+
+`%without%` <- function(x,unwanted.names){
+	l <- names(x) %in% unwanted.names
+	return(x[!l])
+}
+
+`%with%` <- function(x,wanted.names){
+	l <- names(x) %in% wanted.names
+	return(x[l])
+}
+
 
 #' The stoichiometric matrix of a reaction network
 #'
@@ -218,10 +229,10 @@ stoichiometric_matrix <- function(m,compound.names=rownames(m$Compound)) {
 	reactants <- stoichiometry(lapply(strsplit(m$Reaction$reactants,"+",fixed=TRUE),trimws))
 	products <- stoichiometry(lapply(strsplit(m$Reaction$products,"+",fixed=TRUE),trimws))
 	for (j in seq_along(reactants)){
-		r <- reactants[[j]]
-		p <- products[[j]]
-		modify(nu,names(r),j) <- -r
-		modify(nu,names(p),j) <- p
+		r <- reactants[[j]] %with% compound.names
+		p <- products[[j]] %with% compound.names
+		if (!is.null(r)) modify(nu,names(r),j) <- -r
+		if (!is.null(p)) modify(nu,names(p),j) <- p
 	}
 	attr(nu,"reactants") <- reactants
 	attr(nu,"products") <- products
@@ -295,6 +306,9 @@ linear_scale <- function(x,str_scale=attr(x,"scale")){
 	return(x)
 }
 
+`%&%` <- function(a,b) {
+	return(paste0(a,b))
+}
 
 #' Add a Reaction to an ODE
 #'
@@ -322,23 +336,30 @@ linear_scale <- function(x,str_scale=attr(x,"scale")){
 #' print(vf)
 #' }
 `reaction<-` <- function(vf,r,p,value){
-	stopifnot(r %has% "names")
-	stopifnot(p %has% "names")
 	stopifnot(vf %has% "names")
 	if (value %has% "names") {
 		f <- names(value)
 	} else {
 		f <- value
 	}
-	if (all(r==1)){
-		vf[names(r)] <- sprintf("%s-%s",vf[names(r)],f)
-	} else {
-		vf[names(r)] <- sprintf("%s-%i*%s",vf[names(r)],r,f)
+	if (!is.null(r) && r %has% "names"){
+		l <- names(vf) %in% names(r)
+		k <- names(r) %in% names(vf)
+		if (all(r==1)) F <- f
+		if (all(r==1)){
+			vf[l] <- sprintf("%s-%s",vf[l],f)
+		} else {
+			vf[l] <- sprintf("%s-%i*%s",vf[l],r[k],f)
+		}
 	}
-	if (all(p==1)){
-		vf[names(p)] <- sprintf("%s+%s",vf[names(p)],f)
-	} else {
-		vf[names(p)] <- sprintf("%s+%i*%s",vf[names(p)],p,f)
+	if (!is.null(p) && p %has% "names"){
+		l <- names(vf) %in% names(p)
+		k <- names(p) %in% names(vf)
+		if (all(p==1)){
+			vf[l] <- sprintf("%s+%s",vf[l],f)
+		} else {
+			vf[l] <- sprintf("%s+%i*%s",vf[l],p[k],f)
+		}
 	}
 	return(vf)
 }
@@ -361,7 +382,9 @@ linear_scale <- function(x,str_scale=attr(x,"scale")){
 #' print(names(CL))
 #' print(CL[,c('value','Formula')])
 conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
-	C <- pracma::rref(t(pracma::nullspace(t(nu))))
+	N <- pracma::nullspace(t(nu))
+	if (is.null(N)) return(NULL)
+	C <- pracma::rref(t(N))
 	stopifnot(norm(C %*% nu)<1e-6)
 	nm <- rownames(nu)
 	colnames(C) <- rownames(nu)
@@ -455,7 +478,42 @@ update_values <- function(v,d,as_type="numeric"){
 	return(ret)
 }
 
-time_series_experiments <- function(m,E,iv,input,out){
+#' Fill a matrix with values from a smaller matrix
+#'
+#' Given two matrices `M` and `m` we consider `M` to be the full size
+#' of the matrix and `m` the sparse representation. But, the sparsity only
+#' concerns rows: some rows in `M` are supposed to be empty (NA), while others
+#' must contain the values provided in `m`.
+#'
+#' @param M big matrix with rownames
+#' @param m smaller matrix with rownames
+#' @noRd
+#' @return a copy of `M` with `M[j,]=m[k,]` where `k` and `j` are
+#'     selected based on matching names.
+fill_matrix <- function(M,m){
+	if (is(m,"errors")) {
+		em <- standard_error_matrix(m)
+	}
+	j <- which(rownames(M) %in% rownames(m))
+	k <- which(rownames(m) %in% rownames(M))
+	stopifnot(length(j)==length(k))
+	M[j,] <- m[k,]
+	if (is(M,"errors")){
+		EM <- standard_error_matrix(M)
+		EM[j,] <- em[k,]
+		errors::errors(M) <- EM
+	}
+	return(M)
+}
+
+empty_error_matrix <- function(n,m,dimnames=NULL){
+	M <- errors::set_errors(rep(NA,n*m))
+	dim(M) <- c(n,m)
+	base::dimnames(M) <- dimnames
+	return(M)
+}
+
+time_series_experiments <- function(m,E,iv,input,out=rownames(m$Output)){
 	if (is.null(E) || NROW(E)==0) return(NULL)
 	D <- vector("list",NROW(E))
 	eventSchedule <- E$event %otherwise% character(NROW(E))
@@ -467,11 +525,10 @@ time_series_experiments <- function(m,E,iv,input,out){
 			message("no data provided for experiment ",rownames(E)[i])
 			DATA <- NULL
 		} else {
-			DATA <- parse_concise(
-				t(d[,colnames(d) %in% out, drop=FALSE]),
-				use.errors=TRUE
-			)  # this is a matrix
-			rownames(DATA) <- out
+			DATA <- fill_matrix(
+				empty_error_matrix(length(out),NROW(d),dimnames=list(out,NULL)),
+				parse_concise(t(d),use.errors=TRUE)  # this is a matrix
+			)
 		}
 		if (is.null(m[[eventSchedule[i]]])){
 			event_list <- NULL
@@ -485,11 +542,14 @@ time_series_experiments <- function(m,E,iv,input,out){
 		}
 		inp <- as.double(input[,i])
 		names(inp) <- rownames(input)
-		df <- as.data.frame(t(DATA))
-		colnames(df) <- out
+		if (is.null(out)){
+			df <- d
+		} else {
+			df <- as.data.frame(parse_concise(as.matrix(d)))
+		}
 		D[[i]] <- list(
-			measurements=df,
-			data=DATA,
+			measurements=df, # a data frame (sparse)
+			data=DATA,       # a matrix (with missing values)
 			input=inp,
 			initialTime=as.double(E$t0[i] %otherwise% min(d$time)),
 			initialState=iv[,i],
@@ -501,33 +561,33 @@ time_series_experiments <- function(m,E,iv,input,out){
 	return(D)
 }
 
-dose_response_experiments <- function(m,E,iv,input,out){
+dose_response_experiments <- function(m,E,iv,input,out=rownames(m$Output)){
 	if (is.null(E) || NROW(E)==0) return(NULL)
 	TS <- list() # list of time series experiments
 	t0 <- E$t0
-	tf <- E$tf
+	tf <- E$tf %otherwise% E$time
 	if (!is.null(E$event) && any(nzchar(E$event))){
 		print(E[,c("type","event")])
-		warning("Dose response experiments are not (yet) compatible with events.")
+		warning("Dose response experiments are not (yet) fully compatible with events.")
 	}
 	for (i in seq(NROW(E))){
 		d <- m[[rownames(E)[i]]] # data table
 		ts <- vector("list",length=NROW(d))
-		DATA <-parse_concise(
-			t(d[,colnames(d) %in% out, drop=FALSE]),
-			use.errors=TRUE
-		)  # this is a matrix
-		rownames(DATA) <- out
+		DATA <- fill_matrix(
+			empty_error_matrix(length(out),NROW(d),dimnames=list(out,NULL)),
+			parse_concise(t(d),use.errors=TRUE)  # this is a matrix
+		)
+		df <- as.data.frame(parse_concise(as.matrix(d)))
 		for (j in seq_along(ts)){
 			u <- input[,i]
 			names(u) <- rownames(input)
-			inputMatrix <- update_values(u,d)
+			inputMatrix <- update_values(u,df)
 			x <- iv[,i]
 			names(x) <- rownames(iv)
-			initialStateMatrix <- update_values(x,d)
+			initialStateMatrix <- update_values(x,df)
 			ts[[j]] <- list(
-				outputTimes=as.double(tf[i] %otherwise% d$time[j]),
-				measurements=d[j,,drop=FALSE],
+				outputTimes=as.double(tf[i] %otherwise% df$time[j]),
+				measurements=df[j,,drop=FALSE],
 				data=DATA[,j,drop=FALSE],
 				input=column(inputMatrix,j),
 				initialState=column(initialStateMatrix,j),

@@ -47,9 +47,13 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 	for (i in seq_along(flux)){
 		reaction(vf,r[[i]],p[[i]]) <- flux[i]
 	}
+	xp <- c(formulae(m$Expression),formulae(m$Reaction))
 	if (as.logical(cla)){
-		IV <- update_values(iv,m$Experiment)
-		CL <- conservation_law_analysis(nu,iv)
+		CL <- conservation_law_analysis(nu,update_values(iv,m$Experiment))
+	} else {
+		CL <- NULL
+	}
+	if (!is.null(CL)){
 		iv <- iv[-CL$Eliminates]
 		cq <- CL$Formula
 		names(cq) <- rownames(CL)
@@ -58,9 +62,6 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 		names(C) <- CL$ConstantName
 		par <- c(par,C)
 		vf <- vf[-CL$Eliminates]
-	} else {
-		CL <- NULL
-		xp <- c(formulae(m$Expression),formulae(m$Reaction))
 	}
 	if (is.finite(pmatch("Transformation",names(m)))){
 		tf <- character(length(iv)+length(par))
@@ -72,6 +73,7 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 	}
 	ode <- list(
 		vf=vf,
+		const=values(m$Constant),
 		par=par,
 		var=iv,
 		exp=xp,
@@ -649,17 +651,14 @@ generateRCode <- function(odeModel){
 #' @noRd
 #' @examples
 #' \dontrun{
-#'   cCode <- generateCode(m,o)             # a character vector
+#'   cCode <- generate_code(m,o)            # a character vector
 #'   modelName <- write_and_compile(cCode)  # commented name
 #'   print(comment(modelName))
 #' }
 write_and_compile <- function(C){
-	c.file <- sprintf("./%s_gvf.c",comment(C))
-	cat(C,sep="\n",file=c.file)
-	if (file.exists(c.file)){
-		message(sprintf("'%s' was created.",c.file))
-	} else {
-		stop("writing c-file to current working directory failed.")
-	}
-	return(check_model(comment(C),c.file))
+	modelName <- comment(C)
+	f <- tempfile(pattern=sprintf("%s_",modelName), fileext=".c")
+	cat(C,sep="\n",file=f)
+	comment(modelName) <- shlib(f)
+	return(modelName)
 }

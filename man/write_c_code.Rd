@@ -7,7 +7,7 @@
 write_c_code(
   C,
   model.name = comment(C),
-  file = file.path(tempdir(), digest::digest(C, "xxh3_64"), paste0(model.name, ".c"))
+  file = file.path(tempdir(), digest::digest(C, "xxhash64"), paste0(model.name, ".c"))
 )
 }
 \arguments{

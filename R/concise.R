@@ -34,6 +34,7 @@ parse_concise <- function(v,use.errors=requireNamespace("errors")){
 	if (use.errors){
 		w <- errors::set_errors(w[1,],w[2,])
 		dim(w) <- d
+		dimnames(w) <- dimnames(v)
 	}
 	return(w)
 }

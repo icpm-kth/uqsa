@@ -63,7 +63,6 @@ shlib <- function(file){
 		if (nzchar(cflags)) sprintf("PKG_CPPFLAGS='%s'",cflags),
 		if (nzchar(libs)) sprintf("PKG_LIBS='%s'", libs)
 	)
-	print(compile_env)
 	status <- system2(
 		command = file.path(R.home("bin"), "R"),
 		args = c("CMD", "SHLIB",file),
