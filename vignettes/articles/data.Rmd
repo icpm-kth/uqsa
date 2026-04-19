@@ -3,9 +3,9 @@ title: "Importing Data into R"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
-  collapse = TRUE,
-  comment = "#>"
+knitr::opts_chunk$set(
+	collapse = TRUE,
+	comment = "#>"
 )
 ```
 
@@ -24,11 +24,12 @@ library(uqsa)
 library(errors)
 
 ## Read the TSV files, create an ODE model
-m <- model_from_tsv()    # defaults to files from $(pwd)
-o <- as_ode(m)           # the ODE
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- as_ode(m)                                 # the ODE
 
-C <- generateCode(o)     # list of strings
-odeModel <- write_and_compile(C)
+C <- generate_code(o)                          # list of strings
+c_path(o) <- write_c_code(C)
+so_path(o) <- shlib(o)
 ex <- experiments(m,o)
 ```
 
@@ -47,7 +48,7 @@ time.
 
 An Experiment Table can look like this (as a TSV):
 
-```{sh}
+```
 id	t0	cAMP	type
 X1	100	1.5	time-series
 X2	100	3.0	time-series
@@ -60,7 +61,7 @@ values in it:
 
 ```{r ex, eval=FALSE}
 print(ex$X2$initialState['cAMP'])
-# 3
+# 3.0
 ```
 
 Any reacting compound and input can be updated here. But, parameters
@@ -123,24 +124,50 @@ print(as.data.frame(x))
 
 If you really don't want to use this notation, our parser also allows
 this: `12±0.1` (same as `12.0(1)`), and the `±` symbol can also be
-replaced with a semicolon `;`. The function `uqsa::parse_concise()` parses
-these data entries:
+replaced with a semicolon `;` (and some other characters as well). The
+function `uqsa::parse_concise()` parses these data entries, the
+[experiments] function uses this parser:
 
 ```{r parse_concise, eval=TRUE}
 z <- data.frame(
 	data=parse_concise(
-		c("12;0.1","12±0.1","12.0(1)")
+		c("12.0,0.1","12;0.1","12±0.1","12.0(1)")
 	)
 )
+print(as.data.frame(z))
 ```
 
-These are all equivalent. It is only important that a value and its
-uncertainty always travel together.
+These are all equivalent, but only the last entry uses concise
+parenthesised error notation that this function was written
+for. Parsing a delimited entry with `;`, `±`, or `,` is much easier,
+and happens a as a fall-back). *Note*: `+-` cannot be used instead of
+`±`.
+
+In all of this, it is only important that a value and its uncertainty
+always travel together.
 
 
 ## Note on Aesthetics
 
-It may look good to write this:
+The notation that the errors package uses is the best, shortest way to
+write numbers with standard errors. The mass of the electron:
+
+- $0.51099895069(16)\,\text{MeV}$ or
+- $9.1093837139(28)\times 10^{−31}\,\text{kg}$
+
+would look like this with the normal notation:
+$(9.1093837139 \pm 0.0000000028) \times 10^{−31}\,\text{kg}$.  So, the
+more precise your measurements are, the more appealing this notation
+becomes.
+
+
+### Aesthetics in Spreadsheets
+
+It may look good to write this as a data table: value, separator, and
+standard error in three different columns. The separator would go
+entirely unparsed and is there for us human readers. This is what we
+do for the reaction products and reactants. This table looks quite
+clean:
 
   id time   AKAR4p\_m pm AKAR4p\_se
   -- ---- ----------- -- -------------
@@ -149,23 +176,30 @@ It may look good to write this:
   ..  ...         ... .. ..
   tf  100        1031 +- 51
 
-But, once this table measures 5 different quantities, we need to find
-the column of standard errors for each measured value according to
-some rule. In addition, several different syntax rules for column
-names may sound intuitive:
+This table is also easy to plot with directly in
+numbers/calc/gnumeric/google-sheets, as the values are separate from
+the error-bars. So, we see the appeal.
+
+But, once this table provides data for 5 different quantities, we need to find
+the column of standard errors for each of the measured values according to
+*some* rule. In addition, several different syntax rules for _column names_ may sound intuitive:
 
 - `length_m`: length is in _meters_
-- `length_m`: _mean_ value of length
+- `length_m`: _mean_ value of length (the estimated value)
 - `area_se`: _standard error_ of `area`
-- `colume_sd`: _standard deviation_ of `volume`
+- `volume_sd`: _standard deviation_ of `volume`
 - `ATP_u`: _uncertainty_ of `ATP`
 - `ATP_v`: _value_ of `ATP`
 
-Furthermore, two groupings make sense to us (see below).  So, we opted
-for not having special rules for how to read the column names in this
-format, and keep the measurement uncertainty very close to the values.
+Prefix/Suffix-Rules like that are used somewhere, I'm sure. And we
+would like to avoid such rules.
 
-### Error is next to value
+Furthermore, several groupings of values and their uncertainties make
+sense to us (see below).  So, we opted for not having special rules
+for how to read the column names in this format, and keep the
+measurement uncertainty very close to the values.
+
+#### Error is next to value
 
   id A\_m A\_u B\_m B_u
   -- ---- ---- ---- ---
@@ -173,7 +207,7 @@ format, and keep the measurement uncertainty very close to the values.
   D2    2 0.1     6 0.2
   D3    3 0.1     8 0.2
 
-### Values form a Block, Errors form a second Block
+#### Values form a Block, Errors form a second Block
 
   id A\_m B\_m A\_u B_u
   -- ---- ---- ---- ---
@@ -181,11 +215,12 @@ format, and keep the measurement uncertainty very close to the values.
   D2    2    6  0.1 0.2
   D3    3    8  0.1 0.2
 
-### SBtab
+## SBtab
 
 In the [SBtabVGEN](https://github.com/icpm-kth/SBtabVFGEN) we actually
 have a custom rule for this: data is marked with `>` and uncertainty
-is marked with `~`, e.g.: `>AKAR4p` and `~AKAR4p`
+is marked with `~`, e.g.: `>AKAR4p` and `~AKAR4p`. The official SBtab
+documentation doesn't commetn on this issue.
 
 SBtab is an alternative format that we can use. The SBtabVFGEN package
 provides the translation layer to import from that model type.

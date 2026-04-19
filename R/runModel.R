@@ -109,17 +109,21 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #' This function calls a C function which solves an initial value
 #' problem, derived from a CRNN.
 #'
-#' @param name the name of the ODE model to simulate (a shared library
-#'     of the same name will be dynamically loaded and needs to be
-#'     created first)
+#' @param name either the name of a file (shared library file) or the
+#'     name of an ODE model to simulate (a shared library of the same
+#'     name will be dynamically loaded and needs to be created
+#'     first). If the name of the model is given, then the so file
+#'     must have the same name in the current directory or a comment
+#'     indicates its location.
 #' @param experiments a list of `N` simulation experiments (time,
 #'     parameters, initial value, events).
 #' @param l a matrix of parameters with M columns, in log-space.
-#' @param nu a stoichiometry matrix (N×R) where N is the number of state
-#'     variables and R the number of reactions, all reactions are
-#'     assumed to be reversible.
-#' @param m modifiers -- similar to stoichiometry, but indicates whether the
-#'     species takes part in the reaction without being consumed.
+#' @param nu a stoichiometry matrix (N×R) where N is the number of
+#'     state variables and R the number of reactions, all reactions
+#'     are assumed to be reversible.
+#' @param m modifiers -- similar to stoichiometry, but indicates
+#'     whether the species takes part in the reaction without being
+#'     consumed.
 #' @param abs.tol absolute tolerance, real scalar.
 #' @param rel.tol relative tolerance, real scalar.
 #' @param initial.step.size initial value for the step size; the step
@@ -145,7 +149,11 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #'   y <- gsl_odeiv2_CRNN(so.file,ex,l,nu,nu*0)
 #' }
 gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0){
-	if (is.character(comment(name))){
+	if (is.character(name) && endsWith(name,".so")){
+		so <- name
+		name <- "CRNN"
+		comment(name) <- so
+	} else if (is.character(comment(name))) {
 		so <- comment(name)
 	} else {
 		so <- paste0("./",name,".so")
@@ -153,7 +161,7 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 		message("looking for ", so)
 	}
 	if (!file.exists(so)){
-            warning(sprintf("[gsl_odeiv2_CRNN] for model name «%s», in directory «%s» file «%s» not found.",name,getwd(),so))
+            warning(sprintf("[gsl_odeiv2_CRNN] for model name «%s», file «%s» not found.",name,so))
 	}
 	if (!is.matrix(l)) l <- as.matrix(p)
 	y <- .Call(r_gsl_odeiv2_outer_CRNN,name,experiments,l,nu,m,abs.tol,rel.tol,initial.step.size,method)

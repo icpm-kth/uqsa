@@ -3,7 +3,7 @@ title: "Simulate the AKAR4 deterministic model"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = FALSE, eval=TRUE,
+knitr::opts_chunk$set(cache = FALSE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -30,19 +30,13 @@ The following instructions allow you to load all information needed to simulate 
 f <- uqsa_example("AKAR4") # TSV files
 m <- model_from_tsv(f)     # data.frames
 o <- as_ode(m)             # list
-C <- generateCode(o)       # character vector
-
-modelName <- write_and_compile(C)
-```
-
-This is the created file that will be used in simulations:
-
-```{r shared-library}
-print(comment(modelName))
+C <- generate_code(o)      # character vector
+c_path(o) <- write_c_code(C)
+so_path(o) <- shlib(o)     # shared library
 ```
 
 The AKAR4 deterministic model is an ODE model that describes the
-evolution in time of the concentrations of compounds in the
+time-evolution of the concentrations of compounds in the
 system. The following R commands will print the names of the compounds
 in the system and the corresponding default initial conditions.
 
@@ -103,12 +97,11 @@ be also taken into account when running the R commands below.
 
 Function `simulator.c` will output a function (variable `simulate` in
 the code below) that will allow us to simulate the AKAR4 ODE model
-(specified through the input argument `modelName`) given the
-experimental conditions saved in `ex`.
+given the experimental conditions saved in `ex`.
 
 ```{r}
-simulate <- simulator.c(ex,modelName)
-simulate_noise <- simulator.c(ex,modelName, noise = TRUE)
+simulate <- simulator.c(ex,o)
+simulate_noise <- simulator.c(ex, o, noise = TRUE)
 ```
 
 The variable `simulate` is a function that requires a parameter `p` as
@@ -143,19 +136,13 @@ Here we plot the results of one of the simulations.
 ```{r, plotting}
 E <- 2 # which experiment to plot
 
-# experimental data for experiment E
-out <- ex[[E]]$outputValues$AKAR4pOUT
-
-# measurement error for experiment E
-err <- ex[[E]]$errorValues$AKAR4pOUT
-
 # measurements time points
 tm <- ex[[E]]$outputTime
 
 # Plot simulations
 par(bty='n',xaxp=c(80,200,4))
 plot(
-	as.errors(tm),    # time points
+	as.errors(tm),     # time points
 	ex[[E]]$data,      # data points (as errorbars)
 	ylim=c(95,200),
 	ylab="AKAR4p",
@@ -201,13 +188,13 @@ lines(
 The following code plots simulations and data using an alternative
 function, from the package [ggplot2](https://ggplot2.tidyverse.org/).
 
-```{r, ggplot}
+```{r, ggplot2}
 require(ggplot2)
 
 D <- data.frame(
 	time=ex[[E]]$outputTime,
 	AKAR4p=as.numeric(ex[[E]]$data),
-	AKAR4pERR=errors(ex[[E]]$data),
+	AKAR4pERR=as.numeric(errors(ex[[E]]$data)),
 	sim=as.numeric(y[[E]]$func)
 )
 ggplot(D) +
@@ -223,7 +210,7 @@ require(ggplot2)
 D <- data.frame(
 	time=ex[[E]]$outputTime,
 	AKAR4p=as.numeric(ex[[E]]$data),
-	AKAR4pERR=errors(ex[[E]]$data),
+	AKAR4pERR=as.numeric(errors(ex[[E]]$data)),
 	sim=as.numeric(y_noisy[[E]]$func)
 )
 

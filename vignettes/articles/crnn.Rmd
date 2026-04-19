@@ -81,7 +81,10 @@ nu <- matrix(
 		0,0,0,-1 # reaction 2
 	),
 	4,2,
-	dimnames=list(c("A","B","C","D"),c("A+B<=>C","D->0"))
+	dimnames=list(
+		c("A","B","C","D"),
+		c("A+B<=>C","D->0")
+	)
 )
 print(nu)
 ```
@@ -136,7 +139,7 @@ manual_jac <- function(t,y,par){
 			-k[1,2],           # dflux[1]/dC
 			0,                 # dflux[1]/dD
 			0,
-			0,                 # […]
+			0,                 # [...]
 			0,
 			k[2,'fwd']         # dflux[2]/dD
 		),
@@ -198,8 +201,10 @@ numReactions <- 2                    # this has to be manually set
 f <- c(LogSum="log(A+B+C+D)")        # an arbitrary output function
 C <- CRNN(numReactions,iv,f)         # C code
 
-cat(C,sep="\n",file="CRNN.c")                  # write code to file
-modelName <- uqsa::checkModel("CRNN","CRNN.c") # compile
+c.file <- tempfile(pattern="CRNN",fileext=".c")
+
+cat(C,sep="\n",file=c.file)          # write code to file
+so.file <- shlib(c.file)             # compile the code
 ```
 
 Next we define the simulation experiment:
@@ -223,7 +228,7 @@ methods, so we use the solver more explicitly:
 par(mfrow=c(4,2))
 for (M in seq(0,7)){
 	y <- gsl_odeiv2_CRNN(
-		modelName,
+		so.file,
 		experiments=ex,
 		l=l,
 		nu=nu,
@@ -249,7 +254,10 @@ for (M in seq(0,7)){
 In an MCMC context, we typically don't want to switch between methods, so we would create a closure:
 
 ```{r MCMC, out.width="100%"}
-                          # A B and C interact with one another 
+modelName <- "CRNN"
+comment(modelName) <- so.file
+
+                          # A B and C interact with one another
 s <- scrnn(ex,modelName)  # s encloses ex, and model
 y_ABC_D <- s(par)         # s is a function of only 'par'
 

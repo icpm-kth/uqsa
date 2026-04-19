@@ -49,7 +49,7 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 	}
 	xp <- c(formulae(m$Expression),formulae(m$Reaction))
 	if (as.logical(cla)){
-		CL <- conservation_law_analysis(nu,update_values(iv,m$Experiment))
+		CL <- conservation_law_analysis(nu,iv)
 	} else {
 		CL <- NULL
 	}
@@ -210,6 +210,34 @@ yacasMath <- function(v,reverse=FALSE) {
 		v <- gsub("_","UNDERSCORE",v)
 	}
 	return(v)
+}
+
+#' Clear Yacas variables
+#'
+#' The `reset` operation doesn't work in yacas, so this function wipes
+#' every variable one by one.
+#' @return list of variables cleared as a character array
+#' @export
+#' @examples
+#' Ryacas::yac_str("y := 2*x")
+#' Ryacas::yac_str("restart")
+#' print(Ryacas::yac_str("D(x) y^2"))
+#' clear_yacas_environment()
+#' print(Ryacas::yac_str("D(x) y^2"))
+clear_yacas_environment <- function() {
+	yacas_variables_str <- Ryacas::yac_str("Variables()")
+	vars <- unlist(
+		strsplit(
+			gsub("[{}]", "", yacas_variables_str),
+			","
+		)
+	)
+	default_vars <- c("I", "j", "TeXForm'FuncPrec", "rformBitwiseOps", "Arow", "t")
+	user_vars <- setdiff(vars, default_vars)
+	for (v in user_vars) {
+		Ryacas::yac_silent(paste0("Clear(", v, ")"))
+	}
+	return(user_vars)
 }
 
 #' Jacobian of string-math
@@ -404,7 +432,7 @@ eventCode <-function(odeModel){
 #' C <- generateCode(as_ode(m))
 #' cat(head(C,12),sep='\n')
 generateCode <- function(odeModel){
-	warning("This function will start a background yacas process via Ryacas.\nThere is currently no working way to reset/restart that process.\n It is therefore not advisable to generate the code for two different models in the same R session.\nThe definitions for the two models will be mixed up. ")
+	clear_yacas_environment()
 	modelName <- comment(odeModel) %otherwise% "model"
 	# simplify a data.frame with two columns to a named character vector, assuming it's name/value pairs
 	makeEnum <- \(varNames, enumName, lastEntry, prefix="_") {
@@ -567,6 +595,7 @@ writeRFunction <- function(prefix,fName,ret,value,arguments=c('t','state','param
 #' m <- model_from_tsv(f)
 #' generateRCode(as_ode(m))
 generateRCode <- function(odeModel){
+	clear_yacas_environment()
 	modelName <- comment(odeModel) %otherwise% "model"
 	# simplify a data.frame with two columns to a named character vector, assuming it's name/value pairs
 	x <- odeModel$exp

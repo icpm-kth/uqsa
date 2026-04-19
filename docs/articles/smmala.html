@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +48,6 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
-    <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
@@ -68,7 +67,8 @@
     <a class="dropdown-item" href="../articles/simAKAR4.html">Simulate deterministic AKAR4</a>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate stochastic AKAR4</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4.html">UQ on deterministic AKAR4</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">UQ on stochasic AKAR4</a>
+    <a class="dropdown-item" href="../articles/smcAKAR4.html">UQ on stochasic AKAR4 -- ABCSMC</a>
+    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">UQ on stochasic AKAR4 -- ABCMCMC</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <a class="dropdown-item" href="../articles/uqsaAKAR4.html">UQ and SA on AKAR4</a>
     <div class="dropdown-divider"></div>
@@ -78,8 +78,8 @@
     <h6 class="dropdown-header" data-toc-skip>CaMKII</h6>
     <a class="dropdown-item" href="../articles/smmala.html">Calibrate CaMKII with SMMALA</a>
     <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Extra</h6>
-    <a class="dropdown-item" href="../articles/extraExamples.html">More examples...</a>
+    <h6 class="dropdown-header" data-toc-skip>CRNN</h6>
+    <a class="dropdown-item" href="../articles/crnn.html">CRNN models</a>
   </div>
 </li>
 <li class="nav-item">
@@ -162,8 +162,7 @@ solvers there are big differences in consumed cpu-time.</p>
 schedule that applies a certain dose of base calcium or calmodulin
 (depending on the experiment) in a sequence. Here is an example dose
 sequence of base Ca levels (dose column):</p>
-<pre><code>!!SBtab Document='CaMKIIs' TableName='EventScheduleShifman2006Fig1Bsq'      
-!TimePoint  !Time  !Transformation  !Dose
+<pre><code>id       time  transformation       dose
 ShTP01      0      CaSeq            364
 ShTP02      10     CaSeq            2305
 ShTP03      20     CaSeq            2548
@@ -181,10 +180,13 @@ ShTP19      180    CaSeq            24393
 ShTP20      190    CaSeq            34101</code></pre>
 <p>The transformation event CaSeq is defined in the third row of
 <code>Transformation.tsv</code> (named <code>CaSeq</code>):</p>
-<pre><code>!!SBtab Document='CaMKIIs' TableName='Transformation'           
-!ID     &gt;CaBase  &gt;CaM_0
+<pre><code>id      CaBase   CaM_0
 CaSeq   dose     CaM_0
 CaMSeq  CaBase   dose</code></pre>
+<p>where the column-header identifies the quantity to set, and the
+expressions below provide the value. The special variable
+<code>dose</code> is a scalar that can be set for each event in the
+schedule (previous table).</p>
 <p>We represent each experiment as a time series, even though the data
 sets were originally represented as dose response curves (a map between
 an input [e.g. Ca] and an output [e.g. ActivePP2B]). We arbitrarily set
@@ -193,8 +195,7 @@ just enough time in-between to reach the next higher steady state from
 the current steady state (the steady state level changes with each dose
 of base-level Ca).</p>
 <p>The table of experiments looks like this (truncated):</p>
-<pre><code>!!SBtab SbtabVersion='1.0'  TableType='QuantityMatrix'  TableName='Experiments' Document='CaMKIIs'
-!ID                 !Type        &gt;PP1_0  &gt;CaMKII_0  &gt;CaM_0  &gt;PP2B_0  &gt;isOn  !T0  !Event
+<pre><code>id                  type         PP1_0   CaMKII_0   CaM_0   PP2B_0   isOn    t0  event
 Bradshaw2003Fig2E   Time Series  0       200        2000    0        TRUE   -60  EventScheduleBradshaw2003Fig2E
 Shifman2006Fig1Bsq  Time Series  0       5000       5000    0        TRUE   -60  EventScheduleShifman2006Fig1Bsq
 ODonnel2010Fig3Co   Time Series  0       0          0       100      FALSE  -60  EventScheduleODonnel2010Fig3Co
@@ -204,77 +205,100 @@ Stemmer1993Fig2Afc  Time Series  0       0          25000   0        TRUE   -60 
 <div class="section level3">
 <h3 id="simulation">Simulation<a class="anchor" aria-label="anchor" href="#simulation"></a>
 </h3>
-<p>During a simulation, these doses will create a staircase of
+<p>During a simulation, these doses will create a staircase of (local)
 equilibria:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">parallel</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">f</span>  <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"CaMKIIs"</span><span class="op">)</span></span>
-<span><span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [tsv] file[1] «Bradshaw2003Fig2E.tsv» belongs to Document «CaMKIIs»</span></span>
-<span><span class="co">#&gt;  I'll take this as the Model Name.</span></span>
-<span><span class="co">#&gt; Bradshaw2003Fig2E.tsv  Compartment.tsv  Compound.tsv  Constant.tsv  EventScheduleBradshaw2003Fig2E.tsv  EventScheduleODonnel2010Fig3Co.tsv  EventScheduleShifman2006Fig1Bsq.tsv  EventScheduleStemmer1993Fig1fc.tsv  EventScheduleStemmer1993Fig1tr.tsv  EventScheduleStemmer1993Fig2Afc.tsv  Experiments.tsv  Expression.tsv  Input.tsv  ODonnel2010Fig3Co.tsv  Output.tsv  Parameter.tsv  Reaction.tsv  Shifman2006Fig1Bsq.tsv  Stemmer1993Fig1fc.tsv  Stemmer1993Fig1tr.tsv  Stemmer1993Fig2Afc.tsv  Transformation.tsv</span></span>
-<span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span></span>
+<span><span class="va">f</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"CaMKIIs"</span><span class="op">)</span></span>
+<span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/model_from_tsv.html">model_from_tsv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
+<span><span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_ode.html">as_ode</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required namespace: pracma</span></span>
+<span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/experiments.html">experiments</a></span><span class="op">(</span><span class="va">m</span>,<span class="va">o</span><span class="op">)</span></span>
+<span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_code.html">generate_code</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &gt;&gt; This function will start a background yacas process via Ryacas. &gt;&gt; There is currently no working way to reset/restart that process. &gt;&gt; It is therefore not advisable to generate the code for two different models in the same R session. &gt;&gt; The definitions for the two models will be mixed up.</span></span>
+<span><span class="fu"><a href="../reference/c_path.html">c_path</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/write_c_code.html">write_c_code</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Writing file: /tmp/RtmpONeMFK/9d19562d31bcf3e6/CaMKIIs.c</span></span>
+<span><span class="fu"><a href="../reference/so_path.html">so_path</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shlib.html">shlib</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 6</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>mc.cores <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">cfile</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,f<span class="op">=</span><span class="st">"c"</span><span class="op">)</span></span>
-<span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,<span class="va">cfile</span><span class="op">)</span></span>
-<span><span class="co">#&gt; building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).</span></span>
-<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './CaMKIIs.so' '/tmp/Rtmp3XbkUp/temp_libpath315eec67fa214d/uqsa/extdata/CaMKIIs/CaMKIIs_gvf.c' `pkg-config --libs gsl`</span></span>
-<span><span class="va">rfile</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,pat<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"^%s[.]R$"</span>,<span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="va">rfile</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">CaMKIIs_default</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">u</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span></span>
-<span><span class="va">par</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">p</span>,<span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">u</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## This is a simulation with time points inserted between the measurement times,</span></span>
-<span><span class="co">## to see what happens in-between them</span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/values.html">values</a></span><span class="op">(</span><span class="va">m</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span> <span class="co"># in log-space</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">m</span><span class="op">$</span><span class="va">Parameter</span><span class="op">$</span><span class="va">scale</span><span class="op">==</span><span class="st">"ln"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="a-time-dense-simulation">A Time-Dense Simulation<a class="anchor" aria-label="anchor" href="#a-time-dense-simulation"></a>
+</h3>
+<p>This is a simulation with time points inserted between the
+measurement times, to see what happens in-between them:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="va">t_</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span></span>
-<span>    <span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">measurementTimes</span> <span class="op">&lt;-</span> <span class="va">t_</span></span>
-<span>    <span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">t_</span>,<span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">t_</span><span class="op">)</span>,length.out<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">t_</span><span class="op">)</span><span class="op">*</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">measurementTimes</span> <span class="op">&lt;-</span> <span class="va">t_</span> <span class="co"># save old values for later</span></span>
+<span>    <span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>            <span class="va">t_</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">t_</span><span class="op">)</span>,length.out<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">t_</span><span class="op">)</span><span class="op">*</span><span class="fl">10</span><span class="op">)</span></span>
+<span>        <span class="op">)</span>  <span class="co"># 10x time-points</span></span>
+<span>    <span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">ex</span>,<span class="va">modelName</span>,method <span class="op">=</span> <span class="fu">rgsl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rgsl/man/integrationMethod.html" class="external-link">integrationMethod</a></span><span class="op">(</span><span class="st">"msadams"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: rgsl</span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">s</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">par</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">ex</span>, <span class="va">o</span>, parMap<span class="op">=</span><span class="va">logParMap</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">s</span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cpuSeconds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">y</span>,\<span class="op">(</span><span class="va">l</span><span class="op">)</span> <span class="va">l</span><span class="op">$</span><span class="va">cpuSeconds</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cpuSeconds</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cpuSeconds</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Bradshaw2003Fig2E Shifman2006Fig1Bsq  ODonnel2010Fig3Co  Stemmer1993Fig1tr </span></span>
-<span><span class="co">#&gt;           7.676773           1.811407           0.495512           0.319525 </span></span>
+<span><span class="co">#&gt;           0.022379           0.018344           0.009822           0.006139 </span></span>
 <span><span class="co">#&gt;  Stemmer1993Fig1fc Stemmer1993Fig2Afc </span></span>
-<span><span class="co">#&gt;           0.497862           7.003872</span></span>
-<span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">==</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>,bty<span class="op">=</span><span class="st">"n"</span><span class="op">)</span></span>
-<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
-<span>        <span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">)</span>,<span class="fl">2</span>,<span class="va">any</span><span class="op">)</span></span>
-<span>        <span class="va">t_</span><span class="op">&lt;-</span><span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span></span>
-<span>        <span class="va">f_</span><span class="op">&lt;-</span><span class="va">y</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="op">!</span><span class="va">o</span>,,<span class="fl">1</span><span class="op">]</span></span>
-<span>        <span class="va">m_</span><span class="op">&lt;-</span><span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">measurementTimes</span></span>
-<span>        <span class="va">v_</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="op">!</span><span class="va">o</span><span class="op">)</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span>        <span class="va">e_</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">errorValues</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="op">!</span><span class="va">o</span><span class="op">)</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span>        <span class="va">yl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="op">!</span><span class="va">o</span><span class="op">)</span><span class="op">]</span></span>
-<span>        <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">f_</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
-<span>            <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">t_</span>,<span class="va">f_</span>,type<span class="op">=</span><span class="st">'l'</span>,xlab<span class="op">=</span><span class="st">'time'</span>,ylab<span class="op">=</span><span class="va">yl</span>,main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span></span>
-<span>            <span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span><span class="va">m_</span>,<span class="va">v_</span>,<span class="va">m_</span>,<span class="va">v_</span><span class="op">+</span><span class="va">e_</span>,angle<span class="op">=</span><span class="fl">90</span>,length<span class="op">=</span><span class="fl">0.01</span><span class="op">)</span></span>
-<span>            <span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">m_</span>,<span class="va">v_</span>,pch<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
-<span>            <span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span><span class="va">m_</span>,<span class="va">v_</span>,<span class="va">m_</span>,<span class="va">v_</span><span class="op">-</span><span class="va">e_</span>,angle<span class="op">=</span><span class="fl">90</span>,length<span class="op">=</span><span class="fl">0.01</span><span class="op">)</span></span>
-<span>        <span class="op">}</span></span>
-<span>    <span class="op">}</span></span>
+<span><span class="co">#&gt;           0.007583           0.027298</span></span></code></pre></div>
+<p>Next, we plot the results of that dense simulation:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">2</span><span class="op">)</span>, bty<span class="op">=</span><span class="st">"n"</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">j</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">m</span><span class="op">$</span><span class="va">Output</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">measurements</span><span class="op">)</span></span>
+<span>    <span class="va">t_siml</span> <span class="op">&lt;-</span><span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span></span>
+<span>    <span class="va">f_siml</span> <span class="op">&lt;-</span><span class="va">y</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="va">j</span>,,<span class="fl">1</span><span class="op">]</span></span>
+<span>    <span class="va">t_data</span> <span class="op">&lt;-</span><span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">measurementTimes</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
+<span>        <span class="fu">errors</span><span class="fu">::</span><span class="fu"><a href="https://r-quantities.github.io/errors/reference/errors.html" class="external-link">as.errors</a></span><span class="op">(</span><span class="va">t_data</span><span class="op">)</span>,</span>
+<span>        <span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">data</span><span class="op">[</span><span class="va">j</span>,<span class="op">]</span>,</span>
+<span>        main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,</span>
+<span>        xlab<span class="op">=</span><span class="st">"t"</span>,</span>
+<span>        ylab<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">m</span><span class="op">$</span><span class="va">Output</span><span class="op">)</span><span class="op">[</span><span class="va">j</span><span class="op">]</span></span>
+<span>    <span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">t_siml</span>,<span class="va">f_siml</span>,col<span class="op">=</span><span class="st">'red4'</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p><img src="smmala_files/figure-html/CaMKIIs-1.png" width="700"></p>
+<p><img src="smmala_files/figure-html/plot-dense-time-series-1.png" width="100%"></p>
 <p>Here we notice that in Experiment 1, the trajectory fails to reach
 steady state (i.e. a flat line), for any dose. So, it doesn’t look like
-a staircase at all.</p>
+a staircase at all. This may or may not be desireable (depends on
+whether the original experiment was in steady state).</p>
+<p>Because most data-structures are just plain R data types, it is easy
+to modify experiments and experiment with the simulations. Here we make
+the entire time-course longer</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">events</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">events</span><span class="op">$</span><span class="va">time</span><span class="op">*</span><span class="fl">60</span></span>
+<span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputTimes</span><span class="op">*</span><span class="fl">60</span></span>
+<span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">measurementTimes</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">measurementTimes</span><span class="op">*</span><span class="fl">60</span></span></code></pre></div>
+<p>Becasue we changed the experimental setup, we recreate the solver
+function:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">ex</span>, <span class="va">o</span>, parMap<span class="op">=</span><span class="va">logParMap</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">s</span><span class="op">(</span><span class="va">p</span><span class="op">)</span> <span class="co"># new solution</span></span></code></pre></div>
+<p>We repeat the same plot from above:
+<img src="smmala_files/figure-html/longer-simulation-Bradshaw-1.png" width="100%"></p>
+<p>Giving this experiment more time shifts the simulated model response,
+but doesn’t produce a steady state (yet).</p>
 <p>It is possible that the default parameter set will not allow the
 system to go into steady state quickliy enough, even if we increase the
-time between the transformation events.</p>
+time between the transformation events more. On the other hand, the
+original data was measured with <span class="math inline">\(600\,\text{s}\)</span> equilibration time, not in
+verified steady state.</p>
 </div>
 <div class="section level3">
 <h3 id="asymmetry">Asymmetry<a class="anchor" aria-label="anchor" href="#asymmetry"></a>
@@ -461,8 +485,7 @@ nearby previous steady state. So, we give the system more time to reach
 it (600 seconds <code>!Time</code> for each data point). Because of this
 longer time, this is a less efficient approach. The advantage is that it
 avoids event schedules and transformations entirely.</p>
-<pre><code>!!SBtab SbtabVersion='1.0'  Document='CaMKII'   TableType='QuantityMatrix'  TableName='Experiments'
-!ID                 !Type          &gt;Ca_set  &gt;PP1_0  &gt;CaMKII_0  &gt;CaM_0  &gt;PP2B_0  &gt;cab  !T0   !Event  !Time
+<pre><code>id                  type           Ca_set   PP1_0   CaMKII_0   CaM_0   PP2B_0   cab    t0   event   time
 Bradshaw2003Fig2E   Dose Response  -1       0       200        2000    0        0     -100  TurnOn  600
 Shifman2006Fig1Bsq  Dose Response  -1       0       5000       5000    0        0     -100  TurnOn  600
 ODonnel2010Fig3Co   Dose Response  0        0       0          -1      100      0     -100  TurnOn  600
@@ -471,83 +494,80 @@ Stemmer1993Fig1fc   Dose Response  -1       0       0          30      3        
 Stemmer1993Fig2Afc  Dose Response  -1       0       0          25000   0        0     -100  TurnOn  600</code></pre>
 <p>The data files look different, they map inputs to outputs, rather
 than time to outputs:</p>
-<pre><code>!!SBtab Document='CaMKII' TableType='QuantityMatrix' TableName='Bradshaw2003Fig2E'
-!ID    &gt;Ca_set  &gt;AutoCaMKII  ~AutoCaMKII
-E0D0   175.8    1.04         11.9953
-E0D1   236      1.38         11.9953
-E0D2   313.3    1.04         11.9953
-E0D3   426.6    1.04         11.9953
-E0D4   564.9    1.04         11.9953
-E0D5   749.9    3.46         11.9953
-E0D6   1006.9   7.63         11.9953
-E0D7   1336.6   29.47        11.9953
-E0D8   1794.7   60.34        11.9953
-E0D9   2349.6   82.19        11.9953
-E0D10  3198.9   93.98        11.9953
-E0D11  4246.2   95.37        11.9953
-E0D12  5623.4   102.65       11.9953
-E0D13  7568.3   95.37        11.9953
-E0D14  10303.9  100.92       11.9953
-E0D15  13489.6  98.15        11.9953
-E0D16  18113.4  103          11.9953</code></pre>
-<p>And there are no events at all. This sequence of Ca doses will be
-converted to one time series experiment per line; the dose
-<code>!ID</code> will be used as the experiment name.</p>
-<p>In this version each point is treated as an independent measurement,
-unrelated to its neighbors. The doses and data points can be in any
-order.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">f</span>  <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"CaMKII"</span><span class="op">)</span></span>
-<span><span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab_from_tsv.html" class="external-link">sbtab_from_tsv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [tsv] file[1] «Bradshaw2003Fig2E.tsv» belongs to Document «CaMKII»</span></span>
-<span><span class="co">#&gt;  I'll take this as the Model Name.</span></span>
-<span><span class="co">#&gt; Bradshaw2003Fig2E.tsv  Compartment.tsv  Compound.tsv  Constant.tsv  Experiments.tsv  Expression.tsv  Input.tsv  ODonnel2010Fig3Co.tsv  Output.tsv  Parameter.tsv  Reaction.tsv  Shifman2006Fig1Bsq.tsv  Spikes.tsv  SpikeSeries.tsv  Stemmer1993Fig1fc.tsv  Stemmer1993Fig1tr.tsv  Stemmer1993Fig2Afc.tsv  Transformation.tsv  TurnOn.tsv</span></span>
-<span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span></span>
+<pre><code>id     Ca_set   AutoCaMKII
+E0D0   175.8    1.04;11.9953
+E0D1   236      1.38;11.9953
+E0D2   313.3    1.04;11.9953
+E0D3   426.6    1.04;11.9953
+E0D4   564.9    1.04;11.9953
+E0D5   749.9    3.46;11.9953
+E0D6   1006.9   7.63;11.9953
+E0D7   1336.6   29.47;11.9953
+E0D8   1794.7   60.34;11.9953
+E0D9   2349.6   82.19;11.9953
+E0D10  3198.9   93.98;11.9953
+E0D11  4246.2   95.37;11.9953
+E0D12  5623.4   102.65;11.9953
+E0D13  7568.3   95.37;11.9953
+E0D14  10303.9  100.92;11.9953
+E0D15  13489.6  98.15;11.9953
+E0D16  18113.4  103;11.9953</code></pre>
+<p>In this version of the model, there are no events at all. This
+sequence of Ca doses will be converted to one time series experiment per
+line; the dose <code>id</code> will be used as part of the experiment
+name.</p>
+<p>Each point is treated as an independent measurement, unrelated to its
+neighbors. The doses and data points can be in any order.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">f</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"CaMKII"</span><span class="op">)</span> <span class="co"># no 's'</span></span>
+<span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/model_from_tsv.html">model_from_tsv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
+<span><span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_ode.html">as_ode</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
+<span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/experiments.html">experiments</a></span><span class="op">(</span><span class="va">m</span>,<span class="va">o</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                             type  event</span></span>
+<span><span class="co">#&gt; Bradshaw2003Fig2E  dose response TurnOn</span></span>
+<span><span class="co">#&gt; Shifman2006Fig1Bsq dose response TurnOn</span></span>
+<span><span class="co">#&gt; ODonnel2010Fig3Co  dose response TurnOn</span></span>
+<span><span class="co">#&gt; Stemmer1993Fig1tr  dose response TurnOn</span></span>
+<span><span class="co">#&gt; Stemmer1993Fig1fc  dose response TurnOn</span></span>
+<span><span class="co">#&gt; Stemmer1993Fig2Afc dose response TurnOn</span></span>
+<span><span class="co">#&gt; Warning in dose_response_experiments(m, E[l, , drop = FALSE], iv[, l, drop =</span></span>
+<span><span class="co">#&gt; FALSE], : Dose response experiments are not (yet) fully compatible with events,</span></span>
+<span><span class="co">#&gt; this script will try its best.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 100</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>mc.cores <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">cfile</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,f<span class="op">=</span><span class="st">"c"</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
-<span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/checkModel.html">checkModel</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,<span class="va">cfile</span><span class="op">)</span></span>
-<span><span class="co">#&gt; building a shared library from c source, and using GSL odeiv2 as backend (pkg-config is used here).</span></span>
-<span><span class="co">#&gt; cc -shared -fPIC `pkg-config --cflags gsl` -o './CaMKII.so' '/tmp/Rtmp3XbkUp/temp_libpath315eec67fa214d/uqsa/extdata/CaMKII/CaMKII_gvf.c' `pkg-config --libs gsl`</span></span>
-<span><span class="va">rfile</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span>,pat<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"^%s[.]R$"</span>,<span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">sb</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="va">rfile</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>mc.cores <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/c_path.html">c_path</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/write_c_code.html">write_c_code</a></span><span class="op">(</span><span class="fu"><a href="../reference/generate_code.html">generate_code</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &gt;&gt; This function will start a background yacas process via Ryacas. &gt;&gt; There is currently no working way to reset/restart that process. &gt;&gt; It is therefore not advisable to generate the code for two different models in the same R session. &gt;&gt; The definitions for the two models will be mixed up. Writing file: /tmp/RtmpONeMFK/ab87bc58823bf0bb/CaMKII.c</span></span>
+<span><span class="fu"><a href="../reference/so_path.html">so_path</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shlib.html">shlib</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/values.html">values</a></span><span class="op">(</span><span class="va">m</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span></span></code></pre></div>
+<p>Simulate a subset of experiments (those that start with E0):</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span>,<span class="st">"Bradshaw"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="va">o</span>,parMap<span class="op">=</span><span class="va">logParMap</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">s</span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">CaMKII_default</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">u</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">input</span></span>
-<span><span class="va">par</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">p</span>,<span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">u</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span>,<span class="st">"E0"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## simulate the first subset:</span></span>
-<span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu">uqsa</span><span class="fu">::</span><span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="va">modelName</span>,method <span class="op">=</span> <span class="fu">rgsl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rgsl/man/integrationMethod.html" class="external-link">integrationMethod</a></span><span class="op">(</span><span class="st">"msadams"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">s</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">par</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">cpuSeconds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">y</span>,\<span class="op">(</span><span class="va">l</span><span class="op">)</span> <span class="va">l</span><span class="op">$</span><span class="va">cpuSeconds</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cpuSeconds</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span></span>
-<span></span>
+<span><span class="va">cpuSeconds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">a</span>,<span class="va">b</span><span class="op">)</span> <span class="va">a</span><span class="op">+</span><span class="va">b</span><span class="op">$</span><span class="va">cpuSeconds</span>,<span class="va">y</span>,init<span class="op">=</span><span class="fl">0.0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cpuSeconds</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     E0D0     E0D1     E0D2     E0D3     E0D4     E0D5     E0D6     E0D7 </span></span>
-<span><span class="co">#&gt; 6.362745 6.438589 6.584321 6.416656 6.343696 6.397072 6.440849 6.496016 </span></span>
-<span><span class="co">#&gt;     E0D8     E0D9    E0D10    E0D11    E0D12    E0D13    E0D14    E0D15 </span></span>
-<span><span class="co">#&gt; 6.492577 6.537944 6.553194 7.662524 7.849030 8.014629 8.346204 7.743975 </span></span>
-<span><span class="co">#&gt;    E0D16 </span></span>
-<span><span class="co">#&gt; 5.081996</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">i</span>,<span class="fl">1</span><span class="op">)</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.052276</span></span></code></pre></div>
+<p>Plot the dose response, by collecting it from the solution::</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">j</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">m</span><span class="op">$</span><span class="va">Output</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="va">i</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">measurements</span><span class="op">)</span></span>
 <span><span class="va">Ca</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,\<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">input</span><span class="op">[</span><span class="st">'Ca_set'</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">f_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">y</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,\<span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="va">y</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="va">o</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">v_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,\<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">outputValues</span><span class="op">[[</span><span class="va">o</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">e_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,\<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">errorValues</span><span class="op">[[</span><span class="va">o</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">f_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">y</span>,\<span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="va">y</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="va">j</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">v_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,\<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">data</span><span class="op">[</span><span class="va">j</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>bty<span class="op">=</span><span class="st">"n"</span>,xlog<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">yLabel</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ex</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">outputValues</span><span class="op">)</span><span class="op">[</span><span class="va">o</span><span class="op">]</span></span>
-<span><span class="va">E</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">sb</span><span class="op">$</span><span class="va">Experiments</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">Ca</span>,<span class="va">f_</span>,pch<span class="op">=</span><span class="fl">2</span>,xlab<span class="op">=</span><span class="st">'Ca'</span>,ylab<span class="op">=</span><span class="va">yLabel</span>,main<span class="op">=</span><span class="va">E</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">120</span><span class="op">)</span>,log<span class="op">=</span><span class="st">"x"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span><span class="va">Ca</span>,<span class="va">v_</span>,<span class="va">Ca</span>,<span class="va">v_</span><span class="op">+</span><span class="va">e_</span>,angle<span class="op">=</span><span class="fl">90</span>,length<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">Ca</span>,<span class="va">v_</span>,pch<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html" class="external-link">arrows</a></span><span class="op">(</span><span class="va">Ca</span>,<span class="va">v_</span>,<span class="va">Ca</span>,<span class="va">v_</span><span class="op">-</span><span class="va">e_</span>,angle<span class="op">=</span><span class="fl">90</span>,length<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
-<p><img src="smmala_files/figure-html/plots-1.png" width="700"></p>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>bty<span class="op">=</span><span class="st">"n"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
+<span>    <span class="va">Ca</span>,</span>
+<span>    <span class="va">v_</span>,</span>
+<span>    main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>    xlab<span class="op">=</span><span class="st">"Ca"</span>,</span>
+<span>    ylab<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">m</span><span class="op">$</span><span class="va">Output</span><span class="op">)</span><span class="op">[</span><span class="va">j</span><span class="op">]</span>,collapse<span class="op">=</span><span class="st">" "</span><span class="op">)</span>,</span>
+<span>    log<span class="op">=</span><span class="st">"x"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">Ca</span>,<span class="va">f_</span>,pch<span class="op">=</span><span class="fl">2</span>,col<span class="op">=</span><span class="st">"red4"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="smmala_files/figure-html/plots-1.png" width="100%"></p>
 <p>Here the triangles represent the independent simulation results.</p>
 <p>This approach lends itself more to parallelization than the dose
 sequence, because all these independent points can be simulated in

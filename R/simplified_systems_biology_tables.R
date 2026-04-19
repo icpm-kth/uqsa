@@ -382,6 +382,14 @@ linear_scale <- function(x,str_scale=attr(x,"scale")){
 #' print(names(CL))
 #' print(CL[,c('value','Formula')])
 conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
+	if (is.matrix(iv)){
+		warning(
+			c(
+				"[conservation_law_analysis] determines the default inputs (from initial values),\n",
+				"not the experiment specific inputs; that is done by [experiments].\n"
+			)
+		)
+	}
 	N <- pracma::nullspace(t(nu))
 	if (is.null(N)) return(NULL)
 	C <- pracma::rref(t(N))
@@ -566,17 +574,31 @@ dose_response_experiments <- function(m,E,iv,input,out=rownames(m$Output)){
 	TS <- list() # list of time series experiments
 	t0 <- E$t0
 	tf <- E$tf %otherwise% E$time
+	tr <- m$Transformation
+	eventSchedule <- character(NROW(E))
 	if (!is.null(E$event) && any(nzchar(E$event))){
 		print(E[,c("type","event")])
-		warning("Dose response experiments are not (yet) fully compatible with events.")
+		warning("Dose response experiments are not (yet) fully compatible with events, this script will try its best.")
+		eventSchedule <- E$event
 	}
 	for (i in seq(NROW(E))){
 		d <- m[[rownames(E)[i]]] # data table
+		ev <- m[[eventSchedule[i]]]
 		ts <- vector("list",length=NROW(d))
 		DATA <- fill_matrix(
 			empty_error_matrix(length(out),NROW(d),dimnames=list(out,NULL)),
 			parse_concise(t(d),use.errors=TRUE)  # this is a matrix
 		)
+		if (is.null(m[[eventSchedule[i]]])){
+			event_list <- NULL
+		} else {
+			stopifnot(!is.null(tr))
+			event_list <- list(
+				time=as.double(ev$time),
+				label=as.integer(match(ev$transformation,rownames(tr))-1),
+				dose=as.double(ev$dose)
+			)
+		}
 		df <- as.data.frame(parse_concise(as.matrix(d)))
 		for (j in seq_along(ts)){
 			u <- input[,i]
@@ -591,7 +613,8 @@ dose_response_experiments <- function(m,E,iv,input,out=rownames(m$Output)){
 				data=DATA[,j,drop=FALSE],
 				input=column(inputMatrix,j),
 				initialState=column(initialStateMatrix,j),
-				initialTime=as.double(E$t0[i])
+				initialTime=as.double(E$t0[i]),
+				events=event_list
 			) # several time series experiments per 1 dose response table
 		}
 		names(ts) <- sprintf("%s_dose_%i",rownames(E)[i],seq_along(ts))

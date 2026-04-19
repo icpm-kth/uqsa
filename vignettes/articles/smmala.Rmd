@@ -156,7 +156,7 @@ for (i in seq_along(ex)){
 	)
 }
 
-s <- simulator.c(ex, o, parMap=logParMap, method = 1)
+s <- simulator.c(ex, o, parMap=logParMap)
 y <- s(p)
 
 cpuSeconds <- unlist(lapply(y,\(l) l$cpuSeconds))
@@ -168,30 +168,71 @@ print(cpuSeconds)
 Next, we plot the results of that dense simulation:
 
 ```{r plot-dense-time-series, out.width="100%", fig.height=7, fig.width=5}
-par(mfrow=c(3,2),bty="n")
+par(mfrow=c(3,2), bty="n")
 for (i in seq_along(ex)){
 	j  <- rownames(m$Output) %in% colnames(ex[[i]]$measurements)
-	t_ <-ex[[i]]$outputTimes
-	f_ <-y[[i]]$func[j,,1]
-	m_ <-ex[[i]]$measurementTimes
+	t_siml <-ex[[i]]$outputTimes
+	f_siml <-y[[i]]$func[j,,1]
+	t_data <-ex[[i]]$measurementTimes
 	plot(
-		errors::as.errors(m_),
+		errors::as.errors(t_data),
 		ex[[i]]$data[j,],
 		main=names(ex)[i],
 		xlab="t",
 		ylab=rownames(m$Output)[j]
 	)
-	lines(t_,f_,col='red')
+	lines(t_siml,f_siml,col='red4')
 }
 ```
 
 Here we notice that in Experiment 1, the trajectory fails to reach
 steady state (i.e. a flat line), for any dose. So, it doesn't look
-like a staircase at all.
+like a staircase at all. This may or may not be desireable (depends on
+whether the original experiment was in steady state).
+
+Because most data-structures are just plain R data types, it is easy
+to modify experiments and experiment with the simulations. Here we
+make the entire time-course longer
+
+```{r longer-simulation}
+ex[[1]]$events$time <- ex[[1]]$events$time*60
+ex[[1]]$outputTimes <- ex[[1]]$outputTimes*60
+ex[[1]]$measurementTimes <- ex[[1]]$measurementTimes*60
+```
+
+Becasue we changed the experimental setup, we recreate the solver function:
+```{r solver-2}
+s <- simulator.c(ex, o, parMap=logParMap)
+y <- s(p) # new solution
+```
+
+We repeat the same plot from above:
+```{r, label="longer-simulation-Bradshaw", echo=FALSE, out.width="100%", fig.height=7, fig.width=5}
+par(mfrow=c(3,2),bty="n")
+for (i in seq_along(ex)){
+	j  <- rownames(m$Output) %in% colnames(ex[[i]]$measurements)
+	t_siml <-ex[[i]]$outputTimes
+	f_siml <-y[[i]]$func[j,,1]
+	t_data <-ex[[i]]$measurementTimes
+	plot(
+		errors::as.errors(t_data),
+		ex[[i]]$data[j,],
+		main=names(ex)[i],
+		xlab="t",
+		ylab=rownames(m$Output)[j]
+	)
+	lines(t_siml,f_siml,col='red')
+}
+```
+
+Giving this experiment more time shifts the simulated model response,
+but doesn't produce a steady state (yet).
 
 It is possible that the default parameter set will not allow the
 system to go into steady state quickliy enough, even if we increase
-the time between the transformation events.
+the time between the transformation events more. On the other hand,
+the original data was measured with $600\,\text{s}$ equilibration time, not in
+verified steady state.
 
 ## Asymmetry
 
@@ -322,25 +363,33 @@ Simulate a subset of experiments (those that start with E0):
 
 ```{r restrict-set}
 i <- which(startsWith(names(ex),"Bradshaw"))
-s <- simulator.c(ex[i],o,parMap=logParMap,method = 1)
+s <- simulator.c(ex[i],o,parMap=logParMap)
 y <- s(p)
 
-cpuSeconds <- unlist(lapply(y,\(l) l$cpuSeconds))
-names(cpuSeconds) <- names(ex[i])
-
+cpuSeconds <- Reduce(\(a,b) a+b$cpuSeconds,y,init=0.0)
 print(cpuSeconds)
 ```
-Plot the dose response, by collecting it from the solution::
 
-```{r plots}
+The simulation time is very slightly longer than before, because each
+final point needs to equilibrate individually.  We plot the dose response,
+by collecting it from the solution:
+
+```{r plots, out.width="100%"}
 j <- rownames(m$Output) %in% colnames(ex[[i[1]]]$measurements)
 Ca <- unlist(lapply(ex[i],\(x) x$input['Ca_set']))
 f_ <- unlist(lapply(y,\(y) y$func[j,1,1]))
 v_ <- unlist(lapply(ex[i],\(x) x$data[j,1]))
 
-par(bty="n",xlog=TRUE)
-plot(Ca,v_,main=names(ex)[i[1]],xlab="Ca",ylab=paste(rownames(m$Output)[j],collapse=" "),log="x")
-points(Ca,f_,pch=2,log="x",col="red4")
+par(bty="n")
+plot(
+	Ca,
+	v_,
+	main=names(ex)[i[1]],
+	xlab="Ca",
+	ylab=paste(rownames(m$Output)[j],collapse=" "),
+	log="x"
+)
+points(Ca,f_,pch=2,col="red4")
 ```
 
 Here the triangles represent the independent simulation results.
