@@ -18,7 +18,7 @@ function."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
     
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,7 +39,6 @@ function."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
-    <a class="dropdown-item" href="../articles/SBtab.html">SBtab</a>
     <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
@@ -59,7 +58,8 @@ function."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
     <a class="dropdown-item" href="../articles/simAKAR4.html">Simulate deterministic AKAR4</a>
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate stochastic AKAR4</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4.html">UQ on deterministic AKAR4</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">UQ on stochasic AKAR4</a>
+    <a class="dropdown-item" href="../articles/smcAKAR4.html">UQ on stochasic AKAR4 -- ABCSMC</a>
+    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">UQ on stochasic AKAR4 -- ABCMCMC</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <a class="dropdown-item" href="../articles/uqsaAKAR4.html">UQ and SA on AKAR4</a>
     <div class="dropdown-divider"></div>
@@ -69,8 +69,8 @@ function."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
     <h6 class="dropdown-header" data-toc-skip>CaMKII</h6>
     <a class="dropdown-item" href="../articles/smmala.html">Calibrate CaMKII with SMMALA</a>
     <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>Extra</h6>
-    <a class="dropdown-item" href="../articles/extraExamples.html">More examples...</a>
+    <h6 class="dropdown-header" data-toc-skip>CRNN</h6>
+    <a class="dropdown-item" href="../articles/crnn.html">CRNN models</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -131,18 +131,18 @@ where n is the requested number of vectors (rows)</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">rup</span><span class="op">&lt;-</span><span class="fu">rUniformPrior</span><span class="op">(</span>ll<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,ul<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rup</span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]     [,2]     [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.12811576 1.538633 2.129016</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.51096488 1.543793 2.241776</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.80314412 1.947914 2.407361</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.51474456 1.981542 2.354187</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.45584015 1.220025 2.081833</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.36923607 1.126667 2.739873</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.95586629 1.668675 2.468089</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.53819245 1.330954 2.628682</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.45255247 1.888015 2.784202</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.13805955 1.281313 2.706946</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.44218692 1.677699 2.700715</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.06840642 1.958504 2.244484</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.08183302 1.369236 2.126667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.73987251 1.955866 2.668675</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.46808935 1.538192 2.330954</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.62868211 1.452552 2.888015</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.78420182 1.138060 2.281313</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.70694650 1.442187 2.677699</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.70071499 1.068406 2.958504</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.24448352 1.926283 2.502747</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.93551714 1.438800 2.350487</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.47650409 1.966160 2.297162</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.29064831 1.859722 2.193313</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.80910837 1.365487 2.252700</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

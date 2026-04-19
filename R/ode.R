@@ -423,7 +423,7 @@ eventCode <-function(odeModel){
 #' compiled into a shared library.
 #'
 #' @param odeModel a list that represents an ODE
-#' @export
+#' @noRd
 #' @return a character vector with the generated code, one
 #'     vector-element is one line of code.
 #' @examples
@@ -587,7 +587,7 @@ writeRFunction <- function(prefix,fName,ret,value,arguments=c('t','state','param
 #'
 #' @param odeModel a list of named character vectors with math
 #'     expressions (which work as R code)
-#' @export
+#' @noRd
 #' @return a character vector with the generated code, one
 #'     vector-element is one line of code.
 #' @examples
@@ -677,15 +677,13 @@ generateRCode <- function(odeModel){
 #'
 #' @param C character vector with the code of this model
 #' @return the model's name with annotation about file names.
-#' @noRd
 #' @examples
 #' \dontrun{
 #'   cCode <- generate_code(m,o)            # a character vector
 #'   modelName <- write_and_compile(cCode)  # commented name
 #'   print(comment(modelName))
 #' }
-write_and_compile <- function(C){
-	modelName <- comment(C)
+write_and_compile <- function(C, modelname=comment(C)){
 	f <- tempfile(pattern=sprintf("%s_",modelName), fileext=".c")
 	cat(C,sep="\n",file=f)
 	comment(modelName) <- shlib(f)

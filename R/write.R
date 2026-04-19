@@ -27,8 +27,6 @@ generate_code <- function(Model,language="C", LV=6.02214076e+8){
 	return(C)
 }
 
-
-
 #' Compile C code to shared library
 #'
 #' Calls `R CMD SHLIB` to create the model's shared library.

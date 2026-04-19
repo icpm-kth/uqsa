@@ -74,15 +74,11 @@ reference:
   - uqsa_example
   - model_from_tsv
   - as_ode
-  - generateCode
+  - as_cme
   - write_and_compile
-  - makeGillespieModel
-  - generateGillespieCode
-  - generateRCode
   - values
   - experiments
   - standard_error_matrix
-  - checkModel
   - conservation_law_analysis
   - parameterConversion
   - replace_powers
@@ -94,6 +90,15 @@ reference:
   - unit_as_character
   - units_from_table
   - yJacobian
+  - "c_path<-"
+  - c_path
+  - generate_code
+  - print.cme
+  - print.ode
+  - shlib
+  - "so_path<-"
+  - so_path
+  - write_c_code
 - title: "Simulations"
   desc: "Functions for simulating the model"
   contents:
@@ -162,13 +167,16 @@ reference:
   - log10ParMapJac
   - log2ParMap
   - log2ParMapJac
-- title: "Operators and helper functions"
+- title: "Helper Functions and Operators"
   contents:
   - "%@%"
   - "%as%"
   - "%has%"
   - "%otherwise%"
   - determinePrefix
+  - "modify<-"
+  - "base<-"
+  - column
 - title: "Plotting functions"
   contents:
   - pcDist
@@ -178,7 +186,6 @@ reference:
   - showPosterior
 - title: "Internal functions"
   contents:
-  - "modify<-"
   - getDose
   - ggplotDoseResponse
   - ggplotTimeSeries
@@ -189,11 +196,9 @@ reference:
   - simfiGaussianLogLikelihood
   - CRNN
   - automatic_update
-  - "base<-"
-  - column
+  - clear_yacas_environment
   - defaultDistance
   - find_parameter_reaction
-  - flux_matrix
   - formulae
   - getMCMCPar
   - initialCount
@@ -201,11 +206,9 @@ reference:
   - linear_scale
   - moleCountConversion
   - observable.mean.in.bin
-  - parameterReaction
   - parse_concise
   - "reaction<-"
   - update_values
-  - scaleParameter
   - simple.unit
   - sum.of.bin.variance
   - unit.kind
