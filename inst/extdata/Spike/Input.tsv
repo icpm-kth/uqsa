@@ -1,3 +1,2 @@
-!!SBtab	Document='Spike' TableName='Input'			
-!ID	!DefaultValue	!Unit
+id	value	unit
 CaBase	100.0	µM

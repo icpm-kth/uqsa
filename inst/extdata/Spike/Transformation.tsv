@@ -1,3 +1,2 @@
-!!SBtab	Document='Spike' TableName='Transformation'					
-!ID	>Ca	>Buffer
+id	Ca	Buffer
 APCa	Ca	A*(k2-k1)*dose

@@ -1,3 +1,2 @@
-!!SBtab	Document='Spike' TableName='Experiment'				
-!ID	!Event	!T0
+id	event	t0
 E20Hz	AP20Hz	-5

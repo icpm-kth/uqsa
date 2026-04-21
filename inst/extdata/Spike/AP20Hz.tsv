@@ -1,5 +1,4 @@
-!!SBtab	Document='Spike' TableName='AP20Hz'		
-!ID	!Time	!Transformation	!Dose
+id	time	transformation	dose
 Freq20HzAP0	0	APCa	1.0
 Freq20HzAP1	50	APCa	1.0
 Freq20HzAP2	100	APCa	1.0
