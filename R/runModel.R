@@ -610,8 +610,8 @@ makeObjective <- function(experiments,simulate,distance=defaultDistance){
 				mclapply(
 					seq_len(NCOL(parABC)),
 					function(j) {
-						FUNC <- out[[i]]$func[,,j]
-						dim(FUNC) <- dim(DATA) # if there is just one output
+						FUNC <- out[[i]]$func[,,j,drop=FALSE] # repserve dimnames
+						dim(FUNC) <- dim(DATA)                # drop last index
 						distance(FUNC, DATA, STDV)
 					}
 				)
