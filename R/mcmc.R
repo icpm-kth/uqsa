@@ -1197,9 +1197,11 @@ simfiGaussianLogLikelihood <- function(init = 0.0){
 #'     is the step size. This function has an attribute called "init",
 #'     with a pre-initialized starting point.
 high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=values(m$Parameter)){
-	C <- generateCode(o)
-	odeModel <- write_and_compile(C)
-	message(comment(odeModel))
+	if (is.null(o$c_path) || is.null(o$so_path) || !file.exists(o$so_path)){
+		C <- generate_code(o)
+		c_path(o) <- write_c_code(C)
+		so_path(o) <- shlib(o)
+	}
 	if (all(m$Parameter$scale == "log10")){
 		message("The parameters are given in log10-scale, so the simulator will do the reverse transformation: 10^p.")
 		parMap <- log10ParMap
@@ -1218,7 +1220,7 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 		parMapJac <- diag(rep(1.0,length(x)))
 	}
 
-	s <- simulator.c(ex,odeModel,parMap=parMap,omit=0)
+	s <- simfi(ex,o,parMap=parMap,omit=0)
 
 	dprior <- dNormalPrior(
 		mean=m$Parameter$median %otherwise% values(m$Parameter),
@@ -1238,9 +1240,9 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 		fisherInformation=fi(parMapJac)
 	)
 	smmala <- mcmc(
-		smmalaUpdate(
+		smmala_update(
 			simulate=s,
-			experiments=ex,
+			gradLogLikelihood=gllf(parMapJac),
 			dprior=dprior,
 			gprior=gprior,
 			fisherInformation=fi(parMapJac),
@@ -1250,7 +1252,6 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 	attr(smmala,"init") <- parMCMC
 	return(smmala)
 }
-
 
 #' High Level Metropolis function
 #'
@@ -1274,28 +1275,25 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 #'     is the step size. This function has an attribute called "init",
 #'     with a pre-initialized starting point.
 high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x=values(m$Parameter), beta=1.0){
-	C <- generateCode(o)
-	odeModel <- write_and_compile(C)
-	message(comment(odeModel))
+	if (is.null(so_path(o)) || !file.exists(so_path(o))){
+		C <- generate_code(o)
+		c_path(o) <- write_c_code(C)
+		so_path(o) <- shlib(o)
+	}
 	if (all(m$Parameter$scale == "log10")){
 		message("The parameters are given in log10-scale, so the simulator will do the reverse transformation: 10^p.")
 		parMap <- log10ParMap
-		parMapJac <- log10ParMapJac
 	} else if (all(m$Parameter$scale == "log2") || all(m$Parameter$scale == "ld")) {
 		message("The parameters are given in log2-scale, so the simulator will do the reverse transformation: 2^p.")
 		parMap <- log2ParMap
-		parMapJac <- log2ParMapJac
 	} else if (all(m$Parameter$scale == "log") || all(m$Parameter$scale == "ln")){
 		message("The parameters are given in log-scale, so the simulator will do the reverse transformation: exp(p).")
 		parMap <- logParMap
-		parMapJac <- logParMapJac
 	} else {
 		message("The parameters are given in linear scale, they will be used as is.")
 		parMap <- identity
-		parMapJac <- diag(rep(1.0,length(x)))
 	}
-
-	s <- simulator.c(ex,odeModel,parMap=parMap,omit=2)
+	s <- simfi(ex,o,parMap=parMap,omit=2)
 	stdv <- m$Parameter$stdv %otherwise% m$Parameter$sd %otherwise% m$Parameter$sigma
 	if (is.null(stdv))
 		stop("no parameter standard deviation (sigma) provided in parameter table")
@@ -1310,9 +1308,8 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 		dprior=dprior
 	)
 	metropolis <- mcmc(
-		metropolisUpdate(
+		metropolis_update(
 			simulate=s,
-			experiments=ex,
 			dprior=dprior,
 			Sigma=diag(stdv^2)
 		)

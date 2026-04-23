@@ -317,9 +317,9 @@ load_system(
 			fprintf(stderr,"%p: %p\n",lib,conversion.ptr);
 			free(symbol_name);
 			return sys;
-		} else {
+		}/* else {
 			 fprintf(stderr,"[%s] model so: %s (%p)\n",__func__,model_so,conversion.ptr);
-		}
+			 }*/
 		ODE_vf = conversion.ODE_vf;
 
 		*((char*) pcpy(suffix,"_jac",4))='\0';

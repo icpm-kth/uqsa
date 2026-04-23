@@ -169,7 +169,7 @@ print.ode <- function(o){
 #' @return modified o, with information about compiled code
 so_path <- function(o){
 	f <- o$so_path
-	if (!file.exists(f)) warning(sprintf("File %s does not exist anymore.",f))
+	if (is.null(o$so_path) || !file.exists(f)) warning(sprintf("File %s does not exist anymore.",f))
 	return(f)
 }
 
@@ -665,27 +665,3 @@ generateRCode <- function(odeModel){
 	return(C)
 }
 
-#' Writes code to file and compiles
-#'
-#' This function accepts the code that was written by [generate_code],
-#' possibly changed by the user. It writes the contents to a c file
-#' named 'modelName_gvf.c'. This file is compiled to './modelName.so'
-#' using normal command line tools, not `R CMD SHLIB`
-#'
-#' This entire function can be replaced with a call to `cat()` and
-#' then compiling the written file in the system's shell.
-#'
-#' @param C character vector with the code of this model
-#' @return the model's name with annotation about file names.
-#' @examples
-#' \dontrun{
-#'   cCode <- generate_code(m,o)            # a character vector
-#'   modelName <- write_and_compile(cCode)  # commented name
-#'   print(comment(modelName))
-#' }
-write_and_compile <- function(C, modelname=comment(C)){
-	f <- tempfile(pattern=sprintf("%s_",modelName), fileext=".c")
-	cat(C,sep="\n",file=f)
-	comment(modelName) <- shlib(f)
-	return(modelName)
-}

@@ -23,13 +23,13 @@ if (length(a)>0){
       N <- 50000           # default sample size
 }
 
-modelName <- "AKAP79"
-comment(modelName) <- "./AKAP79.so"
-ex <- readRDS("AKAP79-ex.RDS")
+o <- readRDS("/dev/shm/AKAP79-ode.RDS")
+ex <- readRDS("/dev/shm/AKAP79-ex.RDS")
 
-f <- uqsa_example(modelName)
+f <- uqsa_example("AKAP79")
 m <- model_from_tsv(f)
 
+stopifnot(all(m$Parameter$scale == "log10"))
 parMCMC <- values(m$Parameter)
 mu <- m$Parameter$median
 stdv <- m$Parameter$stdv
@@ -42,14 +42,16 @@ rprior <- rNormalPrior(mean=mu,sd=stdv)
 gprior <- gNormalPrior(mean=mu,sd=stdv)
 
 ## ----simulate-----------------------------------------------------------------
-sim <- simulator.c(ex,modelName,log10ParMap)
+sim <- simfi(ex,o,log10ParMap)
 
 ## ----update-------------------------------------------------------------------
 smmala <- smmala_update(
 	simulate=sim,
+	gradLogLikelihood=gllf(log10ParMapJac),
 	dprior=dprior,
-	gradLogLikelihood=gprior,
-	fisherInformationPrior=diag(1.0/stdv^2)
+	gprior=gprior,
+	fisherInformationPrior=diag(1.0/stdv^2),
+	fisherInformation=fi(log10ParMapJac)
 )
 
 ## ----mcmc-method--------------------------------------------------------------
@@ -61,15 +63,18 @@ ptSMMALA <- mcmc_mpi(
 	swapFunc=pbdMPI_bcast_reduce_temperatures
 )
 
-h <- tune_step_size(MC)
-
 x <- mcmc_init(
 	beta,
 	values(m$Parameter),
 	simulate=sim,
+	logLikelihood=ll,
+	gradLogLikelihood=gllf(log10ParMapJac),
 	dprior,
 	gprior,
+	fisherInformation=fi(log10ParMapJac)
 )
+
+h <- tune_step_size(MC,x)
 
 for (j in seq(2)){
 	pbdMPI::barrier()

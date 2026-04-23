@@ -99,3 +99,26 @@ write_c_code <- function(C, model.name=comment(C), file=file.path(tempdir(),dige
 }
 
 
+#' Writes code to file and compiles
+#'
+#' This function accepts the code that was written by [generate_code],
+#' possibly changed by the user. It writes the contents to a c file
+#' named 'modelName_gvf.c'. This file is compiled to './modelName.so'
+#' using normal command line tools, not `R CMD SHLIB`
+#'
+#' This entire function can be replaced with a call to `cat()` and
+#' then compiling the written file in the system's shell.
+#'
+#' @param o ode model for which code is generated and written to a file
+#' @return the model's name with annotation about file names.
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- write_and_compile(as_ode(m))
+#' print(o)
+write_and_compile <- function(o){
+	C <- generate_code(o)
+	f <- tempfile(pattern=sprintf("%s_",o$name), fileext=".c")
+	cat(C,sep="\n",file=f)
+	comment(o$name) <- shlib(f)
+	return(o)
+}

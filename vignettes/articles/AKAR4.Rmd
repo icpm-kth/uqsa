@@ -1,5 +1,8 @@
 ---
 title: "Sample deterministic AKAR4 with ABC"
+output:
+  html_document:
+    mathjax: "default"
 ---
 
 ```{r, include = FALSE}
@@ -67,7 +70,7 @@ written as $\theta$, and the model's natural parameters. Any
 relationship between the two can be encoded as a function:
 
 $$
-\text{parMap}: \theta -> \rho`
+\text{parMap}: \theta -> \rho
 $$
 
 where $\rho$ are the parameters the ODE model expects.
@@ -107,16 +110,6 @@ the parameters:
 ll <- log10(parVal) - 2
 ul <- log10(parVal) + 2
 ```
-
-Define Number of Samples for the pre-calibration `npc` and each
-ABC-MCMC chain `ns`. During ABC, we save every 100-th point, so `work(nChains*ns*100) ≈ work(npc)`:
-
-```{r ABC-settings}
-set.seed(2022)
-nCores <- parallel::detectCores()
-options(mc.cores=nCores)
-```
-
 We define a function that measures the distance between experiment and simulation:
 
 ```{r distance}
@@ -137,16 +130,8 @@ the posterior through sampling. Dividing the data into chunks and
 processing them sequentially can help. Our model of the posterior of
 previous chunks is based on Copulas and the `VineCopula` package.
 
-We divide the workload into chunks and loop over the chunks in th
-ecode block below.
-
-The ABCMCMC function returns 1% of all sampled points, because of the
-very low acceptance rates of the ABC method. This is the reason for
-the comparatively low sample size request `ns`: the simulation
-workload will be proportional to `100*ns`. But the returned sample is
-of a very high quality, with very low apparent auto-correlation
-(because we omitted the large number of repeated points).
-
+We divide the workload into chunks and loop over the chunks, iterating
+the Bayesian problem via density estimation (VineCopula):
 
 ```{r ABC, collapse=FALSE}
 ## work chunks
@@ -158,13 +143,15 @@ chunks <- list(
 dprior <- dUniformPrior(ll, ul)
 rprior <- rUniformPrior(ll, ul)
 
+options(mc.cores=detectCores())
+
 start_time = Sys.time()
 for (i in seq(length(chunks))){
 	simulate <- simulator.c(ex[chunks[[i]]],o,parMap=parMap,omit=3)
 	Obj <- makeObjective(ex[chunks[[i]]],simulate,distance=distanceMeasure)
-	prior <- rprior(1000)
+	prior <- rprior(10000)
 	Sigma <- cov(prior)
-	posterior <- ABCSMC(Obj,t(prior),dprior=dprior,Sigma=Sigma,delta=c(0.2,2),messages=TRUE)
+	posterior <- ABCSMC(Obj,t(prior),dprior=dprior,Sigma=Sigma,delta=c(0.06,2))
 	if (i < length(chunks)){
 		COP <- fitCopula(posterior$draws)
 		rprior <- rCopulaPrior(COP)
@@ -179,10 +166,11 @@ print(time_)
 We plot the sample as a two dimensional histogram plot-matrix using
 the hexbin package:
 
-```{r sample-density, out.width="100%", fig.width=12, fig.height=12, dpi=100}
+```{r sample-density, out.width="100%", fig.width=12, fig.height=12, dpi=200}
 colnames(posterior$draws)<-names(parVal)
 #
 if (require(hadron)){
+    par(mfrow=c(3,1))
     ac <- hadron::uwerr(data=posterior$scores,pl=TRUE)
     tau <- ceiling(ac$tauint+ac$dtauint)
     i <- seq(1,NROW(posterior$draws),by=tau)

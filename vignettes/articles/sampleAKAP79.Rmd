@@ -3,7 +3,9 @@ title: "Uncertainty Quantification of AKAP79 (deterministic model)"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache=TRUE, eval=TRUE,
+knitr::opts_chunk$set(
+  cache=FALSE,
+  eval=TRUE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -46,34 +48,37 @@ m <- model_from_tsv(f)
 
 Create the ODE interpretation of `m`:
 
-```{r sbtab-to-vfgen, eval=FALSE}
+```{r sbtab-to-vfgen}
 o <- as_ode(m)
+c_path(o) <- write_c_code(generate_code(o))
+so_path(o) <- shlib(o)
+saveRDS(o,file="/dev/shm/AKAP79-ode.RDS")
 ```
 
 Load the simulation instructions for `o`:
 
 ```{r experiments}
 ex <- experiments(m,o)
-saveRDS(ex,file="AKAP79-ex.RDS")
+saveRDS(ex,file="/dev/shm/AKAP79-ex.RDS")
 ```
 
 There is a high-level function that does most of what we need to do automatically:
 
-```{r}
-p <- log10(values(m$Parameter))
+```{r, label="default-parameter-values"}
+p <- values(m$Parameter)
 smmala <- high_level_smmala(m,o,ex,p)
 ```
 
 # Plain Sample
 
-```{r, quick-sample}
-h <- tune_step_size(smmala,p)
+```{r quick-sample}
+h <- tune_step_size(smmala)
 X <- smmala(smmala %@% "init",1000,h)
 ```
 
 We shall only plot the pairs of the first 6 dimensions (this is a big model):
 
-```{r, hexbin-plot, out.width="100%"}
+```{r, label="hexbin-plot", out.width="100%"}
 if (require(hexbin)){
     hexplom(X[,seq(6)])
 } else {
