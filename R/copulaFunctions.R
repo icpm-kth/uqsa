@@ -24,44 +24,42 @@
 #'     probability samples, Z are cummulative density values for U,
 #'     and Y are the probability density values of U.
 fitCopula <- function(X){
-  stopifnot(is.matrix(X))
-  ncx <- ncol(X)
-  ns <- nrow(X)
-  eps <- 0.1
-  npoints <- 5000
-  # randomly pick sample points
-  if(ns > npoints){
-    I <- sample(1:ns, npoints, replace=FALSE)
-  }else{
-    I <- 1:ns
-  }
-  # add max and min
-  I <- c(I, apply(X, 2, which.max))
-  I <- c(I, apply(X, 2, which.min))
-  I <- unique(I)
-  Z <- U <- Y <-  matrix(NA, length(I), ncx)
-  # must evaluate in real datapoints to
-  # keep connection between params
-  # this is a normal kernel, looks similar
-  # to using the ecdf function
-
-  for(i in 1:ncx){
-    minx <- min(X[,i])
-    maxx <- max(X[,i])
-    ls <- minx-eps
-    us <- maxx+eps
-    U[,i] <- X[I,i]
+	stopifnot(is.matrix(X))
+	ncx <- ncol(X)
+	ns <- nrow(X)
+	eps <- 0.1
+	npoints <- 5000
+	## randomly pick sample points
+	if(ns > npoints){
+		I <- sample(1:ns, npoints, replace=FALSE)
+	}else{
+		I <- 1:ns
+	}
+	## add max and min
+	I <- c(I, apply(X, 2, which.max))
+	I <- c(I, apply(X, 2, which.min))
+	I <- unique(I)
+	Z <- U <- Y <-  matrix(NA, length(I), ncx)
+	## must evaluate in real datapoints to
+	## keep connection between params
+	## this is a normal kernel, looks similar
+	## to using the ecdf function
+	for(i in 1:ncx){
+		minx <- min(X[,i])
+		maxx <- max(X[,i])
+		ls <- minx-eps
+		us <- maxx+eps
+		U[,i] <- X[I,i]
 		if (requireNamespace("ks")){
 			Z[,i] = ks::kcde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
 			Y[,i] = ks::kde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
 		} else {
 			stop("ks:: is required for this function.")
 		}
-  }
-
-  # fit copula
-  vineCop <- RVineStructureSelect(Z,indeptest = T)
-  return(list(copula=vineCop, U=U, Z=Z, Y=Y))
+	}
+	## fit copula
+	vineCop <- RVineStructureSelect(Z,indeptest = T)
+	return(list(copula=vineCop, U=U, Z=Z, Y=Y))
 }
 
 #' Copula Formulation for Uniform Prior Distributions

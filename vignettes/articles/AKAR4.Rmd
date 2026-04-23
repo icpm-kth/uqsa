@@ -60,11 +60,11 @@ making th eshared library. The code can also be written with
 `cat(C,sep="\n",...)` to any file.
 
 We want to sample in logarithmic space, so we set up a mapping
-function `parMap`. 
+function `parMap`.
 
 We distinguish between the Markov chain (sampling) variable, often
 written as $\theta$, and the model's natural parameters. Any
-relationship between the two can be encoded as a function: 
+relationship between the two can be encoded as a function:
 
 $$
 \text{parMap}: \theta -> \rho`
@@ -111,13 +111,7 @@ ul <- log10(parVal) + 2
 Define Number of Samples for the pre-calibration `npc` and each
 ABC-MCMC chain `ns`. During ABC, we save every 100-th point, so `work(nChains*ns*100) ≈ work(npc)`:
 
-```{r sample-size}
-ns <- 2500  # ABC-MCMC sample size
-npc <- 50000 # pre-calibration size
-```
-
 ```{r ABC-settings}
-delta <- 0.02
 set.seed(2022)
 nCores <- parallel::detectCores()
 options(mc.cores=nCores)
@@ -129,7 +123,10 @@ We define a function that measures the distance between experiment and simulatio
 distanceMeasure <- function(funcSim, dataExpr, dataErr = NA){
   stopifnot(is.matrix(funcSim))
   stopifnot(is.matrix(dataExpr))
-  distance <- mean(((funcSim['AKAR4pOUT',]-dataExpr['AKAR4pOUT',])/max(dataExpr['AKAR4pOUT',]))^2,na.rm=TRUE)
+  j <- match("AKAR4pOUT",rownames(dataExpr))
+  stopifnot(is.finite(j))
+  stopifnot(1 <= j && j <= NROW(dataExpr))
+  distance <- mean(((funcSim[j,]-dataExpr[j,])/max(dataExpr[j,],na.rm=TRUE))^2,na.rm=TRUE)
   return(distance)
 }
 ```
@@ -166,7 +163,8 @@ for (i in seq(length(chunks))){
 	simulate <- simulator.c(ex[chunks[[i]]],o,parMap=parMap,omit=3)
 	Obj <- makeObjective(ex[chunks[[i]]],simulate,distance=distanceMeasure)
 	prior <- rprior(1000)
-	posterior <- ABCSMC(Obj,t(prior),dprior=dprior,messages=TRUE)
+	Sigma <- cov(prior)
+	posterior <- ABCSMC(Obj,t(prior),dprior=dprior,Sigma=Sigma,delta=c(0.2,2),messages=TRUE)
 	if (i < length(chunks)){
 		COP <- fitCopula(posterior$draws)
 		rprior <- rCopulaPrior(COP)
@@ -181,31 +179,31 @@ print(time_)
 We plot the sample as a two dimensional histogram plot-matrix using
 the hexbin package:
 
-```{r sample-density, fig.width=12, fig.height=12, dpi=100}
-colnames(mcmc$draws)<-names(parVal)
+```{r sample-density, out.width="100%", fig.width=12, fig.height=12, dpi=100}
+colnames(posterior$draws)<-names(parVal)
 #
 if (require(hadron)){
-    ac <- hadron::uwerr(data=mcmc$scores,pl=TRUE)
+    ac <- hadron::uwerr(data=posterior$scores,pl=TRUE)
     tau <- ceiling(ac$tauint+ac$dtauint)
-    i <- seq(1,NROW(mcmc$draws),by=tau)
+    i <- seq(1,NROW(posterior$draws),by=tau)
 } else {
-    ac <- acf(mcmc$scores,lag.max=1000)
-    l <- which(A$acf>0)
+    A <- acf(posterior$scores,lag.max=100)
+    l <- which(A$acf>0.2)
     tau <- sum(A$acf[l])
-    i <- seq(1,NROW(mcmc$draws),by=tau)
+    i <- seq(1,NROW(posterior$draws),by=tau)
 }
 
 if (require(hexbin)){
-    hexbin::hexplom(mcmc$draws[i,],xbins=10)
+    hexbin::hexplom(posterior$draws[i,],xbins=10)
 } else {
-    pairs(mcmc$draws[i,])
+    pairs(posterior$draws[i,])
 }
 ```
 
 A sensitivity plot using the results of the above loop:
 
 ```{r simulate}
-y<-simulate(t(mcmc$draws))
+y<-simulate(t(posterior$draws))
 dim(y[[1]]$func)
 ```
 
@@ -215,9 +213,9 @@ function values (rather than state variables). The outout functions
 are defined in the table `SBtab$Output`.
 
 
-```{r plot}
+```{r plot, out.width="100%"}
 f<-aperm(y[[1]]$func[1,,]) # aperm makes the sample-index (3rd) the first index of f, default permutation
-S<-globalSensitivity(mcmc$draws,f)
+S<-gsa_binning(posterior$draws,f)
 S[1,]<-0 # the first index of S is time, and initially sensitivity is 0
 cuS<-t(apply(S,1,cumsum))
 plot.new()

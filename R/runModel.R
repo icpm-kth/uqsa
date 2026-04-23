@@ -608,10 +608,8 @@ makeObjective <- function(experiments,simulate,distance=defaultDistance){
 			STDV <- standard_error_matrix(DATA) %otherwise% experiments[[i]]$standardError %otherwise% 1.0
 			S[i,] <- unlist(
 				mclapply(
-					seq_len(NCOL(parABC)),
-					function(j) {
-						FUNC <- out[[i]]$func[,,j,drop=FALSE] # repserve dimnames
-						dim(FUNC) <- dim(DATA)                # drop last index
+					asplit(out[[i]]$func,MARGIN=3),
+					function(FUNC) {
 						distance(FUNC, DATA, STDV)
 					}
 				)
