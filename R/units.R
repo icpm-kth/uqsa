@@ -348,12 +348,17 @@ unit.from.string <- function(unit.str){
 #' converts a unit data.frame into a printable string
 #'
 #' This is a crude function to make a printable representation of a
-#' unit data.frame
+#' unit data.frame, with very explicit parentheses and exponents.
 #'
 #' This function is similar to unit.info.
 #' @export
 #' @param unit a data.frame created by unit.from.string()
 #' @return a string representation of that data.frame purely for printing
+#' @examples
+#' u <- unit.from.string("s^-1")
+#' str <- unit_as_character(u)
+#' print(str)
+#' unit.info("s^-1")
 unit_as_character <- function(unit){
 	if (any(unit$multiplier!=1.0)){
 		return(
@@ -414,7 +419,7 @@ unit.info <- function(unit.str,unit=unit.from.string(unit.str)){
 		unit$exponent
 	)
 	cat(
-		sprintf("«%s» has been interpreted as: ",unit.str),
+		sprintf("«%s» has been interpreted as the product of: ",unit.str),
 		Info,
 		sep='\n'
 	)
@@ -437,6 +442,7 @@ unit.info <- function(unit.str,unit=unit.from.string(unit.str)){
 #'     target unit is attached to the returned value, as a comment.
 #' @examples
 #' \dontrun{
+#'   ## needs `unit` utility (system utility)
 #'   y <- "21 cm" %as% "inches"
 #'   y <- "12 μmol/L" %as% "mol/L"
 #'   print(comment(y))

@@ -1,17 +1,3 @@
-# Uncertainty Quantification: Precalibration for ABC-MCMC
-# Federica Milinanni (fedmil@kth.se)
-# (based on: Copyright (C) 2018 Alexandra Jauhiainen (alexandra.jauhiainen@gmail.com))
-
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License or
-# (at your option) any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-
 #' Determine a starting value for ABC's delta
 #'
 #' In ABC settings a model solution is compared to data with an
@@ -31,6 +17,20 @@
 #' @param delta ABC threshold.
 #' @param num number of different starting parameter vectors (initial states of the chains) to generate. Usually, num is equal to the number of chain that will be run in the sampling procedure.
 #' @return list with entries prePar (sampled parameters),  preDelta (distances between experimental data and trajectories produced with each of the parameters in prePar), Sigma (covariance matrix for the moves proposed in the ABCMCMC algortihm) and startPar (starting parameters for the ABCMCMC chains)
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' cme <- as_cme(m)
+#' ex <- experiments(m)
+#' C <- generate_code(cme)
+#' c_path(cme) <- write_c_code(C)
+#' so_path(cme) <- shlib(cme)
+#' p0 <- log10(values(m$Parameter))
+#' s <- simstoch(ex,cme,parMap=log10ParMap)
+#' Obj <- makeObjective(ex,s)
+#' rprior <- rNormalPrior(p0,0.5)
+#' PC <- preCalibration(Obj,500,rprior,delta=1)
+#' print(names(PC))
+#' print(PC$Sigma)
 preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1, p=0.05, sfactor=0.1, delta=0.01, num=1){
 	nCores <- unlist(options("mc.cores"))
 	if (is.null(nCores)){
@@ -72,7 +72,7 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1, p=0.05,
 		prePar <- newPrePar[,ix]
 	}
 
-	M <- getMCMCPar(prePar, preDelta, p=p, sfactor=sfactor, delta = delta, num=num)
+	M <- getMCMCPar(prePar, preDelta, p=p, sfactor=sfactor, delta=delta, num=num)
 	return(list(prePar=prePar, preDelta=preDelta, Sigma=M$Sigma, startPar=M$startPar))
 }
 
@@ -89,6 +89,7 @@ preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1, p=0.05,
 #' @param delta ABC threshold
 #' @param num number of different starting parameter vectors.
 #' @return Sigma and startPar (matrix with `num` rows) as a list
+#' @noRd
 getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1){
 	if (all(is.na(preDelta)) || is.null(preDelta))
 		stop("no usable pre-calibration parameters.")
@@ -96,13 +97,12 @@ getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1)
 		cat(sprintf("There are %i valid (finite) distance scores in the pre-calibration sample (%i starting positions requested).\n",sum(is.finite(preDelta)),num))
 		stop("The number of valid points is too small to make MCMC starting parameters.")
 	}
-
 	prePar <- prePar[,!is.na(preDelta)]
 	preDelta <- preDelta[!is.na(preDelta)]
 	nk <- max(ceiling(ncol(prePar)*p), num)
 	pick1 <- which(preDelta <= delta)   # pick all pars that meet threshold
 	pick2 <- head(order(preDelta, decreasing = FALSE),nk) # pick top p percent
-	if(length(pick1)>length(pick2)){
+	if(length(pick1)>=length(pick2)){
 		pick <- pick1
 	}else{
 		pick <- pick2
@@ -115,4 +115,3 @@ getMCMCPar <- function(prePar, preDelta, p=0.05, sfactor=0.1, delta=0.01, num=1)
 	startPar <- prePar[,sample(pick, num, replace = FALSE),drop=FALSE]
 	list(Sigma=Sigma, startPar=startPar)
 }
-
