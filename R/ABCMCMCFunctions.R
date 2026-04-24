@@ -1,18 +1,3 @@
-# Uncertainty Quantification: ABC-MCMC with copulas
-# Federica Milinanni (fedmil@kth.se)
-# (based on: Copyright (C) 2018 Alexandra Jauhiainen (alexandra.jauhiainen@gmail.com)
-# and based on modifications: 2021 by Joao Antunes (joaodgantunes@gmail.com) and Olivia Eriksson (olivia@kth.se))
-
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License or
-# (at your option) any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-
 #' Performs and Approximate Bayesian Computation Sampling of Model Parameters
 #'
 #' Given a set of simulation experiments (list), a model, parameter
@@ -45,6 +30,30 @@
 #'     detected: one accepted update per batch
 #' @return a list containing a sample matrix and a vector of scores
 #'     (values of delta for each sample)
+#' @examples
+#' \dontrun{
+#'   f <- uqsa_example("AKAR4")
+#'   m <- model_from_tsv(f)
+#'   o <- as_ode(m)
+#'   ex <- experiments(m,o)
+#'   C <- generate_code(o)
+#'   c_path(o) <- write_c_code(C)
+#'   so_path(o) <- shlib(o)
+#'   s <- simulator.c(ex,o)
+#'   objFunc <- makeObjective(ex,s)
+#'   startPar <- values(m$Parameter)
+#'   lowerBound <- startPar - m$Paramster$stdv # m$Parameter$min
+#'   upperBound <- startPar + m$Paramster$stdv # m$Parameter$max
+#'   abcSample <- ABCMCMC(
+#'     objFunc,
+#'     startPar=values(m$Parameter),
+#'     100,
+#'     cov(rprior(1000)),
+#'     delta=1,
+#'     dprior=dUniformPrior(lowerBound,upperBound),
+#'     batchSize = 100
+#'   )
+#' }
 ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, batchSize = 100, parAcceptable=\(p){all(is.finite(p))},allow.reg = FALSE){
 	cat("Started chain.\n")
 	Sigma1 <- diag(0.25*diag(Sigma0))
@@ -114,7 +123,7 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
 #' under valid ABC update conditions (successful simulation) the
 #' parameters are updated to new values.
 #'
-#' @export
+#' @noRd
 #' @param objectiveFunction function that, given a (vectorial)
 #'     parameter as input, simulates the model, and outputs the
 #'     distance between experimental data and data simulated from the
@@ -130,6 +139,10 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
 #' @param dprior prior probability density function
 #' @param parAcceptable user-specified constraint function, must return a scalar Boolean
 #' @return updated values for curPar, curDelta, and curPrior
+#' @examples
+#' \dontrun{
+#'   parUpdate(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior, parAcceptable)
+#' }
 parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, delta, dprior, parAcceptable){
 	## candidate's prior
 	canPrior <- dprior(canPar)
@@ -173,6 +186,12 @@ parUpdate <- function(objectiveFunction, curPar, canPar, curDelta, curPrior, del
 #'     model with the parameter provided in input
 #' @param delta the acceptance threshold.
 #' @return a filtered subset of acceptable parameter draws
+#' @examples
+#' \dontrun{
+#'   posterior <- ABCMCMC(...)
+#'   passed <- checkFitWithPreviousExperiments(posterior$draws, objFunc, delta=0.5)
+#'   posterior$draws <- passed
+#' }
 checkFitWithPreviousExperiments <- function(draws, objectiveFunction, delta){
 	cat("\n-Checking fit with previous data\n")
 	nDraws = dim(draws)[1]

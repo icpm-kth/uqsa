@@ -10,7 +10,8 @@ r <- pbdMPI::comm.rank(comm=comm)
 cs <- pbdMPI::comm.size(comm=comm)
 attr(comm,"rank") <- r
 attr(comm,"size") <- cs
-beta <- (1.0 - (r/cs))^2   # PT: inverse temperature
+
+beta <- (1.0 - (r/cs))^2 # PT: inverse temperature
 
 stepSize <- function(beta){
 	return(7e-3*exp(-9*beta))
@@ -18,11 +19,16 @@ stepSize <- function(beta){
 
 a <- commandArgs(trailingOnly=TRUE)
 if (length(a)>0){
-      N <- as.integer(a[1])
+	N <- as.integer(a[1])
 } else {
-      N <- 50000           # default sample size
+	N <- 50000 # default sample size
 }
 
+## /dev/shm doesn't exist on all OS types. On GNU/Linux it is a
+## location that exists physically in RAM. That means that it doesn't
+## survive reboots, which is great for out purposes.  If you want to
+## adapt this file, then this has to be any predictable path, that
+## works on your system, even the current directory `./`.
 o <- readRDS("/dev/shm/AKAP79-ode.RDS")
 ex <- readRDS("/dev/shm/AKAP79-ex.RDS")
 
@@ -47,6 +53,7 @@ sim <- simfi(ex,o,log10ParMap)
 ## ----update-------------------------------------------------------------------
 smmala <- smmala_update(
 	simulate=sim,
+	logLikelihood=ll,
 	gradLogLikelihood=gllf(log10ParMapJac),
 	dprior=dprior,
 	gprior=gprior,
@@ -69,12 +76,13 @@ x <- mcmc_init(
 	simulate=sim,
 	logLikelihood=ll,
 	gradLogLikelihood=gllf(log10ParMapJac),
-	dprior,
-	gprior,
+	dprior=dprior,
+	gprior=gprior,
 	fisherInformation=fi(log10ParMapJac)
 )
 
-h <- tune_step_size(MC,x)
+#h <- tune_step_size(MC,x)
+h <- 1e-6
 
 for (j in seq(2)){
 	pbdMPI::barrier()
@@ -89,8 +97,11 @@ for (j in seq(2)){
 		beta,
 		tail(Z,1),
 		simulate=sim,
-		dprior,
-		gprior,
+		logLikelihood=ll,
+		gradLogLikelihood=gllf(log10ParMapJac),
+		dprior=dprior,
+		gprior=gprior,
+		fisherInformation=fi(log10ParMapJac)
 	)
 }
 time_ <- difftime(Sys.time(),start_time,units="min")

@@ -1,3 +1,48 @@
+#' Split Kinetic Law
+#'
+#' This function performs a very simplified split of a kinetic law
+#' into a forward part and a backward part, if it isn't pre-split in
+#' the file.
+#'
+#' If the data.frame contains separate forward and backward rates these will
+#' be returned instead. Instead of using this function,
+#' `m$Reaction[,c("fwd","bwd")]` would accomplish a very similar
+#' thing.
+#'
+#' @param r the reaction table (data.frame)
+#' @export
+#' @return a character matrix with a forward and backward column
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAP79")) # not pre-split
+#' print(colnames(m$Reaction))
+#' k <- kinetic_law_matrix(m$Reaction)
+#' print(k)
+kinetic_law_matrix <- function(r){
+	if ("kinetic.law" %in% names(r)){
+		F <- ifelse(
+			grepl("-",r$kinetic.law,fixed=TRUE),
+			r$kinetic.law,
+			paste0(r$kinetic.law," - 0")
+		)
+		F <- matrix(trimws(unlist(strsplit(F,"-",fixed=TRUE))),ncol=2,byrow=TRUE,dimnames=list(rownames(r),c("fwd","bwd")))
+		return(F)
+	}
+	direction <- list(c("fwd","forward"),c("bwd","backward"))
+	F <- matrix("",NROW(r),2,dimnames=list(rownames(r),c("fwd","bwd")))
+	for (d in direction){
+		j <- pmatch(d,colnames(r))
+		if (any(is.finite(j))){
+			j <- j[which(is.finite(j))[1]]
+			F[,head(d,1)] <- r[[j]]
+		} else {
+			print(colnames(r))
+			warning(sprintf("no %s rates found in reaction table.",tail(d,1)))
+		}
+	}
+	return(F)
+}
+
+
 #' Returns a list of reaction coefficients
 #'
 #' This function maps c("A","2 B") to c(1,2)
@@ -16,10 +61,9 @@
 #' @param formulaList a list of character vectors, derived from the
 #'     left or right side of a reaction formula:
 #' @return a list of numeric coefficient vectors
-#' @examples
-#' as.character("12 A")
-#' onlyCoefficients("12 A")
 #' @export
+#' @examples
+#' print(onlyCoefficients("12 A"))
 onlyCoefficients <- function(formulaList){
 	C <- lapply(formulaList,\(v) .Call(lstrtod,as.character(v)))
 	return(ifelse(nchar(formulaList)>0,C,0))
@@ -33,12 +77,16 @@ onlyCoefficients <- function(formulaList){
 #' @export
 #' @param formulaList a list of strings like: "2 B" or "45 X"
 #' @return a list of name vectors
+#' @examples
+#' print(onlyNames("12 A"))
 onlyNames <- function(formulaList){
 	return(lapply(formulaList,\(x) sub("^[0-9]+\\b","",x)))
 }
 
+## the best thing is to keep empty lists of reactants or products just
+## empty (type nothing). But, this catches many ways of writing this.
 is_empty <- function(b){
-	return(b == "NULL" | b == "_" | b == "Ø" | b == "\U00002205" | b=="")
+	return(b == "NULL" | b == "_" | b == "Ø" | b == "\U00002205" | b=="" | b=="[]" | b=="{}")
 }
 
 #' Find the stoichiometry for a given parameter name
@@ -52,7 +100,14 @@ is_empty <- function(b){
 #' @param kinetic.law a character matrix of fluxes, column 1 for
 #'     forward reaction, column2 for backward reactions
 #' @return the stoichiometry entry that belongs to the given parameter
-find_parameter_reaction <- function(p,reactants,products,kinetic.law){
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAP79"))
+#' r <- stoichiometry(strsplit(m$Reaction$reactants,"+",fixed=TRUE))
+#' p <- stoichiometry(strsplit(m$Reaction$products ,"+",fixed=TRUE))
+#' k <- kinetic_law_matrix(m$Reaction)
+#' j <- parameter_stoichiometry("k5_1",r,p,k)
+#' print(j)
+parameter_stoichiometry <- function(p,reactants,products,kinetic.law){
 	i <- grepl(paste0("\\b",p,"\\b"),kinetic.law[,1])
 	j <- grepl(paste0("\\b",p,"\\b"),kinetic.law[,2])
 	if (any(i)){
@@ -70,9 +125,19 @@ find_parameter_reaction <- function(p,reactants,products,kinetic.law){
 #' Given an already split list of entries such as c("3 A","B"), this
 #' function returns a numeric vector c(3,1) with names c("A","B").
 #' @export
-#' @param formulaList a list of split reaction formula tokens
+#' @param formulaList reaction formulae, either as a pre-split list or character vector
 #' @return named numeric vector of stoichiometric coefficients
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAP79"))
+#' r <- stoichiometry(m$Reaction$reactants)
+#' print(head(r))
+#' print(tail(r))
 stoichiometry <- function(formulaList){
+	if (is.character(formulaList)){
+		nm <- names(formulaList)
+		formulaList <- lapply(strsplit(formulaList,"+",fixed=TRUE),trimws)
+		names(formulaList) <- nm
+	}
 	sc <- onlyCoefficients(formulaList)
 	nm <- onlyNames(formulaList)
 	sc <- mapply(
@@ -158,8 +223,9 @@ parameterReaction <- function(reactionKinetic,parNames){
 
 #' Initial count of reacting Compounds
 #'
-#' This function returns the molecule count apart from LV.
-#' This number must be multiplied by Avogadro's constant and volume.
+#' This function returns the molecule count apart from LV.  This
+#' returned number must be multiplied by Avogadro's constant and
+#' volume.
 #'
 #' The multiplication with LV isn't done here, because this allows the
 #' user to change the volume of the system in the C-file, without
@@ -168,6 +234,14 @@ parameterReaction <- function(reactionKinetic,parNames){
 #' @param m the model data.frames obtained from [model_from_tsv]
 #' @return numeric vector or character vector, depending on how the
 #'     initial concentration was provided
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAP79"))
+#' i <- initialCount(m) # as multiples of LV
+#' l <- i>0
+#' cat(
+#'   sprintf("initial count of %s is %i (%g * LV)",rownames(m$Compound)[l],round(i[l]*6e8),i[l]),
+#'   sep="\n"
+#' )
 initialCount <- function(m){
 	v <- values(m$Compound)
 	unit <- units_from_table(m$Compound)
@@ -271,6 +345,10 @@ flux_matrix <- function(Reaction){
 #' @param m list of data.frames, obtained via `model_from_tsv()`
 #' @return a list containing the interpreted model.
 #' @export
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' stochasticModel <- as_cme(m)
+#' print(stochasticModel)
 as_cme <- function(m){
 	rev <- as.logical(m$Reaction[["is.reversible"]])
 	F <- matrix(
@@ -649,6 +727,19 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 #' @export
 #' @return a closure that simulates the model in `model.so`
 #' @useDynLib uqsa gillespie
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' cme <- as_cme(m)
+#' C <- generate_code(cme)
+#' c_path(cme) <- write_c_code(C)
+#' so_path(cme) <- shlib(cme)
+#' ex <- experiments(m)
+#' p0 <- values(m$Parameter)
+#' s <- simstoch(ex,cme)
+#' res <- s(p0)
+#' require(errors)
+#' plot(as.errors(ex[[1]]$outputTimes),ex[[1]]$data,xlab="time",ylab="AKAR4p",main=names(ex)[1])
+#' lines(ex[[1]]$outputTimes,res[[1]]$func,type="s",lwd=2,col="red3")
 simstoch <- function(ex, cmeModel, parMap=identity){
 	if (is.character(cmeModel)) {
 		model.so <- cmeModel

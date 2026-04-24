@@ -8,6 +8,13 @@
 #' @param b value to substitute
 #' @return a, or b if a is NULL
 #' @export
+#' @examples
+#' x <- numeric(10)
+#' l <- dim(x) %otherwise% c(length(x),1)
+#' ## example with attributes:
+#' attr(x,"logLikelihood") <- logLikelihood(x)
+#' ## elsewhere:
+#' logLF <- attr(x,"logLikelihood") %otherwise% -Inf
 `%otherwise%` <- function(a,b){
 	if (is.null(a) || any(is.na(a)) || length(a)==0) {
 		return(b)
@@ -18,10 +25,11 @@
 
 #' Determine a prefix from a character vector str of similar contents
 #'
-#' The result is such that `all(startsWith(str,determinePrefix(str)))` is `TRUE`.
+#' The result is such that `all(startsWith(str,determinePrefix(str)))`
+#' is `TRUE`.
 #'
 #' By default, the strings are assumed to be '-' separated words, and
-#' a series of words is found to be thje prefix if all entries start
+#' a series of words is found to be the prefix if all entries start
 #' with that set of words.
 #'
 #' The normal case is c("abc-1","abc-2b","abc-2a") maps to "abc"
@@ -29,6 +37,10 @@
 #' @param str a character vector
 #' @param split the token to use for strsplit instead of '-', this should be `character(0)` if you want to split letter by letter
 #' @return the prefix common to all entries of str.
+#' @examples
+#' files <- sprintf("smmala-sample-%i-of-3.RDS",seq(1,3))
+#' pref <- determinePrefix(files)
+#' print(pref)
 determinePrefix <- function(str,split="-",collapse="-"){
 return(paste(
 	Reduce(
@@ -49,6 +61,11 @@ return(paste(
 #' @param attrNames named attributes
 #' @return TRUE if all attributes are present
 #' @export
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAP79"))
+#' x <- values(m$Compound)
+#' x %has% "unit"
+#' print(x %@% "unit")
 `%has%` <- function(var,attrNames){
 	return(all(attrNames %in% names(attributes(var))))
 }
@@ -146,6 +163,7 @@ mcmc <- function(update){
 	comment(M) <- "function(parMCMC,N=1000,eps=1e-4) where eps is the step-size (numeric scalar)"
 	return(M)
 }
+
 #' Broadcast to other ranks and swap temperatures with any of them
 #'
 #' Using this function, at most two ranks will swap.

@@ -13,6 +13,7 @@
 #' 1. Character vector: `odeModel <- c("AKAKR4","/tmp/path/AKAR4.so")`
 #' 2. A comment: `comment(odeModel) <- "/tmp/path/AKAR4.so"`
 #' 3. As part of the ode object:
+#'
 #' ```
 #' odeModel <- as_ode(m)`
 #' so_path(odeModel) <- "/tmp/path/AKAR4.so"

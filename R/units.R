@@ -10,6 +10,9 @@
 #' @param default default value if no unit column exists
 #' @return a character vector of units with names
 #' @export
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAP79"))
+#' u <- units_from_table(m$Compound)
 units_from_table <- function(df,default="1"){
 	if (is.null(df)) return(NULL)
 	stopifnot(is.data.frame(df))
@@ -28,12 +31,14 @@ units_from_table <- function(df,default="1"){
 #' Given some molar quantity with a unit (character vector), this function
 #' calculates a conversion factor based on the SI prefixes used, as
 #' well as what the exponent of LV (Avogadro's constant * Volume)
-#' applies in this case.
+#' applies in this case. This is an internal function.
 #'
 #' @param unit character vector, will be parsed for SI prefixes and to
 #'     determine the mole component
 #' @return a data.frame with an lvpower and factor component, with
 #'     names like the names of the unit vector
+#' @examples
+#' f <- moleCountConversion("nM") # nanomoles/litre
 moleCountConversion <- function(unit) {
 	u <- lapply(unit,unit.from.string)
 	f <- sapply(u,\(x) with(x,10^sum(scale*exponent)))
@@ -50,7 +55,6 @@ moleCountConversion <- function(unit) {
 	return(data.frame(lvpower=l, factor=f, effectively=new_unit, row.names=names(unit)))
 }
 
-
 #' Returns information about parameter conversion
 #'
 #' Given parameters of a reaction kinetic coefficient model with
@@ -65,8 +69,17 @@ moleCountConversion <- function(unit) {
 #'     reaction, a list of integer vectors
 #' @param products a list of the stoichiometric constants of each
 #'     reaction, a list of integer vectors
+#' @param kinetic.law a character matrix with two columns: [,1] for
+#'     forward reaction rates, and [,2] for backward reaction rates.
 #' @return a vector of parameter conversion factors
 #' @export
+#' @examples
+#' m <- model_from_tsv(uqsa_examples("AKAP79"))
+#' r <- lapply(strsplit(m$Reaction$reactants,"+",fixed=TRUE),trimws)
+#' p <- lapply(strsplit(m$Reaction$products ,"+",fixed=TRUE),trimws)
+#' k <- ifelse(grepl("-",m$Reaction$kinetic.law,fixed=TRUE),m$Reaction$kinetic.law,paste0(m$Reaction$kinetic.law," - 0"))
+#' f <- parameterConversion(u,stoichiometry(r),stoichiometry(p),k)
+#' print(f)
 parameterConversion <- function(unit, reactants, products, kinetic.law){
 	stopifnot(unit %has% "names")
 	parST <- lapply(
