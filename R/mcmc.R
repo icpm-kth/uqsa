@@ -84,6 +84,17 @@ return(paste(
 #' @param fisherInformation a function that calculates the Fisher Information matrix
 #' @return the same starting parameter vector, but with attributes.
 #' @export
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' p0 <- values(m$Parameter)
+#' c_path(o) <- write_c_code(generate_code(o))
+#' so_path(o) <- shlib(o)
+#' ex <- experiments(m,o)
+#' s <- simulator.c(ex,o)
+#' dprior <- dNormalPrior(p0,m$Parameter$stdv)
+#' p <- mcmc_init(1.0,p0,s,dprior=dprior)
+#' print(names(attributes(p))) ## now has attributes necessary for MCMC
 mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rnorm(x)),gradLogLikelihood=NULL,gprior=NULL,fisherInformation=NULL){
 	simulations <- simulate(parMCMC)
 	attr(parMCMC,"beta") <- beta
@@ -113,6 +124,13 @@ mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rn
 #' @param ll2 the log-likelihood of chain 2
 #' @return TRUE is the chains should swap their temperatures
 #' @export
+#' @examples
+#' b <- c(1.0,0.5)
+#' if (change_temperature(b[1],-850,b[2],-600)){ # with some randomness
+#'   message(sprintf("yes, swapping temperature %f <=> %f",b[1],b[2]))
+#' } else {
+#'   message(sprintf("no, temperature %f, and %f stay unchanged",b[1],b[2]))
+#' }
 change_temperature <- function(b1,ll1,b2,ll2){
 	a <- exp((b2-b1)*(ll1-ll2))
 	r <- runif(1)
@@ -138,6 +156,11 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #' @return M(initiPar,N), a function of initial starting values and
 #'     number of Markov chain steps
 #' @export
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAP79"))
+#' rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
+#' MarkovChain <- mcmc(rwm)
+#' smallSample <- MarkovChain(rwm %@% "init",100,1e-3)
 mcmc <- function(update){
 	M <- function(parMCMC,N=1000,eps=1e-4){
 		sample <- matrix(nrow=N,ncol=length(parMCMC))
@@ -147,6 +170,7 @@ mcmc <- function(update){
 		a <- logical(N)
 		for (i in seq(N)){
 			parMCMC <- update(parMCMC,eps)
+			print(as.numeric(parMCMC))
 			ll[[i]] <- attr(parMCMC,"logLikelihood")
 			sample[i,] <- as.numeric(parMCMC)
 			b[i] <- attr(parMCMC,"beta")
@@ -639,7 +663,7 @@ metropolis_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm
 			attr(parProposal,"simulations") <- simulate(parProposal)
 			llProposal <- logLikelihood(parProposal)
 			if (!is.numeric(llProposal) || length(llProposal)!=1){
-				warning(sprintf("metropolisUpdate encountered an invalid likelihood value: %f\n",llProposal[1]))
+				warning(sprintf("metropolis_update encountered an invalid likelihood value: %f\n",llProposal[1]))
 				print(llProposal)
 				print(as.numeric(parGiven))
 			}
@@ -1267,6 +1291,7 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 			fisherInformationPrior=diag(1.0/m$Parameter$stdv^2)
 		)
 	)
+	attr(smmala,"sim") <- s
 	attr(smmala,"init") <- parMCMC
 	return(smmala)
 }
@@ -1332,6 +1357,7 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 			Sigma=diag(stdv^2)
 		)
 	)
+	attr(metropolis,"sim") <- s
 	attr(metropolis,"init") <- parMCMC
 	return(metropolis)
 }
