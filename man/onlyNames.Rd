@@ -16,3 +16,6 @@ a list of name vectors
 This is the companion function to onlyCoefficients. It returns the
 names of reactants, without the stoichiometry.
 }
+\examples{
+print(onlyNames("12 A"))
+}

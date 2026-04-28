@@ -1,5 +1,45 @@
-# Uncertainty Quantification: run model ordinary differential equation
-# Copyright (C) 2022 Federica Milinanni (fedmil@kth.se)
+#' prints the simulation results
+#'
+#' The results, if accidentally printed, are difficult to read.  This
+#' function prevents these accidental prints. It summarizes the
+#' results instead.
+#' @param y simulation results
+#' @export
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' ex <- experiments(m,o)
+#' c_path(o) <- write_c_code(generate_code(o))
+#' so_path(o) <- shlib(o)
+#' s <- simfi(ex,o)
+#' y <- s(values(m$Parameter))
+#' print(y)
+print.simulation <- function(y){
+	cat(sprintf("number of simulation experiments: %i\n",length(y)))
+	for (i in seq_along(y)){
+		cat(sprintf("%42s",names(y)[i]),"\n")
+		cat(paste0(rep("-",42),collapse=""),"\n")
+		for (j in seq_along(y[[i]])){
+			x <- y[[i]][[j]]
+			if (is.array(x)){
+				cat(sprintf("%24s: %s (dim)\n",names(y[[i]])[j],paste(dim(x),collapse=", ")))
+			} else if (is.numeric(x) && length(x)==1) {
+				cat(sprintf("%24s: %g\n",names(y[[i]])[j],x))
+			} else {
+				cat(
+					sprintf(
+						"%24s: %s (class), %s (type)\n",
+						names(y[[i]])[j]
+					),
+					paste(class(x),collapse=", "),
+					typeof(x)
+				)
+			}
+		}
+		cat("\n")
+	}
+	cat("experiments: ",paste(names(y),collapse=", "),"\n")
+}
 
 #' simulates an ode model with extra work
 #'
@@ -332,6 +372,7 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0){
 					)
 				)
 			}
+			class(yf) <- "simulation"
 			return(yf)
 		}
 	)
@@ -399,7 +440,11 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 	if (is.na(pmatch("data",names(experiments[[1]]))) && omit < 3){
 		warning(
 			sprintf(
-				"log-likelihood calculations were requested with omit=%i, but no data matrices are present in experiments: %s\nsetting omit to 3.",
+				paste(
+					"log-likelihood calculations were requested with omit=%i,",
+					"but no data matrices are present in experiments: ",
+					"%s\nsetting omit to 3."
+				),
 				omit,
 				paste(names(experiments[[1]]),collapse=", ")
 			)
@@ -431,6 +476,7 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 				sd[is.na(sd)] <- 0.0
 				yf[[i]]$func <- yf[[i]]$func + array(rnorm(prod(dim(sd)),0,sd),dim=dim(yf[[i]]$func))
 			}
+			class(yf) <- "simulation"
 			return(yf)
 		}
 	} else {
@@ -453,6 +499,7 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 					}
 				), recursive=FALSE)
 			stopifnot(length(experiments)==length(yf))
+			class(yf) <- "simulation"
 			return(yf)
 		}
 	}

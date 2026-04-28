@@ -18,5 +18,8 @@ names like the names of the unit vector
 Given some molar quantity with a unit (character vector), this function
 calculates a conversion factor based on the SI prefixes used, as
 well as what the exponent of LV (Avogadro's constant * Volume)
-applies in this case.
+applies in this case. This is an internal function.
+}
+\examples{
+f <- moleCountConversion("nM") # nanomoles/litre
 }

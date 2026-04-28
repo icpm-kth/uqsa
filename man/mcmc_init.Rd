@@ -35,3 +35,15 @@ the same starting parameter vector, but with attributes.
 This function must append all required attributes to the MCMC
 varible, for the Markov chain to update correctly.
 }
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- as_ode(m)
+p0 <- values(m$Parameter)
+c_path(o) <- write_c_code(generate_code(o))
+so_path(o) <- shlib(o)
+ex <- experiments(m,o)
+s <- simfi(ex,o)
+dprior <- dNormalPrior(p0,m$Parameter$stdv)
+p <- mcmc_init(1.0,p0,s,dprior=dprior)
+print(names(attributes(p))) ## now has attributes necessary for MCMC
+}

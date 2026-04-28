@@ -43,3 +43,18 @@ In ABC settings a model solution is compared to data with an
 acceptance threshold: delta. This-pre calibration function attempts
 to adjust this delta value.
 }
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+cme <- as_cme(m)
+ex <- experiments(m)
+C <- generate_code(cme)
+c_path(cme) <- write_c_code(C)
+so_path(cme) <- shlib(cme)
+p0 <- log10(values(m$Parameter))
+s <- simstoch(ex,cme,parMap=log10ParMap)
+Obj <- makeObjective(ex,s)
+rprior <- rNormalPrior(p0,0.5)
+PC <- preCalibration(Obj,500,rprior,delta=1)
+print(names(PC))
+print(PC$Sigma)
+}

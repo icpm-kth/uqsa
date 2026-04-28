@@ -91,14 +91,13 @@ return(paste(
 #' c_path(o) <- write_c_code(generate_code(o))
 #' so_path(o) <- shlib(o)
 #' ex <- experiments(m,o)
-#' s <- simulator.c(ex,o)
+#' s <- simfi(ex,o)
 #' dprior <- dNormalPrior(p0,m$Parameter$stdv)
 #' p <- mcmc_init(1.0,p0,s,dprior=dprior)
 #' print(names(attributes(p))) ## now has attributes necessary for MCMC
 mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rnorm(x)),gradLogLikelihood=NULL,gprior=NULL,fisherInformation=NULL){
-	simulations <- simulate(parMCMC)
 	attr(parMCMC,"beta") <- beta
-	attr(parMCMC,"simulations") <- simulations
+	attr(parMCMC,"simulations") <- simulate(parMCMC)
 	attr(parMCMC,"prior")  <- dprior(parMCMC)
 	attr(parMCMC,"logLikelihood") <- logLikelihood(parMCMC)
 	if(!is.null(fisherInformation))
@@ -107,7 +106,53 @@ mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rn
 		attr(parMCMC,"gradLogLikelihood") <- gradLogLikelihood(parMCMC)
 	if(!is.null(gprior))
 		attr(parMCMC,"gradLogPrior") <- gprior(parMCMC)
+	class(parMCMC) <- "mcmcVariable"
 	return(parMCMC)
+}
+
+#' print information about the mcmc variable
+#'
+#' Some mcmc variables have many attributes, which clutter the screen
+#' when accidentally printed. This function prevents these long
+#' printouts.
+#'
+#' @param v the variable
+#' @export
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' c_path(o) <- write_c_code(generate_code(o))
+#' so_path(o) <- shlib(o)
+#' ex <- experiments(m,o)
+#' dprior <- dNormalPrior(values(m$Parameter),m$Parameter$stdv)
+#' s <- simfi(ex,o)
+#' p <- mcmc_init(1.0,values(m$Parameter),s,dprior=dprior)
+#' print(p)
+print.mcmcVariable <- function(v){
+	print(v[seq_along(v)])
+	A <- c("simulations", "logLikelihood", "prior", "gradLogLikelihood","gradLogPrior","fisherInformation")
+	for (a in A){
+		if (v %has% a){
+			if (is.list(attr(v,a))){
+				cat(sprintf("%24s: %i (length)\n",a,length(attr(v,a))))
+			} else if (is.numeric(attr(v,a)) && length(attr(v,a))==1){
+				cat(sprintf("%24s: %g\n",a,attr(v,a)))
+			} else if (is.numeric(attr(v,a)) && length(attr(v,a))>1){
+				cat(sprintf("%24s: %i (length)\n",a,length(attr(v,a))))
+			} else if (is.matrix(attr(v,a))) {
+				cat(sprintf("%24s: %s (dim)\n",a,paste(dim(attr(v,a)),collapse="x")))
+			} else {
+				cat(
+					sprintf(
+						"%24s: %s (class) %s (type)\n",
+						a,
+							paste(class(attr(v,a)),collapse=", "),
+							typeof(attr(v,a))
+					)
+				)
+			}
+		}
+	}
 }
 
 #' Should 2 Markov chains exchange their temperatures
@@ -157,10 +202,13 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #'     number of Markov chain steps
 #' @export
 #' @examples
+#' \dontrun{
 #' m <- model_from_tsv(uqsa_example("AKAP79"))
 #' rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
-#' MarkovChain <- mcmc(rwm)
-#' smallSample <- MarkovChain(rwm %@% "init",100,1e-3)
+#' p <- rwm %@% "init"             # a valid starting point
+#' smallSample <- rwm(rwm %@% "init",600,1e-4)
+#' pairs(smallSample[,seq(6)])
+#' }
 mcmc <- function(update){
 	M <- function(parMCMC,N=1000,eps=1e-4){
 		sample <- matrix(NA,nrow=N,ncol=length(parMCMC))
@@ -1337,10 +1385,12 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 	}
 	s <- simfi(ex,o,parMap=parMap,omit=2)
 	stdv <- m$Parameter$stdv %otherwise% m$Parameter$sd %otherwise% m$Parameter$sigma
-	if (is.null(stdv))
+	if (is.null(stdv)) {
 		stop("no parameter standard deviation (sigma) provided in parameter table")
+	}
+	p0 <- m$Parameter$median %otherwise% m$Parameter$mean %otherwise% m$Parameter$mu %otherwise% values(m$Parameter)
 	dprior <- dNormalPrior(
-		mean=m$Parameter$median %otherwise% m$Parameter$mean %otherwise% m$Parameter$mu %otherwise% values(m$Parameter),
+		mean=p0,
 		sd=stdv
 	)
 	parMCMC <- mcmc_init(
@@ -1352,6 +1402,7 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 	metropolis <- mcmc(
 		metropolis_update(
 			simulate=s,
+			logLikelihood=ll,
 			dprior=dprior,
 			Sigma=diag(stdv^2)
 		)

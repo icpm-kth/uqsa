@@ -28,6 +28,5 @@ be parsed: "A" and "2 B" for the left side and "C" for the right
 side. The numbers are the stoichiometric constants, or coefficients.
 }
 \examples{
-as.character("12 A")
-onlyCoefficients("12 A")
+print(onlyCoefficients("12 A"))
 }

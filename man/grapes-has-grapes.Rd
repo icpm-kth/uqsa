@@ -17,3 +17,9 @@ TRUE if all attributes are present
 \description{
 checks whether a variable has the named attributes
 }
+\examples{
+m <- model_from_tsv(uqsa_example("AKAP79"))
+x <- values(m$Compound)
+x \%has\% "unit"
+print(x \%@\% "unit")
+}

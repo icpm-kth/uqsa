@@ -20,3 +20,11 @@ NULL. In those cases this function can be used to find an
 alternative value in one expression:
 \code{attr(x,"dim") \%otherwise\% length(x)}
 }
+\examples{
+x <- numeric(10)
+l <- dim(x) \%otherwise\% c(length(x),1)
+## example with attributes:
+attr(x,"logLikelihood") <- logLikelihood(x)
+## elsewhere:
+logLF <- attr(x,"logLikelihood") \%otherwise\% -Inf
+}

@@ -81,6 +81,8 @@ reference:
   - experiments
   - standard_error_matrix
   - conservation_law_analysis
+  - kinetic_law_matrix
+  - parameter_stoichiometry
   - parameterConversion
   - replace_powers
   - stoichiometry
@@ -178,6 +180,9 @@ reference:
   - "modify<-"
   - "base<-"
   - column
+  - print.experiments
+  - print.mcmcVariable
+  - print.simulation
 - title: "Plotting functions"
   contents:
   - pcDist
@@ -193,15 +198,12 @@ reference:
   - ggplotTimeSeriesStates
   - onlyCoefficients
   - onlyNames
-  - parUpdate
   - simfiGaussianLogLikelihood
   - CRNN
   - automatic_update
   - clear_yacas_environment
   - defaultDistance
-  - find_parameter_reaction
   - formulae
-  - getMCMCPar
   - initialCount
   - is.invertible
   - linear_scale

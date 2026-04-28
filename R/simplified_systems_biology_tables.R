@@ -712,3 +712,55 @@ experiments <- function(m,o=NULL){
 	class(D) <- "experiments"
 	return(D)
 }
+
+#' prints the simulation experiments
+#'
+#' The experiments, if accidentally printed, are difficult to read.
+#' This function prevents these accidental prints. It summarizes the
+#' data and simulation experiments instead.
+#' @param ex simulation experiments with data
+#' @export
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' ex <- experiments(m,o)
+#' print(ex)
+print.experiments <- function(ex){
+	cat(sprintf("number of simulation experiments: %i\n",length(ex)))
+	for (i in seq_along(ex)){
+		cat(sprintf("%42s",names(ex)[i]),"\n")
+		cat(paste0(rep("-",42),collapse=""),"\n")
+		for (j in seq_along(ex[[i]])){
+			x <- ex[[i]][[j]]
+			if (is.array(x)){
+				cat(sprintf("%24s: %s (dim)\n",names(ex[[i]])[j],paste(dim(x),collapse=", ")))
+			} else if (is.data.frame(x)){
+				cat(
+					sprintf(
+						"%24s: %i columns (%s)\n",
+						names(ex[[i]])[j],
+						NCOL(x),
+						paste(class(x),collapse=", ")
+					)
+				)
+			} else if (is.matrix(x)){
+				cat(sprintf("%24s: %i×%i (dim)\n",names(ex[[i]])[j],NROW(x),NCOL(x)))
+			} else if (is.numeric(x) && length(x)==1) {
+				cat(sprintf("%24s: %g\n",names(ex[[i]])[j],x))
+			} else if (is.numeric(x)) {
+				cat(sprintf("%24s: %i (length)\n",names(ex[[i]])[j],length(x)))
+			} else {
+				cat(
+					sprintf(
+						"%24s: %s (class), %s (type)\n",
+						names(ex[[i]])[j],
+						paste(class(x),collapse=", "),
+						typeof(x)
+					)
+				)
+			}
+		}
+		cat("\n")
+	}
+	cat("experiments: ",paste(names(ex),collapse=", "),"\n")
+}

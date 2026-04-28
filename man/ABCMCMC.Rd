@@ -60,3 +60,28 @@ the state to the sample. Higher batchSize numbers improve the
 apparent quality of the sample, but create more work per sampled
 point.
 }
+\examples{
+\dontrun{
+  f <- uqsa_example("AKAR4")
+  m <- model_from_tsv(f)
+  o <- as_ode(m)
+  ex <- experiments(m,o)
+  C <- generate_code(o)
+  c_path(o) <- write_c_code(C)
+  so_path(o) <- shlib(o)
+  s <- simulator.c(ex,o)
+  objFunc <- makeObjective(ex,s)
+  startPar <- values(m$Parameter)
+  lowerBound <- startPar - m$Paramster$stdv # m$Parameter$min
+  upperBound <- startPar + m$Paramster$stdv # m$Parameter$max
+  abcSample <- ABCMCMC(
+    objFunc,
+    startPar=values(m$Parameter),
+    100,
+    cov(rprior(1000)),
+    delta=1,
+    dprior=dUniformPrior(lowerBound,upperBound),
+    batchSize = 100
+  )
+}
+}

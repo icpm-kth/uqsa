@@ -23,3 +23,7 @@ capitalization).
 The returned value uses the row names of the data.frame as names of
 the character vector of units.
 }
+\examples{
+m <- model_from_tsv(uqsa_example("AKAP79"))
+u <- units_from_table(m$Compound)
+}

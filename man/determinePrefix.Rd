@@ -15,12 +15,18 @@ determinePrefix(str, split = "-", collapse = "-")
 the prefix common to all entries of str.
 }
 \description{
-The result is such that \code{all(startsWith(str,determinePrefix(str)))} is \code{TRUE}.
+The result is such that \code{all(startsWith(str,determinePrefix(str)))}
+is \code{TRUE}.
 }
 \details{
 By default, the strings are assumed to be '-' separated words, and
-a series of words is found to be thje prefix if all entries start
+a series of words is found to be the prefix if all entries start
 with that set of words.
 
 The normal case is c("abc-1","abc-2b","abc-2a") maps to "abc"
+}
+\examples{
+files <- sprintf("smmala-sample-\%i-of-3.RDS",seq(1,3))
+pref <- determinePrefix(files)
+print(pref)
 }

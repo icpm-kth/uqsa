@@ -26,3 +26,11 @@ parallel tempering setting.
 \details{
 This function is useful if \code{mpi.send()} and \code{mpi.recv()} are used.
 }
+\examples{
+b <- c(1.0,0.5)
+if (change_temperature(b[1],-850,b[2],-600)){ # with some randomness
+  message(sprintf("yes, swapping temperature \%f <=> \%f",b[1],b[2]))
+} else {
+  message(sprintf("no, temperature \%f, and \%f stay unchanged",b[1],b[2]))
+}
+}

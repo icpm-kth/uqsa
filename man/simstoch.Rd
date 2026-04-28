@@ -38,3 +38,17 @@ slash in it, e.g.: "./model.so", "/tmp/Rsdkljhskjdhf/model.so" But,
 not just "model.so", otherwise the shared library is interpreted as
 a system library by \code{dlopen()} (it will not be found).
 }
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+cme <- as_cme(m)
+C <- generate_code(cme)
+c_path(cme) <- write_c_code(C)
+so_path(cme) <- shlib(cme)
+ex <- experiments(m)
+p0 <- values(m$Parameter)
+s <- simstoch(ex,cme)
+res <- s(p0)
+require(errors)
+plot(as.errors(ex[[1]]$outputTimes),ex[[1]]$data,xlab="time",ylab="AKAR4p",main=names(ex)[1])
+lines(ex[[1]]$outputTimes,res[[1]]$func,type="s",lwd=2,col="red3")
+}

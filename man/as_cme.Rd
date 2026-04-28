@@ -39,3 +39,8 @@ With the information provided with the rate coefficient units and a
 volume, this function tries to convert everything to Gillespie rate
 constants.
 }
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+stochasticModel <- as_cme(m)
+print(stochasticModel)
+}

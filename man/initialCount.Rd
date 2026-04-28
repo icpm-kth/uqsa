@@ -14,12 +14,22 @@ numeric vector or character vector, depending on how the
 initial concentration was provided
 }
 \description{
-This function returns the molecule count apart from LV.
-This number must be multiplied by Avogadro's constant and volume.
+This function returns the molecule count apart from LV.  This
+returned number must be multiplied by Avogadro's constant and
+volume.
 }
 \details{
 The multiplication with LV isn't done here, because this allows the
 user to change the volume of the system in the C-file, without
 re-generating it from a model. The same c-file can be re-used that
 way.
+}
+\examples{
+m <- model_from_tsv(uqsa_example("AKAP79"))
+i <- initialCount(m) # as multiples of LV
+l <- i>0
+cat(
+  sprintf("initial count of \%s is \%i (\%g * LV)",rownames(m$Compound)[l],round(i[l]*6e8),i[l]),
+  sep="\n"
+)
 }

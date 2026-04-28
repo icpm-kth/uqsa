@@ -25,6 +25,7 @@ line arguments: \verb{units --strict --compact -1 "$originalUnit" "$targetUnit"}
 }
 \examples{
 \dontrun{
+  ## needs `unit` utility (system utility)
   y <- "21 cm" \%as\% "inches"
   y <- "12 μmol/L" \%as\% "mol/L"
   print(comment(y))

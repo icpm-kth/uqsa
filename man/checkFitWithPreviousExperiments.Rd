@@ -24,3 +24,10 @@ The prior probability density model using copulas and vines is not
 perfect, so values sampled from an imperfect prior estimate can be
 checked against old data.
 }
+\examples{
+\dontrun{
+  posterior <- ABCMCMC(...)
+  passed <- checkFitWithPreviousExperiments(posterior$draws, objFunc, delta=0.5)
+  posterior$draws <- passed
+}
+}

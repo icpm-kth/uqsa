@@ -27,3 +27,12 @@ The update function: update(parGiven) -> parUpdate depends only on
 the given parameters, all other dependencies have to be either
 implicit (as a closure) or attributes of parGiven.
 }
+\examples{
+\dontrun{
+m <- model_from_tsv(uqsa_example("AKAP79"))
+rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
+p <- rwm \%@\% "init"             # a valid starting point
+smallSample <- rwm(rwm \%@\% "init",600,1e-4)
+pairs(smallSample[,seq(6)])
+}
+}

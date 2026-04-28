@@ -7,7 +7,7 @@
 stoichiometry(formulaList)
 }
 \arguments{
-\item{formulaList}{a list of split reaction formula tokens}
+\item{formulaList}{reaction formulae, either as a pre-split list or character vector}
 }
 \value{
 named numeric vector of stoichiometric coefficients
@@ -15,4 +15,10 @@ named numeric vector of stoichiometric coefficients
 \description{
 Given an already split list of entries such as c("3 A","B"), this
 function returns a numeric vector c(3,1) with names c("A","B").
+}
+\examples{
+m <- model_from_tsv(uqsa_example("AKAP79"))
+r <- stoichiometry(m$Reaction$reactants)
+print(head(r))
+print(tail(r))
 }
