@@ -122,8 +122,6 @@ reference:
   - dCopulaPrior
   - gNormalPrior
   - fitCopula
-  - makeIndepCopula
-  - sampleWithNoise
 - title: "Uncertainty quantification - likelihood based"
   desc: "MCMC methods for Bayesian parameter inference"
   contents:

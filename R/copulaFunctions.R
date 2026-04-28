@@ -1,16 +1,3 @@
-# Uncertainty Quantification: Copula functions for ABC-MCMC
-# Copyright (C) 2018 Alexandra Jauhiainen (alexandra.jauhiainen@gmail.com)
-
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License or
-# (at your option) any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-
 #' Makes a Probability Density Estimate (from a sample)
 #'
 #' Given a sample (from some probability distribution) this function
@@ -23,6 +10,14 @@
 #' @return as list: vineCop, U, Z, and Y where U are marginal
 #'     probability samples, Z are cummulative density values for U,
 #'     and Y are the probability density values of U.
+#' @examples
+#' rprior <- rNormalPrior(c(1,2,3),c(4,5,6))
+#' X <- rprior(1000)
+#' C <- fitCopula(X)
+#' rCopula <- rCopulaPrior(C)
+#' Z <- rCopula(1000)
+#' print(norm(cov(X) - cov(Z),"2")/norm(X,"2"))
+#' print(abs(sum(colMeans(X) - colMeans(Z)))/sum(colMeans(X)))
 fitCopula <- function(X){
 	stopifnot(is.matrix(X))
 	ncx <- ncol(X)
@@ -67,8 +62,8 @@ fitCopula <- function(X){
 #' Covers the (simpler) special case where the `prior(x)` is iid uniform.
 #' The return value has the same structure as the value of `fitCopula()`.
 #'
+#' @noRd
 #' @importFrom VineCopula RVineStructureSelect
-#' @export
 #' @param ll `ll[i]` is the lower limit of random variable `x[i]`
 #' @param ul upper limit, analogous to ll.
 #' @return list with: copula, U, Z, and Y entries.
@@ -98,7 +93,7 @@ makeIndepCopula <- function(ll, ul){
 #' function should work like `base::sample`, but adds small
 #' noise. Missing values are always removed.
 #'
-#' @export
+#' @noRd
 #' @param X an N×M matrix (N is the sample size), M is the number of variables (MCMC or ABC vars)
 #' @param sdf factor to increase or decrease the standard deviation of the added noise
 #' @param size size of returned sample (passed to `sample.int()`)

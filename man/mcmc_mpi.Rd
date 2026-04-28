@@ -14,16 +14,52 @@ mcmc_mpi(
 \arguments{
 \item{update}{an update function}
 
-\item{comm}{an mpi comm which this function will use for send/receive operations}
+\item{comm}{an mpi comm which this function will use for
+send/receive operations}
 
-\item{swapDelay}{swaps will be attempted every 2*swapDelay+1 iterations \link{deprecated}}
+\item{swapDelay}{swaps will be attempted every 2*swapDelay+1
+iterations \link{deprecated}}
+
+\item{swapFunc}{can be a custom function that does the MPI
+communication and decides whether or nopt to swap temperatures}
 }
 \value{
-an mcmc closure m(parMCMC,N,eps) that implicitly uses the supplied update function
+an mcmc closure m(parMCMC,N,eps) that implicitly uses the
+supplied update function
 }
 \description{
 this version of the MCMC function returns a Markov chain closure
 that assumes that it is bein run in an MPI context: R was launched
-using \code{runmpi} and the Rmpi package is installed. The chains shall
-communicate using the provided \code{comm}.
+in an MPI context, e.g. using
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{mpirun -H localhost:8 -N 8 Rscript ...
+}\if{html}{\out{</div>}}
+
+and the pbdMPI package is installed. The chains shall
+communicate using the provided \code{comm} object.
+}
+\details{
+This function is intended for use within a parallel tempering
+approach and MPI. For trivial parallelization (many chains), this
+is not at all required, only a random number seed for each worker.
+
+It is possible to supply a custom swap function, with the interface:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{swapFunc <- function(i, B, LL, H, r, comm, cs)
+}\if{html}{\out{</div>}}
+
+where \code{i} is the current iteration (for round robin rank choices),
+\code{B} is the current beta value, \code{LL} the current log-likelihood (scalar)
+and \code{H} the current step-size (scalar); \code{r}, \code{comm}, and \code{cs} are
+the MPI rank, comm, and comm-size. The swap function returnsa list:
+\code{list(B=,LL=,H=)} with the updated values (after swapping) or the
+old values if the swap was rejected.
+}
+\examples{
+## works in an MPI context
+## similar to mcmc without _mpi prefix
+\dontrun{
+  ## prepare the update function
+  pt_mcmc <- mcmc_mpi(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures)
+}
 }

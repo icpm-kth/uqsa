@@ -26,4 +26,37 @@ lists the temperature of each row.
 \details{
 This function selects and collects all rows, from all files with
 the same (given) temperature.
+
+This function should be used if you need to inspect only one of the
+temperatures, not all of them. This function is similar to
+\link{loadSample_mpi}, which returns all temperatures. But, whearas
+\link{lodSample_mpi} returns a list, this function returns the
+sample-matrix itself (because the result of this function is conceptually
+similar to sampling on one node, with one temperature).
+}
+\examples{
+rprior <- rNormalPrior(seq(3),seq(4,5)) # some nonsense
+N <- 100
+f <- c(tempfile(),tempfile())
+
+## first fake sample
+X <- rprior(N)
+attr(X,"beta") <- sample(1/seq(2)^2,N,replace=TRUE)
+attr(X,"acceptanceRate") <- 0.23
+attr(X,"swapRate") <- 0.1
+attr(X,"logLikelihood") <- rnorm(N,-100,30)
+saveRDS(X,file=f[1])
+
+## second fake sample
+X <- rprior(N)
+attr(X,"beta") <- sample(1/seq(2)^2,N,replace=TRUE)
+attr(X,"acceptanceRate") <- 0.23
+attr(X,"swapRate") <- 0.1
+attr(X,"logLikelihood") <- rnorm(N,-100,30)
+saveRDS(X,file=f[2])
+
+Z <- gatherSample(f,beta=1)
+print(N)
+print(dim(Z)) ## should be c(2*N,3)
+print(names(attributes(Z)))
 }

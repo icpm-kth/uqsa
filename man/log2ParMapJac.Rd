@@ -15,3 +15,10 @@ into ODE-model porameters. As we often calculate sensitivites, we
 alos need the jacobian of the map, due to the chain rule of
 differentiation.
 }
+\examples{
+p <- c(-1,0,1)
+parMap <- log2ParMap
+parMpJ <- log2ParMapJac
+print(parMap(p))
+print(parMpJ(p))
+}

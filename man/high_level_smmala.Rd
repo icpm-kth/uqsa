@@ -35,3 +35,19 @@ the sampling space from the scale of the parameters, create all
 necessary functions to move in parameter space (gradients of
 likelihood and prior), as well as Fisher Information functions.
 }
+\examples{
+\donttest{
+m <- model_from_tsv(uqsa_example("AKAP79"))
+rwm <- high_level_smmala(m) # "random walk", metropolis algorithm
+p <- rwm \%@\% "init"             # a valid starting point
+N <- 200
+smallSample <- rwm(rwm \%@\% "init",N,1e-4)
+plot(
+  smallSample \%@\% "logLikelihood",
+  type='l',
+  main=sprintf("\%i iterations",N),
+  xlab="iterations",
+  ylab="log-likelihood"
+)
+}
+}

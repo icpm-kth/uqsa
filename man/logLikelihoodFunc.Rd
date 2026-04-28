@@ -44,3 +44,19 @@ results to log(likelihood) values. The experiments are used
 implicitly; simulations is a list as returned by
 rgsl::r_gsl_odeiv2_outer().
 }
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- as_ode(m)
+c_path(o) <- write_c_code(generate_code(o))
+so_path(o) <- shlib(o)
+ex <- experiments(m,o)
+options(mc.cores=length(ex))
+s <- simulator.c(ex,o,omit=0)
+p <- values(m$Parameter)
+attr(p,"simulations") <- s(p)
+## this function is fairly flexible and accepts some user settings
+llf <- logLikelihoodFunc(ex)
+print(llf(p))
+## this function uses the values from the solver:
+print(ll(p))
+}

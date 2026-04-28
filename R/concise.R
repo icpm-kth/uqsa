@@ -21,20 +21,34 @@
 #' @export
 #' @param v a character vector of numbers in concise error notation
 #' @param use.errors if TRUE, the errors package will be used to
-#'     retrun an object of type "errors" (from that package).
+#'     retrun an object of type "errors" (from that
+#'     package). Otherwise, the errors will be attached as an
+#'     attribute (also called "errors" to be consistent with the
+#'     errors package)
+#' @param na a two element vector which will replace NA values,
+#'     e.g. c(NA,NA), defaults to c(0,Inf), meaning _infinite
+#'     uncertainty_ for missing values
 #' @return either a numeric object with class errors (with the same
 #'     dimensions as `v`), or a numeric matrix of values and
 #'     uncertainties (2 rows), dimensions of original object are lost
 #' @useDynLib uqsa, concise
-parse_concise <- function(v,use.errors=requireNamespace("errors")){
+#' @examples
+#' x <- parse_concise(c("1.23(4)","0.51099895069(16)","1.25663706127(20)e−6","1.3±1.6","5;1"))
+#' print(as.data.frame(x))
+parse_concise <- function(v,use.errors=requireNamespace("errors"), na=c(0,Inf)){
 	d <- dim(v)
 	w <- .Call(concise,as.character(v))
-	w[,is.na(v) | grepl("NA",v,ignore.case=TRUE)] <- c(0,Inf)
+	w[,is.na(v) | grepl("NA",v,ignore.case=TRUE)] <- na
 
 	if (use.errors){
 		w <- errors::set_errors(w[1,],w[2,])
 		dim(w) <- d
 		dimnames(w) <- dimnames(v)
+	} else {
+		u <- w[2,]
+		w <- w[1,]
+		attr(w,"errors") <- u
+		names(w) <- names(v)
 	}
 	return(w)
 }

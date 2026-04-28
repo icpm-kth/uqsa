@@ -17,7 +17,7 @@ Extracts the \code{logLikelihood} value from the simulations attribute
 of the parMCMC argument, requires:
 \itemize{
 \item parMCMC has simulations attribute
-\item simulations list includes logLikelihood values
+\item simulations list includes logLikelihood values (omit<3)
 }
 }
 \details{
@@ -26,6 +26,18 @@ ode solver in this package, and return the sum of those values over
 all experiments. The value the simulator returns is calculated
 with the assumption of a normal distribution on measurement errors.
 
-This function does almost no work, it merely sums up the values
+This function does \emph{almost no work}, it merely sums up the values
 calculated during simulation.
+}
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- as_ode(m)
+c_path(o) <- write_c_code(generate_code(o))
+so_path(o) <- shlib(o)
+ex <- experiments(m,o)
+options(mc.cores=length(ex))
+s <- simulator.c(ex,o,omit=2) # not 3
+p <- values(m$Parameter)
+attr(p,"simulations") <- s(p)
+print(ll(p))
 }

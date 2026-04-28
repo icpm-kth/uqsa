@@ -2,7 +2,7 @@
 % Please edit documentation in R/ode.R
 \name{so_path}
 \alias{so_path}
-\title{Add information about compiled code}
+\title{Retrieve information about compiled code}
 \usage{
 so_path(o)
 }
@@ -13,6 +13,6 @@ so_path(o)
 modified o, with information about compiled code
 }
 \description{
-Adds the path of the shared library (.so file) to the ODE model.
+Returns the path of the shared library (.so file).
 The model is typically a list of named arrays and matrices.
 }

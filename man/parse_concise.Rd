@@ -4,13 +4,20 @@
 \alias{parse_concise}
 \title{Read Concise Error Notation}
 \usage{
-parse_concise(v, use.errors = requireNamespace("errors"))
+parse_concise(v, use.errors = requireNamespace("errors"), na = c(0, Inf))
 }
 \arguments{
 \item{v}{a character vector of numbers in concise error notation}
 
 \item{use.errors}{if TRUE, the errors package will be used to
-retrun an object of type "errors" (from that package).}
+retrun an object of type "errors" (from that
+package). Otherwise, the errors will be attached as an
+attribute (also called "errors" to be consistent with the
+errors package)}
+
+\item{na}{a two element vector which will replace NA values,
+e.g. c(NA,NA), defaults to c(0,Inf), meaning \emph{infinite
+uncertainty} for missing values}
 }
 \value{
 either a numeric object with class errors (with the same
@@ -38,4 +45,8 @@ uncertainty of the last digits of the value:
 
 If the errors package is installed, then it will be used to
 represent the return value.
+}
+\examples{
+x <- parse_concise(c("1.23(4)","0.51099895069(16)","1.25663706127(20)e−6","1.3±1.6","5;1"))
+print(as.data.frame(x))
 }

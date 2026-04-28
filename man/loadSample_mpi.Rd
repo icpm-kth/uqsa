@@ -7,14 +7,53 @@
 loadSample_mpi(files)
 }
 \arguments{
-\item{files}{the files where the individual samples are stored}
+\item{files}{the rds files where the individual samples are stored}
 }
 \value{
-one matrix where all samples are concatenated.
+a list of named items, with \verb{$Sample} representing one
+matrix where all file-samples are concatenated (with rbind).
 }
 \description{
 When using MPI, we save the sample immediately into a file, each
-rank saves to its own file. This function collects all of these
-smaller samples into one. The samples should be saved with
-\code{saveRDS()}.
+rank saves to its own file. This function is basically a wrapper
+with several calls to \code{Reduce}, it collects all of these smaller
+samples into one.
+}
+\details{
+The samples should have been saved with \code{saveRDS()}. This function
+extracts the attributes that MPI sampling typically attaches to a
+sample. The sample itself and all of these attributes are returned
+as a list.
+
+If the samples contain different temperatures, then no attempt is
+made to untangle or sort them.
+
+NOTE: If the big result-sample doesn't fit into memory, this
+function will crash. Samples can be quite large, depending on the
+problem size.
+}
+\examples{
+rprior <- rNormalPrior(seq(3),seq(4,5)) # some nonsense
+N <- 100
+f <- c(tempfile(),tempfile())
+
+## first fake sample
+X <- rprior(N)
+attr(X,"beta") <- sample(1/seq(2)^2,N,replace=TRUE)
+attr(X,"acceptanceRate") <- 0.23
+attr(X,"swapRate") <- 0.1
+attr(X,"logLikelihood") <- rnorm(N,-100,30)
+saveRDS(X,file=f[1])
+
+## second fake sample
+X <- rprior(N)
+attr(X,"beta") <- sample(1/seq(2)^2,N,replace=TRUE)
+attr(X,"acceptanceRate") <- 0.23
+attr(X,"swapRate") <- 0.1
+attr(X,"logLikelihood") <- rnorm(N,-100,30)
+saveRDS(X,file=f[2])
+
+Z <- loadSample_mpi(f)
+print(dim(Z$Sample))
+print(names(Z))
 }

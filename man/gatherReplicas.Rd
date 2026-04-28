@@ -2,15 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{gatherReplicas}
 \alias{gatherReplicas}
-\title{gatherReplicas collects all sample points, from all files, which
-are assumed to be exact replicas, with different seeds (and
-possibly sizes). This function uses mclapply to process the files,
-which may be quicker than gatherSample.  The temperature is
-disregarded, assuming that no parallel tempering was used.  To
-facilitate the loading of a very big sample, this function will
-analyse the auto-correltation within each file and returned a
-thinned subsample of size N/2*tauint (effective sample size). There
-is no need to further reduce the rfesult.}
+\title{Collect statistical Replicas}
 \usage{
 gatherReplicas(files)
 }
@@ -18,24 +10,63 @@ gatherReplicas(files)
 \item{files}{a list of file names}
 }
 \value{
-a matrix of sampled points, all with the same temperature
+a Sample matrix, with effective sample size
+(auto-correlation thinned)
 }
 \description{
+\code{gatherReplicas} collects all sample-points, from all files, which
+are assumed to be exact replicas. Replicas hav different random
+number seeds (and possibly sample sizes).
+}
+\details{
+This function uses mclapply to process the files, which may be
+quicker than \code{gatherSample}.  The temperature \code{beta} is
+disregarded, assuming that no parallel tempering was used.  To
+facilitate the loading of a very big sample, this function will
+analyse the auto-correltation within each file and returned a
+thinned sub-sample of size \code{N/(2*tau_int)} (returning the effective
+sample size). The value of tau_int is calculated on the likelihood
+values, either with the hadron package, or the bultin \code{acf}
+function. There is no need to further reduce the result.
+
 For small samples, it is better to load the entire sample and
 analyse it in full. This function is intended for samples that are
 so big that they challenge the memory of the machine.
-}
-\details{
+
 This function is quicker if you have used trivial parallelism,
-without mpi communication between the ranks (or another method of
-obtaining several replicas, like forking or sequetial reprtition).
+\emph{without} MPI communication between the ranks (or another method of
+obtaining several replicas, like forking or sequential repetition).
 
 This function assumes that each supplied RDS file contains a matrix
-of model MCMC parameters. The returned value X will be the rbind of
-all the smaller x contained in the individual files. The value X
-will have several attributes attached to it:
+of model MCMC parameters. The returned value \code{X} will be similar to effect of
+\code{Reduce(...,rbind)} of all the smaller samples contained in the
+individual files. The value \code{X} will have several attributes attached
+to it:
 \itemize{
 \item logLikelihood: log(likelihood(X[i,])), one value per row of X
 \item stepSize: the MCMC step size used in each given file#'
 }
+}
+\examples{
+rprior <- rNormalPrior(seq(3),seq(4,5)) # some nonsense
+N <- 100
+f <- c(tempfile(),tempfile())
+
+## first fake sample
+X <- rprior(N)
+attr(X,"acceptanceRate") <- 0.23
+## fake auto-correlation
+attr(X,"logLikelihood") <- sqrt(seq(N)) + rnorm(N,-100,3)
+saveRDS(X,file=f[1])
+
+## second fake sample
+X <- rprior(N)
+attr(X,"acceptanceRate") <- 0.23
+attr(X,"logLikelihood") <- sqrt(seq(N)) + rnorm(N,-100,3)
+saveRDS(X,file=f[2])
+
+Z <- gatherReplicas(f)
+print(N)
+print(dim(Z))
+print(names(attributes(Z)))
 }

@@ -4,7 +4,7 @@
 \alias{gllf}
 \title{Default gradient-log-likelihood Function}
 \usage{
-gllf(parMapJac = log10ParMapJac)
+gllf(parMapJac = function(x) diag(1, length(x), length(x)))
 }
 \arguments{
 \item{parMCMC}{a numeric vector, with attributes for MCMC, specifically smmala}
@@ -17,7 +17,7 @@ Extracts the \code{FisherInformation} values from the simulations attribute
 of the parMCMC argument, requires:
 \itemize{
 \item parMCMC has simulations attribute
-\item simulations list includes Fisher-Information values
+\item simulations list includes gradient values (omit <2)
 }
 }
 \details{
@@ -36,4 +36,19 @@ gradient values calculated during simulation, but it also performs a
 transformation of the gradient vector, taking the
 parameter-mapping between the sampling-space and
 model-parameter-space into account.
+}
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- as_ode(m)
+c_path(o) <- write_c_code(generate_code(o))
+so_path(o) <- shlib(o)
+ex <- experiments(m,o)
+options(mc.cores=length(ex))
+s <- simulator.c(ex,o,omit=1) # not 3
+p <- values(m$Parameter)
+attr(p,"simulations") <- s(p)
+print(ll(p))
+trivialJac <- \(x) diag(1,length(x),length(x))
+gll <- gllf(parMapJac=trivialJac)
+print(gll(p))
 }

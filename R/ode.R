@@ -159,17 +159,18 @@ print.ode <- function(o){
 	return(o)
 }
 
-#' Add information about compiled code
+#' Retrieve information about compiled code
 #'
-#' Adds the path of the shared library (.so file) to the ODE model.
+#' Returns the path of the shared library (.so file).
 #' The model is typically a list of named arrays and matrices.
 #'
 #' @param o the ODE, or CME model
 #' @export
 #' @return modified o, with information about compiled code
 so_path <- function(o){
+	if (is.null(o$so_path)) return("")
 	f <- o$so_path
-	if (is.null(o$so_path) || !file.exists(f)) warning(sprintf("File %s does not exist anymore.",f))
+	if (!file.exists(f)) warning(sprintf("File %s does not exist (anymore).",f))
 	return(f)
 }
 
@@ -181,8 +182,9 @@ so_path <- function(o){
 #' @export
 #' @return the path where the c code is stored
 c_path <- function(o){
+	if (is.null(f)) return("")
 	f <- o$c_path
-	if (is.null(f) || !file.exists(f)) warning(sprintf("File %s does not exist (anymore).",f))
+	if (!file.exists(f)) warning(sprintf("File %s does not exist (anymore).",f))
 	return(f)
 }
 

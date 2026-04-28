@@ -4,7 +4,7 @@
 \alias{fi}
 \title{Default gradient-Log-likelihood Function}
 \usage{
-fi(parMapJac = log10ParMapJac)
+fi(parMapJac = function(x) diag(1, length(x), length(x)))
 }
 \arguments{
 \item{parMCMC}{a numeric vector, with attributes for MCMC, specifically smmala}
@@ -17,7 +17,7 @@ Extracts the \code{gradLogLikelihood} values from the simulations attribute
 of the parMCMC argument, requires:
 \itemize{
 \item parMCMC has simulations attribute
-\item simulations list includes gradLogLikelihood values
+\item simulations list includes Fisher Information values (omit=0)
 }
 }
 \details{
@@ -36,4 +36,21 @@ sums up the FI values calculated during simulation, but it also
 performs a transformation of the Fisher Information Matrix, taking
 the parameter-mapping between the sampling-space and
 model-parameter-space into account.
+}
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- as_ode(m)
+c_path(o) <- write_c_code(generate_code(o))
+so_path(o) <- shlib(o)
+ex <- experiments(m,o)
+options(mc.cores=length(ex))
+s <- simulator.c(ex,o,omit=0)
+p <- values(m$Parameter)
+attr(p,"simulations") <- s(p)
+### without parameter transformations
+gll <- gllf()
+FI <- fi()
+print(ll(p))
+print(gll(p))
+print(FI(p))
 }

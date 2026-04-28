@@ -50,3 +50,19 @@ This function can be used to weed out parameter combinations that
 would result in obviously nonsensical simulations without wasting
 CPU-time.
 }
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- as_ode(m)
+c_path(o) <- write_c_code(generate_code(o))
+so_path(o) <- shlib(o)
+ex <- experiments(m,o)
+options(mc.cores=length(ex))
+s <- simulator.c(ex,o,omit=0)
+dprior <- dNormalPrior(values(m$Parameter),m$Parameter$stdv)
+p <- mcmc_init(1.0,values(m$Parameter),s,ll,dprior)
+UP <- metropolis_update(s,ll,dprior=dprior,Sigma=diag(m$Parameter$stdv)^2)
+p2 <- UP(p)
+## updated value:
+print(p2)
+print(sum(abs(p2-p)))
+}

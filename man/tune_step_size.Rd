@@ -40,3 +40,21 @@ high.
 
 This function will do at most
 }
+\examples{
+\donttest{
+m <- model_from_tsv(uqsa_example("AKAP79"))
+rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
+p <- rwm \%@\% "init"             # a valid starting point
+h <- tune_step_size(rwm,p)
+N <- 200
+smallSample <- rwm(rwm \%@\% "init",N,h)
+print(h)
+plot(
+  smallSample \%@\% "logLikelihood",
+  type="l",
+  main=sprintf("step size: \%g",h),
+  xlab="iterations",
+  ylab="log-likelihood"
+)
+}
+}

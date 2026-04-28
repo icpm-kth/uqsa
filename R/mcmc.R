@@ -247,14 +247,28 @@ mcmc <- function(update){
 #' Each other rank is allowed to make the
 #' offer to swap. The root process decides which rank to swap with.
 #'
-#' @param i MCMC iteration
+#' @param i MCMC iteration (for round-robin rank selection)
 #' @param B inverse temperature (parallel tempering)
 #' @param LL log-likelihood value of current point
 #' @param H algorithm's step size (often called epsilon in literature)
 #' @param r MPI rank
 #' @param comm MPI communicator
 #' @param cs MPI comm size
-#' @export
+#' @noRd
+#' @return a list: `list(B,LL,H)` with the new (or unchanged) values
+#' @examples
+#' ## only in an MPI context
+#' \dontrun{
+#'   pbdMPI_bcast_reduce_temperatures(
+#'     i,
+#'     betaValue,
+#'     LogLikelihoodValueL,
+#'     CurrentStepSize,
+#'     rank,
+#'     mpi_comm,
+#'     mpi_comm_size
+#'   )
+#' }
 pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 	root <- (i %% cs) # rank of root process
 	rootLL <- pbdMPI::bcast(LL,root,comm)
@@ -289,14 +303,45 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 #'
 #' this version of the MCMC function returns a Markov chain closure
 #' that assumes that it is bein run in an MPI context: R was launched
-#' using `runmpi` and the Rmpi package is installed. The chains shall
-#' communicate using the provided `comm`.
+#' in an MPI context, e.g. using
+#' ```
+#' mpirun -H localhost:8 -N 8 Rscript ...
+#' ```
+#' and the pbdMPI package is installed. The chains shall
+#' communicate using the provided `comm` object.
+#'
+#' This function is intended for use within a parallel tempering
+#' approach and MPI. For trivial parallelization (many chains), this
+#' is not at all required, only a random number seed for each worker.
+#'
+#' It is possible to supply a custom swap function, with the interface:
+#' ```
+#' swapFunc <- function(i, B, LL, H, r, comm, cs)
+#' ```
+#' where `i` is the current iteration (for round robin rank choices),
+#' `B` is the current beta value, `LL` the current log-likelihood (scalar)
+#' and `H` the current step-size (scalar); `r`, `comm`, and `cs` are
+#' the MPI rank, comm, and comm-size. The swap function returnsa list:
+#' `list(B=,LL=,H=)` with the updated values (after swapping) or the
+#' old values if the swap was rejected.
 #'
 #' @param update an update function
-#' @param comm an mpi comm which this function will use for send/receive operations
-#' @param swapDelay swaps will be attempted every 2*swapDelay+1 iterations [deprecated]
-#' @return an mcmc closure m(parMCMC,N,eps) that implicitly uses the supplied update function
+#' @param comm an mpi comm which this function will use for
+#'     send/receive operations
+#' @param swapDelay swaps will be attempted every 2*swapDelay+1
+#'     iterations [deprecated]
+#' @param swapFunc can be a custom function that does the MPI
+#'     communication and decides whether or nopt to swap temperatures
+#' @return an mcmc closure m(parMCMC,N,eps) that implicitly uses the
+#'     supplied update function
 #' @export
+#' @examples
+#' ## works in an MPI context
+#' ## similar to mcmc without _mpi prefix
+#' \dontrun{
+#'   ## prepare the update function
+#'   pt_mcmc <- mcmc_mpi(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures)
+#' }
 mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures){
 	D <- max(2*swapDelay+1,1)
 	M <- function(parMCMC,N=1000,eps=1e-4){
@@ -345,13 +390,50 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 #' This function merges mpi-samples into one
 #'
 #' When using MPI, we save the sample immediately into a file, each
-#' rank saves to its own file. This function collects all of these
-#' smaller samples into one. The samples should be saved with
-#' `saveRDS()`.
+#' rank saves to its own file. This function is basically a wrapper
+#' with several calls to `Reduce`, it collects all of these smaller
+#' samples into one.
+#'
+#' The samples should have been saved with `saveRDS()`. This function
+#' extracts the attributes that MPI sampling typically attaches to a
+#' sample. The sample itself and all of these attributes are returned
+#' as a list.
+#'
+#' If the samples contain different temperatures, then no attempt is
+#' made to untangle or sort them.
+#'
+#' NOTE: If the big result-sample doesn't fit into memory, this
+#' function will crash. Samples can be quite large, depending on the
+#' problem size.
 #'
 #' @export
-#' @param files the files where the individual samples are stored
-#' @return one matrix where all samples are concatenated.
+#' @param files the rds files where the individual samples are stored
+#' @return a list of named items, with `$Sample` representing one
+#'     matrix where all file-samples are concatenated (with rbind).
+#' @examples
+#' rprior <- rNormalPrior(seq(3),seq(4,5)) # some nonsense
+#' N <- 100
+#' f <- c(tempfile(),tempfile())
+#'
+#' ## first fake sample
+#' X <- rprior(N)
+#' attr(X,"beta") <- sample(1/seq(2)^2,N,replace=TRUE)
+#' attr(X,"acceptanceRate") <- 0.23
+#' attr(X,"swapRate") <- 0.1
+#' attr(X,"logLikelihood") <- rnorm(N,-100,30)
+#' saveRDS(X,file=f[1])
+#'
+#' ## second fake sample
+#' X <- rprior(N)
+#' attr(X,"beta") <- sample(1/seq(2)^2,N,replace=TRUE)
+#' attr(X,"acceptanceRate") <- 0.23
+#' attr(X,"swapRate") <- 0.1
+#' attr(X,"logLikelihood") <- rnorm(N,-100,30)
+#' saveRDS(X,file=f[2])
+#'
+#' Z <- loadSample_mpi(f)
+#' print(dim(Z$Sample))
+#' print(names(Z))
 loadSample_mpi <- function(files){
 	s <- lapply(files,readRDS)
 	betaTrace <- Reduce(function(a,b) c(a,attr(b,"beta")),s,init=NULL)
@@ -366,63 +448,6 @@ loadSample_mpi <- function(files){
 	return(list(Sample=Sample,beta=betaTrace,acceptanceRate=acc,swapRate=sR,logLikelihood=ll,betaSelection=bSelection,uB=uB))
 }
 
-#' This function merges mpi-samples into one
-#'
-#' When using MPI, we save the sample immediately into a file, each
-#' rank saves to its own file. This function collects all of these
-#' smaller samples into one. The samples should be saved with
-#' `saveRDS()`.
-#'
-#' @export
-#' @param files the files where the individual samples are stored
-#' @param size sub sample size, if not set, the whole sample is
-#'     returned
-#' @param selection integer index vector or logical vector indicating
-#'     which temperatures to return: beta\[selection\] is returned, in
-#'     decreasing order of beta.
-#' @param mc.cores defaults to the total number of cores, but can be
-#'     reduced with this option.
-#' @return a list of matrices, by temperature, concatenated.
-loadSubSample_mpi <- function(files,size=NA,selection=NA,mc.cores=parallel::detectCores()){
-	S <- parallel::mclapply(files,function(f){
-		s <- readRDS(f)
-		b <- attr(s,"beta")
-		cat(sprintf("acceptance rate: %02f\n",attr(s,"acceptanceRate")))
-		if (!any(is.na(size))){
-			j <- seq(1,NROW(s),length.out=size)
-			s <- s[j,]
-			b <- b[j]
-		}
-		attr(s,"beta") <- b
-		return (s)
-	},mc.cores=mc.cores)
-	uB <- sort(unique(unlist(parallel::mclapply(S,function(s) {return(unique(attr(s,"beta")))}))),decreasing=TRUE)
-	cat("unique temperatures:",uB,"\n")
-	if (length(uB)!=length(files)) {
-		warning(sprintf("number of temperatures (%i) not the same as number of files (%i).",length(uB),length(files)))
-	}
-	if (!any(is.na(selection))) uB <- uB[selection]
-	else selection <- seq_along(uB)
-	if (is.list(S) && length(S) == length(files) && is.numeric(S[[1]]) && is.matrix(S[[1]])){
-		n <- NROW(S[[1]])
-		m <- NCOL(S[[1]])
-		l <- length(uB)
-	} else {
-		print(S)
-		error("loading samples did not succeed")
-	}
-	x <- array(NA,dim=c(n,m,l))
-	dimnames(x) <- list(NULL,colnames(S[[1]]),sprintf("beta_%02i",selection))
-	for (i in seq_along(S)){
-		for (k in seq_along(uB)){
-			j <- which(attr(S[[i]],"beta") == uB[k])
-			x[j,,k] <- S[[i]][j,]
-		}
-	}
-	attr(x,"beta") <- uB
-	return(x)
-}
-
 #' gatherSample collects all sample points, from all files, with the
 #' given temperature
 #'
@@ -432,12 +457,45 @@ loadSubSample_mpi <- function(files,size=NA,selection=NA,mc.cores=parallel::dete
 #'
 #' This function selects and collects all rows, from all files with
 #' the same (given) temperature.
+#'
+#' This function should be used if you need to inspect only one of the
+#' temperatures, not all of them. This function is similar to
+#' [loadSample_mpi], which returns all temperatures. But, whearas
+#' [lodSample_mpi] returns a list, this function returns the
+#' sample-matrix itself (because the result of this function is conceptually
+#' similar to sampling on one node, with one temperature).
+#'
 #' @export
 #' @param files a list of file names
 #' @param beta the inverse temperture to extract sample for
 #' @param size a size the is smaller than the actual sample size, if
 #'     left unchanged, all sampled points are returned
 #' @return a matrix of sampled points, all with the same temperature
+#' @examples
+#' rprior <- rNormalPrior(seq(3),seq(4,5)) # some nonsense
+#' N <- 100
+#' f <- c(tempfile(),tempfile())
+#'
+#' ## first fake sample
+#' X <- rprior(N)
+#' attr(X,"beta") <- sample(1/seq(2)^2,N,replace=TRUE)
+#' attr(X,"acceptanceRate") <- 0.23
+#' attr(X,"swapRate") <- 0.1
+#' attr(X,"logLikelihood") <- rnorm(N,-100,30)
+#' saveRDS(X,file=f[1])
+#'
+#' ## second fake sample
+#' X <- rprior(N)
+#' attr(X,"beta") <- sample(1/seq(2)^2,N,replace=TRUE)
+#' attr(X,"acceptanceRate") <- 0.23
+#' attr(X,"swapRate") <- 0.1
+#' attr(X,"logLikelihood") <- rnorm(N,-100,30)
+#' saveRDS(X,file=f[2])
+#'
+#' Z <- gatherSample(f,beta=1)
+#' print(N)
+#' print(dim(Z)) ## should be c(2*N,3)
+#' print(names(attributes(Z)))
 gatherSample <- function(files,beta=1.0,size=NA){
 	x <- numeric(0)
 	lL <- numeric(0)
@@ -464,35 +522,66 @@ gatherSample <- function(files,beta=1.0,size=NA){
 	return(x)
 }
 
-#' gatherReplicas collects all sample points, from all files, which
-#' are assumed to be exact replicas, with different seeds (and
-#' possibly sizes). This function uses mclapply to process the files,
-#' which may be quicker than gatherSample.  The temperature is
+
+#' Collect statistical Replicas
+#'
+#' `gatherReplicas` collects all sample-points, from all files, which
+#' are assumed to be exact replicas. Replicas hav different random
+#' number seeds (and possibly sample sizes).
+#'
+#' This function uses mclapply to process the files, which may be
+#' quicker than `gatherSample`.  The temperature `beta` is
 #' disregarded, assuming that no parallel tempering was used.  To
 #' facilitate the loading of a very big sample, this function will
 #' analyse the auto-correltation within each file and returned a
-#' thinned subsample of size N/2*tauint (effective sample size). There
-#' is no need to further reduce the rfesult.
+#' thinned sub-sample of size `N/(2*tau_int)` (returning the effective
+#' sample size). The value of tau_int is calculated on the likelihood
+#' values, either with the hadron package, or the bultin `acf`
+#' function. There is no need to further reduce the result.
 #'
 #' For small samples, it is better to load the entire sample and
 #' analyse it in full. This function is intended for samples that are
 #' so big that they challenge the memory of the machine.
 #'
 #' This function is quicker if you have used trivial parallelism,
-#' without mpi communication between the ranks (or another method of
-#' obtaining several replicas, like forking or sequetial reprtition).
+#' _without_ MPI communication between the ranks (or another method of
+#' obtaining several replicas, like forking or sequential repetition).
 #'
 #' This function assumes that each supplied RDS file contains a matrix
-#' of model MCMC parameters. The returned value X will be the rbind of
-#' all the smaller x contained in the individual files. The value X
-#' will have several attributes attached to it:
+#' of model MCMC parameters. The returned value `X` will be similar to effect of
+#' `Reduce(...,rbind)` of all the smaller samples contained in the
+#' individual files. The value `X` will have several attributes attached
+#' to it:
 #'
 #' - logLikelihood: log(likelihood(X\[i,\])), one value per row of X
 #' - stepSize: the MCMC step size used in each given file#'
 #'
 #' @export
 #' @param files a list of file names
-#' @return a matrix of sampled points, all with the same temperature
+#' @return a Sample matrix, with effective sample size
+#'     (auto-correlation thinned)
+#' @examples
+#' rprior <- rNormalPrior(seq(3),seq(4,5)) # some nonsense
+#' N <- 100
+#' f <- c(tempfile(),tempfile())
+#'
+#' ## first fake sample
+#' X <- rprior(N)
+#' attr(X,"acceptanceRate") <- 0.23
+#' ## fake auto-correlation
+#' attr(X,"logLikelihood") <- sqrt(seq(N)) + rnorm(N,-100,3)
+#' saveRDS(X,file=f[1])
+#'
+#' ## second fake sample
+#' X <- rprior(N)
+#' attr(X,"acceptanceRate") <- 0.23
+#' attr(X,"logLikelihood") <- sqrt(seq(N)) + rnorm(N,-100,3)
+#' saveRDS(X,file=f[2])
+#'
+#' Z <- gatherReplicas(f)
+#' print(N)
+#' print(dim(Z))
+#' print(names(attributes(Z)))
 gatherReplicas <- function(files){
 	if (requireNamespace("hadron") && requireNamespace("errors")){
 		tau <- lapply(
@@ -514,7 +603,8 @@ gatherReplicas <- function(files){
 			),
 			function(l) {
 				res <- acf(l,plot=FALSE,lag.max=length(l))
-				tau <- sum(res$acf)
+				th <- res$acf > 0.2
+				tau <- sum(res$acf[th])
 				return(tau)
 			}
 		)
@@ -553,9 +643,15 @@ gatherReplicas <- function(files){
 #' matrix has a perhaps sketchy origin, it could be defective in all
 #' possible ways.
 #'
+#' @noRd
 #' @param G a matrix
 #' @param abs_tol absolute tolerance for the reciprocal condition number of G
 #' @return TRUE or FALSE
+#' @examples
+#' A <- matrix(rnorm(9),3,3)
+#' print(is.invertible(A))
+#' B <- t(A) + A
+#' print(is.invertible(B))
 is.invertible <- function(G=NULL,abs_tol=1e-11){
 	return(!is.null(G) && is.numeric(G) && is.matrix(G) && all(dim(G)>0) && !any(is.na(G)) && all(is.finite(G)) && isSymmetric(G) && rcond(G) > abs_tol)
 }
@@ -590,7 +686,7 @@ rmvnorm <- function(mean,precision){
 #' move instriction that uses a Gaussian kernel that is shifted away
 #' from the current point
 #'
-#' @export
+#' @noRd
 #' @param beta inverse temperature (parallel tempering)
 #' @param parGiven given point
 #' @return SMMALA proposal point
@@ -627,7 +723,7 @@ smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
 #' move instriction that uses a Gaussian kernel that is shifted away
 #' from the current point.
 #'
-#' @export
+#' @noRd
 #' @param beta inverse temperature (parallel tempering)
 #' @param parGiven given point
 #' @return SMMALA proposal point
@@ -647,9 +743,12 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 		g <- solve(G0,gradPGiven)
 		G <- G0
 	}
-	return(dmvnorm(as.numeric(parProposal),
-		mean=as.numeric(parGiven+0.5*eps*g),
-		precision=G/eps)
+	return(
+		dmvnorm(
+			as.numeric(parProposal),
+			mean=as.numeric(parGiven+0.5*eps*g),
+			precision=G/eps
+		)
 	)
 }
 
@@ -684,6 +783,21 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 #' @param parAcceptable a function that can be used to reject a
 #'     proposal based on the values of the parameters alone (shortcut
 #'     to rejection, sans simulation)
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' c_path(o) <- write_c_code(generate_code(o))
+#' so_path(o) <- shlib(o)
+#' ex <- experiments(m,o)
+#' options(mc.cores=length(ex))
+#' s <- simulator.c(ex,o,omit=0)
+#' dprior <- dNormalPrior(values(m$Parameter),m$Parameter$stdv)
+#' p <- mcmc_init(1.0,values(m$Parameter),s,ll,dprior)
+#' UP <- metropolis_update(s,ll,dprior=dprior,Sigma=diag(m$Parameter$stdv)^2)
+#' p2 <- UP(p)
+#' ## updated value:
+#' print(p2)
+#' print(sum(abs(p2-p)))
 metropolis_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(x)), Sigma=NULL, parAcceptable=\(p) {all(is.finite(p))}){
 	if (!is.null(Sigma)){
 		cSigma <- chol(Sigma)
@@ -715,6 +829,9 @@ metropolis_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm
 				print(as.numeric(parGiven))
 			}
 			attr(parProposal,"logLikelihood") <- llProposal
+
+			class(parProposal) <- class(parGiven)
+
 			L <- exp(beta*(llProposal - llGiven))
 			if (is.null(L)) cat("llProposal: ",llProposal," llGiven: ",llGiven," beta: ",beta," L:",L,"\n")
 			P <- priorProposal/priorGiven
@@ -771,19 +888,30 @@ metropolis_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm
 #' Extracts the `logLikelihood` value from the simulations attribute
 #' of the parMCMC argument, requires:
 #' - parMCMC has simulations attribute
-#' - simulations list includes logLikelihood values
+#' - simulations list includes logLikelihood values (omit<3)
 #'
 #' This function will take the log-likelihood-values claculated by the
 #' ode solver in this package, and return the sum of those values over
 #' all experiments. The value the simulator returns is calculated
 #' with the assumption of a normal distribution on measurement errors.
 #'
-#' This function does almost no work, it merely sums up the values
+#' This function does _almost no work_, it merely sums up the values
 #' calculated during simulation.
 #'
 #' @param parMCMC a numeric vector, with attributes for MCMC, specifically smmala
 #' @return a scalar value: log(likelihood(data|parMCMC))
 #' @export
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' c_path(o) <- write_c_code(generate_code(o))
+#' so_path(o) <- shlib(o)
+#' ex <- experiments(m,o)
+#' options(mc.cores=length(ex))
+#' s <- simulator.c(ex,o,omit=2) # not 3
+#' p <- values(m$Parameter)
+#' attr(p,"simulations") <- s(p)
+#' print(ll(p))
 ll <- function(parMCMC){
 	y <- parMCMC %@% "simulations"
 	return(sum(sapply(y,\(sim) sim$logLikelihood)))
@@ -794,7 +922,7 @@ ll <- function(parMCMC){
 #' Extracts the `FisherInformation` values from the simulations attribute
 #' of the parMCMC argument, requires:
 #' - parMCMC has simulations attribute
-#' - simulations list includes Fisher-Information values
+#' - simulations list includes gradient values (omit <2)
 #'
 #' This function will take the log-likelihood gradient values
 #' claculated by the ode solver in this package, and return the sum of
@@ -815,7 +943,21 @@ ll <- function(parMCMC){
 #' @param parMCMC a numeric vector, with attributes for MCMC, specifically smmala
 #' @return a numeric vector: grad(log(likelihood(data|parMCMC)))
 #' @export
-gllf <- function(parMapJac=log10ParMapJac) {
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' c_path(o) <- write_c_code(generate_code(o))
+#' so_path(o) <- shlib(o)
+#' ex <- experiments(m,o)
+#' options(mc.cores=length(ex))
+#' s <- simulator.c(ex,o,omit=1) # not 3
+#' p <- values(m$Parameter)
+#' attr(p,"simulations") <- s(p)
+#' print(ll(p))
+#' trivialJac <- \(x) diag(1,length(x),length(x))
+#' gll <- gllf(parMapJac=trivialJac)
+#' print(gll(p))
+gllf <- function(parMapJac=\(x) diag(1,length(x),length(x))) {
 	return(
 		function(parMCMC){
 			g <- Reduce(
@@ -835,7 +977,7 @@ gllf <- function(parMapJac=log10ParMapJac) {
 #' Extracts the `gradLogLikelihood` values from the simulations attribute
 #' of the parMCMC argument, requires:
 #' - parMCMC has simulations attribute
-#' - simulations list includes gradLogLikelihood values
+#' - simulations list includes Fisher Information values (omit=0)
 #'
 #' This function will take the Fisher-Information-matrices claculated
 #' by the ode solver in this package, and return the sum of those
@@ -856,7 +998,23 @@ gllf <- function(parMapJac=log10ParMapJac) {
 #' @param parMCMC a numeric vector, with attributes for MCMC, specifically smmala
 #' @return a scalar value: log(likelihood(data|parMCMC))
 #' @export
-fi <- function(parMapJac=log10ParMapJac){
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' c_path(o) <- write_c_code(generate_code(o))
+#' so_path(o) <- shlib(o)
+#' ex <- experiments(m,o)
+#' options(mc.cores=length(ex))
+#' s <- simulator.c(ex,o,omit=0)
+#' p <- values(m$Parameter)
+#' attr(p,"simulations") <- s(p)
+#' ### without parameter transformations
+#' gll <- gllf()
+#' FI <- fi()
+#' print(ll(p))
+#' print(gll(p))
+#' print(FI(p))
+fi <- function(parMapJac=\(x) diag(1,length(x),length(x))){
 	return(
 		function(parMCMC) {
 			i <- seq_along(parMCMC)
@@ -865,7 +1023,7 @@ fi <- function(parMapJac=log10ParMapJac){
 				parMCMC %@% "simulations",
 				init = 0.0
 			)
-			J <- parMapJac(parMCMC) 
+			J <- parMapJac(parMCMC)
 			return(
 				t(J) %*% f %*% J
 			)
@@ -918,6 +1076,25 @@ fi <- function(parMapJac=log10ParMapJac){
 #' @param parAcceptable a function that can be used to reject a
 #'     proposal based on the values of the parameters alone (shortcut
 #'     to rejection, sans simulation)
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' c_path(o) <- write_c_code(generate_code(o))
+#' so_path(o) <- shlib(o)
+#' ex <- experiments(m,o)
+#' options(mc.cores=length(ex))
+#' s <- simulator.c(ex,o,omit=0)
+#' ### without parameter transformations
+#' gll <- gllf()
+#' FI <- fi()
+#' dprior <- dNormalPrior(values(m$Parameter),m$Parameter$stdv)
+#' gprior <- dNormalPrior(values(m$Parameter),m$Parameter$stdv)
+#' p <- mcmc_init(1.0,values(m$Parameter),s,ll,dprior,gll,gprior,FI)
+#' UP <- smmala_update(s,ll,dprior=dprior,gll,gprior=gprior,FI,solve(diag(m$Parameter$stdv)))
+#' p2 <- UP(p)
+#' ## updated value:
+#' print(p2)
+#' print(sum(abs(p2-p)))
 smmala_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(x)), gradLogLikelihood=gllf(log10ParMapJac), gprior=\(x) (-x), fisherInformation=fi(log10ParMapJac), fisherInformationPrior=0, parAcceptable=\(p) all(is.finite(p))){
 	U <- function(parGiven, eps=1e-4){
 		stopifnot(parGiven %has% c("logLikelihood","prior","fisherInformation","gradLogLikelihood","gradLogPrior"))
@@ -947,6 +1124,7 @@ smmala_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(x))
 		attr(parProposal,"fisherInformation") <- fisherInformation(parProposal)
 		attr(parProposal,"gradLogLikelihood") <- gradLogLikelihood(parProposal)
 		attr(parProposal,"gradLogPrior") <- gprior(parProposal)
+		class(parProposal) <- class(parGiven)
 		fwdDensity <- smmala_move_density(beta,parProposal,parGiven,fp,eps)
 		bwdDensity <- smmala_move_density(beta,parGiven,parProposal,fp,eps)
 		L <- exp(beta*(llProposal - llGiven)) %otherwise% 0.0
@@ -966,7 +1144,11 @@ smmala_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(x))
 }
 
 
-#' This function proposes an MCMC candidate variable, and either accepts or rejects the candidate
+#' This function proposes an MCMC candidate variable, and either
+#' accepts or rejects the candidate
+#'
+#' This function selects the update method based on the provided
+#' ingredients.
 #'
 #' This function receives a current MCMC variable, then calculates a
 #' possible successor and returns it in the case of acceptance. It
@@ -977,8 +1159,9 @@ smmala_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(x))
 #' used as the parameters to a scientific model of some sort (and
 #' these often have state variables, also x, or y). This is why we
 #' call the variables parMCMC (parABC), or
-#' par{Current|Given|Proposal}, and similar.
+#' par{Current|Given|Proposal}, and similar (with a "par" prefix).
 #'
+#' @noRd
 #' @param simulate a function that simulates the model for a given
 #'     parMCMC
 #' @param logLikelihood a function that calculates log-likelihood
@@ -998,8 +1181,26 @@ smmala_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(x))
 #'     scalar indicating whether a proposed parameter satisfies any
 #'     user chosen constraints. A value of FALSE will trigger an early
 #'     return and the model will not be simulated.
-#' @return a function that returns possibly updated states of the
-#'     Markov chain
+#' @return an automatically selected update function
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' c_path(o) <- write_c_code(generate_code(o))
+#' so_path(o) <- shlib(o)
+#' ex <- experiments(m,o)
+#' options(mc.cores=length(ex))
+#' s <- simulator.c(ex,o,omit=0)
+#' ### without parameter transformations
+#' gll <- gllf()
+#' FI <- fi()
+#' dprior <- dNormalPrior(values(m$Parameter),m$Parameter$stdv)
+#' gprior <- dNormalPrior(values(m$Parameter),m$Parameter$stdv)
+#' p <- mcmc_init(1.0,values(m$Parameter),s,ll,dprior,gll,gprior,FI)
+#' UP <- automatic_update(s,ll,dprior=dprior,gll,gprior=gprior,FI,solve(diag(m$Parameter$stdv)))
+#' p2 <- UP(p)
+#' ## updated value:
+#' print(p2)
+#' print(sum(abs(p2-p)))
 automatic_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(x)), gradLogLikelihood=NULL, gprior=NULL, fisherInformation=NULL, fisherInformationPrior=NULL, Sigma=NULL, parAcceptable=\(p) {TRUE}){
 	if (is.null(Sigma) && !is.null(fisherInformationPrior)) {
 		Sigma <- solve(fisherInformationPrior)
@@ -1045,6 +1246,21 @@ automatic_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(
 #'     initial Markov chain state.  The log-likelihood function can
 #'     use these attributes.
 #' @export
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' c_path(o) <- write_c_code(generate_code(o))
+#' so_path(o) <- shlib(o)
+#' ex <- experiments(m,o)
+#' options(mc.cores=length(ex))
+#' s <- simulator.c(ex,o,omit=0)
+#' p <- values(m$Parameter)
+#' attr(p,"simulations") <- s(p)
+#' ## this function is fairly flexible and accepts some user settings
+#' llf <- logLikelihoodFunc(ex)
+#' print(llf(p))
+#' ## this function uses the values from the solver:
+#' print(ll(p))
 logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	N <- length(experiments)
 	n.out <- sum(unlist(lapply(experiments,\(e) sum(!is.na(e$data))))) # total number of valid values
@@ -1148,6 +1364,12 @@ log10ParMap <- function(parMCMC){
 #'
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
+#' @examples
+#' p <- c(-1,0,1)
+#' parMap <- log10ParMap
+#' parMpJ <- log10ParMapJac
+#' print(parMap(p))
+#' print(parMpJ(p))
 log10ParMapJac <- function(parMCMC){
 	return(diag(10^(parMCMC) * log(10)))
 }
@@ -1159,6 +1381,10 @@ log10ParMapJac <- function(parMCMC){
 #'
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
+#' @examples
+#' p <- c(-1,0,1)
+#' parMap <- log2ParMap
+#' print(parMap(p))
 log2ParMap <- function(parMCMC){
 	return(2^(parMCMC))
 }
@@ -1172,6 +1398,12 @@ log2ParMap <- function(parMCMC){
 #'
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
+#' @examples
+#' p <- c(-1,0,1)
+#' parMap <- log2ParMap
+#' parMpJ <- log2ParMapJac
+#' print(parMap(p))
+#' print(parMpJ(p))
 log2ParMapJac <- function(parMCMC){
 	return(diag(2^(parMCMC) * log(2)))
 }
@@ -1184,6 +1416,10 @@ log2ParMapJac <- function(parMCMC){
 #'
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
+#' @examples
+#' p <- c(-1,0,1)
+#' parMap <- logParMap
+#' print(parMap(p))
 logParMap <- function(parMCMC){
 	return(exp(parMCMC))
 }
@@ -1197,74 +1433,15 @@ logParMap <- function(parMCMC){
 #'
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
+#' @examples
+#' p <- c(-1,0,1)
+#' parMap <- logParMap
+#' parMpJ <- logParMapJac
+#' print(parMap(p))
+#' print(parMpJ(p))
 logParMapJac <- function(parMCMC){
 	return(diag(exp(parMCMC)))
 }
-
-#' Default log-likelihood function, gradient
-#'
-#' This returns a function g(x,simulations), which maps simulation
-#' results and the MCMC variables x to the gradient of log(likelihood)
-#' values withj respect to x. The experiments are used implicitly;
-#' simulations is a list as returned by rgsl::r_gsl_odeiv2_outer().
-#'
-#' @param experiment will be compared tp the simulation results
-#' @export
-gradLogLikelihoodFunc <- function(experiments,parMap=identity,parMapJac=function(x) {diag(1,length(x))})
-{
-	N <- length(experiments)
-	nF <- NROW(experiments[[1]]$data)
-	gradLL <- function(parMCMC){
-		simulations <- attr(parMCMC,"simulations")
-		np <- NROW(parMCMC) # the dimension of the MCMC variable (parMCMC)
-		z <- rep(0,np)
-		gL <- z
-		for (i in seq(N)){
-			d <- dim(simulations[[i]]$func)
-			nt <- length(experiments[[i]]$outputTimes)
-			y <- experiments[[i]]$data
-			y[is.na(y)] <- 0.0
-			h <- simulations[[i]]$func[,,1]
-			dim(h) <- head(d,2)
-			stdv <- standard_error_matrix(y)
-			stdv2 <- (stdv)^2 # sigma^2
-			stdv2[is.na(stdv2)] <- Inf
-			Sh <- simulations[[i]]$funcSensitivity[[1]]
-			for (j in seq(nt)){
-				Shj <- Sh[,seq(np),j]
-				dim(Shj) <- c(nF,np)
-				Shj <- Shj %*% parMapJac(as.numeric(parMCMC))
-				gj <- as.numeric(t((y[,j] - h[,j])/stdv2[,j]) %*% Shj)
-				if (all(is.finite(gj))) {
-					gL <- gL + gj
-				}
-			}
-		}
-		return(gL)
-	}
-	return(gradLL)
-}
-
-#' SMMALA -- The default Extractor of the log-likelihood computed by the simfi solver
-#'
-#' This function will only extract the log-likelihood value from the
-#' solution via simfi. Simfi returns the likelihhod value based on the
-#' assumption that the data provided in the list of experiments has a
-#' Gaussian standard error. The value includes the normalising factor 1/sqrt(2*pi*sigma^2)
-#' for each measured value (the logarithm).
-#'
-#' @param init a base value that will be added to the log-likelihood
-#' @export
-#' @return a log-likelihood value for the set of experiments the
-#'     solver was set up with.
-simfiGaussianLogLikelihood <- function(init = 0.0){
-	llf <- function(parMCMC){
-		i <- seq_along(parMCMC)
-		return(Reduce(\(a,b) a + b$logLikelihood[1], attr(parMCMC,"simulations")))
-	}
-	return(llf)
-}
-
 
 #' High Level SMMALA function
 #'
@@ -1285,6 +1462,21 @@ simfiGaussianLogLikelihood <- function(init = 0.0){
 #'     p0 is the starting point, N is the desired sample-size, and eps
 #'     is the step size. This function has an attribute called "init",
 #'     with a pre-initialized starting point.
+#' @examples
+#' \donttest{
+#' m <- model_from_tsv(uqsa_example("AKAP79"))
+#' rwm <- high_level_smmala(m) # "random walk", metropolis algorithm
+#' p <- rwm %@% "init"             # a valid starting point
+#' N <- 200
+#' smallSample <- rwm(rwm %@% "init",N,1e-4)
+#' plot(
+#'   smallSample %@% "logLikelihood",
+#'   type='l',
+#'   main=sprintf("%i iterations",N),
+#'   xlab="iterations",
+#'   ylab="log-likelihood"
+#' )
+#' }
 high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=values(m$Parameter)){
 	if (is.null(o$c_path) || is.null(o$so_path) || !file.exists(o$so_path)){
 		C <- generate_code(o)
@@ -1364,6 +1556,21 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 #'     p0 is the starting point, N is the desired sample-size, and eps
 #'     is the step size. This function has an attribute called "init",
 #'     with a pre-initialized starting point.
+#' @examples
+#' \donttest{
+#' m <- model_from_tsv(uqsa_example("AKAP79"))
+#' rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
+#' p <- rwm %@% "init"             # a valid starting point
+#' N <- 200
+#' smallSample <- rwm(rwm %@% "init",N,1e-6)
+#' plot(
+#'   smallSample %@% "logLikelihood",
+#'   type="l",
+#'   main=sprintf("%i iterations",N),
+#'   xlab="iterations",
+#'   ylab="log-likelihood"
+#' )
+#' }
 high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x=values(m$Parameter), beta=1.0){
 	if (is.null(so_path(o)) || !file.exists(so_path(o))){
 		C <- generate_code(o)
@@ -1435,6 +1642,23 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 #'     to return.
 #' @return optimal step size
 #' @export
+#' @examples
+#' \donttest{
+#' m <- model_from_tsv(uqsa_example("AKAP79"))
+#' rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
+#' p <- rwm %@% "init"             # a valid starting point
+#' h <- tune_step_size(rwm,p)
+#' N <- 200
+#' smallSample <- rwm(rwm %@% "init",N,h)
+#' print(h)
+#' plot(
+#'   smallSample %@% "logLikelihood",
+#'   type="l",
+#'   main=sprintf("step size: %g",h),
+#'   xlab="iterations",
+#'   ylab="log-likelihood"
+#' )
+#' }
 tune_step_size <- function(MCMC,parMCMC=attr(MCMC,"init"),target_acceptance=0.25, iter.max=6){
 	h <- 1e-2
 	A <- target_acceptance

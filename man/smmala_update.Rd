@@ -68,3 +68,23 @@ the prior (a constant matrix). It's role is additive to the
 fisherInformation and is used to regularize the \emph{final} Fisher
 Information Matrix (makes it invertible).
 }
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- as_ode(m)
+c_path(o) <- write_c_code(generate_code(o))
+so_path(o) <- shlib(o)
+ex <- experiments(m,o)
+options(mc.cores=length(ex))
+s <- simulator.c(ex,o,omit=0)
+### without parameter transformations
+gll <- gllf()
+FI <- fi()
+dprior <- dNormalPrior(values(m$Parameter),m$Parameter$stdv)
+gprior <- dNormalPrior(values(m$Parameter),m$Parameter$stdv)
+p <- mcmc_init(1.0,values(m$Parameter),s,ll,dprior,gll,gprior,FI)
+UP <- smmala_update(s,ll,dprior=dprior,gll,gprior=gprior,FI,solve(diag(m$Parameter$stdv)))
+p2 <- UP(p)
+## updated value:
+print(p2)
+print(sum(abs(p2-p)))
+}

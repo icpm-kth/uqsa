@@ -13,3 +13,8 @@ log2ParMap(parMCMC)
 This map is used by the simulator to transform sampling variables
 into ODE-model porameters.
 }
+\examples{
+p <- c(-1,0,1)
+parMap <- log2ParMap
+print(parMap(p))
+}
