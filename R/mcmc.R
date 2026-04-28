@@ -163,14 +163,13 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #' smallSample <- MarkovChain(rwm %@% "init",100,1e-3)
 mcmc <- function(update){
 	M <- function(parMCMC,N=1000,eps=1e-4){
-		sample <- matrix(nrow=N,ncol=length(parMCMC))
+		sample <- matrix(NA,nrow=N,ncol=length(parMCMC))
 		colnames(sample) <- names(parMCMC)
 		ll <- numeric(N)
 		b <- numeric(N)
 		a <- logical(N)
 		for (i in seq(N)){
 			parMCMC <- update(parMCMC,eps)
-			print(as.numeric(parMCMC))
 			ll[[i]] <- attr(parMCMC,"logLikelihood")
 			sample[i,] <- as.numeric(parMCMC)
 			b[i] <- attr(parMCMC,"beta")
