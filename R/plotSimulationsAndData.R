@@ -11,13 +11,17 @@
 #' @param show.plot boolean variable. Set show.plot=TRUE to display plots
 #'      when running the funcion, FALSE otherwise
 #' @return list of plots with simulations and experimental data
-ggplotTimeSeries <- function(simulations, experiments, nrow=NULL, ncol=NULL, plot.state=FALSE){
-	num.experiments <- length(simulations)
-
-	stopifnot(length(simulations) == length(experiments))
-	num.out.funcs <- NCOL(experiments[[1]]$measurements)
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- write_and_compile(as_ode(m))
+#' ex <- experiments(m,o)
+#' s <- simulator.c(ex,o)
+#' p0 <- values(m$Parameter)
+#' y <- s(p0)
+#' ggplot_time_series(y,ex)
+ggplot_time_series <- function(simulations, experiments, nrow=NULL, ncol=NULL, plot.state=FALSE){
 	p <- list()
-	for(i in seq(length(experiments))){
+	for (i in seq_along(experiments)){
 		N <- dim(simulations[[i]]$func)[3]
 		oNames <- names(experiments[[i]][["measurements"]])
 		if ("measurementTimes" %in% names(experiments[[i]])){
@@ -25,22 +29,51 @@ ggplotTimeSeries <- function(simulations, experiments, nrow=NULL, ncol=NULL, plo
 		} else {
 			t_ <- experiments[[i]][["outputTimes"]]
 		}
-		for(j in seq(num.out.funcs)){
-			df.experiments <- data.frame(t=t_, y=experiments[[i]][["measurements"]][[j]])
+		rn <- rownames(simulations[[i]]$func)
+		l <- rn %in%  names(experiments[[i]][["measurements"]])
+		for (j in seq(NROW(simulations[[i]]$func))){
+			if (l[j]){
+				df.experiments <- data.frame(
+					t=t_,
+					y=experiments[[i]][["measurements"]][[rn[j]]]
+				)
+			} else {
+				df.experiments <- data.frame(
+					t=t_,
+					y=rep(NA,length(t_))
+				)
+			}
 			y <- as.numeric(simulations[[i]]$func[j,,])
-			df.simulations <- data.frame(t=rep(experiments[[i]][["outputTimes"]],N), y=y, sim=rep(seq(N),each=length(experiments[[i]][["outputTimes"]])))
+			df.simulations <- data.frame(
+				t=rep(experiments[[i]][["outputTimes"]],N),
+				y=y,
+				sim=rep(seq(N),each=length(experiments[[i]][["outputTimes"]]))
+			)
 			p[[i]] <-
-				ggplot2::ggplot(df.simulations,aes(x=t, y=y, group=sim))+
-				ggplot2::geom_line(color="blue", alpha = 0.1, size=1.5)+
-				ggplot2::geom_point(data=df.experiments, aes(x=t, y=y), inherit.aes=FALSE)+
-				ggplot2::ggtitle(paste0("Experiment: ", names(experiments[i])))+labs(y=oNames[j])
+				ggplot2::ggplot(
+					df.simulations,
+					ggplot2::aes(x=t, y=y, group=sim)
+				)+
+				ggplot2::geom_line(
+					color="blue",
+					alpha = 0.1,
+					size=1.5
+				)+
+				ggplot2::geom_point(
+					data=df.experiments,
+					ggplot2::aes(x=t, y=y),
+					inherit.aes=FALSE
+				) +
+				ggplot2::ggtitle(
+					paste0("Experiment: ", names(experiments[i]))
+				)+ggplot2::labs(y=oNames[j])
 		}
 	}
 	if (is.null(nrow)){
-		nrow <- num.of.funcs
+		nrow <- NROW(simulations[[1]]$func)
 	}
 	if (is.null(ncol)){
-		ncol <- num.experiments
+		ncol <- length(simulations)
 	}
 	gridExtra::marrangeGrob(nrow=nrow,ncol=ncol,grobs=p)
 }
@@ -74,10 +107,20 @@ ggplotTimeSeries <- function(simulations, experiments, nrow=NULL, ncol=NULL, plo
 #' @param yl.state y-axis-limits for state variable plots, with
 #'     similar rules as for yl.func
 #' @return list of plots with simulations and experimental data
-ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, type="boxes", plot.states=TRUE, ttf=identity, xl="t", yl.func=NULL, yl.state=NULL, MLE=1){
+#' @examples
+#' \donttest{
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- write_and_compile(as_ode(m))
+#' ex <- experiments(m,o)
+#' s <- simulator.c(ex,o)
+#' p0 <- values(m$Parameter)
+#' y <- s(p0)
+#' ggplot_time_series_states(y,ex)
+#' }
+ggplot_time_series_states <- function(simulations, experiments, var.names=NULL, type="boxes", plot.states=TRUE, ttf=identity, xl="t", yl.func=NULL, yl.state=NULL, MLE=1){
 	num.experiments <- length(experiments)
 	stopifnot(num.experiments == length(simulations))
-	num.of.funcs <- NCOL(experiments[[1]]$measurements)
+	num.of.funcs <- NROW(simulations[[1]]$func)
 	num.of.vars <- NROW(simulations[[1]]$state)
 	if (missing(ttf)){
 		t_txt <- xl
@@ -86,18 +129,18 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 	}
 	p <- list()
 	M <- num.of.funcs + plot.states*num.of.vars
-	T1 <- ggplot2::theme(plot.title=element_text(size=rel(2)),
-	            axis.text=element_text(size=rel(1.5)),
-	            axis.title=element_text(size=rel(1.6)))
+	T1 <- ggplot2::theme(
+		plot.title=ggplot2::element_text(size=ggplot2::rel(2)),
+		axis.text= ggplot2::element_text(size=ggplot2::rel(1.5)),
+		axis.title=ggplot2::element_text(size=ggplot2::rel(1.6))
+	)
 	if (type == "boxes") {
 		g <- ggplot2::geom_boxplot(ggplot2::aes(x=t,y=y,group=t),outlier.shape=NA) #outlier.size=0.3,outlier.color="green")
 	} else {
 		g <- ggplot2::geom_line(ggplot2::aes(x=t, y=y, group=sim),color="blue", alpha = 0.07, linewidth=1)
 	}
-
-	for(i in seq(length(experiments))){
+	for(i in seq_along(experiments)){
 		N <- dim(simulations[[i]]$func)[3]
-		oNames <- names(experiments[[i]][["measurements"]])
 		if (is.null(var.names) && "initialState" %in% names(experiments[[i]])){
 			xNames <- names(experiments[[i]][["initialState"]])
 		} else if (is.null(var.names)){
@@ -105,27 +148,45 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 		} else {
 			xNames <- var.names
 		}
+		oNames <- rownames(simulations[[i]]$func)
+		l <- oNames %in% names(experiments[[i]]$measurements)
 		for(j in seq(num.of.funcs)){
-			z <- experiments[[i]][["measurements"]][[j]]
-			dz <- experiments[[i]][["errorValues"]][[j]]
 			if ("measurementTimes" %in% names(experiments[[i]])){
 				t_ <- ttf(experiments[[i]][["measurementTimes"]])
 			} else {
 				t_ <- ttf(experiments[[i]][["outputTimes"]])
 			}
+			if (l[j]){
+				z <- experiments[[i]][["measurements"]][[oNames[j]]]
+				dz <- errors::errors(experiments[[i]]$measurements[[oNames[j]]])
+			} else {
+				z <- rep(NA,length(t_))
+				dz <- rep(0,length(t_))
+			}
 			df.experiments <- data.frame(t=t_, y=z, upper=z+dz, lower=z-dz)
 			tf <- ttf(experiments[[i]][["outputTimes"]])
 			f <- as.numeric(simulations[[i]]$func[j,,])
 			if (length(tf)==1){
-				mle <- ggplot2::geom_point(data=data.frame(t=tf,y=simulations[[i]]$func[j,,MLE]), aes(x=t,y=y), color="magenta", size=2, inherit.aes=FALSE)
+				mle <- ggplot2::geom_point(
+					data=data.frame(t=tf,y=simulations[[i]]$func[j,,MLE]),
+					ggplot2::aes(x=t,y=y),
+					color="magenta",
+					size=2,
+					inherit.aes=FALSE
+				)
 			} else {
-				mle <- ggplot2::geom_line(data=data.frame(t=tf,y=simulations[[i]]$func[j,,MLE]), aes(x=t,y=y), color="magenta", linewidth=2, inherit.aes=FALSE)
+				mle <- ggplot2::geom_line(
+					data=data.frame(t=tf,y=simulations[[i]]$func[j,,MLE]),
+					ggplot2::aes(x=t,y=y),
+					color="magenta",
+					linewidth=2,
+					inherit.aes=FALSE
+				)
 			}
 			if (is.null(yl.func)){
 				YLIMIT <- NULL
 			} else if (is.logical(yl.func[[j]]) && is.na(yl.func[[j]])){
-				## the is.logical is important: is.numeric(NA) is FALSE, is.logical(NA) is TRUE. is.na(ylim()) leads to an error
-				R <- range(c(z+dz,z-dz,simulations[[i]]$func[j,,MLE]),na.rm=TRUE); print(R)
+				R <- range(c(z+dz,z-dz,simulations[[i]]$func[j,,MLE]),na.rm=TRUE)
 				YLIMIT <- ggplot2::ylim(ifelse(diff(R)<1e-6,0.0,R[1]),R[2])
 			} else if (is.numeric(yl.func[[j]])){
 				Q <- quantile(f,probs=yl.func[[j]],na.rm=TRUE)
@@ -134,13 +195,14 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 			} else {
 				YLIMIT <- yl.func[[j]]
 			}
-
-			#cat(sprintf("[experiment %i, output function %i] N = %i; length(tf): %i, length(f): %i; tf; f\n",i,j,N,length(tf), length(f)))
-			#print(tf)
-			#print(f)
 			df.simulations <- data.frame(t=rep(tf,N), y=f, sim=rep(seq(N),each=length(tf)))
 			p[[(i-1)*M+j]] <- ggplot2::ggplot(df.simulations)+g+
-				ggplot2::geom_errorbar(data=df.experiments, ggplot2::aes(x=t, y=y, ymin = lower, ymax = upper), color="red", inherit.aes=FALSE)+
+				ggplot2::geom_errorbar(
+					data=df.experiments,
+					ggplot2::aes(x=t, y=y, ymin = lower, ymax = upper),
+					color="red",
+					inherit.aes=FALSE
+				)+
 				ggplot2::ggtitle(names(experiments[i]))+T1+
 				ggplot2::labs(y=oNames[j],x=t_txt)+YLIMIT+mle
 		}
@@ -149,9 +211,21 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 				y <- as.numeric(simulations[[i]]$state[j,,])
 				ty <- ttf(experiments[[i]][["outputTimes"]])
 				if (length(ty)==1){
-					mle <- ggplot2::geom_point(data=data.frame(t=ty,y=simulations[[i]]$state[j,,MLE]), aes(x=t,y=y), color="blue", size=2, inherit.aes=FALSE)
+					mle <- ggplot2::geom_point(
+						data=data.frame(t=ty,y=simulations[[i]]$state[j,,MLE]),
+						ggplot2::aes(x=t,y=y),
+						color="blue",
+						size=2,
+						inherit.aes=FALSE
+					)
 				} else {
-					mle <- ggplot2::geom_line(data=data.frame(t=ty,y=simulations[[i]]$state[j,,MLE]), aes(x=t,y=y), color="blue", linewidth=2, inherit.aes=FALSE)
+					mle <- ggplot2::geom_line(
+						data=data.frame(t=ty,y=simulations[[i]]$state[j,,MLE]),
+						ggplot2::aes(x=t,y=y),
+						color="blue",
+						linewidth=2,
+						inherit.aes=FALSE
+					)
 				}
 				if (is.null(yl.state)){
 					YLIMIT <- NULL
@@ -164,10 +238,21 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 				} else {
 					YLIMIT <- yl.state[[j]]
 				}
-				df.simulations <- data.frame(t=rep(ty,N), y=y, sim=rep(seq(N), each=length(ty)))
-				p[[(i-1)*M+j+num.of.funcs]] <- ggplot2::ggplot(df.simulations,ggplot2::aes(x=t, y=y, group=sim))+g+
-					ggplot2::ggtitle(names(experiments[i]))+T1+
-					ggplot2::labs(y=xNames[j],x=t_txt)+YLIMIT+mle
+				df.simulations <- data.frame(
+					t=rep(ty,N),
+					y=y,
+					sim=rep(seq(N), each=length(ty))
+				)
+				p[[(i-1)*M+j+num.of.funcs]] <- ggplot2::ggplot(
+					df.simulations,
+					ggplot2::aes(x=t, y=y, group=sim)
+				) +
+				g +
+				ggplot2::ggtitle(names(experiments[i])) +
+				T1 +
+				ggplot2::labs(y=xNames[j],x=t_txt) +
+				YLIMIT +
+				mle
 			}
 		}
 	}
@@ -176,7 +261,6 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 	return(gridExtra::marrangeGrob(grobs=p,ncol=m,nrow=n))
 }
 
-
 #' plot function for experiments
 #'
 #' This function does not use ggplot2, only base plot functions like
@@ -184,48 +268,49 @@ ggplotTimeSeriesStates <- function(simulations, experiments, var.names=NULL, typ
 #'
 #' @param simulations simulation results (a list)
 #' @param experiments experiment setup (a list)
-#' @param nmax maximum index of lines to plot from sample, between 1 and size of sample
 #' @param by skip this many sampled lines in between plotted lines
 #' @param ylimit y-axis limits
 #' @return plot object
 #' @export
-plotTimeSeriesBase <- function(simulations, experiments, nmax=NULL, by=1, ylimit=NULL){
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- write_and_compile(as_ode(m))
+#' ex <- experiments(m,o)
+#' s <- simulator.c(ex,o)
+#' p0 <- values(m$Parameter)
+#' y <- s(p0)
+#' plot_time_series_base(y,ex)
+plot_time_series_base <- function(simulations, experiments, by=1, ylimit=NULL){
 	nf <- dim(simulations[[1]]$func)[1]
 	par(mfrow=c(nf,length(experiments)))
 	for (i in seq_along(experiments)){
 		time <- experiments[[i]]$outputTimes
 		n <- dim(simulations[[i]]$func)
-		if (is.null(nmax)) nmax=n[3]
 		oNames <- names(experiments[[i]]$measurements)
 		for (j in seq(n[1])){
 			d <- experiments[[i]]$data[j,] %otherwise% experiments[[i]]$measurements[[j]]
-			if (is(d,"errors")){
-				e <- errors(d)
-				d[is.infinite(e)]<-NA
-			}
 			if (is.null(ylimit) || !all(is.finite(ylimit[[j]]))){
 				yl <- c(min(d - 1e-1,na.rm=TRUE),max(d + 1e-1,na.rm=TRUE))
 			} else {
 				yl <- ylimit[[j]]
 			}
-			if (is(d,"errors")){ # real error bars plot
-				p <- plot(
-					errors::as.errors(time),
-					d,
-					ylim=yl,
-					main=names(experiments)[i],
-					ylab=oNames[j]
-				)
-			} else { # fake error bars plot
-				e <- experiments[[i]]$stdv[j,] %otherwise% experiments[[i]]$standardError[[j]]
-				p <- plot(time,d,type='p',ylim=yl,main=names(experiments)[i],ylab=oNames[j])
-				arrows(time,d,time,o+e,angle=90,length=0.01)
-				arrows(time,d,time,o-e,angle=90,length=0.01)
-			}
-			for (k in seq(1,nmax,by=by)){
-				y<-as.numeric(simulations[[i]]$func[j,,k])
-				lines(time,y,col=rgb(0.3,0.6,0.9,0.4));
-			}
+			p <- plot(
+				errors::as.errors(time),
+				d,
+				ylim=yl,
+				main=names(experiments)[i],
+				xlab="time",
+				ylab=oNames[j]
+			)
+			a <- ceiling(255*exp(-0.01*n[3]))
+			matplot(
+				time,
+				simulations[[i]]$func[j,,],
+				col=rgb(0,0,255,a,maxColorValue=255),
+				lwd=2,
+				add=TRUE,
+				type="l"
+			)
 		}
 	}
 	return(p)
@@ -238,20 +323,26 @@ plotTimeSeriesBase <- function(simulations, experiments, nmax=NULL, by=1, ylimit
 #' against experimental data. The input in the provided experiments must differ
 #' only in one vector component.
 #'
-#' @export
+#' @noRd
 #' @param simulations list of simualtions as output from the simulator
 #' @param experiments list of experiments
 #' @param show.plot boolean variable. Set `show.plot=TRUE` to display plots
 #'      when running the funcion, FALSE otherwise
 #' @return list of plots with simulations and experimental data
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- write_and_compile(as_ode(m))
+#' ex <- experiments(m,o)
+#' s <- simulator.c(ex,o,log10ParMap)
+#' p0 <- values(m$Parameter)
+#' y <- s(p0)
+#' plotTimeSeries(y,ex)
 plotTimeSeries <- function(simulations, experiments, show.plot = TRUE){
   num.experiments <- length(simulations)
   num.simulations <- dim(simulations[[1]]$func)[3]
   stopifnot(num.experiments == length(experiments))
   num.out.funcs <- dim(experiments[[1]]$measurements)[2]
-
   p <- list()
-
   for(i in 1:num.experiments){
     experiment <- experiments[[i]]
     for(output.idx in 1:num.out.funcs){
@@ -259,25 +350,22 @@ plotTimeSeries <- function(simulations, experiments, show.plot = TRUE){
       y <- c(simulations[[i]]$func[output.idx,,])
       df.simulations <- data.frame(t=rep(experiment[["outputTimes"]],num.simulations), y=y, sim=rep(1:num.simulations,each=length(experiment[["outputTimes"]])))
       p[[i]] <-
-        ggplot(df.simulations,aes(x=t, y=y, group=sim)) +
-        geom_line(color="blue", alpha = 0.1, size=1.5) +
-        geom_point(data=df.experiments, aes(x=t, y=y), inherit.aes=FALSE) +
-        ggtitle(paste0("Experiment: ", names(experiments[i]), "\nOutput: ", names(experiment[["measurements"]])[output.idx]))
+        ggplot2::ggplot(df.simulations,ggplot2::aes(x=t, y=y, group=sim)) +
+        ggplot2::geom_line(color="blue", alpha = 0.1, size=1.5) +
+        ggplot2::geom_point(data=df.experiments, ggplot2::aes(x=t, y=y), inherit.aes=FALSE) +
+        ggplot2::ggtitle(paste0("Experiment: ", names(experiments[i]), "\nOutput: ", names(experiment[["measurements"]])[output.idx]))
     }
   }
-  if(show.plot)  show(do.call(gridExtra::grid.arrange,p))
+  if (show.plot) show(do.call(gridExtra::grid.arrange,p))
   return(p)
 }
-
-
-
 
 #' Get the values of the input for a series of dose response experiments
 #'
 #' This function finds the vector of inputs that  varies among a series of experiments
 #' that are part of a dose response experiment
 #'
-#' @export
+#' @noRd
 #' @param experiments list of experimental data from the same dose response experiment
 #' @return vector of inputs (i.e. dose) that varies among the experiments provided to the function.
 #'         The name of the input is saved in "comment(dose)".
@@ -296,7 +384,7 @@ getDose <- function(experiments){
 #' This function plots simulations of one dose response experiment and plots them
 #' against experimental data.
 #'
-#' @export
+#' @noRd
 #' @param simulations list of simualtions as output from the simulator
 #' @param experiments list of experimental data from the same dose response experiment
 #' @param dose vector of dose values to plot on the x axis
@@ -314,13 +402,13 @@ ggplotDoseResponse <- function(simulations, experiments, dose, show.plot = TRUE)
     E.data.frame.exp <- data.frame(x=dose,y=y.exp)
     y.sim <- sapply(simulations, function(o) o$func[j,1,])
     E.data.frame.sim <- data.frame(x=(rep(dose,each=num.simulations)),y=c(y.sim))
-    p[[j]] <- ggplot(E.data.frame.exp, aes(x=x,y=y)) + geom_point(color="red")
+    p[[j]] <- ggplot2::ggplot(E.data.frame.exp, ggplot2::aes(x=x,y=y)) + geom_point(color="red")
     p[[j]] <-  p[[j]] +
-      geom_point(data=E.data.frame.sim, aes(x=x,y=y), inherit.aes = FALSE, color="blue", alpha = 0.4)
+      ggplot2::geom_point(data=E.data.frame.sim, ggplot2::aes(x=x,y=y), inherit.aes = FALSE, color="blue", alpha = 0.4)
     p[[j]] <-  p[[j]] +
-      geom_point(data=E.data.frame.exp, aes(x=x,y=y)) +
-      geom_point(color="red") +
-      labs(x = comment(dose), y = names(experiments[[1]][["measurements"]])[j])
+      ggplot2::geom_point(data=E.data.frame.exp, ggplot2::aes(x=x,y=y)) +
+      ggplot2::geom_point(color="red") +
+      ggplot2::labs(x = comment(dose), y = names(experiments[[1]][["measurements"]])[j])
   }
   return(p)
 }

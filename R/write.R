@@ -13,6 +13,11 @@
 #'     litres, only used for CME models
 #' @export
 #' @return a character vector with the code
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' C <- generate_code(o)
+#' cat(head(C),sep="\n")
 generate_code <- function(Model,language="C", LV=6.02214076e+8){
 	if (is(Model,"ode") && tolower(language)=="c"){
 		C <- generateCode(Model)
@@ -41,6 +46,14 @@ generate_code <- function(Model,language="C", LV=6.02214076e+8){
 #'     with a c.file defined and recorded in it.
 #' @export
 #' @return the path of the created shared library
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' C <- generate_code(o)
+#' c_path(o) <- write_c_code(C)
+#' so_path(o) <- shlib(o)
+#' print(o)
+#' if (file.exists(so_path(o))) cat("shared library exists.\n")
 shlib <- function(file){
 	if (is(file,"ode")) {
 		so_name <- file$name
@@ -84,12 +97,31 @@ shlib <- function(file){
 #' file in a temporary location (tempdir). By default, the name of the
 #' file will contain the hash of the entire code.
 #'
+#' If instead of a character vector, an ode or cme object is passed,
+#' this function will generate code from it with default options.
+#'
 #' @param C the code to write, as a character array.
 #' @param model.name a string with no special characters, will be used in the file name
 #' @param file override the default file name (based on hashing)
 #' @export
 #' @return the path of the written file
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' C <- generate_code(o)
+#' c_path(o) <- write_c_code(C)
+#' print(o)
+#' if (file.exists(c_path(o))) cat("c file exists.\n")
 write_c_code <- function(C, model.name=comment(C), file=file.path(tempdir(),digest::digest(C,"xxhash64"),paste0(model.name,".c"))){
+	if (is(C,"ode")) { # an ode model was passed instead of code
+		ode <- C
+		model.name <- ode$name
+		C <- generate_code(ode)
+	} else if (is(C,"cme")){
+		cme <- C
+		model.name <- cme$name
+		C <- generate_code(cme)
+	}
 	cat(sprintf("Writing file: %s\n",file))
 	if (!dir.exists(dirname(file))){
 		dir.create(dirname(file),recursive=TRUE)
@@ -98,10 +130,10 @@ write_c_code <- function(C, model.name=comment(C), file=file.path(tempdir(),dige
 	return(file)
 }
 
-
 #' Writes code to file and compiles
 #'
-#' This function accepts the code that was written by [generate_code],
+#' This function accepts an ode model, or cme model, generates code,
+#' compiles it to a shared library, and returns a changed object.
 #' possibly changed by the user. It writes the contents to a c file
 #' named 'modelName_gvf.c'. This file is compiled to './modelName.so'
 #' using normal command line tools, not `R CMD SHLIB`
@@ -109,16 +141,18 @@ write_c_code <- function(C, model.name=comment(C), file=file.path(tempdir(),dige
 #' This entire function can be replaced with a call to `cat()` and
 #' then compiling the written file in the system's shell.
 #'
-#' @param o ode model for which code is generated and written to a file
-#' @return the model's name with annotation about file names.
+#' @export
+#' @param M ode or cme Model for which code is generated and written to a file
+#' @return a copy of `o` with file paths added to it
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' o <- write_and_compile(as_ode(m))
 #' print(o)
-write_and_compile <- function(o){
-	C <- generate_code(o)
-	f <- tempfile(pattern=sprintf("%s_",o$name), fileext=".c")
+write_and_compile <- function(M){
+	C <- generate_code(M)
+	f <- tempfile(pattern=sprintf("%s_",M$name), fileext=".c")
 	cat(C,sep="\n",file=f)
-	comment(o$name) <- shlib(f)
-	return(o)
+	c_path(M) <- f
+	so_path(M) <- shlib(f)
+	return(M)
 }

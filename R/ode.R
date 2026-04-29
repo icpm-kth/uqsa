@@ -105,12 +105,10 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 #' @return NULL
 #' @export
 #' @examples
-#' \donttest{
-#'   f <- uqsa_example("AKAR4")
-#'   m <- model_from_tsv(f)
-#'   o <- as_ode(m)
-#'   print(o)
-#' }
+#' f <- uqsa_example("AKAR4")
+#' m <- model_from_tsv(f)
+#' o <- as_ode(m)
+#' print(o)
 print.ode <- function(o){
 	cat(
 		sprintf("%26s : %s","Model name",o$name),
@@ -133,6 +131,12 @@ print.ode <- function(o){
 #' @param value the path to the compiled model
 #' @export
 #' @return modified o, with information about compiled code
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' c_path(o) <- write_c_file(generate_code(o))
+#' so_path(o) <- shlib(o)
+#' print(o)
 `so_path<-` <- function(o,value){
 	if (!is.character(value) || length(value)>1) stop("Value must be a character scalar")
 	if (!file.exists(value)) warning(sprintf("File %s does not exist",value))
@@ -151,6 +155,11 @@ print.ode <- function(o){
 #' @param value the path to the compiled model
 #' @export
 #' @return modified o, with information about compiled code
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' c_path(o) <- write_c_file(generate_code(o))
+#' so_path(o) <- shlib(o)
+#' print(o)
 `c_path<-` <- function(o,value){
 	if (!is.character(value) || length(value)>1) stop("Value must be a character scalar")
 	if (!file.exists(value)) warning(sprintf("File %s does not exist",value))
@@ -167,6 +176,11 @@ print.ode <- function(o){
 #' @param o the ODE, or CME model
 #' @export
 #' @return modified o, with information about compiled code
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- as_ode(m)
+#' c_path(o) <- write_c_file(generate_code(o))
+#' so_path(o) <- shlib(o)
+#' print(so_path(o))
 so_path <- function(o){
 	if (is.null(o$so_path)) return("")
 	f <- o$so_path
@@ -182,8 +196,8 @@ so_path <- function(o){
 #' @export
 #' @return the path where the c code is stored
 c_path <- function(o){
-	if (is.null(f)) return("")
 	f <- o$c_path
+	if (is.null(f)) return("")
 	if (!file.exists(f)) warning(sprintf("File %s does not exist (anymore).",f))
 	return(f)
 }
@@ -666,4 +680,3 @@ generateRCode <- function(odeModel){
 	# event function
 	return(C)
 }
-

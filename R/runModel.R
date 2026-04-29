@@ -396,14 +396,17 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0){
 #' arguments, it is called `parABC` or (parMCMC would also have been a
 #' valid choice). These sampling parameters can be mapped to values
 #' the simulator can use via `parMap`. `parModel <- parMap(parABC)`,
-#' where the ODE model is expected to work with `parModel`.
+#' where the ODE model is expected to work with `parModel`.  The model
+#' can be specified by name (with a comment indicating a file
+#' location)
 #'
 #' Some return values are optional and omiting them saves time.
 #'
 #' @param experiments a list of experiments to simulate: inital
 #'     values, inputs, time vectors, initial times
 #' @param modelName a string (with optional comment indicating an .so
-#'     file) which points out the model to simulate
+#'     file) which points out the model to simulate if modelName is a
+#'     cme object, the simulation will be done stochasitcally
 #' @param parABC the parameters for the model, subject to change by
 #'     parMap.
 #' @param parMap the model will be called with parMap(parABC); so any
@@ -411,8 +414,8 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0){
 #' @param noise boolean variable. If `noise=TRUE`, Gaussian noise is
 #'     added to the output of the simulations. The standard deviation
 #'     of the Gaussian noise is equal to the measurement error. If
-#'     `noise=FALSE` the output is the deterministic solution of the ODE
-#'     system. noise and sensitivity calculations are mutually
+#'     `noise=FALSE` the output is the deterministic solution of the
+#'     ODE system. noise and sensitivity calculations are mutually
 #'     exclusive.
 #' @param omit `omit=0` returns all optional return values form the
 #'     simulator, `omit=1` will not calculate the fisher information
@@ -421,6 +424,7 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0){
 #'     calculations alltogether. Omission is cumulative: `omit=3`
 #'     omits all the previously mentioned optional quantities.
 #' @export
+#' @useDynLib uqsa gillespie
 #' @return a closure that returns the model's output for a given
 #'     parameter vector
 #' @examples
@@ -476,6 +480,32 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 				sd[is.na(sd)] <- 0.0
 				yf[[i]]$func <- yf[[i]]$func + array(rnorm(prod(dim(sd)),0,sd),dim=dim(yf[[i]]$func))
 			}
+			class(yf) <- "simulation"
+			return(yf)
+		}
+	} else if (is(modelName,"cme")) {
+		sim <- function(parABC){
+			modelPar <- parMap(parABC)
+			yf <- unlist(
+				mclapply(
+					experiments,
+					\(EX) return(
+						.Call(
+							gillespie,
+							so_path(modelName),
+							list(EX),
+							as.matrix(modelPar)
+						)
+					)
+				),
+				recursive=FALSE
+			)
+			names(yf) <- names(experiments)
+			for (i in seq_along(yf)){
+				rownames(yf[[i]]$state) <- names(ex[[i]]$initialState)
+				rownames(yf[[i]]$func) <- rownames(ex[[i]]$data)
+			}
+			stopifnot(length(experiments)==length(yf))
 			class(yf) <- "simulation"
 			return(yf)
 		}

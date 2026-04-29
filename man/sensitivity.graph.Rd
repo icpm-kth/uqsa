@@ -41,5 +41,26 @@ bottom of the plot}
 nothing
 }
 \description{
-Produce a cumulative shaded area plot for the sensitivity matrix.
+Produce a cumulative shaded area plot for the sensitivity
+matrix. This function is intended for use with many observables,
+e.g. the state of the model at several given times. The x-axis of
+the plot is meant to be continuous. This will not produce a
+bar-chart, but a graph that shows how sensitivities change between
+farily similar observables.
+}
+\examples{
+  rprior <- rNormalPrior(c(-1,0,1),c(1,2,3))
+  X <- rprior(10000)
+  colnames(X) <- LETTERS[seq(3)]
+  Z <- exp(
+    cbind(
+      rowSums(X),
+      rowMeans(X),
+      exp(X[,1])
+    )
+  )
+  colnames(Z) <- c("sum","mean","exp1")
+  GSA <- gsa_binning(X,Z)
+  print(GSA)
+  sensitivity.graph(c(sum=1,mean=2,exp1=3),GSA)
 }

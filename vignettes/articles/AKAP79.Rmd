@@ -1,0 +1,141 @@
+---
+title: "Sample AKAP79 with ABC"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Sample AKAP79 with ABC}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  eval = TRUE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+We use `icpm-kth/SBtabVFGEN` to read the model files and `icpm-kth/rgsl` as an
+interface to `gsl_odeiv2` solvers (for initial value problems) to simulate the model:
+
+```{r setup}
+library(uqsa)
+library(parallel)
+```
+
+Next, we import the model's data tables from the TSV files (one of the included examples):
+
+```{r read-model}
+m <- model_from_tsv(uqsa_example("AKAP79"))
+cme <- as_cme(m)
+c_path(cme) <- write_c_code(generate_code(cme))
+so_path(cme) <- shlib(cme)
+ex <- experiments(m)
+```
+
+The function `shlib` compiles the model to a _shared library_ using
+`R CMD SHLIB`. On a fairly normal system you can also make a shared
+library using any c compiler with the options `cc -shared -fPIC ... `.
+
+```{r defaults}
+stopifnot(all(m$Parameter$scale == "log10"))
+parABC <- values(m$Parameter) # initial value
+```
+
+The parameters are given in logarithmic space (log10). So, the natural
+approach is to sample in logarithmic space: the ABC algorithm will
+sample the logarithms of the model parameters. This way, the actual
+parameters `10^parABC` are guaranteed to be positive.
+
+We limit the sampling to ranges, as appropriate for each
+parameter:
+
+```{r bounds}
+ll <- m$Parameter$median - 2*m$Parameter$stdv
+ul <- m$Parameter$median + 2*m$Parameter$stdv
+```
+
+The sampling procedure takes data in the list of experiments `ex` and
+compares the data points to the solution that `gsl_odeiv2` returns. We
+define a list of experiments, subdividing them into smaller groups and
+processing the groups in sequence. Between the rounds of sampling the
+posterior of every result is used as the prior distribution of the
+next round. This mimics the arrival of data sets in sequence (from the
+lab). The intermediate distributions will be modelled using
+`VineCopula`.
+
+```{r schedule}
+chunks <- list(c(3, 12, 18, 9), c(2, 11, 17, 8), c(1, 10, 16, 7))
+```
+
+Problem Size and core distribution:
+
+```{r sample-size}
+N <- 3000                    # sample size
+```
+
+Build a random number generator, and density function for the intial prior:
+
+```{r initial-prior}
+rprior <- rUniformPrior(ll, ul)
+dprior <- dUniformPrior(ll, ul)
+```
+
+The sampling loop:
+
+```{r ABCSMC}
+set.seed(7619201)
+options(mc.cores=detectCores())
+
+start_time = Sys.time()
+X <- rprior(N) # sample from the prior
+
+for (i in seq_along(chunks)){
+	I <- chunks[[i]]
+	s <- simstoch(ex[I],cme,log10ParMap)
+	Obj <- makeObjective(ex[I],s)
+	ABC_posterior <- ABCSMC(
+		Obj,
+		t(X),
+		Sigma=cov(X),
+		dprior=dprior,
+		delta=c(1,3) # either a range or c(initial, final)
+	)
+	C <- fitCopula(ABC_posterior$draws)
+	rprior <- rCopulaPrior(C)
+	dprior <- dCopulaPrior(C)
+	X <- ABC_posterior$draws
+}
+
+end_time = Sys.time()
+time_span = end_time - start_time
+
+cat("Total time:\n",time_span)
+```
+
+The result is a collection of intermediate samples and a final posterior sample.
+This article was build on this CPU:
+
+```{sh}
+grep "model name" /proc/cpuinfo | head -n 1
+head -n 1 /proc/meminfo
+```
+
+Let's display the difference between the posterior and prior
+distribution for the last chunk iteration:
+
+```{r plot}
+posterior <- ABC_posterior$draws
+prior <- rprior(NROW(posterior))
+uqsa::showPosterior(posterior[,seq(6)],prior[,seq(6)])
+```
+
+Alternatively:
+
+```{r hexbinplot}
+if (require(hexbin)){
+    hexbin::hexplom(posterior[,seq(6)])
+} else {
+    pairs(posterior[,seq(6)])
+}
+```

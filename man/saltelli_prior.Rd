@@ -33,3 +33,8 @@ fM1 <- t(sim(t(M1))[[1]]$state[,ti,])       # or similar
 
 For details see: Halnes, Geir, et al. J. comp. neuroscience 27.3 (2009): 471.
 }
+\examples{
+rprior <- rNormalPrior(c(-1,0,1),c(1,2,3))
+SP <- saltelli_prior(1000,rprior)
+print(names(SP))
+}

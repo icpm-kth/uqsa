@@ -18,7 +18,8 @@ simulator.c(
 values, inputs, time vectors, initial times}
 
 \item{modelName}{a string (with optional comment indicating an .so
-file) which points out the model to simulate}
+file) which points out the model to simulate if modelName is a
+cme object, the simulation will be done stochasitcally}
 
 \item{parMap}{the model will be called with parMap(parABC); so any
 parameter transformation can happen there.}
@@ -26,8 +27,8 @@ parameter transformation can happen there.}
 \item{noise}{boolean variable. If \code{noise=TRUE}, Gaussian noise is
 added to the output of the simulations. The standard deviation
 of the Gaussian noise is equal to the measurement error. If
-\code{noise=FALSE} the output is the deterministic solution of the ODE
-system. noise and sensitivity calculations are mutually
+\code{noise=FALSE} the output is the deterministic solution of the
+ODE system. noise and sensitivity calculations are mutually
 exclusive.}
 
 \item{omit}{\code{omit=0} returns all optional return values form the
@@ -62,7 +63,9 @@ the sampling space of a Bayesian method θ, so in the list of
 arguments, it is called \code{parABC} or (parMCMC would also have been a
 valid choice). These sampling parameters can be mapped to values
 the simulator can use via \code{parMap}. \code{parModel <- parMap(parABC)},
-where the ODE model is expected to work with \code{parModel}.
+where the ODE model is expected to work with \code{parModel}.  The model
+can be specified by name (with a comment indicating a file
+location)
 
 Some return values are optional and omiting them saves time.
 }

@@ -15,3 +15,10 @@ a matrix of random values
 \description{
 The returned function generates n random vectors, as rows of a matrix.
 }
+\examples{
+rprior <- rNormalPrior(c(-1,0,1),c(1,2,3))
+C <- fitCopula(rprior(1000))
+D <- rCopulaPrior(C)
+print(cov(D(100)))
+print(D(10))
+}

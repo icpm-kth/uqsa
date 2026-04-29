@@ -13,6 +13,11 @@ c_path(o) <- value
 }
 \value{
 modified o, with information about compiled code
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- as_ode(m)
+c_path(o) <- write_c_file(generate_code(o))
+so_path(o) <- shlib(o)
+print(o)
 }
 \description{
 Adds the location of the model's C code (a file). The model is

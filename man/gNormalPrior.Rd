@@ -21,6 +21,6 @@ It returns the gradient of the logarithm of the multivariate normal distribution
 with mean \code{mean} and standard deviation \code{sd}.
 }
 \examples{
-dnp <- dNormalPrior(mean=c(0,1,2),sd=c(1,2,3))
-dnp(c(0.5,1.5,2.5))
+gnp <- gNormalPrior(mean=c(0,1,2),sd=c(1,2,3))
+gnp(c(0.5,1.5,2.5))
 }

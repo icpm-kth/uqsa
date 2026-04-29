@@ -26,3 +26,13 @@ potentially measurable value (the "observable"). The sample-rows
 and the output rows must correspond (they must be from the same
 model simulation).
 }
+\examples{
+  rprior <- rNormalPrior(c(-1,0,1),c(1,2,3))
+  X <- rprior(10000)
+  colnames(X) <- LETTERS[seq(3)]
+  Z <- exp(X[,1,drop=FALSE]+X[,2,drop=FALSE])
+  colnames(Z) <- "alpha"
+  GSA <- gsa_binning(X,Z)
+  print(GSA)
+  cat("global sensitivity of alpha with respect to B: ",GSA['alpha','B'],"\n")
+}

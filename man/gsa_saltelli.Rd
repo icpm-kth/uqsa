@@ -17,16 +17,35 @@ gsa_saltelli(fM1, fM2, fN, subtractMean = TRUE)
 a list with sensitivity indices $SI and total sensitivities \verb{$SIT}
 }
 \description{
-M1, M2, and N are matrices prepared by \code{uqsa::shs_prior()}.  The
+M1, M2, and N are matrices prepared by \code{uqsa::saltelli_prior()}.  The
 parameters (rows) from these matrices need to be simulated (using
-any method), to obtain fM1, fM2 and fN.
+any method), to obtain \code{fM1}, \code{fM2} and \code{fN}.
 }
 \details{
-These matrices are shaped similarly to M1, M2 and N respectively,
+These matrices are shaped similarly to \code{M1}, \code{M2} and \code{N} respectively,
 but now the parameters are replaced by the effects they have on a
 observable of interest (the output). It can be the vector
 valued output at a specific (single) time-point or a scalar output
 at different time-points.
 
 See Geir Halnes et al. (Halnes, Geir, et al. J. comp. neuroscience 27.3 (2009): 471.
+}
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- write_and_compile(as_ode(m))
+ex <- experiments(m,o)
+s <- simulator.c(ex[1],o)
+p0 <- values(m$Parameter)
+rprior <- rUniformPrior(p0/2,p0*2)
+SP <- saltelli_prior(1000,rprior)
+fM1 <- t(s(t(SP$M1))[[1]]$func[1,,])
+fM2 <- t(s(t(SP$M2))[[1]]$func[1,,])
+fN <- lapply(asplit(SP$N,3),\(N) t(s(t(N))[[1]]$func[1,,]))
+fN <- simplify2array(fN)
+GSA <- gsa_saltelli(fM1,fM2,fN)
+print(names(GSA))
+cat(
+  "average relative senitivity S(p1) / S(p2): ",
+  mean(GSA$SI[,1]/GSA$SI[,2],na.rm=TRUE)
+)
 }

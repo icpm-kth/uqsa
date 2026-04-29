@@ -17,3 +17,10 @@ modified o, with information about compiled code
 \description{
 Adds the path of the shared library (.so file) to the ODE model.
 }
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- as_ode(m)
+c_path(o) <- write_c_file(generate_code(o))
+so_path(o) <- shlib(o)
+print(o)
+}

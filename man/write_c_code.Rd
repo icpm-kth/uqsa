@@ -25,3 +25,7 @@ This function does not compile the code, it only writes it to a
 file in a temporary location (tempdir). By default, the name of the
 file will contain the hash of the entire code.
 }
+\details{
+If instead of a character vector, an ode or cme object is passed,
+this function will generate code from it with default options.
+}

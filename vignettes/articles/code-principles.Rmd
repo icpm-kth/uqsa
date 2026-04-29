@@ -1,10 +1,5 @@
 ---
 title: "Source Code Principles (Devs)"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Source Code Principles}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -28,14 +23,18 @@ external packages when a feature is good, and difficult to replicate.
 
 # Objects
 
-We do not define _S3_, or _S4_ objects for this package. All functions
-accept/return base R types (vectors, lists, matrices, data.frames). We
-may occasionally use objects from other packages.
+For the most part we do not define _S3_, or _S4_ objects for this
+package. All functions accept/return base R types (vectors, lists,
+matrices, data.frames). We may occasionally use objects from other
+packages. When we do define objects then the purpose is mostly to
+prevent accidental printouts of huge amounts of data and cluttering
+the screen.
 
 # Closures
 
 The MCMC code tries to follow the mathematical formulation of the
-subject (in literature). The goal is to make it easy to read the code.
+subject (in literature). The goal is to make it at least somewhat easy
+to read the code.
 
 A probability distribution typically takes a main argument, and
 several _given_ values. Whenever we want to distinguish the _main_
@@ -146,7 +145,7 @@ function, the user can call the update funciton and inspect the
 result.
 
 ```{r user-likelihood, eval=FALSE}
-ex <- SBtabVFGEN::sbtab.data(...)
+ex <- experiments(m,o)
 
 logLikelihood <- function(theta){
     stopifnot("simulations" %in% names(attributes(theta)))
@@ -180,12 +179,9 @@ environment they were created in). Let us assume that there is exactly
 one experiment.
 
 ```{r optimx, eval=FALSE}
-ex <- SBtabVFGEN::sbtab.data(...)    # load some data set
-
-modelName <- "my_model"
-comment(modelName) <- "./my_model.so"
-
-s <- simulator.c(ex,modelName)
+o <- write_and_compile(as_ode(o))
+ex <- experiments(m,o)    # load some data set
+s <- simulator.c(ex,o)
 
 if (requireNamespace("optimx")){
 ##  user code, using the variables ex, and s implicitly
@@ -212,12 +208,6 @@ state). For one vector `theta`, the third dimension is 1:
 
 This third dimension can be dropped (`drop`) if none of the other
 dimension's are singular.
-
-_Remark:_ We are aware of this possibility, to use variables in the
-global environment, but for package functions, we want it to be
-immediately apparent where a value comes from (by reading the
-function's code). Package functions must (of course) make no
-assumptions about variables in the user's global environment.
 
 # ABC
 

@@ -10,10 +10,11 @@ write_and_compile(o)
 \item{o}{ode model for which code is generated and written to a file}
 }
 \value{
-the model's name with annotation about file names.
+a copy of \code{o} with file paths added to it
 }
 \description{
-This function accepts the code that was written by \link{generate_code},
+This function accepts an ode model, or cme model, generates code,
+compiles it to a shared library, and returns a changed object.
 possibly changed by the user. It writes the contents to a c file
 named 'modelName_gvf.c'. This file is compiled to './modelName.so'
 using normal command line tools, not \verb{R CMD SHLIB}

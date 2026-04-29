@@ -19,10 +19,8 @@ matrices which together encode the mathematical structure of the
 ode.
 }
 \examples{
-\donttest{
-  f <- uqsa_example("AKAR4")
-  m <- model_from_tsv(f)
-  o <- as_ode(m)
-  print(o)
-}
+f <- uqsa_example("AKAR4")
+m <- model_from_tsv(f)
+o <- as_ode(m)
+print(o)
 }

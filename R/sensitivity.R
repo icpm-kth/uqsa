@@ -5,6 +5,7 @@
 #' the other parameters \[full range\]). This function returns the mean
 #' of the observable for each bin, as a vector.
 #'
+#' @noRd
 #' @param id is an integer vector that identifies the bin the
 #'     parameter vector falls into to create the same row of the
 #'     outputSample (the output stems from a model simulation with
@@ -32,7 +33,7 @@ observable.mean.in.bin <- function(id,outputSample){
 #' This function calculates the variance sum of a vector valued
 #' observable.
 #'
-#' @usage sum.of.bin.variance(hst, binMeans, totalMean)
+#' @noRd
 #' @param hst the histogram of the parameter sample
 #' @param binMeans the means of the observable within each bin (rows of means)
 #' @param totalMean the mean of the observable over the entire sample (vector)
@@ -59,6 +60,15 @@ sum.of.bin.variance  <- function(hst,binMeans,totalMean){
 #' @param nBins number of bins, if unset defaults to the default of the hist function
 #' @export
 #' @return sensitivity `S[i,j]` of `output[i]` with respect to `parameter[j]`
+#' @examples
+#'   rprior <- rNormalPrior(c(-1,0,1),c(1,2,3))
+#'   X <- rprior(10000)
+#'   colnames(X) <- LETTERS[seq(3)]
+#'   Z <- exp(X[,1,drop=FALSE]+X[,2,drop=FALSE])
+#'   colnames(Z) <- "alpha"
+#'   GSA <- gsa_binning(X,Z)
+#'   print(GSA)
+#'   cat("global sensitivity of alpha with respect to B: ",GSA['alpha','B'],"\n")
 gsa_binning <- function(parSample,outputSample,nBins="Sturges"){
 	isNA <- apply(is.na(outputSample),1,any)
 	parSample <- parSample[!isNA,,drop=FALSE]
@@ -86,7 +96,12 @@ gsa_binning <- function(parSample,outputSample,nBins="Sturges"){
 
 #' plot the sensitivity matrix
 #'
-#' Produce a cumulative shaded area plot for the sensitivity matrix.
+#' Produce a cumulative shaded area plot for the sensitivity
+#' matrix. This function is intended for use with many observables,
+#' e.g. the state of the model at several given times. The x-axis of
+#' the plot is meant to be continuous. This will not produce a
+#' bar-chart, but a graph that shows how sensitivities change between
+#' farily similar observables.
 #'
 #' @export
 #' @param u the values of the x-axis for the plot, if named, the names
@@ -105,6 +120,21 @@ gsa_binning <- function(parSample,outputSample,nBins="Sturges"){
 #'     bottom of the plot
 #' @param ... passed on to plot
 #' @return nothing
+#' @examples
+#'   rprior <- rNormalPrior(c(-1,0,1),c(1,2,3))
+#'   X <- rprior(10000)
+#'   colnames(X) <- LETTERS[seq(3)]
+#'   Z <- exp(
+#'     cbind(
+#'       rowSums(X),
+#'       rowMeans(X),
+#'       exp(X[,1])
+#'     )
+#'   )
+#'   colnames(Z) <- c("sum","mean","exp1")
+#'   GSA <- gsa_binning(X,Z)
+#'   print(GSA)
+#'   sensitivity.graph(c(sum=1,mean=2,exp1=3),GSA)
 sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.colors(dim(S)[2]+1),do.sort=TRUE,decreasing=FALSE,...){
 	d <- dim(S)
 	n <- d[2]-1
@@ -115,7 +145,7 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 	}
 	C <- t(apply(S,1,cumsum))
 	x <- c(u,rev(u))
-	plot(u,C[,1],type='l', axes=FALSE, col=line.color[1],...)
+	plot(u,C[,1],type='l', axes=FALSE, col=line.color[1],ylim=c(0,max(C,na.rm=TRUE)),...)
 	axis(1,at=u,labels=names(u))
 	axis(2)
 	z <- c(S[,1]*0,rev(S[,1]))
@@ -126,7 +156,9 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 		polygon(x,y,col=color[i+1],lty=0)
 		lines(u,C[,i],col=line.color[i+1],lwd=2)
 	}
-	legend("topright",fill=color[1:d[2]],legend=colnames(S),ncol=2)
+	if (!is.null(colnames(S))){
+		legend("topright",fill=color[1:d[2]],legend=colnames(S),ncol=2)
+	}
 }
 
 
@@ -154,6 +186,10 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 #' @param rprior a function that samples from the prior distribution
 #' @return a list with the components `M1`, `M2` (both matrices) and `N` (a
 #'     3D-array).
+#' @examples
+#' rprior <- rNormalPrior(c(-1,0,1),c(1,2,3))
+#' SP <- saltelli_prior(1000,rprior)
+#' print(names(SP))
 saltelli_prior <- function(nSamples,rprior){
 	nPars<-NCOL(rprior(1))
 	M1 <- rprior(nSamples)
@@ -167,13 +203,21 @@ saltelli_prior <- function(nSamples,rprior){
 	return(list(M1=M1,M2=M2,N=N))
 }
 
+subtract_col_mean <- function(X){
+	stopifnot(is.matrix(X))
+	m <- colMeans(X)
+	return(
+		t(apply(X,1,\(x) x-m))
+	)
+}
+
 #' Outputs the global sensitivity scores SI and SIT, calculated by the Sobol-Homma-Saltelli method
 #'
-#' M1, M2, and N are matrices prepared by `uqsa::shs_prior()`.  The
+#' M1, M2, and N are matrices prepared by `uqsa::saltelli_prior()`.  The
 #' parameters (rows) from these matrices need to be simulated (using
-#' any method), to obtain fM1, fM2 and fN.
+#' any method), to obtain `fM1`, `fM2` and `fN`.
 #'
-#' These matrices are shaped similarly to M1, M2 and N respectively,
+#' These matrices are shaped similarly to `M1`, `M2` and `N` respectively,
 #' but now the parameters are replaced by the effects they have on a
 #' observable of interest (the output). It can be the vector
 #' valued output at a specific (single) time-point or a scalar output
@@ -186,18 +230,38 @@ saltelli_prior <- function(nSamples,rprior){
 #' @param fM2 output (f)unction values for `M2`, nSamples × nOuts
 #' @param fN output (f)unction values for `N`, nSamples × nOuts × nPars
 #' @return a list with sensitivity indices $SI and total sensitivities `$SIT`
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' o <- write_and_compile(as_ode(m))
+#' ex <- experiments(m,o)
+#' s <- simulator.c(ex[1],o)
+#' p0 <- values(m$Parameter)
+#' rprior <- rUniformPrior(p0/2,p0*2)
+#' SP <- saltelli_prior(1000,rprior)
+#' fM1 <- t(s(t(SP$M1))[[1]]$func[1,,])
+#' fM2 <- t(s(t(SP$M2))[[1]]$func[1,,])
+#' fN <- lapply(asplit(SP$N,3),\(N) t(s(t(N))[[1]]$func[1,,]))
+#' fN <- simplify2array(fN)
+#' GSA <- gsa_saltelli(fM1,fM2,fN)
+#' print(names(GSA))
+#' cat(
+#'   "average relative senitivity S(p1) / S(p2): ",
+#'   mean(abs(GSA$SI[,1]/GSA$SI[,2]),na.rm=TRUE)
+#' )
 gsa_saltelli<- function(fM1,fM2,fN, subtractMean = TRUE){
 	nSamples <- dim(fM1)[1]
 	nOuts <- dim(fM1)[2]
 	nPars <- dim(fN)[3]
 	if(subtractMean){
-		fM1 <- fM1 - matrix(colMeans(fM1), nrow=nSamples, ncol=nOuts, byrow=1)
-		fM2 <- fM2 - matrix(colMeans(fM2), nrow=nSamples, ncol=nOuts, byrow=1)
-		for (i in 1:nPars){
-			fN[,,i] <- fN[,,i] - matrix(colMeans(fN[,,i]), nrow=nSamples, ncol=nOuts, byrow=1)
-		}
+		fM1 <- subtract_col_mean(fM1)
+		fM2 <- subtract_col_mean(fM2)
+		fN <- simplify2array(
+			lapply(
+				asplit(fN,3),
+				subtract_col_mean
+			)
+		)
 	}
-
 	EY2 <- colMeans(fM1*fM2)
 	VY <- colSums(fM1*fM1)/(nSamples-1) - EY2
 	VYT <- colSums(fM2*fM2)/(nSamples-1) - EY2

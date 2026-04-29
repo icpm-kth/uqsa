@@ -47,6 +47,12 @@ dCopulaPrior <- function(Copula){
 #' @export
 #' @param Copula the return value of fitCopula()
 #' @return a matrix of random values
+#' @examples
+#' rprior <- rNormalPrior(c(-1,0,1),c(1,2,3))
+#' C <- fitCopula(rprior(1000))
+#' D <- rCopulaPrior(C)
+#' print(cov(D(100)))
+#' print(D(10))
 rCopulaPrior <- function(Copula){
   copula <- Copula$copula
   Z <- Copula$Z
@@ -144,8 +150,8 @@ dNormalPrior <- function(mean,sd){
 #' @param sd standard deviation of the random variables (same size vector as mean)
 #' @return a probability density function on vectors with the same length as mean and sd.
 #' @examples
-#' dnp <- dNormalPrior(mean=c(0,1,2),sd=c(1,2,3))
-#' dnp(c(0.5,1.5,2.5))
+#' gnp <- gNormalPrior(mean=c(0,1,2),sd=c(1,2,3))
+#' gnp(c(0.5,1.5,2.5))
 gNormalPrior <- function(mean,sd){
 	dprior <- function(x){
 		return(
