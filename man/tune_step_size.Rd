@@ -8,7 +8,8 @@ tune_step_size(
   MCMC,
   parMCMC = attr(MCMC, "init"),
   target_acceptance = 0.25,
-  iter.max = 6
+  iter.max = 6,
+  h = 1e-04
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ acceptance, some work well with a very high acceptance.}
 
 \item{iter.max}{maximum number of iterations until the function has
 to return.}
+
+\item{h}{initial guess for the MCMC step size}
 }
 \value{
 optimal step size
@@ -41,7 +44,7 @@ high.
 This function will do at most
 }
 \examples{
-\donttest{
+\donttest{\
 m <- model_from_tsv(uqsa_example("AKAP79"))
 rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
 p <- rwm \%@\% "init"             # a valid starting point

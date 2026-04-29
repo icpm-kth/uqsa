@@ -46,6 +46,6 @@ GSA <- gsa_saltelli(fM1,fM2,fN)
 print(names(GSA))
 cat(
   "average relative senitivity S(p1) / S(p2): ",
-  mean(GSA$SI[,1]/GSA$SI[,2],na.rm=TRUE)
+  mean(abs(GSA$SI[,1]/GSA$SI[,2]),na.rm=TRUE)
 )
 }

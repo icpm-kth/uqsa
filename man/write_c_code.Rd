@@ -29,3 +29,11 @@ file will contain the hash of the entire code.
 If instead of a character vector, an ode or cme object is passed,
 this function will generate code from it with default options.
 }
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- as_ode(m)
+C <- generate_code(o)
+c_path(o) <- write_c_code(C)
+print(o)
+if (file.exists(c_path(o))) cat("c file exists.\n")
+}

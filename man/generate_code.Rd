@@ -26,3 +26,9 @@ Whenever the model \code{Model} is of type \code{"cme"}, the LV parameter is
 used to determine the actual number of molecules in the
 system. Otherwise it is ignored.
 }
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- as_ode(m)
+C <- generate_code(o)
+cat(head(C),sep="\n")
+}

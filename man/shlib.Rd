@@ -23,3 +23,12 @@ this information stored within it. The models returned by \link{as_cme}
 and \link{as_ode} can both carry this information, attach it via
 \link{c_path<-}.
 }
+\examples{
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- as_ode(m)
+C <- generate_code(o)
+c_path(o) <- write_c_code(C)
+so_path(o) <- shlib(o)
+print(o)
+if (file.exists(so_path(o))) cat("shared library exists.\n")
+}

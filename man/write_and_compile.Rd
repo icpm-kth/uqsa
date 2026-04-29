@@ -4,10 +4,10 @@
 \alias{write_and_compile}
 \title{Writes code to file and compiles}
 \usage{
-write_and_compile(o)
+write_and_compile(M)
 }
 \arguments{
-\item{o}{ode model for which code is generated and written to a file}
+\item{M}{ode or cme Model for which code is generated and written to a file}
 }
 \value{
 a copy of \code{o} with file paths added to it

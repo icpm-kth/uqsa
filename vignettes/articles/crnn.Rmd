@@ -244,7 +244,7 @@ for (M in seq(0,7)){
 		lty=1,
 		col=c("red4","blue4","purple","green4"),
 		ylim=c(-1,sum(iv)),
-		main=rgsl::nameMethod(M)
+		main=name_method(M)
 	)
 }
 ```
@@ -270,7 +270,7 @@ matplot(
 	lty=1,
 	col=c("red4","blue4","purple","green4"),
 	ylim=c(-1,sum(iv)),
-	main=rgsl::nameMethod(0)
+	main=name_method(0)
 )
 ```
 

@@ -1640,10 +1640,11 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 #'     acceptance, some work well with a very high acceptance.
 #' @param iter.max maximum number of iterations until the function has
 #'     to return.
+#' @param h initial guess for the MCMC step size
 #' @return optimal step size
 #' @export
 #' @examples
-#' \donttest{
+#' \donttest{\
 #' m <- model_from_tsv(uqsa_example("AKAP79"))
 #' rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
 #' p <- rwm %@% "init"             # a valid starting point
@@ -1659,8 +1660,7 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 #'   ylab="log-likelihood"
 #' )
 #' }
-tune_step_size <- function(MCMC,parMCMC=attr(MCMC,"init"),target_acceptance=0.25, iter.max=6){
-	h <- 1e-2
+tune_step_size <- function(MCMC,parMCMC=attr(MCMC,"init"),target_acceptance=0.25, iter.max=6, h=1e-4){
 	A <- target_acceptance
 	for (i in seq(iter.max)){
 		X <- MCMC(parMCMC,100,h)

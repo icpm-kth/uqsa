@@ -16,7 +16,7 @@ if (length(ca)>0){
 } else {
 	N <- 1000              # default sample size
 }
-h <- 1e-3                  # step size
+
 beta <- (1.0 - (r/cs))^2   # PT: inverse temperature
 
 m <- readRDS(file="/dev/shm/AKAR4-m.RDS")
@@ -35,7 +35,9 @@ metropolis <- metropolis_update(
 	dprior=dprior
 )
 
-ptMetropolis <- mcmc_mpi(
+rwm <- mcmc(metropolis) # non-parallel
+
+ptMetropolis <- mcmc_mpi( # parallel
 	metropolis,
 	comm=comm
 )
@@ -47,13 +49,18 @@ x <- mcmc_init(
 	dprior=dprior
 )
 
+h <- tune_step_size(rwm,x,1e-3)
+gc()
 Z <- ptMetropolis(x,N,h) # the main amount of work is done here
-
 saveRDS(Z,file=sprintf("/dev/shm/sample-rank-%i.RDS",r))
 pbdMPI::barrier()
+rm(Z)
+
 f <- dir("/dev/shm",pattern=sprintf('sample-rank-.*RDS$'),full.names=TRUE)
 X <- gatherSample(f,beta)
 saveRDS(X,file=sprintf("/dev/shm/AKAR4-parameter-sample-for-rank-%i.RDS",r))
+gc()
+
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)
 
