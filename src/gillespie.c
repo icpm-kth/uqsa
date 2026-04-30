@@ -9,11 +9,12 @@
 #include <R.h>
 #include <Rinternals.h>
 #include <Rdefines.h>
+#include <time.h>
 
 typedef SEXP Rdata;
 
-int (*model_effects)(double t, int *x, int j);
-int (*model_propensities)(double t, int *x, double *c, double*a);
+int (*model_effects)(double t, int *x, double *c, double* a,  int j);
+int (*model_propensities)(double t, int *x, double *c, double *a);
 int (*model_reaction_coefficients)(double *c);
 int (*model_initial_counts)(int *x, double *c);
 int (*model_func)(double t, int *x, double *c, double *f);
@@ -28,7 +29,7 @@ int (*model_stochastic_parameters)(double t, double *par);
  */
 union symbol {
 	void *ptr;                                         /* <- input   */
-	int (*model_effects)(double t, int *x, int j);     /* outputs -> */
+	int (*model_effects)(double t, int *x, double *c, double *a, int j);     /* outputs -> */
 	int (*model_propensities)(double t, int *x, double *c, double*a);
 	int (*model_reaction_coefficients)(double *c);
 	int (*model_initial_counts)(int *x, double *c);
@@ -116,7 +117,7 @@ void advance_in_time(double *t, gsl_vector_int *x, gsl_vector *c, gsl_vector *a,
 	double r;
 	double sum_a=0.0;
 	int j;
-	model_propensities(*t,x->data,c->data,a->data);
+	//model_propensities(*t,x->data,c->data,a->data);
 	// 1. calculate sum(a)
 	sum_a = gsl_vector_sum(a);
 	// 2. pick a time step forward (tau)
@@ -124,7 +125,7 @@ void advance_in_time(double *t, gsl_vector_int *x, gsl_vector *c, gsl_vector *a,
 	// 3. pick a reaction to perform:
 	r = gsl_rng_uniform(RNG);
 	j = pick_reaction(a,r*sum_a);
-	model_effects(*t,x->data,j);
+	model_effects(*t,x->data,c->data,a->data,j);
 	*t += tau;
 }
 
@@ -140,7 +141,11 @@ int cat_parameters(gsl_vector *c, double *p, size_t np, Rdata input){
 	return 0;
 }
 
-Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
+double seconds(double clock_a, double clock_b){
+	return fabs(clock_b-clock_a)/CLOCKS_PER_SEC;
+}
+
+Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters, Rdata time_limit_s){
 	gsl_set_error_handler_off();
 	int i,j,k;
 	//int l;
@@ -165,12 +170,14 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 	double tf = 10;
 	double t = t0;
 	double *p;
+	double limit_seconds = REAL(time_limit_s)[0];
+	clock_t cpu_t[2];
 	Rdata time, input, E, initialState, initialTime, yf, y, f;
-	const char *snames[] = {"state","func",NULL};
+	const char *snames[] = {"state","func","status",NULL};
 	Rdata solution = PROTECT(NEW_LIST(length(experiments)));
 	SET_NAMES(solution,GET_NAMES(experiments));
 	gsl_vector_int_view column;
-
+	Rdata status;
 	gsl_rng *RNG = gsl_rng_alloc(gsl_rng_ranlxs0);
 	gsl_rng_set(RNG, 1337);
 	model_reaction_coefficients(c->data);
@@ -183,9 +190,10 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 		time = from_list(E,"outputTimes");
 		input = from_list(E,"input");
 		t0 = *REAL(AS_NUMERIC(initialTime));
-		yf = PROTECT(NEW_LIST(2));
+		yf = PROTECT(NEW_LIST(3));
 		y = PROTECT(alloc3DArray(INTSXP,n,length(time),M));
 		f = PROTECT(alloc3DArray(REALSXP,nf,length(time),M));
+		status = PROTECT(NEW_INTEGER(M));
 		for (k=0;k<M;k++){
 			t = t0;
 			p = REAL(parameters)+(k*nrp);
@@ -197,10 +205,18 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 			if (model_particle_count){
 				model_particle_count(t0,REAL(initialState),x->data);
 			}
+			cpu_t[0] = clock();
+			INTEGER(status)[k]=0; // success
 			for (j=0; j<length(time); j++){
 				tf = REAL(AS_NUMERIC(time))[j];
+				model_propensities(t0,x->data,c->data,a->data);
 				while (t < tf){
 					advance_in_time(&t,x,c,a,RNG);
+					cpu_t[1] = clock();
+					if (seconds(cpu_t[1],cpu_t[0]) > limit_seconds) {
+						INTEGER(status)[k]=1; // timeout
+						break;
+					}
 				}
 				column = gsl_vector_int_view_array(INTEGER(y)+(n*length(time)*k+n*j),n);
 				model_func(t,x->data,krc->data,REAL(f)+(nf*length(time)*k+nf*j));
@@ -209,8 +225,9 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters){
 		}
 		SET_VECTOR_ELT(yf,0,y);
 		SET_VECTOR_ELT(yf,1,f);
+		SET_VECTOR_ELT(yf,2,status);
 		set_names(yf,snames);
-		UNPROTECT(2);
+		UNPROTECT(3);
 		SET_VECTOR_ELT(solution,i,yf);
 		UNPROTECT(1);
 	}

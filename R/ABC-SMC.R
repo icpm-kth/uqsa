@@ -77,9 +77,10 @@ ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(startPar), dprior, d
 	## calculate initial distances
 	curPar  <- startPar
 	curDistance <- colMeans(objectiveFunction(curPar))
-	stopifnot(all(is.finite(curDistance)))
+	#stopifnot(all(is.finite(curDistance)))
 	curPrior <- dprior(curPar)
-	curWeight <- numeric(batchSize) + 1.0 # init to 1.0
+	curWeight <- 1.0/curDistance # init
+	curWeight <- curWeight/sum(curWeight)
 	acceptanceRate <- 1.0                 # startPar has 100% acceptance, we don't reject any of them
 	while (delta > deltaLowerBound && acceptanceRate > 0.03) {
 		if (messages) message(sprintf("delta: %g",delta))

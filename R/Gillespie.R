@@ -363,7 +363,7 @@ as_cme <- function(m){
 	cr <- stoichiometry(strsplit(F[,2],"+",fixed=TRUE))
 	names(cr) <- paste0(rownames(m$Reaction),"_bwd")
 	k <- c(
-		linear_scale(values(m$Parameter),m$parameter$scale),
+		linear_scale(values(m$Parameter),m$Parameter$scale),
 		linear_scale(values(m$Input),m$Input$scale)
 	)
 	u <- c(
@@ -373,8 +373,8 @@ as_cme <- function(m){
 	attr(k,"unit") <- u
 	kl <- flux_matrix(m$Reaction)
 	CME <- list(
-		left=cl,
-		right=cr,
+		left=cl, # reactants
+		right=cr,# products
 		parConversion=moleCountConversion(u), #parameterConversion(u,cl,cr,kl),
 		initialCount=initialCount(m),
 		par=k,
@@ -422,37 +422,42 @@ print.cme <- function(cmeModel){
 }
 
 reactionEffect <- function(sm){
+	all_reactants <- rep(mapply(\(a,b) unique(c(names(a),names(b))),sm$left,sm$right),2)
+	rNames <- c(names(sm$left),names(sm$right))
+  names(all_reactants) <- rNames
+	ar <- lapply( # affected reaction propensities
+		all_reactants,
+		\(reactants){
+			return(
+				unique(
+					unlist(
+						lapply(
+							sprintf("\\b%s\\b",reactants),
+							FUN=\(pat) grep(pat,all_reactants)
+						)
+					)
+				)
+			)
+		}
+	)
+	m <- c(sm$reactionMultiplicityFWD,sm$reactionMultiplicityBWD)
 	return(
 		unlist(
-			c(
-				mapply(
-					\(x,y,n) {
-						c(
-							sprintf("\tcase _%s:",n),
-							sprintf("\t\tx[_%s] -= %i;",names(x),x),
-							sprintf("\t\tx[_%s] += %i;",names(y),y),
-							sprintf("\t\tbreak;")
-						)
-					},
-					sm$left,
-					sm$right,
-					names(sm$left),
-					SIMPLIFY=FALSE
-				),
-				mapply(
-					\(x,y,n) {
-						c(
-							sprintf("\tcase _%s:",n),
-							sprintf("\t\tx[_%s] -= %i;",names(x),x),
-							sprintf("\t\tx[_%s] += %i;",names(y),y),
-							sprintf("\t\tbreak;")
-						)
-					},
-					sm$right,
-					sm$left,
-					names(sm$right),
-					SIMPLIFY=FALSE
-				)
+			mapply(
+				\(x,y,n) {
+					c(
+						sprintf("\tcase _%s:",n),
+						sprintf("\t\t%s -= %i; x[_%s] = %s;",names(x),x,names(x),names(x)),
+						sprintf("\t\t%s += %i; x[_%s] = %s;",names(y),y,names(y),names(y)),
+						sprintf("\t\ta[_%s] = %i*%s;",rNames[ar[[n]]],m[ar[[n]]],sm$kinetic.law[ar[[n]]]),
+						sprintf("\t\tbreak;")
+					)
+				},
+				c(sm$left,sm$right),
+				c(sm$right,sm$left),
+				c(names(sm$left),names(sm$right)),
+
+				SIMPLIFY=FALSE
 			)
 		)
 	)
@@ -594,8 +599,10 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 	paste0("enum reaction {",paste0("_",rownames(sm$kinetic.law),"_fwd",collapse=", "),", ",paste0("_",rownames(sm$kinetic.law),"_bwd",collapse=", "),", numReactions};"),
 	paste0("enum outputFunctions {",paste0("_",names(sm$output),collapse=", "),", numFunctions};"),
 	"",
-	"int model_effects(double t, int *x, int j){",
+	"int model_effects(double t, int *x, double *c, double* a, int j){",
 	sprintf("\tif (!x) return numStateVariables;"),
+	Definitions,
+	Counts,
 	sprintf("\tswitch(j){"),
 	reactionEffect(sm),
 	"\t}",
@@ -724,6 +731,7 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 #' @param cmeModel Either the cmeModel from [as_cme], with a shared
 #'     library path stored inside, or the path to the so file
 #' @param parameters a numeric vector of appropriate size
+#' @param time.out in seconds
 #' @export
 #' @return a closure that simulates the model in `model.so`
 #' @useDynLib uqsa gillespie
@@ -740,7 +748,7 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 #' require(errors)
 #' plot(as.errors(ex[[1]]$outputTimes),ex[[1]]$data,xlab="time",ylab="AKAR4p",main=names(ex)[1])
 #' lines(ex[[1]]$outputTimes,res[[1]]$func,type="s",lwd=2,col="red3")
-simstoch <- function(ex, cmeModel, parMap=identity){
+simstoch <- function(ex, cmeModel, parMap=identity, time.out=1){
 	if (is.character(cmeModel)) {
 		model.so <- cmeModel
 	} else if (is(cmeModel,"cme")) {
@@ -761,7 +769,7 @@ simstoch <- function(ex, cmeModel, parMap=identity){
 	return(
 		function(parMCMC){
 			p <- as.matrix(parMap(parMCMC))
-			y <- .Call(gillespie, model.so, ex, p)
+			y <- .Call(gillespie, model.so, ex, p, as.double(time.out))
 			names(y) <- names(ex)
 			stopifnot(length(y) == length(ex))
 			for (i in seq_along(y)){

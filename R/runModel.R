@@ -29,10 +29,10 @@ print.simulation <- function(y){
 				cat(
 					sprintf(
 						"%24s: %s (class), %s (type)\n",
-						names(y[[i]])[j]
-					),
-					paste(class(x),collapse=", "),
-					typeof(x)
+						names(y[[i]])[j],
+						paste(class(x),collapse=", "),
+						typeof(x)
+					)
 				)
 			}
 		}
@@ -315,6 +315,8 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'     log-likelihood, output functions. Omission includes all
 #'     previous entries. `omit = 1` omits only the Fisher Information,
 #'     `omit=3`, omits FI, grad-ll, and log-likelihood calculations.
+#' @param time.out (in seconds); simulations are aborted at a time
+#'     greater than this.
 #' @export
 #' @return a closure that returns the model's output for a given
 #'     parameter vector, and approximate sensitivity matrices, for
@@ -334,7 +336,7 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'   s <- simfi(ex,c("AKAR4",so.file))
 #'   y <- s(values(m$Parameter)) # simulates
 #' }
-simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0){
+simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, time.out = 1){
 	N <- length(experiments)
 	if (is(odeModel,"ode")){
 		so <- so_path(odeModel)
@@ -423,6 +425,7 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0){
 #'     the log-likelihood, and `omit=3` will omit the likelihood
 #'     calculations alltogether. Omission is cumulative: `omit=3`
 #'     omits all the previously mentioned optional quantities.
+#' @param time.out in seconds.
 #' @export
 #' @useDynLib uqsa gillespie
 #' @return a closure that returns the model's output for a given
@@ -440,7 +443,7 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0){
 #'   s <- simulator.c(ex,o)
 #'   y <- s(values(m$Parameter))
 #' }
-simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, omit=3, method = 0){
+simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, omit=3, method = 0, time.out=1){
 	if (is.na(pmatch("data",names(experiments[[1]]))) && omit < 3){
 		warning(
 			sprintf(
@@ -494,7 +497,8 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 							gillespie,
 							so_path(modelName),
 							list(EX),
-							as.matrix(modelPar)
+							as.matrix(modelPar),
+							as.double(time.out)
 						)
 					)
 				),
@@ -634,7 +638,7 @@ check_model <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.
 #' @export
 #' @examples
 #' d <- defaultDistance(seq(7),seq(7)+rnorm(7,0,0.1),rep(0.1,7))
-defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
+defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL),status=0){
 	if (all(is.finite(funcSim))){
 		distance <- mean(abs(funcSim-dataVAL)/dataERR, na.rm=TRUE)
 	} else {
@@ -684,6 +688,7 @@ makeObjective <- function(experiments,simulate,distance=defaultDistance){
 		for(i in seq_along(experiments)){
 			DATA <- experiments[[i]]$data
 			STDV <- standard_error_matrix(DATA) %otherwise% experiments[[i]]$standardError %otherwise% 1.0
+			status <- out[[i]]$status
 			S[i,] <- unlist(
 				mclapply(
 					asplit(out[[i]]$func,MARGIN=3),
@@ -692,6 +697,7 @@ makeObjective <- function(experiments,simulate,distance=defaultDistance){
 					}
 				)
 			)
+			S[i,status==1] <- Inf
 		}
 		return(S)
 	}

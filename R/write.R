@@ -71,7 +71,7 @@ shlib <- function(file){
 	cflags <- system2("pkg-config", c("--cflags", "gsl"), stdout = TRUE)
 	libs <- system2("pkg-config", c("--libs", "gsl"), stdout = TRUE)
 	compile_env <- c(
-		if (nzchar(cflags)) sprintf("PKG_CPPFLAGS='%s'",cflags),
+		sprintf("PKG_CPPFLAGS='%s'",paste("-O3",cflags)),
 		if (nzchar(libs)) sprintf("PKG_LIBS='%s'", libs)
 	)
 	status <- system2(
@@ -122,7 +122,7 @@ write_c_code <- function(C, model.name=comment(C), file=file.path(tempdir(),dige
 		model.name <- cme$name
 		C <- generate_code(cme)
 	}
-	cat(sprintf("Writing file: %s\n",file))
+	# cat(sprintf("Writing file: %s\n",file))
 	if (!dir.exists(dirname(file))){
 		dir.create(dirname(file),recursive=TRUE)
 	}
