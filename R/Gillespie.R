@@ -408,7 +408,8 @@ as_cme <- function(m){
 #' m <- model_from_tsv(f)
 #' cmeModel <- as_cme(m)
 #' print(cmeModel)
-print.cme <- function(cmeModel){
+print.cme <- function(x,...){
+	cmeModel <- x
 	cat(
 		sprintf("%26s : %s","Name",cmeModel$name),
 		sprintf("%26s : %s [%s]","C file",cmeModel$c_path,cmeModel$c.date),
@@ -770,7 +771,7 @@ simstoch <- function(ex, cmeModel, parMap=identity, time.out=1){
 		stop(sprintf("The shared library path must have at least one slash: %s",model.so))
 	}
 	if (!file.exists(model.so)) {
-		warning(sprintf("The file «%s» does not exist.",model.so))
+		warning(sprintf("The file \u00ab%s\u00bb does not exist.",model.so))
 		return(NULL)
 	}
 	for (i in seq_along(ex)){

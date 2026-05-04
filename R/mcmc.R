@@ -129,7 +129,8 @@ mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rn
 #' s <- simfi(ex,o)
 #' p <- mcmc_init(1.0,values(m$Parameter),s,dprior=dprior)
 #' print(p)
-print.mcmcVariable <- function(v){
+print.mcmcVariable <- function(x,...){
+	v <- x
 	print(v[seq_along(v)])
 	A <- c("simulations", "logLikelihood", "prior", "gradLogLikelihood","gradLogPrior","fisherInformation")
 	for (a in A){

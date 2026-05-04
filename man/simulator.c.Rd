@@ -62,7 +62,7 @@ It returns a closure around:
 The returned function depends only on the parameter vector (or
 matrix if more than one simulation per experiment is desired). The
 parameter vector this simnulator accepts is probably derived from
-the sampling space of a Bayesian method θ, so in the list of
+the sampling space of a Bayesian method \enc{θ}{theta}, so in the list of
 arguments, it is called \code{parABC} or (parMCMC would also have been a
 valid choice). These sampling parameters can be mapped to values
 the simulator can use via \code{parMap}. \code{parModel <- parMap(parABC)},

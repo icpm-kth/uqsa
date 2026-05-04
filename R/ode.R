@@ -109,7 +109,8 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 #' m <- model_from_tsv(f)
 #' o <- as_ode(m)
 #' print(o)
-print.ode <- function(o){
+print.ode <- function(x,...){
+	o <- x
 	cat(
 		sprintf("%26s : %s","Model name",o$name),
 		sprintf("%26s : %s [%s]","C file",o$c_path,o$c.date),

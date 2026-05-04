@@ -4,7 +4,7 @@
 \alias{print.ode}
 \title{Print a summary about the ode}
 \usage{
-\method{print}{ode}(o)
+\method{print}{ode}(x, ...)
 }
 \arguments{
 \item{o}{the ode}

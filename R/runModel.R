@@ -14,7 +14,8 @@
 #' s <- simfi(ex,o)
 #' y <- s(values(m$Parameter))
 #' print(y)
-print.simulation <- function(y){
+print.simulation <- function(x,...){
+	y <- x
 	cat(sprintf("number of simulation experiments: %i\n",length(y)))
 	for (i in seq_along(y)){
 		cat(sprintf("%42s",names(y)[i]),"\n")
@@ -160,7 +161,7 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #' @param experiments a list of `N` simulation experiments (time,
 #'     parameters, initial value, events).
 #' @param l a matrix of parameters with M columns, in log-space.
-#' @param nu a stoichiometry matrix (N×R) where N is the number of
+#' @param nu a stoichiometry matrix (N\enc{×}{x}R) where N is the number of
 #'     state variables and R the number of reactions, all reactions
 #'     are assumed to be reversible.
 #' @param m modifiers -- similar to stoichiometry, but indicates
@@ -172,7 +173,7 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #'     size will adapt to a value that observes the tolerances, real
 #'     scalar.
 #' @param time.out time limit in seconds
-#' @return a list of the solution trajectories `y(t;p)` for all
+#' @return a list of the solution trajectories y(t;p) for all
 #'     experiments (named like the experiments), as well as the output
 #'     functions.
 #' @export
@@ -204,7 +205,7 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 		message("looking for ", so)
 	}
 	if (!file.exists(so)){
-            warning(sprintf("[gsl_odeiv2_CRNN] for model name «%s», file «%s» not found.",name,so))
+            warning(sprintf("[gsl_odeiv2_CRNN] for model name \u00ab%s\u00bb, file \u00ab%s\u00bb not found.",name,so))
 	}
 	if (!is.matrix(l)) l <- as.matrix(p)
 	y <- .Call(
@@ -408,7 +409,7 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #' The returned function depends only on the parameter vector (or
 #' matrix if more than one simulation per experiment is desired). The
 #' parameter vector this simnulator accepts is probably derived from
-#' the sampling space of a Bayesian method θ, so in the list of
+#' the sampling space of a Bayesian method \enc{θ}{theta}, so in the list of
 #' arguments, it is called `parABC` or (parMCMC would also have been a
 #' valid choice). These sampling parameters can be mapped to values
 #' the simulator can use via `parMap`. `parModel <- parMap(parABC)`,

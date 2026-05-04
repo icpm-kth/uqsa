@@ -256,6 +256,8 @@ stoichiometric_matrix <- function(m,compound.names=rownames(m$Compound)) {
 #' @param x an R object (variable with attributes)
 #' @param a the name of an attribute
 #' @return the value of the attribute: `attr(x,a)`
+#' @name grapes-at-grapes
+#' @rdname grapes-at-grapes
 #' @export
 #' @examples
 #' x <- 1
@@ -269,7 +271,7 @@ stoichiometric_matrix <- function(m,compound.names=rownames(m$Compound)) {
 	} else if (any(is.finite(pmatch(tolower(a),tolower(names(attributes(x))))))){
 		return(attributes(x)[[pmatch(tolower(a),tolower(names(attributes(x))))]])
 	} else {
-		stop(sprintf("Attribute «%s» not found in the list of objects's attributes: %s.\n",a,paste0(names(attributes(x)),collapse=", ")))
+		stop(sprintf("Attribute \u00ab%s\u00bb not found in the list of objects's attributes: %s.\n",a,paste0(names(attributes(x)),collapse=", ")))
 	}
 }
 
@@ -725,7 +727,8 @@ experiments <- function(m,o=NULL){
 #' o <- as_ode(m)
 #' ex <- experiments(m,o)
 #' print(ex)
-print.experiments <- function(ex){
+print.experiments <- function(x,...){
+	ex <- x
 	cat(sprintf("number of simulation experiments: %i\n",length(ex)))
 	for (i in seq_along(ex)){
 		cat(sprintf("%42s",names(ex)[i]),"\n")

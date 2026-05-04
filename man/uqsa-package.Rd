@@ -4,9 +4,9 @@
 \name{uqsa-package}
 \alias{uqsa}
 \alias{uqsa-package}
-\title{uqsa: Uncertainty Quanitification and Global Sensitivity Analysis via ABC sampling}
+\title{uqsa: Uncertainty Quantification and Global Sensitivity Analysis via ABC sampling}
 \description{
-This package will solve an initial value problem (given an ordinary differential equation) for a list of simulation experiments. The simulations will be compared to data, repeatedly. The package can sample the parameters of the model via ABC (approximate Bayesian computation) and by doing so quantify the uncertainty that remains within the model even after considering the data. Experiments are evaluated in a sequence, intermediate probability densities are modeled using the VineCopua package.
+This package will solve an initial value problem (given an ordinary differential equation) for a list of simulation experiments. The simulations will be compared to data, repeatedly. The package can sample the parameters of the model via ABC (approximate Bayesian computation) and by doing so quantify the uncertainty that remains within the model even after considering the data. Experiments are evaluated in a sequence, intermediate probability densities are modeled using the VineCopula package.
 }
 \seealso{
 Useful links:
@@ -16,13 +16,13 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Olivia Eriksson \email{olivia@kth.se}
+\strong{Maintainer}: Andrei Kramer \email{andreikr@kth.se}
 
 Authors:
 \itemize{
   \item Alexandra Jauhiainen \email{Alexandra.Jauhiainen@astrazeneca.com}
+  \item Olivia Eriksson \email{olivia@kth.se} [contributor]
   \item Federica Milinanni \email{fedmil@kth.se}
-  \item Andrei Kramer \email{andreikr@kth.se} [contributor]
 }
 
 }

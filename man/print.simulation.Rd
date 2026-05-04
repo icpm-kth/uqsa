@@ -4,7 +4,7 @@
 \alias{print.simulation}
 \title{prints the simulation results}
 \usage{
-\method{print}{simulation}(y)
+\method{print}{simulation}(x, ...)
 }
 \arguments{
 \item{y}{simulation results}

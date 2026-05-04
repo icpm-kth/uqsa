@@ -30,7 +30,7 @@ parameters, initial value, events).}
 
 \item{l}{a matrix of parameters with M columns, in log-space.}
 
-\item{nu}{a stoichiometry matrix (N×R) where N is the number of
+\item{nu}{a stoichiometry matrix (N\enc{×}{x}R) where N is the number of
 state variables and R the number of reactions, all reactions
 are assumed to be reversible.}
 
@@ -49,7 +49,7 @@ scalar.}
 \item{time.out}{time limit in seconds}
 }
 \value{
-a list of the solution trajectories \verb{y(t;p)} for all
+a list of the solution trajectories y(t;p) for all
 experiments (named like the experiments), as well as the output
 functions.
 }

@@ -4,7 +4,7 @@
 \alias{print.mcmcVariable}
 \title{print information about the mcmc variable}
 \usage{
-\method{print}{mcmcVariable}(v)
+\method{print}{mcmcVariable}(x, ...)
 }
 \arguments{
 \item{v}{the variable}

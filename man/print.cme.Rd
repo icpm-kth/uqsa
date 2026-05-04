@@ -4,7 +4,7 @@
 \alias{print.cme}
 \title{Print a Summary about the CME model}
 \usage{
-\method{print}{cme}(cmeModel)
+\method{print}{cme}(x, ...)
 }
 \arguments{
 \item{cmeModel}{a model created by \link{as_cme}}

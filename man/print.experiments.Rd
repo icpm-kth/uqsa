@@ -4,7 +4,7 @@
 \alias{print.experiments}
 \title{prints the simulation experiments}
 \usage{
-\method{print}{experiments}(ex)
+\method{print}{experiments}(x, ...)
 }
 \arguments{
 \item{ex}{simulation experiments with data}

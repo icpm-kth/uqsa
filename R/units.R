@@ -150,7 +150,7 @@ unit.kind <- function(kind){
 	} else if (grepl("^(M|molarity)$",kind)){
 		k <- "molarity"
 	} else {
-		stop(sprintf("The unit kind «%s» is not known, yet."))
+		stop(sprintf("The unit kind \u00ab%s\u00bb is not known, yet."))
 	}
 	return(k)
 }
@@ -220,7 +220,7 @@ unit.id <- function(unit.str,prnt=FALSE){
 	uid <- gsub("\\^([0-9]+)","_to_the_power_of_\\1",uid)
 	uid <- make.names(uid,unique=FALSE)
 	if (prnt){
-		message("units in «!Unit» column:")
+		message("units in \u00ab!Unit\u00bb column:")
 		print(unit.str)
 		message("automatically created sbml unit ids:")
 		print(uid)
@@ -419,7 +419,7 @@ unit.info <- function(unit.str,unit=unit.from.string(unit.str)){
 		unit$exponent
 	)
 	cat(
-		sprintf("«%s» has been interpreted as the product of: ",unit.str),
+		sprintf("\u00ab%s\u00bb has been interpreted as the product of: ",unit.str),
 		Info,
 		sep='\n'
 	)
