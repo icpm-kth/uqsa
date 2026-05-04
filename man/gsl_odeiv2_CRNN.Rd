@@ -13,7 +13,8 @@ gsl_odeiv2_CRNN(
   abs.tol = 1e-06,
   rel.tol = 1e-05,
   initial.step.size = 0.001,
-  method = 0
+  method = 0,
+  time.out = 1
 )
 }
 \arguments{
@@ -44,6 +45,8 @@ consumed.}
 \item{initial.step.size}{initial value for the step size; the step
 size will adapt to a value that observes the tolerances, real
 scalar.}
+
+\item{time.out}{time limit in seconds}
 }
 \value{
 a list of the solution trajectories \verb{y(t;p)} for all

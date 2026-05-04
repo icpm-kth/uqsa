@@ -4,8 +4,8 @@ title: "Uncertainty Quantification of AKAP79 (deterministic model)"
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  cache=FALSE,
   eval=TRUE,
+  cache=TRUE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -13,21 +13,26 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(uqsa)
+library(parallel)
+options(mc.cores=detectCores())
 ```
 
-To take a sufficiently large sample of AKAP79, we shall use MPI and
-parallel tempering. There are several ways to launch MPI processes
-(e.g. spawn processes).  We will use the simplest form: launch all MPI
-workers right from the start, using `mpirun -N 8` (or similar) and
-have all processes communicate on `MPI_COMM_WORLD`, this requires very
-minimal MPI code in R.  This approach doesn't allow us to adapt the
-number of temperatures, which is probably not optimal but makes it
-easier to write and understand the code and increases
-performance significantly compared to a sequential Markov chain.
+AKAP79 is a comparativelyh big model (for a demonstartive example). To
+even attempt to take a somewhat sufficiently large sample of AKAP79,
+we shall use MPI and parallel tempering. There are several ways to
+launch MPI processes (e.g. spawn processes).  We will use the simplest
+form: launch all MPI workers right from the start, using `mpirun -N 8`
+(or similar) and have all processes communicate on `MPI_COMM_WORLD`,
+this requires very minimal MPI code in R.
 
-The R code we are going to execute is not a code
-block on this page that we run in an interactive R session. Instead,
-it has to be a file that we pass on to `mpirun`.
+This approach doesn't allow us to adapt the number of temperatures,
+which is probably not optimal but makes it easier to write and
+understand the code and increases performance significantly compared
+to a sequential Markov chain.
+
+The R code we are going to execute is not a code block on this page
+that we run in an interactive R session. Instead, it has to be a file
+that we pass on to `mpirun` (a system command, in the shell).
 
 In this article we show the results of a parallel tempering SMMALA
 (simplified manifold Metropolis adjusted Langevin algorithm) run. The
@@ -35,11 +40,21 @@ article titled [Parallel chains with MPI](articles/mpi.html) explains
 how to prepare the R-script for mpirun execution -- it includes the
 listing of the script we used in this article.
 
+We will store all files related to this in a very predictable
+location: `/dev/shm`; not R's `tempdir()`. This is because the R
+blocks in this article are not executed in the same R session as the
+MPI workers will run in. Each MPI worker is its own process; thus they
+all have different temporary directories. The directory `/dev/shm` is
+a virtual directory that lives in the machine's RAM. It is standard on
+GNU/Linux systems, but not on MACOS, so this example will not work
+verbatim there (it can be adjusted to work). The sampling will take a
+while, even for a very small sample, so it is not recommended to try
+out this article for no reason.
+
 # Create C Source Code
 
-First we load the model in its SBtab form and create all derived model
-files. We do this step only once and have the MPI part of the process
-load the coimpleted results of this:
+First we load the model in its tabular form and create all derived model
+files:
 
 ```{r tsv}
 f <- uqsa::uqsa_example("AKAP79")
@@ -48,9 +63,10 @@ m <- model_from_tsv(f)
 
 Create the ODE interpretation of `m`:
 
-```{r sbtab-to-vfgen}
+```{r ode-model}
 o <- as_ode(m)
-c_path(o) <- write_c_code(generate_code(o))
+cat(generate_code(o),sep="\n",file="/dev/shm/AKAP79.c")
+c_path(o) <- "/dev/shm/AKAP79.c"
 so_path(o) <- shlib(o)
 saveRDS(o,file="/dev/shm/AKAP79-ode.RDS")
 ```
@@ -71,14 +87,20 @@ smmala <- high_level_smmala(m,o,ex,p)
 
 # Plain Sample
 
-```{r quick-sample}
+```{r quick-sample, out.width="100%"}
 h <- tune_step_size(smmala)
 X <- smmala(smmala %@% "init",1000,h)
+plot(
+  X %@% "logLikelihood",
+  type="s",
+  xlab="iteration",
+  ylab="logLikelihood"
+)
 ```
 
 We shall only plot the pairs of the first 6 dimensions (this is a big model):
 
-```{r, label="hexbin-plot", out.width="100%"}
+```{r, label="hexbin-plot", out.width="100%", fig.width=12, fig.height=12, dpi=200}
 if (require(hexbin)){
     hexplom(X[,seq(6)])
 } else {
@@ -90,14 +112,14 @@ if (require(hexbin)){
 
 Here we run a prepared R script from the command line (any POSIX shell will do: bash/zsh/fish/dash)
 
-```{sh MPI, eval=TRUE}
-N=4 # by default
+```{bash MPI, eval=TRUE}
+N=4 #  default number of MPI workers
 [ -e '/proc/cpuinfo' ] && N=$((`grep -c processor /proc/cpuinfo`)) && nm="`grep -m1 'model name' /proc/cpuinfo`"
 echo "We will use $N cores with $nm"
 
 start_time=$((`date +%s`))
 date
-mpirun -H localhost:$N ./pt-smmala-akap79.R 16000 > akap79.log
+mpirun -H localhost:$N ./pt-smmala-akap79.R 10000 > /dev/null 2>&1
 date
 end_time=$((`date +%s`))
 echo "Time spent sampling: $((end_time - start_time)) seconds ($(( (end_time - start_time)/60 )) minutes)."
@@ -111,8 +133,8 @@ slurm script or similar workload manager.
 Here we check the integrated auto-correlation length (Markov chain
 time)
 
-```{r uwerr}
-Sample <- readRDS(file="AKAP79-temperature-ordered-pt-smmala-sample-2-for-rank-0.RDS")
+```{r uwerr, out.width="100%"}
+Sample <- readRDS(file="/dev/shm/AKAP79-temperature-ordered-pt-smmala-sample-2-for-rank-0.RDS")
 n <- NROW(Sample)
 l <- attr(Sample,"logLikelihood")
 
@@ -132,12 +154,14 @@ We reduce the sample for plotting purposes, by showing only every
 _pairs_ plot for the first
 6 parameters:
 
-```{r pairs, fig.width=12, fig.height=12, fig.fullwidth=TRUE, dpi=100}
+```{r pairs, out.width="100%", fig.width=12, fig.height=12, dpi=200}
 X <- Sample[seq(1,n,by=tau),]
-colnames(X) <- rownames(sb$Parameter)
+colnames(X) <- rownames(m$Parameter)
 if (require(hexbin)){
     hexplom(X[,seq(6)],xbins=12)
 } else {
     pairs(X[,seq(6)])
 }
 ```
+
+

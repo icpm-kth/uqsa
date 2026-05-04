@@ -24,11 +24,6 @@ if (length(a)>0){
 	N <- 50000 # default sample size
 }
 
-## /dev/shm doesn't exist on all OS types. On GNU/Linux it is a
-## location that exists physically in RAM. That means that it doesn't
-## survive reboots, which is great for out purposes.  If you want to
-## adapt this file, then this has to be any predictable path, that
-## works on your system, even the current directory `./`.
 o <- readRDS("/dev/shm/AKAP79-ode.RDS")
 ex <- readRDS("/dev/shm/AKAP79-ex.RDS")
 
@@ -65,9 +60,7 @@ smmala <- smmala_update(
 MC <- mcmc(smmala)
 ptSMMALA <- mcmc_mpi(
 	smmala,
-	comm=comm,
-	swapDelay=0,
-	swapFunc=pbdMPI_bcast_reduce_temperatures
+	comm=comm
 )
 
 x <- mcmc_init(
@@ -81,21 +74,23 @@ x <- mcmc_init(
 	fisherInformation=fi(log10ParMapJac)
 )
 
-#h <- tune_step_size(MC,x)
-h <- 1e-6
+h <- 1e-5 # initially
 
 for (j in seq(2)){
+	h <- tune_step_size(MC,x,h=h) # adjust using test chain
 	pbdMPI::barrier()
 	## ---- here, the sampling happens
 	X <- ptSMMALA(x,N,h) # the main amount of work is done here
-	saveRDS(X,file=sprintf("AKAP79-pt-smmala-sample-%i-rank-%i.RDS",j,r))
+	saveRDS(X,file=sprintf("/dev/shm/AKAP79-pt-smmala-sample-%i-rank-%i.RDS",j,r))
 	pbdMPI::barrier()
-	f <- dir(pattern=sprintf("^AKAP79-pt-smmala-sample-%i-rank-.*RDS$",j))
+	f <- dir("/dev/shm",pattern=sprintf("^AKAP79-pt-smmala-sample-%i-rank-.*RDS$",j),full.names=TRUE)
 	Z <- uqsa::gatherSample(f,beta)
-	saveRDS(Z,file=sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.RDS",j,r))
+	print(dim(Z))
+	print(head(Z))
+	saveRDS(Z,file=sprintf("/dev/shm/AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.RDS",j,r))
 	x <- mcmc_init(
 		beta,
-		tail(Z,1),
+		as.numeric(tail(Z,1)),
 		simulate=sim,
 		logLikelihood=ll,
 		gradLogLikelihood=gllf(log10ParMapJac),
@@ -107,5 +102,13 @@ for (j in seq(2)){
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)
 
-cat(sprintf("rank %02i of %02i finished with an acceptance rate of %f and swap rate of %f.\n",round(r),round(cs),attr(s,"acceptanceRate"),attr(s,"swapRate")))
+cat(
+	sprintf(
+		"rank %02i of %02i finished with an acceptance rate of %f and swap rate of %f.\n",
+		round(r),
+		round(cs),
+		attr(Z,"acceptanceRate"),
+		attr(Z,"swapRate")
+	)
+)
 finalize()

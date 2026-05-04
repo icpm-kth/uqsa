@@ -422,9 +422,21 @@ print.cme <- function(cmeModel){
 }
 
 reactionEffect <- function(sm){
-	all_reactants <- rep(mapply(\(a,b) unique(c(names(a),names(b))),sm$left,sm$right),2)
+	all_reactants <- rep(
+		mapply(
+			\(a,b) {
+				unique(c(names(a),names(b)))
+			},
+			sm$left,
+			sm$right,
+			SIMPLIFY = FALSE
+		),
+		2
+	)
+
 	rNames <- c(names(sm$left),names(sm$right))
   names(all_reactants) <- rNames
+
 	ar <- lapply( # affected reaction propensities
 		all_reactants,
 		\(reactants){
@@ -440,6 +452,7 @@ reactionEffect <- function(sm){
 			)
 		}
 	)
+
 	m <- c(sm$reactionMultiplicityFWD,sm$reactionMultiplicityBWD)
 	return(
 		unlist(
@@ -456,7 +469,6 @@ reactionEffect <- function(sm){
 				c(sm$left,sm$right),
 				c(sm$right,sm$left),
 				c(names(sm$left),names(sm$right)),
-
 				SIMPLIFY=FALSE
 			)
 		)

@@ -4,7 +4,7 @@
 \alias{defaultDistance}
 \title{default distance function for one experiment}
 \usage{
-defaultDistance(funcSim, dataVAL, dataERR = max(dataVAL))
+defaultDistance(funcSim, dataVAL, dataERR = max(dataVAL), status = 0)
 }
 \arguments{
 \item{funcSim}{a matrix, contains model solution (output values),

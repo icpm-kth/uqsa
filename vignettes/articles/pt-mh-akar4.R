@@ -44,7 +44,7 @@ ptMetropolis <- mcmc_mpi( # parallel
 
 x <- mcmc_init(
 	beta,
-	parMCMC,
+	as.numeric(parMCMC),
 	simulate=sim,
 	dprior=dprior
 )

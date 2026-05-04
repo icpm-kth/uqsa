@@ -19,7 +19,6 @@
 #define MATCH 0
 #define NO_DIFFERENCE 0
 #define RCOND_LIMIT 1e-10
-#define ODE_TIME_LIMIT_SECONDS 7
 #define TIME_LIMIT_ERROR 1<<11
 /* SEXP stands for S-Expression, and it can be any R data object (or
  * function) in this program, we'll only use data from R. However SEXP is
@@ -386,7 +385,7 @@ void check_status(
 	double tf=target_t;
 	switch (status){
 	case TIME_LIMIT_ERROR:
-		fprintf(stderr,"[%s] time limit (%i seconds) reached on time point %i (%g/%g)\n",__func__,ODE_TIME_LIMIT_SECONDS,j,t,tf);
+		fprintf(stderr,"[%s] time limit reached on time point %i (%g/%g)\n",__func__,j,t,tf);
 		break;
 	case GSL_EMAXITER:
 		fprintf(stderr,"[%s] time_point %i: maximum number of steps reached.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
@@ -403,13 +402,15 @@ void check_status(
 /* Intergrates the system `sys` using the specified `driver` and
    simulation instructions. */
 int /* error code if any, otherwise GSL_SUCCESS */
-simulate_timeseries(const gsl_odeiv2_system sys, /* the system to integrate */
+simulate_timeseries(
+	const gsl_odeiv2_system sys, /* the system to integrate */
 	gsl_odeiv2_driver* driver, /* the driver that is used to integrate `sys` */
 	double t0, /* the initial time: y(t0) = y0 */
 	const gsl_vector *y0, /* initial value */
 	const gsl_vector *time, /* a vector of time-points */
 	const struct event *event, /*a struct array with scheduled events */
-	gsl_matrix *Yout) /* (OUT) return vaule, pre-allocated */
+	gsl_matrix *Yout,  /* (OUT) return vaule, pre-allocated */
+	double time_limit_seconds) /* time limit for solution */
 {
 	gsl_set_error_handler_off();
 	int nt=time->size;
@@ -460,7 +461,7 @@ simulate_timeseries(const gsl_odeiv2_system sys, /* the system to integrate */
 		}
 		if (tf>t) status=gsl_odeiv2_driver_apply(driver, &t, tf, y->data);
 		elapsed_sec = sec(clock()-ct0);
-		if (elapsed_sec > ODE_TIME_LIMIT_SECONDS){
+		if (elapsed_sec > time_limit_seconds){
 			status = TIME_LIMIT_ERROR;
 		}
 		check_status(status,t,tf,j);
@@ -832,7 +833,8 @@ r_gsl_odeiv2_outer_fi(
  Rdata relative_tolerance, /* relative tolerance for GSL's solver */
  Rdata initial_step_size, /* initial guess for the step size */
  Rdata optional_outputs, /* a value that indicates whether ll, gl, fi are to be calculated or not */
- Rdata method) /* integration method (integer) */
+ Rdata method,  /* integration method (integer) */
+ Rdata time_limit_seconds) /* time limit for single experiments */
 {
 	gsl_set_error_handler_off();
 	const gsl_odeiv2_step_type* step_types[] = {gsl_odeiv2_step_msbdf, gsl_odeiv2_step_msadams, gsl_odeiv2_step_bsimp, gsl_odeiv2_step_rk4imp, gsl_odeiv2_step_rk2imp, gsl_odeiv2_step_rk1imp, gsl_odeiv2_step_rk8pd, gsl_odeiv2_step_rkck, gsl_odeiv2_step_rkf45, gsl_odeiv2_step_rk4, gsl_odeiv2_step_rk2, NULL};
@@ -922,7 +924,8 @@ r_gsl_odeiv2_outer_fi(
 				&(initial_value.vector),
 				&(time.vector),
 				ev,
-				&(y.matrix)
+				&(y.matrix),
+				REAL(time_limit_seconds)[0]
 			);
 			ct1=clock();
 			REAL(cpuSeconds)[k] = sec(ct1-ct0);
@@ -1097,7 +1100,8 @@ r_gsl_odeiv2_outer_CRNN(
  Rdata absolute_tolerance, /* absolute tolerance for GSL's solver */
  Rdata relative_tolerance, /* relative tolerance for GSL's solver */
  Rdata initial_step_size, /* initial guess for the step size */
- Rdata method) /* integration method (integer) */
+ Rdata method, /* integration method (integer) */
+ Rdata time_limit_seconds) /* time limit in seconds */
 {
 	gsl_set_error_handler_off();
 	const gsl_odeiv2_step_type* step_types[] = {gsl_odeiv2_step_msbdf, gsl_odeiv2_step_msadams, gsl_odeiv2_step_bsimp, gsl_odeiv2_step_rk4imp, gsl_odeiv2_step_rk2imp, gsl_odeiv2_step_rk1imp, gsl_odeiv2_step_rk8pd, gsl_odeiv2_step_rkck, gsl_odeiv2_step_rkf45, gsl_odeiv2_step_rk4, gsl_odeiv2_step_rk2, NULL};
@@ -1161,7 +1165,8 @@ r_gsl_odeiv2_outer_CRNN(
 				&(initial_value.vector),
 				&(time.vector),
 				ev,
-				&(y.matrix)
+				&(y.matrix),
+				REAL(time_limit_seconds)[0]
 			);
 			ct1=clock();
 			REAL(cpuSeconds)[k] = sec(ct1-ct0);

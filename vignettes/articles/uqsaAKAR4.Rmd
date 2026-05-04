@@ -3,7 +3,7 @@ title: "Uncertainty Quantification and global Sensitivity Analysis on AKAR4 (det
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(eval=TRUE,
+knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
@@ -21,26 +21,28 @@ previous examples ([Simulate AKAR4 deterministically](./simAKAR4.html)).
 ```{r load}
 f  <- uqsa_example("AKAR4")
 m <- model_from_tsv(f)
-o <- as_ode(m)
-C <- generateCode(o)
-modelName <- write_and_compile(C)
+o <- write_and_compile(as_ode(m))
 ex <- experiments(m,o)
 ```
 
 ## Create simulator
 
-We construct a simulator function and and test it on default parameter values.
+We construct a simulator function and and test it on default parameter
+values.
 
 ```{r test}
-s <- simfi(ex,modelName,parMap=log10ParMap,omit=2) # or simulator.c
+s <- simfi(ex,o,parMap=log10ParMap,omit=2) # or simulator.c
 p <- log10(values(m$Parameter))
 y <- s(p)
 ```
 
 ## Uncertainty quantification: Sample the posterior distribution
 
-For details on how to sample from the posterior distribution, see, e.g., the [deterministic AKAR4 example](sampleAKAR4.html).
-First we construct the prior. For this article, we override the information in the file and pick an iid normal prior with $\sigma=2$ for all parameters:
+For details on how to sample from the posterior distribution, see,
+e.g., the [deterministic AKAR4 example](sampleAKAR4.html).  First we
+construct the prior. For this article, we override the information in
+the file and pick an iid normal prior with $\sigma=2$ for all
+parameters:
 
 ```{r prior}
 sd <- rep(2,length(p))        # sigma = 2
@@ -50,12 +52,14 @@ mh <- mcmc(                   # metropolis hastings
 	metropolis_update(        # random walk
 		s,
 		dprior=dprior,
-		Sigma=diag(1/sd^2)
+		Sigma=diag(sd^2)
 	)
 )
 ```
 
-We obtain a high quality sample by following the steps described in details in the [deterministic AKAR4 example](sampleAKAR4.html)). This will take a minute or so on a laptop.
+We obtain a high quality sample by following the steps described in
+details in the [deterministic AKAR4 example](sampleAKAR4.html)). This
+will take a minute or so on a laptop.
 
 
 ```{r betterSample}
@@ -102,7 +106,6 @@ if (1 < tau && tau < length(L_)){
 }
 ```
 
-
 Pairs plot (either with hexagonal binning or normal)
 
 ```{r pairs-2, fig.width=12, fig.height=12, dpi=100}
@@ -120,13 +123,16 @@ if (require(hexbin)){
 
 ## Sensitivity analysis on the posterior distribution
 
-First we need to (re-)create the simulation result corresponding to the posterior parameter sample. This will take a minute or so on a laptop.
+First we need to (re-)create the simulation result corresponding to
+the posterior parameter sample. This will take a minute or so on a
+laptop.
 
 ```{r simulation}
 y <- s(t(S_))
 ```
 
-Next we calculate the _first order sensitivity indexes_. Here for compute them for a specific experimental setting and time point:
+Next we calculate the _first order sensitivity indexes_. Here for
+compute them for a specific experimental setting and time point:
 
 ```{r globalSensitivity}
 E <- 2                      # Experiment idx
@@ -152,7 +158,9 @@ barplot(
 
 ```
 
-Here for compute the first order sensitivity indexes for all three experiments, looking at the different compounds in the system (on the x axis):
+Here for compute the first order sensitivity indexes for all three
+experiments, looking at the different compounds in the system (on the
+x axis):
 
 ```{r barplot-2}
 T <- 200                    #Time idx
@@ -174,7 +182,9 @@ barplot(
 }
 ```
 
-Now we investigate the first order sensitivity indexes at different time points (time is on the x axis) for each of the compounds and one experiment.
+Now we investigate the first order sensitivity indexes at different
+time points (time is on the x axis) for each of the compounds and one
+experiment.
 
 ```{r barplot-3}
 E <- 3

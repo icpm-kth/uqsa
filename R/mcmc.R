@@ -96,6 +96,7 @@ return(paste(
 #' p <- mcmc_init(1.0,p0,s,dprior=dprior)
 #' print(names(attributes(p))) ## now has attributes necessary for MCMC
 mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rnorm(x)),gradLogLikelihood=NULL,gprior=NULL,fisherInformation=NULL){
+	if (is.matrix(parMCMC)) parMCMC <- as.numeric(parMCMC)
 	attr(parMCMC,"beta") <- beta
 	attr(parMCMC,"simulations") <- simulate(parMCMC)
 	attr(parMCMC,"prior")  <- dprior(parMCMC)

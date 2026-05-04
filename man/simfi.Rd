@@ -4,7 +4,14 @@
 \alias{simfi}
 \title{This creates a closure that simulates the model, similar to simulator.c}
 \usage{
-simfi(experiments, odeModel, parMap = identity, method = 0, omit = 0)
+simfi(
+  experiments,
+  odeModel,
+  parMap = identity,
+  method = 0,
+  omit = 0,
+  time.out = 1
+)
 }
 \arguments{
 \item{experiments}{a list of experiments to simulate: inital
@@ -26,6 +33,9 @@ Fisher Information, gradient of the log-likelihood, the
 log-likelihood, output functions. Omission includes all
 previous entries. \code{omit = 1} omits only the Fisher Information,
 \code{omit=3}, omits FI, grad-ll, and log-likelihood calculations.}
+
+\item{time.out}{(in seconds); simulations are aborted at a time
+greater than this.}
 
 \item{parABC}{the parameters for the model, subject to change by
 parMap.}

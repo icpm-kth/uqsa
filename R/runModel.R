@@ -110,7 +110,7 @@ print.simulation <- function(y){
 #'       lines(ex[[i]]$outputTimes,drop(y[[i]]$func),col='red')
 #'   }
 #' }
-gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3, method=0, omit=0){
+gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3, method=0, omit=0, time.out = 1){
 	if (is(odeModel,"ode")){
 		so <- so_path(odeModel)
 		odeModel <- odeModel$name
@@ -132,7 +132,8 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 		rel.tol,
 		initial.step.size,
 		omit,
-		method
+		method,
+		time.out=as.double(time.out)
 	)
 	for (i in seq_along(experiments)){
 		if ("initialState" %in% names(experiments[[i]]) && length(experiments[[i]]$initialState)==NROW(y[[i]]$state)){
@@ -170,6 +171,7 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #' @param initial.step.size initial value for the step size; the step
 #'     size will adapt to a value that observes the tolerances, real
 #'     scalar.
+#' @param time.out time limit in seconds
 #' @return a list of the solution trajectories `y(t;p)` for all
 #'     experiments (named like the experiments), as well as the output
 #'     functions.
@@ -189,7 +191,7 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #'   so.file <- shlib(c.file,model.name="AKAR4")
 #'   y <- gsl_odeiv2_CRNN(so.file,ex,l,nu,nu*0)
 #' }
-gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0){
+gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0, time.out = 1){
 	if (is.character(name) && endsWith(name,".so")){
 		so <- name
 		name <- "CRNN"
@@ -205,7 +207,17 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
             warning(sprintf("[gsl_odeiv2_CRNN] for model name «%s», file «%s» not found.",name,so))
 	}
 	if (!is.matrix(l)) l <- as.matrix(p)
-	y <- .Call(r_gsl_odeiv2_outer_CRNN,name,experiments,l,nu,m,abs.tol,rel.tol,initial.step.size,method)
+	y <- .Call(
+		r_gsl_odeiv2_outer_CRNN,
+		name,       # with comment about shared library
+		experiments,
+		l,nu,m,     # log-parameters, stoichiometry, and modifiers
+		abs.tol,    # absolute tolerance
+		rel.tol,    # relative tolerance
+		initial.step.size,
+		method,     # integrattion method
+		as.double(time.out) # in seconds
+	)
 	for (i in seq_along(experiments)){
 		if ("initialState" %in% names(experiments[[i]])){
 			dimnames(y[[i]]$state) <- list(names(experiments[[i]]$initialState),NULL,NULL)
@@ -244,6 +256,7 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 #' @param method (integer) integration method key (0:10) corresponds to
 #'     these GSL methods: msbdf, msadams, bsimp, rk4imp, rk2imp,
 #'     rk1imp, rk8pd, rkck, rkf45, rk4, rk2
+#' @param time.out time limit for solution in seconds
 #' @return closure that maps one argument (p) to simulation results (y).
 #' @export
 #' @examples
@@ -262,13 +275,13 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 #'   p <- list(l=l,nu=nu,m=nu*0)
 #'   y <- s(p)
 #' }
-scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$nu, modifiers=\(p) p$m, method = 0){
+scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$nu, modifiers=\(p) p$m, method = 0, time.out = 1){
 	N <- length(experiments)
 	sim <- function(parMCMC){
 		nu <- stoichiometry(parMCMC)
 		m <- modifiers(parMCMC)
 		l <- parMap(parMCMC)
-		yf <- gsl_odeiv2_CRNN(modelName,experiments,l,nu,m,method=0)
+		yf <- gsl_odeiv2_CRNN(modelName,experiments,l,nu,m,method=0, as.double(time.out))
 		if (N==length(yf)) {
 			names(yf) <- names(experiments)
 		} else {
@@ -361,7 +374,8 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 				experiments,
 				as.matrix(modelPar),
 				method=method,
-				omit=min(omit,3)
+				omit=min(omit,3),
+				time.out=time.out
 			)
 			if (N==length(yf)) {
 				names(yf) <- names(experiments)
@@ -470,7 +484,8 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 							list(EX),
 							as.matrix(modelPar),
 							method=method,
-							omit=min(omit,3)
+							omit=min(omit,3),
+							time.out=time.out
 						)
 					}
 				),
@@ -526,7 +541,8 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 								list(EX),
 								as.matrix(modelPar),
 								method=method,
-								omit=min(omit,3)
+								omit=min(omit,3),
+								time.out=time.out
 							),
 							error = function(e) {print(e); return(NA)}
 						)

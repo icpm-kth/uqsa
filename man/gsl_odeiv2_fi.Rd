@@ -12,7 +12,8 @@ gsl_odeiv2_fi(
   rel.tol = 1e-05,
   initial.step.size = 0.001,
   method = 0,
-  omit = 0
+  omit = 0,
+  time.out = 1
 )
 }
 \arguments{

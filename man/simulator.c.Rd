@@ -10,7 +10,8 @@ simulator.c(
   parMap = identity,
   noise = FALSE,
   omit = 3,
-  method = 0
+  method = 0,
+  time.out = 1
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ simulator, \code{omit=1} will not calculate the fisher information
 the log-likelihood, and \code{omit=3} will omit the likelihood
 calculations alltogether. Omission is cumulative: \code{omit=3}
 omits all the previously mentioned optional quantities.}
+
+\item{time.out}{in seconds.}
 
 \item{parABC}{the parameters for the model, subject to change by
 parMap.}

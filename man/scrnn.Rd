@@ -10,7 +10,8 @@ scrnn(
   parMap = function(p) p$l,
   stoichiometry = function(p) p$nu,
   modifiers = function(p) p$m,
-  method = 0
+  method = 0,
+  time.out = 1
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ argument.}
 \item{method}{(integer) integration method key (0:10) corresponds to
 these GSL methods: msbdf, msadams, bsimp, rk4imp, rk2imp,
 rk1imp, rk8pd, rkck, rkf45, rk4, rk2}
+
+\item{time.out}{time limit for solution in seconds}
 }
 \value{
 closure that maps one argument (p) to simulation results (y).

@@ -4,7 +4,7 @@ title: "Uncertainty Quantification on AKAR4 (deterministic model)"
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(eval=TRUE,
-  cache=TRUE,
+  cache=FALSE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -29,20 +29,14 @@ the files in a directory with the `dir()` command.
 ```{r load}
 f <- uqsa_example("AKAR4")
 m <- model_from_tsv(f)
-o <- as_ode(m)
-C <- generateCode(o)
-modelName <- write_and_compile(C)
+o <- write_and_compile(as_ode(m))
 ```
 
 The chain of functions that we use to build the model tracks the name
 of the model via comments:
 
 ```{r comments}
-print(comment(m))
-print(comment(o))
-print(comment(C))
-print(comment(modelName))
-
+print(comment(m)) # the name of the model
 ```
 
 This comment is ultimately used to determine the automatic file-name
@@ -58,7 +52,7 @@ We use just one core as this is a tiny model. No MPI, no parallel tempering. Fir
 
 ```{r prior}
 mu <- values(m$Parameter)
-sigma <- log(m$Parameter$stdv)
+sigma <- m$Parameter$stdv
 
 dprior <- dNormalPrior(
 	mean=log(mu^2/sqrt(mu^2+sigma^2)),
@@ -78,7 +72,12 @@ arguments.
 
 ```{r Metropolis-Hastings}
 options(mc.cores=length(ex))
-s <- simulator.c(ex,modelName,parMap=logParMap, omit=2)
+s <- simulator.c(
+    ex,
+    o,
+    parMap=logParMap,
+    omit=2
+)
 
 MH <- mcmc(
     metropolis_update(
@@ -90,21 +89,24 @@ MH <- mcmc(
 
 Finally, to obtain a sample of parameters:
 
-```{r sample, fig.width=12, fig.height=12, dpi=100}
+```{r sample}
 x <- mcmc_init(
-    beta=1.0,
-    parMCMC=log(values(m$Parameter)),
-    simulate=s,
-    dprior=dprior)
+	beta=1.0,
+	parMCMC=log(values(m$Parameter)),
+	simulate=s,
+	dprior=dprior
+)
 
-h <- tune_step_size(MH,x)
+h <- tune_step_size(MH,x,h=1e-3)
 N <- 5e4
 
 # sampling:
 X <- MH(x,N,eps=h)
 
 print(attr(X,"acceptanceRate"))
+```
 
+```{r hexplom, out.width="100%", fig.width=12, fig.height=12, dpi=200}
 if (require(hexbin)){
     hexplom(X)
 } else {

@@ -22,8 +22,9 @@ Load the model files, create ODE model code and load examples similar to the exa
 f  <- uqsa_example("AKAR4")
 m <- model_from_tsv(f)
 o <- as_ode(m,cla=FALSE)
-C <- generateCode(o)
-modelName <- write_and_compile(C)
+C <- generate_code(o)
+c_path(o) <- write_c_code(C)
+so_path(o) <- shlib(o)
 ex <- experiments(m,o)
 ```
 
@@ -33,7 +34,7 @@ We construct a simulator function and and test it on default parameter values.
 
 ```{r test}
 options(mc.cores = length(ex))
-s <- simulator.c(ex,modelName,parMap=log10ParMap,omit=3)
+s <- simulator.c(ex,o,parMap=log10ParMap,omit=3)
 p <- log10(values(m$Parameter))
 y <- s(p)
 ```

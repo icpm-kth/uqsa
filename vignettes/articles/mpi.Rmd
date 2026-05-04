@@ -176,7 +176,7 @@ and the parallel tempering technique.
 
 ```{r, eval=FALSE, label="pt-smmala-akap79.R"}
 #!/usr/bin/env Rscript
-library(rgsl)
+
 library(uqsa)
 library(pbdMPI)
 
@@ -187,144 +187,102 @@ r <- pbdMPI::comm.rank(comm=comm)
 cs <- pbdMPI::comm.size(comm=comm)
 attr(comm,"rank") <- r
 attr(comm,"size") <- cs
-beta <- (1.0 - (r/cs))^2   # PT: inverse temperature
+
+beta <- (1.0 - (r/cs))^2 # PT: inverse temperature
 
 a <- commandArgs(trailingOnly=TRUE)
 if (length(a)>0){
-      N <- as.integer(a[1])
+	N <- as.integer(a[1])
 } else {
-      N <- 50000           # default sample size
+	N <- 50000 # default sample size
 }
 
-h <- 0.01                  # step size
-modelName <- "AKAP79"
-comment(modelName) <- "./AKAP79.so"
-sb <- readRDS(file="AKAP79-sb.RDS")
-ex <- readRDS(file="AKAP79-ex.RDS")
+o <- readRDS("/dev/shm/AKAP79-ode.RDS")
+ex <- readRDS("/dev/shm/AKAP79-ex.RDS")
 
-## In the C backend of simfi, we calculate the Fisher information
-## and log-likelihood gradient for Gaussian liklihoods.
-## For this to work at all, we convert the data-frames to simple matrices.
-## The names 'time', 'data', and 'stdv' have a highest precedence in the solver code.
+f <- uqsa_example("AKAP79")
+m <- model_from_tsv(f)
 
-for (i in seq_along(ex)){
-	t_ <- ex[[i]]$outputTimes
-	nt <- length(t_)
-	BY <- 10 # take every BYth point
-	D <- t(ex[[i]]$outputValues)
-	D[is.na(D)] <- 0.0
-	SD <- D*0.05+apply(D,1,FUN=max,na.rm=TRUE)*0.05  #t(ex[[i]]$errorValues)
-	SD[is.na(SD)] <- Inf
-	ex[[i]]$time <- t_[seq(1,nt,by=BY)]              # The solvers behind
-	ex[[i]]$data <- D[,seq(1,nt,by=BY),drop=FALSE]   # simfi() will use these
-	ex[[i]]$stdv <- SD[,seq(1,nt,by=BY),drop=FALSE]  # instead of outputValues
-}
+stopifnot(all(m$Parameter$scale == "log10"))
+parMCMC <- values(m$Parameter)
+mu <- m$Parameter$median
+stdv <- m$Parameter$stdv
 
-parMCMC <- log10(sb$Parameter[["!DefaultValue"]])
-stopifnot("!Max" %in% names(sb$Parameter))
-stopifnot("!Min" %in% names(sb$Parameter))
-mu <- 0.5*(log10(sb$Parameter[["!Max"]])+log10(sb$Parameter[["!Min"]]))
-stdv <- 0.5*(log10(sb$Parameter[["!Max"]])-log10(sb$Parameter[["!Min"]]))
 stopifnot(length(mu)==length(stdv))
 stopifnot(length(parMCMC)==length(mu))
 
 dprior <- dNormalPrior(mean=mu,sd=stdv)
 rprior <- rNormalPrior(mean=mu,sd=stdv)
+gprior <- gNormalPrior(mean=mu,sd=stdv)
 
-gprior <- \(p) {return(-1.0*(p-parMCMC)/stdv^2)}
 ## ----simulate-----------------------------------------------------------------
-sim <- simfi(ex,modelName,log10ParMap) # or simulator.c
-
-## log-likelihood
-llf <- function(parMCMC){
-	i <- seq_along(parMCMC)
-	J <- log10ParMapJac(parMCMC)
-	return(Reduce(\(a,b) a + b$logLikelihood[1], attr(parMCMC,"simulations"), init = 0.0))
-}
-
-## gradient of the log-likelihood
-gllf <- function(parMCMC){
-	i <- seq_along(parMCMC)
-	J <- log10ParMapJac(parMCMC)
-	return(as.numeric(Reduce(\(a,b) a + b$gradLogLikelihood[i,1], attr(parMCMC,"simulations"), init = 0.0) %*% J))
-}
-
-## Fisher Information
-fi <- function(parMCMC){
-	i <- seq_along(parMCMC)
-	J <- log10ParMapJac(parMCMC)
-	return(t(J) %*% Reduce(\(a,b) a + b$FisherInformation[i,i,1], attr(parMCMC,"simulations"), init = 0.0) %*% J)
-}
+sim <- simfi(ex,o,log10ParMap)
 
 ## ----update-------------------------------------------------------------------
-smmala <- mcmcUpdate(
+smmala <- smmala_update(
 	simulate=sim,
-	experiments=ex,
-	logLikelihood=llf,
+	logLikelihood=ll,
+	gradLogLikelihood=gllf(log10ParMapJac),
 	dprior=dprior,
-	gradLogLikelihood=gllf,
-	gprior,
-	fisherInformation=fi,
-	fisherInformationPrior=diag(1.0/stdv^2)
+	gprior=gprior,
+	fisherInformationPrior=diag(1.0/stdv^2),
+	fisherInformation=fi(log10ParMapJac)
 )
 
 ## ----mcmc-method--------------------------------------------------------------
 MC <- mcmc(smmala)
-ptSMMALA <- mcmc_mpi(smmala,comm=comm,swapDelay=0,swapFunc=pbdMPI_bcast_reduce_temperatures)
-## ----init---------------------------------------------------------------------
-	x <- mcmcInit(
-		beta,
-		parMCMC,
-		simulate=sim,
-		logLikelihood=llf,
-		dprior,
-		gllf,
-		gprior,
-		fi
-	)
+ptSMMALA <- mcmc_mpi(
+	smmala,
+	comm=comm
+)
 
-## beta,parMCMC,simulate,logLikelihood,dprior,gradLogLikelihood=NULL,gprior=NULL,fisherInformation=NULL
-A <- function(a) { # step-size adjuster
-    return(0.5 + a^4/(0.25^4 + a^4))
-}
+x <- mcmc_init(
+	beta,
+	values(m$Parameter),
+	simulate=sim,
+	logLikelihood=ll,
+	gradLogLikelihood=gllf(log10ParMapJac),
+	dprior=dprior,
+	gprior=gprior,
+	fisherInformation=fi(log10ParMapJac)
+)
 
-## ----converge-and-adapt-------------------------------------------------------
-if (r==0){
-	cat(sprintf("%10s  %12s %16s %16s\n","rank","iteration","acceptance","step size"))
-	cat(sprintf("%10s  %12s %16s %16s\n","----","---------","----------","---------"))
-}
+h <- 1e-5 # initially
 
 for (j in seq(2)){
-	for (i in seq(6)){
-		s <- MC(x,100,h)           # evaluate rate of acceptance
-		a <- attr(s,"acceptanceRate")
-		h <- h*A(a)                # adjust h up or down
-		x <- attr(s,"lastPoint")   # start next iteration from last point
-		cat(sprintf("%10i  %12i %16.4f %16.4g\n",r,i,a,h)) # cat(sprintf("rank: %02i; iteration: %02i; a: %f; h: %g\n",r,i,a,h))
-	}
+	h <- tune_step_size(MC,x,h=h) # adjust using test chain
 	pbdMPI::barrier()
 	## ---- here, the sampling happens
-	s <- ptSMMALA(x,N,h) # the main amount of work is done here
-	saveRDS(s,file=sprintf("AKAP79-pt-smmala-sample-%i-rank-%i.RDS",j,r))
-	## ---- when all are done, we load the sampled points from the files but only for the right temperature:
+	X <- ptSMMALA(x,N,h) # the main amount of work is done here
+	saveRDS(X,file=sprintf("/dev/shm/AKAP79-pt-smmala-sample-%i-rank-%i.RDS",j,r))
 	pbdMPI::barrier()
-	f <- dir(pattern=sprintf("^AKAP79-pt-smmala-sample-%i-rank-.*RDS$",j))
-	X <- uqsa::gatherSample(f,beta)
-	saveRDS(X,file=sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.RDS",j,r))
-	x <- mcmcInit(
+	f <- dir("/dev/shm",pattern=sprintf("^AKAP79-pt-smmala-sample-%i-rank-.*RDS$",j),full.names=TRUE)
+	Z <- uqsa::gatherSample(f,beta)
+	print(dim(Z))
+	print(head(Z))
+	saveRDS(Z,file=sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.RDS",j,r))
+	x <- mcmc_init(
 		beta,
-		as.numeric(tail(X,1)), # last row
+		as.numeric(tail(Z,1)),
 		simulate=sim,
-		logLikelihood=llf,
-		dprior,
-		gllf,
-		gprior,
-		fi
+		logLikelihood=ll,
+		gradLogLikelihood=gllf(log10ParMapJac),
+		dprior=dprior,
+		gprior=gprior,
+		fisherInformation=fi(log10ParMapJac)
 	)
 }
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)
 
-cat(sprintf("rank %02i of %02i finished with an acceptance rate of %f and swap rate of %f.\n",round(r),round(cs),attr(s,"acceptanceRate"),attr(s,"swapRate")))
+cat(
+	sprintf(
+		"rank %02i of %02i finished with an acceptance rate of %f and swap rate of %f.\n",
+		round(r),
+		round(cs),
+		attr(Z,"acceptanceRate"),
+		attr(Z,"swapRate")
+	)
+)
 finalize()
 ```

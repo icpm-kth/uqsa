@@ -4,7 +4,7 @@
 \alias{simstoch}
 \title{Simulate stochastic model}
 \usage{
-simstoch(ex, cmeModel, parMap = identity)
+simstoch(ex, cmeModel, parMap = identity, time.out = 1)
 }
 \arguments{
 \item{ex}{list of experiments, same as for the deterministic
@@ -12,6 +12,8 @@ solvers.}
 
 \item{cmeModel}{Either the cmeModel from \link{as_cme}, with a shared
 library path stored inside, or the path to the so file}
+
+\item{time.out}{in seconds}
 
 \item{parameters}{a numeric vector of appropriate size}
 }

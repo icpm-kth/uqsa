@@ -111,6 +111,7 @@ reference:
   - scrnn
   - gsl_odeiv2_fi
   - gsl_odeiv2_CRNN
+  - name_method
 - title: "Prior"
   desc: "Functions for constructing priors"
   contents:
@@ -131,18 +132,13 @@ reference:
   - metropolis_update
   - high_level_metropolis
   - smmala_update
-  - smmala_move
-  - smmala_move_density
   - high_level_smmala
   - logLikelihoodFunc
-  - gradLogLikelihoodFunc
   - ll
   - gllf
   - fi
   - tune_step_size
   - change_temperature
-  - pbdMPI_bcast_reduce_temperatures
-  - loadSubSample_mpi
   - loadSample_mpi
   - gatherSample
   - gatherReplicas
@@ -184,33 +180,25 @@ reference:
 - title: "Plotting functions"
   contents:
   - pcDist
-  - plotTimeSeries
-  - plotTimeSeriesBase
+  - plot_time_series_base
   - sensitivity.graph
   - showPosterior
 - title: "Internal functions"
   contents:
-  - getDose
-  - ggplotDoseResponse
-  - ggplotTimeSeries
-  - ggplotTimeSeriesStates
+  - ggplot_time_series
+  - ggplot_time_series_states
   - onlyCoefficients
   - onlyNames
-  - simfiGaussianLogLikelihood
   - CRNN
-  - automatic_update
   - clear_yacas_environment
   - defaultDistance
   - formulae
   - initialCount
-  - is.invertible
   - linear_scale
   - moleCountConversion
-  - observable.mean.in.bin
   - parse_concise
   - "reaction<-"
   - update_values
   - simple.unit
-  - sum.of.bin.variance
   - unit.kind
   - unit.scale

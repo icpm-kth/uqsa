@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -239,7 +239,7 @@
           
           <code><a href="so_path.html">so_path()</a></code> 
         </dt>
-        <dd>Add information about compiled code</dd>
+        <dd>Retrieve information about compiled code</dd>
       </dl><dl><dt>
           
           <code><a href="write_c_code.html">write_c_code()</a></code> 
@@ -286,6 +286,11 @@
           <code><a href="gsl_odeiv2_CRNN.html">gsl_odeiv2_CRNN()</a></code> 
         </dt>
         <dd>simulates a CRNN ode model with extra work</dd>
+      </dl><dl><dt>
+          
+          <code><a href="name_method.html">name_method()</a></code> 
+        </dt>
+        <dd>Reverse look-up of method name from key</dd>
       </dl></div><div class="section level2">
       <h2 id="prior">Prior<a class="anchor" aria-label="anchor" href="#prior"></a></h2>
       
@@ -339,16 +344,6 @@ distribution with independent components, in log-space</dd>
           <code><a href="fitCopula.html">fitCopula()</a></code> 
         </dt>
         <dd>Makes a Probability Density Estimate (from a sample)</dd>
-      </dl><dl><dt>
-          
-          <code><a href="makeIndepCopula.html">makeIndepCopula()</a></code> 
-        </dt>
-        <dd>Copula Formulation for Uniform Prior Distributions</dd>
-      </dl><dl><dt>
-          
-          <code><a href="sampleWithNoise.html">sampleWithNoise()</a></code> 
-        </dt>
-        <dd>(for testing) A non-Copula sampling function as fallback</dd>
       </dl></div><div class="section level2">
       <h2 id="uncertainty-quantification-likelihood-based">Uncertainty quantification - likelihood based<a class="anchor" aria-label="anchor" href="#uncertainty-quantification-likelihood-based"></a></h2>
       
@@ -392,16 +387,6 @@ distribution with independent components, in log-space</dd>
         <dd>SMMALA Update is an MCMC update function</dd>
       </dl><dl><dt>
           
-          <code><a href="smmala_move.html">smmala_move()</a></code> 
-        </dt>
-        <dd>SMMALA move</dd>
-      </dl><dl><dt>
-          
-          <code><a href="smmala_move_density.html">smmala_move_density()</a></code> 
-        </dt>
-        <dd>SMMALA transition kernel density</dd>
-      </dl><dl><dt>
-          
           <code><a href="high_level_smmala.html">high_level_smmala()</a></code> 
         </dt>
         <dd>High Level SMMALA function</dd>
@@ -410,11 +395,6 @@ distribution with independent components, in log-space</dd>
           <code><a href="logLikelihoodFunc.html">logLikelihoodFunc()</a></code> 
         </dt>
         <dd>Default log-likelihood function</dd>
-      </dl><dl><dt>
-          
-          <code><a href="gradLogLikelihoodFunc.html">gradLogLikelihoodFunc()</a></code> 
-        </dt>
-        <dd>Default log-likelihood function, gradient</dd>
       </dl><dl><dt>
           
           <code><a href="ll.html">ll()</a></code> 
@@ -442,16 +422,6 @@ distribution with independent components, in log-space</dd>
         <dd>Should 2 Markov chains exchange their temperatures</dd>
       </dl><dl><dt>
           
-          <code><a href="pbdMPI_bcast_reduce_temperatures.html">pbdMPI_bcast_reduce_temperatures()</a></code> 
-        </dt>
-        <dd>Broadcast to other ranks and swap temperatures with any of them</dd>
-      </dl><dl><dt>
-          
-          <code><a href="loadSubSample_mpi.html">loadSubSample_mpi()</a></code> 
-        </dt>
-        <dd>This function merges mpi-samples into one</dd>
-      </dl><dl><dt>
-          
           <code><a href="loadSample_mpi.html">loadSample_mpi()</a></code> 
         </dt>
         <dd>This function merges mpi-samples into one</dd>
@@ -465,15 +435,7 @@ given temperature</dd>
           
           <code><a href="gatherReplicas.html">gatherReplicas()</a></code> 
         </dt>
-        <dd>gatherReplicas collects all sample points, from all files, which
-are assumed to be exact replicas, with different seeds (and
-possibly sizes). This function uses mclapply to process the files,
-which may be quicker than gatherSample.  The temperature is
-disregarded, assuming that no parallel tempering was used.  To
-facilitate the loading of a very big sample, this function will
-analyse the auto-correltation within each file and returned a
-thinned subsample of size N/2*tauint (effective sample size). There
-is no need to further reduce the rfesult.</dd>
+        <dd>Collect statistical Replicas</dd>
       </dl></div><div class="section level2">
       <h2 id="uncertainty-quantification-abc">Uncertainty quantification - ABC<a class="anchor" aria-label="anchor" href="#uncertainty-quantification-abc"></a></h2>
       
@@ -661,12 +623,7 @@ is no need to further reduce the rfesult.</dd>
         <dd>plots a sample in parallel coordinates</dd>
       </dl><dl><dt>
           
-          <code><a href="plotTimeSeries.html">plotTimeSeries()</a></code> 
-        </dt>
-        <dd>Plot time series simulations with experimental data</dd>
-      </dl><dl><dt>
-          
-          <code><a href="plotTimeSeriesBase.html">plotTimeSeriesBase()</a></code> 
+          <code><a href="plot_time_series_base.html">plot_time_series_base()</a></code> 
         </dt>
         <dd>plot function for experiments</dd>
       </dl><dl><dt>
@@ -692,22 +649,12 @@ is no need to further reduce the rfesult.</dd>
 
       <dl><dt>
           
-          <code><a href="getDose.html">getDose()</a></code> 
-        </dt>
-        <dd>Get the values of the input for a series of dose response experiments</dd>
-      </dl><dl><dt>
-          
-          <code><a href="ggplotDoseResponse.html">ggplotDoseResponse()</a></code> 
-        </dt>
-        <dd>Plot dose response simulations with experimental data</dd>
-      </dl><dl><dt>
-          
-          <code><a href="ggplotTimeSeries.html">ggplotTimeSeries()</a></code> 
+          <code><a href="ggplot_time_series.html">ggplot_time_series()</a></code> 
         </dt>
         <dd>Plot time series simulations with experimental data</dd>
       </dl><dl><dt>
           
-          <code><a href="ggplotTimeSeriesStates.html">ggplotTimeSeriesStates()</a></code> 
+          <code><a href="ggplot_time_series_states.html">ggplot_time_series_states()</a></code> 
         </dt>
         <dd>Plot time series simulation with state variables</dd>
       </dl><dl><dt>
@@ -722,19 +669,9 @@ is no need to further reduce the rfesult.</dd>
         <dd>Returns only the names in a reaction formula</dd>
       </dl><dl><dt>
           
-          <code><a href="simfiGaussianLogLikelihood.html">simfiGaussianLogLikelihood()</a></code> 
-        </dt>
-        <dd>SMMALA -- The default Extractor of the log-likelihood computed by the simfi solver</dd>
-      </dl><dl><dt>
-          
           <code><a href="CRNN.html">CRNN()</a></code> 
         </dt>
         <dd>CRNN creates C code for a chemical reaction neural network</dd>
-      </dl><dl><dt>
-          
-          <code><a href="automatic_update.html">automatic_update()</a></code> 
-        </dt>
-        <dd>This function proposes an MCMC candidate variable, and either accepts or rejects the candidate</dd>
       </dl><dl><dt>
           
           <code><a href="clear_yacas_environment.html">clear_yacas_environment()</a></code> 
@@ -757,11 +694,6 @@ is no need to further reduce the rfesult.</dd>
         <dd>Initial count of reacting Compounds</dd>
       </dl><dl><dt>
           
-          <code><a href="is.invertible.html">is.invertible()</a></code> 
-        </dt>
-        <dd>checks whether a given matrix is a valid, invertible fisherInformation</dd>
-      </dl><dl><dt>
-          
           <code><a href="linear_scale.html">linear_scale()</a></code> 
         </dt>
         <dd>Interprets a character vector as names of logarithms</dd>
@@ -770,11 +702,6 @@ is no need to further reduce the rfesult.</dd>
           <code><a href="moleCountConversion.html">moleCountConversion()</a></code> 
         </dt>
         <dd>This function calculates the conversion from moles to particle counts</dd>
-      </dl><dl><dt>
-          
-          <code><a href="observable.mean.in.bin.html">observable.mean.in.bin()</a></code> 
-        </dt>
-        <dd>The mean value of an observable value given a parameter bin</dd>
       </dl><dl><dt>
           
           <code><a href="parse_concise.html">parse_concise()</a></code> 
@@ -795,11 +722,6 @@ is no need to further reduce the rfesult.</dd>
           <code><a href="simple.unit.html">simple.unit()</a></code> 
         </dt>
         <dd>Simple unit from string</dd>
-      </dl><dl><dt>
-          
-          <code><a href="sum.of.bin.variance.html">sum.of.bin.variance()</a></code> 
-        </dt>
-        <dd>Weighted Sum of Bin-specific variances</dd>
       </dl><dl><dt>
           
           <code><a href="unit.kind.html">unit.kind()</a></code> 

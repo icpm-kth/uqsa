@@ -58,7 +58,7 @@ sample_size=30000
 
 start_time=$((`date +%s`))
 date
-mpirun -H localhost:$N -N $N ./pt-mh-akar4.R $sample_size > ./log.txt 2>&1
+mpirun -H localhost:$N -N $N ./pt-mh-akar4.R $sample_size > /dev/shm/log.txt 2>&1
 date
 end_time=$((`date +%s`))
 echo "Time spent sampling: $((end_time - start_time)) seconds (for $sample_size points)."
@@ -91,7 +91,7 @@ cat(sprintf("Effective sampple size: %i\n",round(n/(2*tau))))
 
 We reduce the sample for plotting purposes, by showing only every \(\tau_{\text{int.}}\)-th point and create a pairs plot for the first 6 parameters:
 
-```{r pairs, fig.width=12, fig.height=12, fig.fullwidth=TRUE, dpi=100}
+```{r pairs, fig.width=12, fig.height=12, fig.fullwidth=TRUE, dpi=200}
 X <- Sample[seq(1,n,by=tau),]
 colnames(X) <- rownames(m$Parameter)
 if (require(hexbin)){

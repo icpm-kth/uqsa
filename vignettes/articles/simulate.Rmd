@@ -4,7 +4,7 @@ output: rmarkdown::html_vignette
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(eval=FALSE,
+knitr::opts_chunk$set(
   cache = FALSE,
   collapse = TRUE,
   comment = "#>"
@@ -24,10 +24,12 @@ To simulate the reaction network model deterministically with UQSA you
 can use the `simulator.c` function:
 
 ```{r simulate, eval=FALSE}
-simulate <- simulator.c(ex, modelName, parMap = parMap)
+simulate <- simulator.c(ex, o, parMap = parMap)
 ```
 
-This has created a [closure](https://en.wikipedia.org/wiki/Closure_(computer_programming)) (`simulate`), with a single argument `p`:
+This has created a
+[closure](https://en.wikipedia.org/wiki/Closure_(computer_programming))
+(`simulate`), with a single argument `p`:
 
 ```{r run-simulations, eval=FALSE}
 y <- simulate(p)
@@ -45,7 +47,7 @@ the model. Here are possible reasons:
 2. the Markov chain is in log-space
    - the sampler uses `p`, but the model needs `10^p`
 3. the model parameters are linearly dependent
-   - we have to reliably pass `c(p[1]+p[2], p[2]+p[3], p[3]-p[1])` to the model, every time
+   - we have to reliably pass something like: `c(p[1]+p[2], p[2]+p[3], p[3]-p[1])` to the model, every time
 
 In such cases, you can write a mapping function, and use the `parMap` argument-slot of `simulator.c`:
 
@@ -56,19 +58,15 @@ library(parallel)
 
 f <- uqsa_example("AKAR4")
 m <- model_from_tsv(f)
-o <- as_ode(m)
-C <- generateCode(o)
-modelName <- write_and_compile(C)
-
+o <- write_and_compile(as_ode(m))
 ex <- experiments(m,o)
-
-
+print(ex)
 ```
 
 For example, here parameters are in log-space.
 
 ```{r, eval=TRUE}
-simulate <- simulator.c(ex,modelName,parMap=logParMap)
+simulate <- simulator.c(ex,o,parMap=logParMap)
 p <- log(values(m$Parameter))
 print(p)
 
@@ -108,7 +106,7 @@ for (i in seq(ex)){
 	matplot(            # simulation
 		tm,
 		y[[i]]$func['AKAR4pOUT',,],
-		add=TRUE, type="l",
+		add=TRUE, type="s",
 		lwd=3, lty=1, col=rgb(0,0,1,0.1)
 	)
 }
