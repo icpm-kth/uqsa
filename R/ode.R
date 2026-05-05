@@ -101,7 +101,7 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 #' matrices which together encode the mathematical structure of the
 #' ode.
 #'
-#' @param o the ode
+#' @param x the ode
 #' @return NULL
 #' @export
 #' @examples

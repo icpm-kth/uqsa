@@ -400,7 +400,7 @@ as_cme <- function(m){
 #' interactions, only the lengths of the vectors included in the data
 #' structure `CME`.
 #'
-#' @param cmeModel a model created by [as_cme]
+#' @param x a model created by [as_cme]
 #' @return Nil
 #' @export
 #' @examples

@@ -7,7 +7,7 @@
 \method{print}{ode}(x, ...)
 }
 \arguments{
-\item{o}{the ode}
+\item{x}{the ode}
 }
 \description{
 An ODE model was crteated by \code{as_ode} can be summarized here,

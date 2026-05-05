@@ -13,7 +13,7 @@
 #' Concise error notation means that a floating point number is
 #' followed by an integer in parentheses which indicates the
 #' uncertainty of the last digits of the value:
-#' 1.2345(12) = 1.2345 ± 0.0012.
+#' \deqn{1.2345(12) = 1.2345 \pm 0.0012}{1.2345(12) = 1.2345 ± 0.0012}.
 #'
 #' If the errors package is installed, then it will be used to
 #' represent the return value.

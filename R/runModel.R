@@ -3,7 +3,7 @@
 #' The results, if accidentally printed, are difficult to read.  This
 #' function prevents these accidental prints. It summarizes the
 #' results instead.
-#' @param y simulation results
+#' @param x simulation results
 #' @export
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))

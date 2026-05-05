@@ -7,7 +7,7 @@
 \method{print}{cme}(x, ...)
 }
 \arguments{
-\item{cmeModel}{a model created by \link{as_cme}}
+\item{x}{a model created by \link{as_cme}}
 }
 \value{
 Nil

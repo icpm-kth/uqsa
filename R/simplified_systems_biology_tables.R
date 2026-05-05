@@ -720,7 +720,7 @@ experiments <- function(m,o=NULL){
 #' The experiments, if accidentally printed, are difficult to read.
 #' This function prevents these accidental prints. It summarizes the
 #' data and simulation experiments instead.
-#' @param ex simulation experiments with data
+#' @param x simulation experiments with data
 #' @export
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))

@@ -7,7 +7,7 @@
 \method{print}{experiments}(x, ...)
 }
 \arguments{
-\item{ex}{simulation experiments with data}
+\item{x}{simulation experiments with data}
 }
 \description{
 The experiments, if accidentally printed, are difficult to read.

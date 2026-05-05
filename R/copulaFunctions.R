@@ -94,8 +94,10 @@ makeIndepCopula <- function(ll, ul){
 #' noise. Missing values are always removed.
 #'
 #' @noRd
-#' @param X an N×M matrix (N is the sample size), M is the number of variables (MCMC or ABC vars)
-#' @param sdf factor to increase or decrease the standard deviation of the added noise
+#' @param X an \eqn{N\times M}{N×M} matrix (N is the sample size), M
+#'     is the number of variables (MCMC or ABC vars)
+#' @param sdf factor to increase or decrease the standard deviation of
+#'     the added noise
 #' @param size size of returned sample (passed to `sample.int()`)
 #' @param ... passed to `base::sample.int()`
 #' @return a matrix with `size` rows and `nrow(X)` columns.

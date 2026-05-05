@@ -7,7 +7,7 @@
 \method{print}{mcmcVariable}(x, ...)
 }
 \arguments{
-\item{v}{the variable}
+\item{x}{the variable}
 }
 \description{
 Some mcmc variables have many attributes, which clutter the screen

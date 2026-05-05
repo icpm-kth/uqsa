@@ -117,7 +117,7 @@ mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rn
 #' when accidentally printed. This function prevents these long
 #' printouts.
 #'
-#' @param v the variable
+#' @param x the variable
 #' @export
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))

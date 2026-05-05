@@ -7,7 +7,7 @@
 \method{print}{simulation}(x, ...)
 }
 \arguments{
-\item{y}{simulation results}
+\item{x}{simulation results}
 }
 \description{
 The results, if accidentally printed, are difficult to read.  This
