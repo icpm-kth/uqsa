@@ -86,7 +86,11 @@ onlyNames <- function(formulaList){
 ## the best thing is to keep empty lists of reactants or products just
 ## empty (type nothing). But, this catches many ways of writing this.
 is_empty <- function(b){
-	return(b == "NULL" | b == "_" | b == "Ø" | b == "\U00002205" | b=="" | b=="[]" | b=="{}")
+	if (nzchar(b)){
+		return(trimws(b) %in% c("NULL","Nil","[]","{}","_","\u2205","\u2300","\u00D8","\u00F8"," "))
+	} else {
+		return(TRUE)
+	}
 }
 
 #' Find the stoichiometry for a given parameter name

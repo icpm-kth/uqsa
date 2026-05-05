@@ -166,11 +166,11 @@ affine_transformation(
 	} else if (dim[1] == 1) {
 		L->type=DIAG;
 	} else {
-		fprintf(stderr,"[%s] A and b have weird dimensionality: A is ",__func__);
+		REprintf("[%s] A and b have weird dimensionality: A is ",__func__);
 		for (j=0;j<n;j++) printf("%i%s",dim[j],j==n-1?"×":" ");
-		fprintf(stderr," and b is ");
+		REprintf(" and b is ");
 		for (j=0;j<n;j++) printf("%i%s",dim_b[j],j==n-1?"×":" ");
-		fprintf(stderr,"\nThey should be both three dimensional (length(dim(A))==3).\n");
+		REprintf("\nThey should be both three dimensional (length(dim(A))==3).\n");
 		return NULL;
 	}
 	L->A=REAL(A);
@@ -199,7 +199,7 @@ apply_tf(affine_tf *L, /* a transformation struct: A and b are cast to gsl_vecto
 {
 	if (!L) return GSL_SUCCESS; /* nothing to be done */
 	if (!z || !(t_index >=0 && L->l > 0)) {
-		fprintf(stderr,"[%s] (%p) z must be a pointer to a double array. t_index must be a valid index (0<=%i<%i), L must be applicable to z\n",__func__,(void*) z,t_index,L->l);
+		REprintf("[%s] (%p) z must be a pointer to a double array. t_index must be a valid index (0<=%i<%i), L must be applicable to z\n",__func__,(void*) z,t_index,L->l);
 		return GSL_EINVAL;
 	}
 	int n=L->length_b;
@@ -226,7 +226,7 @@ apply_tf(affine_tf *L, /* a transformation struct: A and b are cast to gsl_vecto
 		status|=gsl_blas_dgemv(CblasNoTrans, 1.0, &(A.matrix), &(x.vector), 0.0, L->y);
 		break;
 	default:
-		fprintf(stderr,"[%s] unknown transformation type %i.\n",__func__,L->type);
+		REprintf("[%s] unknown transformation type %i.\n",__func__,L->type);
 		return GSL_EINVAL;
 	}
 	if (status==GSL_SUCCESS){
@@ -251,20 +251,18 @@ struct event* event_from_R(Rdata E){
 		event->dose = REAL(AS_NUMERIC(dose));
 		event->nDose = length(dose);
 		event->type = model_func_event;
-		//fprintf(stderr,"[%s] event of type «model_func_event» %i loaded.\n",__func__,event->type);
 	} else if (tf != R_NilValue){
 		Rdata state_tf=from_list(tf,"state");
 		Rdata param_tf=from_list(tf,"param");
 		event->state=affine_transformation(from_list(state_tf,"A"),from_list(state_tf,"b"));
 		event->par=affine_transformation(from_list(param_tf,"A"),from_list(param_tf,"b"));
 		event->type=affine_tf_event;
-		//fprintf(stderr,"[%s] event of type «affine_tf_event» %i loaded.\n",__func__,event->type);
 	} else {
-		fprintf(stderr,"[%s] unknown type of event.\n",__func__);
+		REprintf("[%s] unknown type of event.\n",__func__);
 	}
 	int lt=length(time);
 	if (event->type == model_func_event && lt != event->nL){
-		fprintf(stderr,"[%s] event time vector and event label vector must be the same length for this type of event. (%i != %i)\n",__func__,lt,event->nL);
+		REprintf("[%s] event time vector and event label vector must be the same length for this type of event. (%i != %i)\n",__func__,lt,event->nL);
 	}
 	event->time = REAL(AS_NUMERIC(time));
 	event->nt=lt;
@@ -312,13 +310,11 @@ load_system(
 	if (lib){
 		*((char*) pcpy(suffix,"_vf",3))='\0';
 		if ((conversion.ptr=dlsym(lib,symbol_name))==NULL){
-			fprintf(stderr,"[%s] loading «%s» is required.\n",__func__,symbol_name);
-			fprintf(stderr,"%p: %p\n",lib,conversion.ptr);
+			REprintf("[%s] loading «%s» is required.\n",__func__,symbol_name);
+			REprintf("%p: %p\n",lib,conversion.ptr);
 			free(symbol_name);
 			return sys;
-		}/* else {
-			 fprintf(stderr,"[%s] model so: %s (%p)\n",__func__,model_so,conversion.ptr);
-			 }*/
+		}
 		ODE_vf = conversion.ODE_vf;
 
 		*((char*) pcpy(suffix,"_jac",4))='\0';
@@ -353,7 +349,7 @@ load_system(
 		conversion.ptr = dlsym(lib,symbol_name);
 		ODE_event = conversion.ODE_event;
 	} else {
-		fprintf(stderr,"[%s] library «%s» could not be loaded: %s\n",__func__,model_so,err_msg);
+		REprintf("[%s] library «%s» could not be loaded: %s\n",__func__,model_so,err_msg);
 		if (err_msg){
 			Rf_error("[dlopen] %s.",err_msg);
 		} else {
@@ -385,16 +381,16 @@ void check_status(
 	double tf=target_t;
 	switch (status){
 	case TIME_LIMIT_ERROR:
-		fprintf(stderr,"[%s] time limit reached on time point %i (%g/%g)\n",__func__,j,t,tf);
+		REprintf("[%s] time limit reached on time point %i (%g/%g)\n",__func__,j,t,tf);
 		break;
 	case GSL_EMAXITER:
-		fprintf(stderr,"[%s] time_point %i: maximum number of steps reached.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
+		REprintf("[%s] time_point %i: maximum number of steps reached.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
 		break;
 	case GSL_ENOPROG:
-		fprintf(stderr,"[%s] time_point %i: step size dropped below set minimum.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
+		REprintf("[%s] time_point %i: step size dropped below set minimum.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
 		break;
 	case GSL_EBADFUNC:
-		fprintf(stderr,"[%s] time_point %i: bad function.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
+		REprintf("[%s] time_point %i: bad function.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
 		break;
 	}
 }
@@ -469,7 +465,7 @@ simulate_timeseries(
 			Yout_row = gsl_matrix_row(Yout,j);
 			gsl_vector_memcpy(&(Yout_row.vector),y);
 		} else {
-			fprintf(stderr,"[%s] %s\n",__func__,gsl_strerror(status));
+			REprintf("[%s] %s\n",__func__,gsl_strerror(status));
 			break;
 		}
 	}
@@ -652,7 +648,7 @@ int sensitivityApproximation(double t0, gsl_vector *t, gsl_vector *p, gsl_matrix
 	int sign;
 	const double *y;
 	int status=GSL_SUCCESS;
-	if (m != Y->size1) fprintf(stderr,"[%s] t has length %i, but Y has %li rows.\n",__func__,m,Y->size1);
+	if (m != Y->size1) REprintf("[%s] t has length %i, but Y has %li rows.\n",__func__,m,Y->size1);
 
 	for (j=0;j<m;j++){
 		tj=gsl_vector_get(t,j);
@@ -667,11 +663,11 @@ int sensitivityApproximation(double t0, gsl_vector *t, gsl_vector *p, gsl_matrix
 		gsl_vector_add_constant(&(diag.vector),-1e-9); // all eigenvalues should be negative, if some are close to zero, we force them
 		// .. dirty hack
 		status=gsl_linalg_LU_decomp(LU, P, &sign);                                           /* make P*A = L*U */
-		if (status) printf("[%s] %s\n",__func__,gsl_strerror(status));
+		if (status) Rprintf("[%s] %s\n",__func__,gsl_strerror(status));
 		for (k=0;k<l;k++){
 			col=gsl_matrix_column(B,k);
 			status=gsl_linalg_LU_svx(LU, P, &(col.vector));                                    /* B <- A\B*/
-			if (status) printf("[%s] %s\n",__func__,gsl_strerror(status));
+			if (status) Rprintf("[%s] %s\n",__func__,gsl_strerror(status));
 		}
 		gsl_matrix_scale(A,delta_t);                                                  /* A <- (df/dy)*(t-t0)*/
 		gsl_linalg_exponential_ss(A,E,GSL_PREC_SINGLE);                               /* E <- exp(A*(t-t0))*/
@@ -691,10 +687,10 @@ int sensitivityApproximation(double t0, gsl_vector *t, gsl_vector *p, gsl_matrix
 		ODE_funcJacp(tj,y,M.Sf->data,p->data);
 
 		status=gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, FA, M.Sy, 1.0, M.Sf);
-		if (status) printf("[%s] %s\n",__func__,gsl_strerror(status));
+		if (status) Rprintf("[%s] %s\n",__func__,gsl_strerror(status));
 		SF=gsl_matrix_view_array(dFdp+f*l*j,l,f);
 		status=gsl_matrix_transpose_memcpy(&(SF.matrix),M.Sf);
-		if (status) printf("[%s] %s\n",__func__,gsl_strerror(status));
+		if (status) Rprintf("[%s] %s\n",__func__,gsl_strerror(status));
 	}
 	return GSL_SUCCESS;
 }
@@ -798,10 +794,7 @@ int FisherInformation(double *FI, Rdata experiment, double *funcSens, gsl_matrix
 		s = gsl_vector_view_array(REAL(stdv)+(j*n),n);
 		Sf = gsl_matrix_view_array(funcSens+(j*n*m),m,n);
 		if (gsl_matrix_memcpy(Sf_sd,&Sf.matrix) != GSL_SUCCESS){
-			fprintf(stderr,"[%s] memcpy didn't work\nSf.matrix(%li,%li):",__func__,(&Sf.matrix)->size1,(&Sf.matrix)->size2);
-			gsl_matrix_fprintf(stderr,&Sf.matrix,"%g,");
-			fprintf(stderr,"[%s] Sf_sd (%li,%li) matrix:",__func__,Sf_sd->size1,Sf_sd->size2);
-			gsl_matrix_fprintf(stderr,Sf_sd,"%g,");
+			REprintf("[%s] memcpy didn't work for Sf.matrix(%li,%li).",__func__,(&Sf.matrix)->size1,(&Sf.matrix)->size2);
 		}
 		for (i=0;i<m;i++) {
 			row = gsl_matrix_row(Sf_sd,i);
@@ -865,7 +858,7 @@ r_gsl_odeiv2_outer_fi(
 	Rdata FI, gll, ll;
 	gsl_odeiv2_system sys = load_system(model_name, model_so); /* also sets ODE_*() functions */
 	if (sys.dimension == 0 || ODE_default==NULL || ODE_init==NULL){
-		fprintf(stderr,"[%s] loading model has failed (system dimension: «%li»).\n",__func__,sys.dimension);
+		REprintf("[%s] loading model has failed (system dimension: «%li»).\n",__func__,sys.dimension);
 		UNPROTECT(1); /* res_list */
 		return R_NilValue;
 	}
@@ -950,7 +943,7 @@ r_gsl_odeiv2_outer_fi(
 					REAL(ll)[k]=logLikelihood(VECTOR_ELT(experiments,i),REAL(func)+(k*nf*nt));
 				}
 			} else {
-				fprintf(stderr,"[%s] simulation of provided parameters failed for experiment %i with error %i: %s\n",__func__,i,status,gsl_strerror (status));
+				REprintf("[%s] simulation of provided parameters failed for experiment %i with error %i: %s\n",__func__,i,status,gsl_strerror (status));
 				switch(OUTPUTS){
 				case output_fisher_information:
 					memset(REAL(FI)+(k*np*np),0,sizeof(double)*np*np);
@@ -1000,7 +993,7 @@ r_gsl_odeiv2_outer_fi(
 			UNPROTECT(1);
 		}
 		if (status!=GSL_SUCCESS){
-			fprintf(stderr,"[%s] parameter set lead to solver errors (%s) in experiment %i/%i\n",__func__,gsl_strerror(status),i,N);
+			REprintf("[%s] parameter set lead to solver errors (%s) in experiment %i/%i\n",__func__,gsl_strerror(status),i,N);
 		}
 	} // experiments: 0 to N-1
 	sensApproxMemFree(saMem); /* frees the memory of temporary matrices of sensitivity approximation */
@@ -1019,71 +1012,6 @@ struct par {
 	double *nu; /* stoichiometry (4×10)*/
 	double *m;  /* modifiers (enzymes); not consumed or produced */
 };
-
-int testcall_CRNN(gsl_odeiv2_system sys){
-	int numStateVar=sys.dimension;
-	int numReaction=ODE_default(0,NULL);
-	int numFunction=ODE_func(0,NULL,NULL,NULL);
-	fprintf(stderr,"[%s] %i %i %i\n",__func__,numStateVar,numReaction,numFunction);
-	gsl_vector *y0 = gsl_vector_alloc(numStateVar);
-	gsl_vector *f = gsl_vector_alloc(numStateVar);
-	gsl_vector *F = gsl_vector_alloc(numFunction);
-	gsl_matrix *J = gsl_matrix_alloc(numStateVar,numStateVar);
-	gsl_vector *l = gsl_vector_alloc(numReaction*2);
-	gsl_matrix *nu = gsl_matrix_alloc(numReaction,numStateVar);
-	gsl_matrix *m = gsl_matrix_alloc(numReaction,numStateVar);
-	struct par p={l->data, nu->data, m->data};
-	gsl_vector_set_all(y0,0.1);
-	gsl_matrix_set_identity(nu);
-	gsl_matrix_set_zero(m);
-	fprintf(stderr,"[%s]      vf: %i\n",__func__,ODE_vf(0,y0->data,f->data,&p));
-	gsl_vector_fprintf(stderr,f,"%g, ");
-	fprintf(stderr,"[%s]     jac: %i\n",__func__,ODE_jac(0,y0->data,J->data,NULL,&p));
-	gsl_matrix_fprintf(stderr,J,"%g, ");
-	fprintf(stderr,"[%s]    init: %i\n",__func__,ODE_init(0,y0->data,&p));
-	gsl_vector_fprintf(stderr,y0,"%g, ");
-	fprintf(stderr,"[%s] default: %i\n",__func__,ODE_default(0,&p));
-	fprintf(stderr,"[%s]    func: %i\n",__func__,ODE_func(0,y0->data,F->data,&p));
-	gsl_vector_fprintf(stderr,F,"%g, ");
-	gsl_vector_free(y0);
-	gsl_matrix_free(J);
-	gsl_matrix_free(nu);
-	gsl_matrix_free(m);
-	gsl_vector_free(f);
-	gsl_vector_free(F);
-	return GSL_SUCCESS;
-}
-
-
-int CRNN_debug_print(double t, double *y, struct par p){
-	if (!ODE_default || !ODE_vf || !ODE_jac) return GSL_FAILURE;
-	int numStateVar=ODE_vf(0,NULL,NULL,NULL);
-	//int numReaction=ODE_default(0,NULL);
-	int numFunction=ODE_func(0,NULL,NULL,NULL);
-	gsl_vector *f = gsl_vector_alloc(numStateVar);
-	gsl_vector *F = gsl_vector_alloc(numFunction);
-	gsl_matrix *J = gsl_matrix_alloc(numStateVar,numStateVar);
-	int i;
-	// vf
-	fprintf(stderr,"[%s]       t: %g\n",__func__,t);
-	fprintf(stderr,"[%s]      vf: %i\n",__func__,ODE_vf(t,y,f->data,&p));
-	gsl_vector_fprintf(stderr,f,"%g, ");
-	// jac
-	fprintf(stderr,"[%s]     jac: %i\n",__func__,ODE_jac(t,y,J->data,NULL,&p));
-	gsl_matrix_fprintf(stderr,J,"%g, ");
-	// y
-	fprintf(stderr,"[%s]       y:\n",__func__);
-	for (i=0;i<numStateVar;i++) fprintf(stderr,"%g, ",y[i]);
-	fputc('\n',stderr);
-	// func
-	fprintf(stderr,"[%s]    func: %i\n",__func__,ODE_func(0,y,F->data,&p));
-	gsl_vector_fprintf(stderr,F,"%g, ");
-	// free
-	gsl_matrix_free(J);
-	gsl_vector_free(f);
-	gsl_vector_free(F);
-	return GSL_SUCCESS;
-}
 
 
 /* This function simulates a CRNN, for now, only one parameter set is used (M=1)
@@ -1127,9 +1055,8 @@ r_gsl_odeiv2_outer_CRNN(
 	struct event *ev=NULL;
 	double *f;
 	gsl_odeiv2_system sys = load_system(model_name, model_so); /* also sets ODE_*() functions */
-	//	testcall_CRNN(sys);
 	if (sys.dimension == 0 || ODE_default==NULL || ODE_init==NULL){
-		fprintf(stderr,"[%s] loading model has failed (system dimension: «%li»).\n",__func__,sys.dimension);
+		REprintf("[%s] loading model has failed (system dimension: «%li»).\n",__func__,sys.dimension);
 		UNPROTECT(1); /* res_list */
 		return R_NilValue;
 	}

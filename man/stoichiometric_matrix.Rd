@@ -21,7 +21,7 @@ data-frames). The stoichiometric matrix is the linear map between
 the model's flux vector and the ODE's right-gand-side vector field.
 If the flux vector is \code{rr <- flux(t,x,p)}, which maps the state
 variables \code{x} and parameters \code{p} to the reaction rate \code{rr} of each
-reaction. The stoichiometric matrix \code{nu} (ν), will map the reaction
+reaction. The stoichiometric matrix \code{nu} (\eqn{\nu}{ν}), will map the reaction
 rates to the rate of change of the state variables: dx/dt := nu \%*\%
 flux(t,x,p).
 }

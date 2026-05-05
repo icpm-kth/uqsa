@@ -180,7 +180,7 @@ unit.scale <- function(prefix){
 		s <- -2
 	} else if (grepl("^m$|^milli$",prefix)){
 		s <- -3
-	} else if (grepl("^u$|^µ$|^\xCE\xBC$|^micro$",prefix)){
+	} else if (grepl("^u$|^\u00B5$|^\u03BC$|^micro$",prefix)){
 		s <- -6
 	} else if (grepl("^n$|^nano$",prefix)){
 		s <- -9
@@ -253,7 +253,7 @@ simple.unit <- function(u=NULL){
 	## an empty unit means that the value is dimensionless (the unit is '1')
 	if (!nzchar(u)) return(data.frame(scale=u.s,multiplier=u.m,exponent=u.x,kind=u.k))
 	## um, actually, kg is an SI unit "kind", but doesn't take other prefixes
-	prefix.pattern <- "(G|giga|M|mega|k|kilo|h|hecto|c|centi|m|milli|u|\xCE\xBC|\xc2\xb5|micro|n|nano|p|pico|f|femto)?"
+	prefix.pattern <- "(G|giga|M|mega|k|kilo|h|hecto|c|centi|m|milli|u|\u00B5|\u03BC|micro|n|nano|p|pico|f|femto)?"
 	unit.name.pattern <- "(l|L|liter|litre|g|gram|mole?|h|hour|s|second|m|meter|metre|K|kelvin|cd|candela|A|ampere|M|molarity|N|[Nn]ewton)"
 	exponent.pattern <- "\\^?([-+]?[0-9]+)?"
 	pat <- paste0("^",prefix.pattern,unit.name.pattern,exponent.pattern,"$")
@@ -298,7 +298,7 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 #'           will be translated into two SI units (mol and litre)
 #'        3. prefixes and units can be words or single letters
 #'        4. everything after a slash is the denominator
-#'        5. u is an accepted replacement for μ
+#'        5. u is an accepted replacement for \enc{μ}{mu}
 #'           (unicode greek mu or unicode micro symbol)
 #'        6. no parentheses (ignored): "(m/s)*kg" will be misinterpreted
 #'
@@ -412,7 +412,7 @@ unit_as_character <- function(unit){
 #' print(unit.info("km/h",unit.from.string("km/h")))
 unit.info <- function(unit.str,unit=unit.from.string(unit.str)){
 	Info <- sprintf(
-		"(%g × %s×10^(%i))^(%i)",
+		"(%g \u00D7 %s \u00D7 10^(%i))^(%i)",
 		unit$multiplier,
 		unit$kind,
 		unit$scale,

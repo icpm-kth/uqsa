@@ -7,14 +7,14 @@
 gsa_saltelli(fM1, fM2, fN, subtractMean = TRUE)
 }
 \arguments{
-\item{fM1}{output (f)unction values for \code{M1}, nSamples × nOuts}
+\item{fM1}{output (f)unction values for \code{M1}, \eqn{n_S \times n_O}{nSamples × nOuts}}
 
-\item{fM2}{output (f)unction values for \code{M2}, nSamples × nOuts}
+\item{fM2}{output (f)unction values for \code{M2}, \eqn{n_S \times n_O}{nSamples × nOuts}}
 
-\item{fN}{output (f)unction values for \code{N}, nSamples × nOuts × nPars}
+\item{fN}{output (f)unction values for \code{N}, \eqn{n_S \times n_O \times n_P}{nSamples × nOuts × nPars}}
 }
 \value{
-a list with sensitivity indices $SI and total sensitivities \verb{$SIT}
+a list with sensitivity indices \verb{$SI} and total sensitivities \verb{$SIT}
 }
 \description{
 M1, M2, and N are matrices prepared by \code{uqsa::saltelli_prior()}.  The

@@ -33,7 +33,7 @@
 #'     uncertainties (2 rows), dimensions of original object are lost
 #' @useDynLib uqsa, concise
 #' @examples
-#' x <- parse_concise(c("1.23(4)","0.51099895069(16)","1.25663706127(20)e−6","1.3±1.6","5;1"))
+#' x <- parse_concise(c("1.23(4)","0.51099895069(16)","1.25663706127(20)e-6","1.3±1.6","5;1"))
 #' print(as.data.frame(x))
 parse_concise <- function(v,use.errors=requireNamespace("errors"), na=c(0,Inf)){
 	d <- dim(v)

@@ -47,6 +47,6 @@ If the errors package is installed, then it will be used to
 represent the return value.
 }
 \examples{
-x <- parse_concise(c("1.23(4)","0.51099895069(16)","1.25663706127(20)e−6","1.3±1.6","5;1"))
+x <- parse_concise(c("1.23(4)","0.51099895069(16)","1.25663706127(20)e-6","1.3±1.6","5;1"))
 print(as.data.frame(x))
 }

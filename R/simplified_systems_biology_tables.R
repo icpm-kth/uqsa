@@ -205,7 +205,7 @@ formulae <- function(df){
 #' the model's flux vector and the ODE's right-gand-side vector field.
 #' If the flux vector is `rr <- flux(t,x,p)`, which maps the state
 #' variables `x` and parameters `p` to the reaction rate `rr` of each
-#' reaction. The stoichiometric matrix `nu` (ν), will map the reaction
+#' reaction. The stoichiometric matrix `nu` (\eqn{\nu}{ν}), will map the reaction
 #' rates to the rate of change of the state variables: dx/dt := nu %*%
 #' flux(t,x,p).
 #'
@@ -462,7 +462,7 @@ conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
 #' @param v a named vector
 #' @param d data.frame with column names that correspond to those of `v`
 #' @param as_type a character scalar indicating a type ('character','numeric','logical',etc.)
-#' @return a matrix of dimension length(v) × NROW(d)
+#' @return a matrix of dimension length(v) \enc{\\times}{×} NROW(d)
 #' @examples
 #' \dontrun{
 #' f <- uqsa_example("AKAR4")
@@ -747,7 +747,7 @@ print.experiments <- function(x,...){
 					)
 				)
 			} else if (is.matrix(x)){
-				cat(sprintf("%24s: %i×%i (dim)\n",names(ex[[i]])[j],NROW(x),NCOL(x)))
+				cat(sprintf("%24s: %i\u00D7%i (dim)\n",names(ex[[i]])[j],NROW(x),NCOL(x)))
 			} else if (is.numeric(x) && length(x)==1) {
 				cat(sprintf("%24s: %g\n",names(ex[[i]])[j],x))
 			} else if (is.numeric(x)) {

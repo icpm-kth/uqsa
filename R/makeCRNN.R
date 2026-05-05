@@ -75,13 +75,6 @@ CRNN <- function(numReactions,initialValues,funcValues, model.name="CRNN"){
 		)
 	)
 	C <- c(C,
-		writeComment(
-			c(
-				"This log function returns -∞ for 0",
-				"i.e.: LOG(0) = GSL_NEGINF (-∞)",
-				"log(0) returns NaN."
-			)
-		),
 		"inline static double LOG(double y){",
 		"\treturn y>0?log(y):GSL_NEGINF;",
 		"}",

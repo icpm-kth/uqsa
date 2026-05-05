@@ -26,7 +26,7 @@ molarity as it's own unit kind; writing "molarity"
 will be translated into two SI units (mol and litre)
 3. prefixes and units can be words or single letters
 4. everything after a slash is the denominator
-5. u is an accepted replacement for μ
+5. u is an accepted replacement for \enc{mu}{μ}
 (unicode greek mu or unicode micro symbol)
 6. no parentheses (ignored): "(m/s)*kg" will be misinterpreted
 }

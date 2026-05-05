@@ -14,7 +14,7 @@ update_values(v, d, as_type = "numeric")
 \item{as_type}{a character scalar indicating a type ('character','numeric','logical',etc.)}
 }
 \value{
-a matrix of dimension length(v) × NROW(d)
+a matrix of dimension length(v) \enc{\\times}{×} NROW(d)
 }
 \description{
 Given a named vector, this function will create a mtarix, with

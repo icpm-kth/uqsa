@@ -226,10 +226,10 @@ subtract_col_mean <- function(X){
 #' See Geir Halnes et al. (Halnes, Geir, et al. J. comp. neuroscience 27.3 (2009): 471.
 #'
 #' @export
-#' @param fM1 output (f)unction values for `M1`, nSamples × nOuts
-#' @param fM2 output (f)unction values for `M2`, nSamples × nOuts
-#' @param fN output (f)unction values for `N`, nSamples × nOuts × nPars
-#' @return a list with sensitivity indices $SI and total sensitivities `$SIT`
+#' @param fM1 output (f)unction values for `M1`, \eqn{n_S \times n_O}{nSamples × nOuts}
+#' @param fM2 output (f)unction values for `M2`, \eqn{n_S \times n_O}{nSamples × nOuts}
+#' @param fN output (f)unction values for `N`, \eqn{n_S \times n_O \times n_P}{nSamples × nOuts × nPars}
+#' @return a list with sensitivity indices `$SI` and total sensitivities `$SIT`
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' o <- write_and_compile(as_ode(m))
