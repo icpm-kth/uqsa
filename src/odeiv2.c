@@ -369,32 +369,6 @@ load_system(
 	return sys;
 }
 
-/*This function responds to the status returned by the gsl solvers.*/
-void check_status(
-	int status, /*the returned value from gsl_odeiv2_driver_apply and similar functions*/
-	double current_t, /* the time at which integration stopped*/
-	double target_t, /* the time we tried to reach*/
-	int iteration)/* the iteration at which the error happened */
-{
-	int j=iteration;
-	double t=current_t;
-	double tf=target_t;
-	switch (status){
-	case TIME_LIMIT_ERROR:
-		REprintf("[%s] time limit reached on time point %i (%g/%g)\n",__func__,j,t,tf);
-		break;
-	case GSL_EMAXITER:
-		REprintf("[%s] time_point %i: maximum number of steps reached.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
-		break;
-	case GSL_ENOPROG:
-		REprintf("[%s] time_point %i: step size dropped below set minimum.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
-		break;
-	case GSL_EBADFUNC:
-		REprintf("[%s] time_point %i: bad function.\n\t\tfinal time: %.10g (short of %.10g)",__func__,j,t,tf);
-		break;
-	}
-}
-
 /* Intergrates the system `sys` using the specified `driver` and
    simulation instructions. */
 int /* error code if any, otherwise GSL_SUCCESS */
@@ -462,7 +436,6 @@ simulate_timeseries(
 		if (elapsed_sec > time_limit_seconds){
 			status = TIME_LIMIT_ERROR;
 		}
-		check_status(status,t,tf,j);
 		if(status==GSL_SUCCESS){
 			Yout_row = gsl_matrix_row(Yout,j);
 			gsl_vector_memcpy(&(Yout_row.vector),y);
@@ -831,7 +804,6 @@ r_gsl_odeiv2_outer_fi(
  Rdata optional_outputs, /* a value that indicates whether ll, gl, fi are to be calculated or not */
  Rdata method,  /* integration method (integer) */
  Rdata time_limit_seconds, /* time limit for single experiments */
- Rdata early_rejection, /* whether to stop a simulation early */
  Rdata nmax) /* set a maximum number of steps for the solver */
 {
 	gsl_set_error_handler_off();
