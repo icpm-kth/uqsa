@@ -34,8 +34,8 @@ Suggests:
     knitr,
     rmarkdown,
     hexbin
-RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://icpm-kth.github.io/uqsa/
+Config/roxygen2/version: 8.0.0

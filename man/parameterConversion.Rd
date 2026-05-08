@@ -15,8 +15,8 @@ reaction, a list of integer vectors}
 \item{products}{a list of the stoichiometric constants of each
 reaction, a list of integer vectors}
 
-\item{kinetic.law}{a character matrix with two columns: \link{,1} for
-forward reaction rates, and \link{,2} for backward reaction rates.}
+\item{kinetic.law}{a character matrix with two columns: \verb{[,1]} for
+forward reaction rates, and \verb{[,2]} for backward reaction rates.}
 }
 \value{
 a vector of parameter conversion factors

@@ -102,6 +102,7 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 #' ode.
 #'
 #' @param x the ode
+#' @param ... requirement of print generic, not used.
 #' @return NULL
 #' @export
 #' @examples

@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{x}{the variable}
+
+\item{...}{requirement of print generic, not used.}
 }
 \description{
 Some mcmc variables have many attributes, which clutter the screen

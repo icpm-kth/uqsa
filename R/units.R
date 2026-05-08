@@ -69,8 +69,8 @@ moleCountConversion <- function(unit) {
 #'     reaction, a list of integer vectors
 #' @param products a list of the stoichiometric constants of each
 #'     reaction, a list of integer vectors
-#' @param kinetic.law a character matrix with two columns: [,1] for
-#'     forward reaction rates, and [,2] for backward reaction rates.
+#' @param kinetic.law a character matrix with two columns: `[,1]` for
+#'     forward reaction rates, and `[,2]` for backward reaction rates.
 #' @return a vector of parameter conversion factors
 #' @export
 #' @examples
@@ -160,7 +160,7 @@ unit.kind <- function(kind){
 #' This function reads a prefix from a string and returns the exponent
 #' (base-10) that this prefix represents.
 #'
-#' @param prefix a string, e.g.: "M", "mega", "m", "milli", "µ", "micro", etc.
+#' @param prefix a string, e.g.: "M", "mega", "m", "milli", "\eqn{\mu}{µ}", "micro", etc.
 #' @return an integer that corresponds to the prefix, defaults to 0.
 #' @examples
 #' print(unit.scale("M"))

@@ -7,7 +7,7 @@
 unit.scale(prefix)
 }
 \arguments{
-\item{prefix}{a string, e.g.: "M", "mega", "m", "milli", "µ", "micro", etc.}
+\item{prefix}{a string, e.g.: "M", "mega", "m", "milli", "\eqn{\mu}{µ}", "micro", etc.}
 }
 \value{
 an integer that corresponds to the prefix, defaults to 0.

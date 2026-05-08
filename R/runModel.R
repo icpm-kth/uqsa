@@ -4,6 +4,7 @@
 #' function prevents these accidental prints. It summarizes the
 #' results instead.
 #' @param x simulation results
+#' @param ... requirement of print generic, not used.
 #' @export
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
@@ -111,7 +112,7 @@ print.simulation <- function(x,...){
 #'       lines(ex[[i]]$outputTimes,drop(y[[i]]$func),col='red')
 #'   }
 #' }
-gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3, method=0, omit=0, time.out = 1){
+gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3, method=0, omit=0, time.out = 1, num.steps = 0){
 	if (is(odeModel,"ode")){
 		so <- so_path(odeModel)
 		odeModel <- odeModel$name
@@ -134,7 +135,8 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 		initial.step.size,
 		omit,
 		method,
-		time.out=as.double(time.out)
+		as.double(time.out),
+		num.steps
 	)
 	for (i in seq_along(experiments)){
 		if ("initialState" %in% names(experiments[[i]]) && length(experiments[[i]]$initialState)==NROW(y[[i]]$state)){
@@ -307,10 +309,24 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'     - parameter mapping
 #'
 #' The returned function depends only on parABC (the sampling
-#' parameters). The simulation will be done suing the rgsl backend.
+#' parameters).
 #'
 #' This version of the function does not use the parallel package at
 #' all and cannot add noise to the simulations (unlike simulator.c).
+#'
+#' A hopeless simulation can be stopped early using the settings
+#' `num.steps` and `time.out`. The value of `num.steps` applies to
+#' every continuous simulation stretch (e.g. betwee two events), teh
+#' count of steps is reset whenever an event occurs or one simulation
+#' ends (between different parameters and different experiments).
+#'
+#' The `time.out` is given in seconds and can trigger at measurement
+#' time points (when `t_wallclock > time.out`), not between
+#' points. How much time has passed is checked when the integrator is
+#' stopped to record the state.
+#'
+#' The limit on the number of steps, on the other hand, is a feature
+#' of the GSL ODE solvers and can trigger precisely.
 #'
 #' @param experiments a list of experiments to simulate: inital
 #'     values, inputs, time vectors, initial times
@@ -331,6 +347,8 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'     `omit=3`, omits FI, grad-ll, and log-likelihood calculations.
 #' @param time.out (in seconds); simulations are aborted at a time
 #'     greater than this.
+#' @param num.steps unlimited by default, setting this to a finite
+#'     value can help to stop very stiff simulations early.
 #' @export
 #' @return a closure that returns the model's output for a given
 #'     parameter vector, and approximate sensitivity matrices, for
@@ -350,7 +368,7 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'   s <- simfi(ex,c("AKAR4",so.file))
 #'   y <- s(values(m$Parameter)) # simulates
 #' }
-simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, time.out = 1){
+simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, time.out = 1, num.steps = 0){
 	N <- length(experiments)
 	if (is(odeModel,"ode")){
 		so <- so_path(odeModel)
@@ -376,7 +394,8 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 				as.matrix(modelPar),
 				method=method,
 				omit=min(omit,3),
-				time.out=time.out
+				time.out=time.out,
+				num.steps=num.steps
 			)
 			if (N==length(yf)) {
 				names(yf) <- names(experiments)
@@ -409,7 +428,7 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #' The returned function depends only on the parameter vector (or
 #' matrix if more than one simulation per experiment is desired). The
 #' parameter vector this simnulator accepts is probably derived from
-#' the sampling space of a Bayesian method \enc{θ}{theta}, so in the list of
+#' the sampling space of a Bayesian method \eqn{\theta}{θ}, so in the list of
 #' arguments, it is called `parABC` or (parMCMC would also have been a
 #' valid choice). These sampling parameters can be mapped to values
 #' the simulator can use via `parMap`. `parModel <- parMap(parABC)`,
@@ -458,7 +477,7 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #'   s <- simulator.c(ex,o)
 #'   y <- s(values(m$Parameter))
 #' }
-simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, omit=3, method = 0, time.out=1){
+simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, omit=3, method = 0, time.out=1, num.steps=0){
 	if (is.na(pmatch("data",names(experiments[[1]]))) && omit < 3){
 		warning(
 			sprintf(
@@ -486,7 +505,8 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 							as.matrix(modelPar),
 							method=method,
 							omit=min(omit,3),
-							time.out=time.out
+							time.out=time.out,
+							num.steps=num.steps
 						)
 					}
 				),
@@ -543,7 +563,8 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 								as.matrix(modelPar),
 								method=method,
 								omit=min(omit,3),
-								time.out=time.out
+								time.out=time.out,
+								num.steps=num.steps
 							),
 							error = function(e) {print(e); return(NA)}
 						)
@@ -714,7 +735,7 @@ makeObjective <- function(experiments,simulate,distance=defaultDistance){
 					}
 				)
 			)
-			S[i,status==1] <- Inf
+			S[i,as.logical(status)] <- Inf # any non-zero status
 		}
 		return(S)
 	}
@@ -763,4 +784,18 @@ name_method <- function(key=seq(0,10)){
 		warning(sprintf("invalid key %i",key[k==0 | k>length(charMethod)]))
 		return("")
 	}
+}
+
+#' Find Integer
+#'
+#' Given a ODE solver name (from the GSL solver module odeiv2), return
+#' an integer offset {0..10}.
+#'
+#' @param name character scalar, name of the method
+#' @return an integer that is acceptable to [simfi] and [simulator.c]
+#' @export
+method <- function(name){
+	m <- seq_along(c("msbdf","msadams","bsimp","rk4imp","rk2imp","rk1imp","rk8pd","rkck","rkf45","rk4","rk2"))-1
+	names(m) <- c("msbdf","msadams","bsimp","rk4imp","rk2imp","rk1imp","rk8pd","rkck","rkf45","rk4","rk2")
+	return(m[name])
 }

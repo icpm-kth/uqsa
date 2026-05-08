@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{x}{a model created by \link{as_cme}}
+
+\item{...}{requirement of print generic, not used.}
 }
 \value{
 Nil

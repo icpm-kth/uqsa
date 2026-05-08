@@ -118,6 +118,7 @@ mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rn
 #' printouts.
 #'
 #' @param x the variable
+#' @param ... requirement of print generic, not used.
 #' @export
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))

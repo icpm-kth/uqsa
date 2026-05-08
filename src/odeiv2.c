@@ -406,7 +406,8 @@ simulate_timeseries(
 	const gsl_vector *time, /* a vector of time-points */
 	const struct event *event, /*a struct array with scheduled events */
 	gsl_matrix *Yout,  /* (OUT) return vaule, pre-allocated */
-	double time_limit_seconds) /* time limit for solution */
+	double time_limit_seconds, /* time limit for solution */
+	int *n) /* (OUT) number of steps taken */
 {
 	gsl_set_error_handler_off();
 	int nt=time->size;
@@ -423,12 +424,13 @@ simulate_timeseries(
 	int label=0;
 	clock_t ct0=clock();
 	double elapsed_sec;
-
+	*n = 0;
 	for (j=0, i=0; j<nt; j++){
 		tf=gsl_vector_get(time,j);
 		while (event && i<event->nt && event->time[i] <= tf) {
 			te=event->time[i];
 			status=gsl_odeiv2_driver_apply(driver, &t, te, y->data);
+			*n += driver->e->count; //gsl_odeiv2_step_n_actual(driver->s); // next we definitely reset
 			if (status!=GSL_SUCCESS){
 				gsl_vector_free(y);
 				gsl_odeiv2_driver_reset(driver);
@@ -470,6 +472,7 @@ simulate_timeseries(
 		}
 	}
 	gsl_vector_free(y);
+	*n += driver->e->count; //gsl_odeiv2_step_n_actual(driver->s);
 	gsl_odeiv2_driver_reset(driver);
 	return status;
 }
@@ -827,7 +830,9 @@ r_gsl_odeiv2_outer_fi(
  Rdata initial_step_size, /* initial guess for the step size */
  Rdata optional_outputs, /* a value that indicates whether ll, gl, fi are to be calculated or not */
  Rdata method,  /* integration method (integer) */
- Rdata time_limit_seconds) /* time limit for single experiments */
+ Rdata time_limit_seconds, /* time limit for single experiments */
+ Rdata early_rejection, /* whether to stop a simulation early */
+ Rdata nmax) /* set a maximum number of steps for the solver */
 {
 	gsl_set_error_handler_off();
 	const gsl_odeiv2_step_type* step_types[] = {gsl_odeiv2_step_msbdf, gsl_odeiv2_step_msadams, gsl_odeiv2_step_bsimp, gsl_odeiv2_step_rk4imp, gsl_odeiv2_step_rk2imp, gsl_odeiv2_step_rk1imp, gsl_odeiv2_step_rk8pd, gsl_odeiv2_step_rkck, gsl_odeiv2_step_rkf45, gsl_odeiv2_step_rk4, gsl_odeiv2_step_rk2, NULL};
@@ -844,13 +849,15 @@ r_gsl_odeiv2_outer_fi(
 	enum possible_outputs {output_fisher_information, output_grad_log_likelihood, output_log_likelihood, output_functions, numOptOutputs};
 	Rdata res_list = PROTECT(NEW_LIST(N));                            /* use VECTOR_ELT and SET_VECTOR_ELT */
 	SET_NAMES(res_list,GET_NAMES(experiments));
-	Rdata yf_list, state, func, iv, t, cpuSeconds, Status;
+	Rdata yf_list, state, func, iv, t, cpuSeconds, numSteps, Status;
 	double t0;
 	clock_t ct0, ct1;
-	const char *yf_names[]={"cpuSeconds","status","state","func","logLikelihood","gradLogLikelihood","FisherInformation",NULL};
+	const char *yf_names[]={"cpuSeconds","numSteps","status","state","func","logLikelihood","gradLogLikelihood","FisherInformation",NULL};
 	gsl_vector_view initial_value, time;
 	gsl_matrix_view y;
 	size_t nt;
+	unsigned long NMAX = abs(asInteger(nmax));
+	unsigned long num_steps_taken; /* actually */
 	struct event *ev=NULL;
 	double *f;
 	gsl_vector_view p;
@@ -871,6 +878,7 @@ r_gsl_odeiv2_outer_fi(
 	gsl_vector *v=gsl_vector_alloc(nf);
 	struct sensApproxMem saMem = sensApproxMemAlloc(ny,np,nf);
 	gsl_odeiv2_driver *driver = gsl_odeiv2_driver_alloc_y_new(&sys,T,h,abs_tol,rel_tol);
+	if (NMAX) gsl_odeiv2_driver_set_nmax(driver,NMAX);
 	for (i=0; i<N; i++){
 		iv = from_list(VECTOR_ELT(experiments,i),"initial_value initialState initialValue initialValues");
 		t = from_list(VECTOR_ELT(experiments,i),"time times outputTimes t");
@@ -883,6 +891,7 @@ r_gsl_odeiv2_outer_fi(
 		ny = Y0->size2;
 		state=PROTECT(alloc3DArray(REALSXP,ny,nt,M));
 		cpuSeconds=PROTECT(NEW_NUMERIC(M));
+		numSteps=PROTECT(NEW_INTEGER(M));
 		Status=PROTECT(NEW_INTEGER(M));
 
 		for (j=0; j<ny*nt*M; j++) REAL(state)[j]=NA_REAL; /* initialize to NA */
@@ -918,7 +927,8 @@ r_gsl_odeiv2_outer_fi(
 				&(time.vector),
 				ev,
 				&(y.matrix),
-				REAL(time_limit_seconds)[0]
+				REAL(time_limit_seconds)[0],
+				INTEGER(numSteps)+k
 			);
 			ct1=clock();
 			REAL(cpuSeconds)[k] = sec(ct1-ct0);
@@ -958,22 +968,23 @@ r_gsl_odeiv2_outer_fi(
 			free(sy_k);
 			free(sf_k);
 		}
-		yf_list=PROTECT(NEW_LIST(7));
+		yf_list=PROTECT(NEW_LIST(8));
 		SET_VECTOR_ELT(yf_list,0,cpuSeconds);
-		SET_VECTOR_ELT(yf_list,1,Status);
+		SET_VECTOR_ELT(yf_list,1,numSteps);
+		SET_VECTOR_ELT(yf_list,2,Status);
 
-		SET_VECTOR_ELT(yf_list,2,state);
+		SET_VECTOR_ELT(yf_list,3,state);
 		if (OUTPUTS <= output_functions){
-			SET_VECTOR_ELT(yf_list,3,func);
+			SET_VECTOR_ELT(yf_list,4,func);
 		}
 		if (OUTPUTS <= output_log_likelihood){
-			SET_VECTOR_ELT(yf_list,4,ll);
+			SET_VECTOR_ELT(yf_list,5,ll);
 		}
 		if (OUTPUTS <= output_grad_log_likelihood){
-			SET_VECTOR_ELT(yf_list,5,gll);
+			SET_VECTOR_ELT(yf_list,6,gll);
 		}
 		if (OUTPUTS <= output_fisher_information){
-			SET_VECTOR_ELT(yf_list,6,FI);
+			SET_VECTOR_ELT(yf_list,7,FI);
 		}
 		set_names(yf_list,yf_names);
 		SET_VECTOR_ELT(res_list,i,yf_list);
@@ -981,6 +992,7 @@ r_gsl_odeiv2_outer_fi(
 
 		UNPROTECT(1); /* yf_list */
 		UNPROTECT(1); /* cpuSeconds */
+		UNPROTECT(1); /* numSteps*/
 		UNPROTECT(1); /* Status */
 		UNPROTECT(1); /* state */
 		if (OUTPUTS <= output_functions) UNPROTECT(1); /* func */
@@ -1029,7 +1041,8 @@ r_gsl_odeiv2_outer_CRNN(
  Rdata relative_tolerance, /* relative tolerance for GSL's solver */
  Rdata initial_step_size, /* initial guess for the step size */
  Rdata method, /* integration method (integer) */
- Rdata time_limit_seconds) /* time limit in seconds */
+ Rdata time_limit_seconds, /* time limit in seconds */
+ Rdata nmax) /* nmax for the odeiv2 driver */
 {
 	gsl_set_error_handler_off();
 	const gsl_odeiv2_step_type* step_types[] = {gsl_odeiv2_step_msbdf, gsl_odeiv2_step_msadams, gsl_odeiv2_step_bsimp, gsl_odeiv2_step_rk4imp, gsl_odeiv2_step_rk2imp, gsl_odeiv2_step_rk1imp, gsl_odeiv2_step_rk8pd, gsl_odeiv2_step_rkck, gsl_odeiv2_step_rkf45, gsl_odeiv2_step_rk4, gsl_odeiv2_step_rk2, NULL};
@@ -1045,10 +1058,10 @@ r_gsl_odeiv2_outer_CRNN(
 	struct par p = {REAL(lparameters), REAL(stoichiometry), REAL(modifiers)}; /* l, nu, m */
 	Rdata res_list = PROTECT(NEW_LIST(N)); /* use VECTOR_ELT and SET_VECTOR_ELT */
 	SET_NAMES(res_list, GET_NAMES(experiments));
-	Rdata yf_list, Y, F, iv, t, cpuSeconds, Status;
+	Rdata yf_list, Y, F, iv, t, cpuSeconds, numSteps, Status;
 	double t0;
 	clock_t ct0, ct1;
-	const char *yf_names[]={"state","func","cpuSeconds","status",NULL};
+	const char *yf_names[]={"state","func","cpuSeconds","numSteps","status",NULL};
 	gsl_vector_view initial_value, time;
 	gsl_matrix_view y;
 	size_t nt;
@@ -1065,7 +1078,9 @@ r_gsl_odeiv2_outer_CRNN(
 	int nf = ODE_func(0,NULL,NULL,NULL);
 	int ny = sys.dimension;
 	int np = length(lparameters);
+	unsigned long NMAX=asInteger(nmax);
 	gsl_odeiv2_driver *driver = gsl_odeiv2_driver_alloc_y_new(&sys,T,h,abs_tol,rel_tol);
+	if (NMAX) gsl_odeiv2_driver_set_nmax(driver,NMAX);
 	for (i=0; i<N; i++){
 		iv = from_list(VECTOR_ELT(experiments,i),"initial_value initialState initialValue initialValues iv");
 		t = from_list(VECTOR_ELT(experiments,i),"time times t outputTimes");
@@ -1076,6 +1091,7 @@ r_gsl_odeiv2_outer_CRNN(
 		time=gsl_vector_view_array(REAL(AS_NUMERIC(t)),nt);
 		Y=PROTECT(alloc3DArray(REALSXP,ny,nt,M));
 		cpuSeconds=PROTECT(NEW_NUMERIC(M));
+		numSteps=PROTECT(NEW_INTEGER(M));
 		Status=PROTECT(NEW_INTEGER(M));
 
 		for (j=0; j<ny*nt*M; j++) REAL(Y)[j]=NA_REAL; /* initialize to NA */
@@ -1093,7 +1109,8 @@ r_gsl_odeiv2_outer_CRNN(
 				&(time.vector),
 				ev,
 				&(y.matrix),
-				REAL(time_limit_seconds)[0]
+				REAL(time_limit_seconds)[0],
+				INTEGER(numSteps)+k
 			);
 			ct1=clock();
 			REAL(cpuSeconds)[k] = sec(ct1-ct0);
@@ -1107,19 +1124,15 @@ r_gsl_odeiv2_outer_CRNN(
 						f,
 						sys.params
 					);
-					/* CRNN_debug_print( */
-					/* 	gsl_vector_get(&(time.vector),j), */
-					/* 	gsl_matrix_ptr(&(y.matrix),j,0), */
-					/* 	p */
-					/* ); */
 				}
 			}
 		}
-		yf_list=PROTECT(NEW_LIST(4));
+		yf_list=PROTECT(NEW_LIST(5));
 		SET_VECTOR_ELT(yf_list,0,Y);
 		SET_VECTOR_ELT(yf_list,1,F);
 		SET_VECTOR_ELT(yf_list,2,cpuSeconds);
-		SET_VECTOR_ELT(yf_list,3,Status);
+		SET_VECTOR_ELT(yf_list,3,numSteps);
+		SET_VECTOR_ELT(yf_list,4,Status);
 		set_names(yf_list,yf_names);
 		SET_VECTOR_ELT(res_list,i,yf_list);
 		event_free(&ev);
@@ -1128,6 +1141,7 @@ r_gsl_odeiv2_outer_CRNN(
 		UNPROTECT(1); /* F */
 		UNPROTECT(1); /* Y */
 		UNPROTECT(1); /* cpuSeconds */
+		UNPROTECT(1); /* numSteps */
 		UNPROTECT(1); /* Status */
 	} // experiments: 0 to N-1
 	UNPROTECT(1); /* res_list */

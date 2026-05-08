@@ -13,7 +13,8 @@ gsl_odeiv2_fi(
   initial.step.size = 0.001,
   method = 0,
   omit = 0,
-  time.out = 1
+  time.out = 1,
+  num.steps = 0
 )
 }
 \arguments{

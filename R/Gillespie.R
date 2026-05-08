@@ -405,6 +405,7 @@ as_cme <- function(m){
 #' structure `CME`.
 #'
 #' @param x a model created by [as_cme]
+#' @param ... requirement of print generic, not used.
 #' @return Nil
 #' @export
 #' @examples

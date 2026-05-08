@@ -38,7 +38,7 @@ observable.mean.in.bin <- function(id,outputSample){
 #' @param binMeans the means of the observable within each bin (rows of means)
 #' @param totalMean the mean of the observable over the entire sample (vector)
 #' @return The weighted sum of square differences between the binMean and the totalMean
-sum.of.bin.variance  <- function(hst,binMeans,totalMean){
+sum_of_bin_variance  <- function(hst,binMeans,totalMean){
 	B <- dim(binMeans) # binning dimensions
 	stopifnot(B[2] == length(totalMean))
 	return(colSums(hst$counts*(t(t(binMeans)-totalMean))^2,na.rm=TRUE)/sum(hst$counts))
@@ -86,7 +86,7 @@ gsa_binning <- function(parSample,outputSample,nBins="Sturges"){
 	binMeans <- lapply(id,observable.mean.in.bin,outputSample=outputSample)
 	S <- matrix(0.0,NCOL(outputSample),NCOL(parSample))
 	for (i in 1:NCOL(parSample)){
-		Vi <- sum.of.bin.variance(hst[[i]],binMeans[[i]],totalMean=meanOutput)
+		Vi <- sum_of_bin_variance(hst[[i]],binMeans[[i]],totalMean=meanOutput)
 		S[,i] <- Vi/(1e-300+varOutput)
 	}
 	colnames(S) <- colnames(parSample)
