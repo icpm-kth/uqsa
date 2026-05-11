@@ -4,7 +4,7 @@
 \alias{simstoch}
 \title{Simulate stochastic model}
 \usage{
-simstoch(ex, cmeModel, parMap = identity, time.out = 1)
+simstoch(ex, cmeModel, parMap = identity, time.out = 1, nstep = 0)
 }
 \arguments{
 \item{ex}{list of experiments, same as for the deterministic
@@ -14,6 +14,8 @@ solvers.}
 library path stored inside, or the path to the so file}
 
 \item{time.out}{in seconds}
+
+\item{nstep}{number of reactions for early exit, defaults to unlimited (0)}
 
 \item{parameters}{a numeric vector of appropriate size}
 }
@@ -39,6 +41,11 @@ The path to the shared library, is required to contain at least one
 slash in it, e.g.: "./model.so", "/tmp/Rsdkljhskjdhf/model.so" But,
 not just "model.so", otherwise the shared library is interpreted as
 a system library by \code{dlopen()} (it will not be found).
+
+The number of reactions can be limited by \code{nstep} (micro time-steps
+forward). The maximum can be set by performing a good simulation
+and reading out the number of steps taken in that reference
+simulation: \code{y[[i]]$numSteps}.
 }
 \examples{
 m <- model_from_tsv(uqsa_example("AKAR4"))

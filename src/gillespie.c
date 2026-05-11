@@ -12,6 +12,7 @@
 #include <time.h>
 
 typedef SEXP Rdata;
+enum status {success, timeout, nstep_max};
 
 int (*model_effects)(double t, int *x, double *c, double* a,  int j);
 int (*model_propensities)(double t, int *x, double *c, double *a);
@@ -112,7 +113,7 @@ void print_counts(double t, gsl_vector_int *x){
 	printf("\n");
 }
 
-void advance_in_time(double *t, gsl_vector_int *x, gsl_vector *c, gsl_vector *a, gsl_rng *RNG){
+int advance_in_time(double *t, gsl_vector_int *x, gsl_vector *c, gsl_vector *a, gsl_rng *RNG){
 	double tau;
 	double r;
 	double sum_a=0.0;
@@ -120,6 +121,7 @@ void advance_in_time(double *t, gsl_vector_int *x, gsl_vector *c, gsl_vector *a,
 	//model_propensities(*t,x->data,c->data,a->data);
 	// 1. calculate sum(a)
 	sum_a = gsl_vector_sum(a);
+	if (sum_a==0) return -1; /* failure */
 	// 2. pick a time step forward (tau)
 	tau = gsl_ran_exponential(RNG,1.0/sum_a);
 	// 3. pick a reaction to perform:
@@ -127,6 +129,7 @@ void advance_in_time(double *t, gsl_vector_int *x, gsl_vector *c, gsl_vector *a,
 	j = pick_reaction(a,r*sum_a);
 	model_effects(*t,x->data,c->data,a->data,j);
 	*t += tau;
+	return 0; /* success */
 }
 
 int in_list(Rdata List, const char *name);
@@ -145,7 +148,7 @@ double seconds(double clock_a, double clock_b){
 	return fabs(clock_b-clock_a)/CLOCKS_PER_SEC;
 }
 
-Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters, Rdata time_limit_s){
+Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters, Rdata time_limit_s, Rdata nstep){
 	gsl_set_error_handler_off();
 	int i,j,k;
 	//int l;
@@ -171,13 +174,16 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters, Rdata time_
 	double t = t0;
 	double *p;
 	double limit_seconds = REAL(time_limit_s)[0];
+	int limit_nstep = asInteger(nstep);
 	clock_t cpu_t[2];
-	Rdata time, input, E, initialState, initialTime, yf, y, f;
-	const char *snames[] = {"state","func","status",NULL};
+	Rdata time, input, E, initialState, initialTime, yf, y, f, numSteps, cpuTime;
+	const char *snames[] = {"state","func","status","numSteps","cpuSeconds",NULL};
 	Rdata solution = PROTECT(NEW_LIST(length(experiments)));
 	SET_NAMES(solution,GET_NAMES(experiments));
 	gsl_vector_int_view column;
 	Rdata status;
+	int count;
+	int status_t;
 	gsl_rng *RNG = gsl_rng_alloc(gsl_rng_ranlxs0);
 	gsl_rng_set(RNG, 1337);
 	model_reaction_coefficients(c->data);
@@ -190,10 +196,11 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters, Rdata time_
 		time = from_list(E,"outputTimes");
 		input = from_list(E,"input");
 		t0 = *REAL(AS_NUMERIC(initialTime));
-		yf = PROTECT(NEW_LIST(3));
 		y = PROTECT(alloc3DArray(INTSXP,n,length(time),M));
 		f = PROTECT(alloc3DArray(REALSXP,nf,length(time),M));
 		status = PROTECT(NEW_INTEGER(M));
+		numSteps = PROTECT(NEW_INTEGER(M));
+		cpuTime = PROTECT(NEW_NUMERIC(M));
 		for (k=0;k<M;k++){
 			t = t0;
 			p = REAL(parameters)+(k*nrp);
@@ -206,15 +213,20 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters, Rdata time_
 				model_particle_count(t0,REAL(initialState),x->data);
 			}
 			cpu_t[0] = clock();
-			INTEGER(status)[k]=0; // success
+			INTEGER(status)[k]=success; // success
+			count=0;
 			for (j=0; j<length(time); j++){
 				tf = REAL(AS_NUMERIC(time))[j];
 				model_propensities(t0,x->data,c->data,a->data);
-				while (t < tf){
-					advance_in_time(&t,x,c,a,RNG);
+				while (t < tf && (status_t = advance_in_time(&t,x,c,a,RNG))==0){
+					count++;
 					cpu_t[1] = clock();
+					INTEGER(status)[k]=status_t;
 					if (seconds(cpu_t[1],cpu_t[0]) > limit_seconds) {
-						INTEGER(status)[k]=1; // timeout
+						INTEGER(status)[k]=timeout; // timeout reached
+						break;
+					} else if (count > limit_nstep && limit_nstep > 0) {
+						INTEGER(status)[k]=nstep_max; // nstep maximum reached
 						break;
 					}
 				}
@@ -222,14 +234,18 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters, Rdata time_
 				model_func(t,x->data,krc->data,REAL(f)+(nf*length(time)*k+nf*j));
 				gsl_vector_int_memcpy(&(column.vector),x);
 			}
+			INTEGER(numSteps)[k] = count;
+			REAL(cpuTime)[k] = seconds(clock(),cpu_t[0]);
 		}
+		yf = PROTECT(NEW_LIST(5));
 		SET_VECTOR_ELT(yf,0,y);
 		SET_VECTOR_ELT(yf,1,f);
 		SET_VECTOR_ELT(yf,2,status);
+		SET_VECTOR_ELT(yf,3,numSteps);
+		SET_VECTOR_ELT(yf,4,cpuTime);
 		set_names(yf,snames);
-		UNPROTECT(3);
 		SET_VECTOR_ELT(solution,i,yf);
-		UNPROTECT(1);
+		UNPROTECT(6);
 	}
 	UNPROTECT(1);
 	gsl_rng_free(RNG);

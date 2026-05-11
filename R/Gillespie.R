@@ -744,12 +744,18 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 #' not just "model.so", otherwise the shared library is interpreted as
 #' a system library by `dlopen()` (it will not be found).
 #'
+#' The number of reactions can be limited by `nstep` (micro time-steps
+#' forward). The maximum can be set by performing a good simulation
+#' and reading out the number of steps taken in that reference
+#' simulation: `y[[i]]$numSteps`.
+#'
 #' @param ex list of experiments, same as for the deterministic
 #'     solvers.
 #' @param cmeModel Either the cmeModel from [as_cme], with a shared
 #'     library path stored inside, or the path to the so file
 #' @param parameters a numeric vector of appropriate size
 #' @param time.out in seconds
+#' @param nstep number of reactions for early exit, defaults to unlimited (0)
 #' @export
 #' @return a closure that simulates the model in `model.so`
 #' @useDynLib uqsa gillespie
@@ -766,7 +772,7 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 #' require(errors)
 #' plot(as.errors(ex[[1]]$outputTimes),ex[[1]]$data,xlab="time",ylab="AKAR4p",main=names(ex)[1])
 #' lines(ex[[1]]$outputTimes,res[[1]]$func,type="s",lwd=2,col="red3")
-simstoch <- function(ex, cmeModel, parMap=identity, time.out=1){
+simstoch <- function(ex, cmeModel, parMap=identity, time.out=1, nstep=0){
 	if (is.character(cmeModel)) {
 		model.so <- cmeModel
 	} else if (is(cmeModel,"cme")) {
@@ -787,13 +793,14 @@ simstoch <- function(ex, cmeModel, parMap=identity, time.out=1){
 	return(
 		function(parMCMC){
 			p <- as.matrix(parMap(parMCMC))
-			y <- .Call(gillespie, model.so, ex, p, as.double(time.out))
+			y <- .Call(gillespie, model.so, ex, p, as.double(time.out), nstep)
 			names(y) <- names(ex)
 			stopifnot(length(y) == length(ex))
 			for (i in seq_along(y)){
 				rownames(y[[i]]$state) <- names(ex[[i]]$initialState)
 				rownames(y[[i]]$func) <- rownames(ex[[i]]$data)
 			}
+			class(y) <- "simulation"
 			return(y)
 		}
 	)
