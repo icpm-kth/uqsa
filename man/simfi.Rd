@@ -40,9 +40,6 @@ greater than this.}
 
 \item{num.steps}{unlimited by default, setting this to a finite
 value can help to stop very stiff simulations early.}
-
-\item{parABC}{the parameters for the model, subject to change by
-parMap.}
 }
 \value{
 a closure that returns the model's output for a given

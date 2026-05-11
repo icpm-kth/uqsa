@@ -721,6 +721,7 @@ experiments <- function(m,o=NULL){
 #' This function prevents these accidental prints. It summarizes the
 #' data and simulation experiments instead.
 #' @param x simulation experiments with data
+#' @param ... ignored.
 #' @export
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))

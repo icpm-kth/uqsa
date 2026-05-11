@@ -35,7 +35,11 @@
 #' The normal case is c("abc-1","abc-2b","abc-2a") maps to "abc"
 #' @export
 #' @param str a character vector
-#' @param split the token to use for strsplit instead of '-', this should be `character(0)` if you want to split letter by letter
+#' @param split the token to use for strsplit instead of '-', this
+#'     should be `character(0)` if you want to split letter by letter
+#' @param collapse the words constituents in the input that are found
+#'     to be uniform in the input are connected via [paste] and this "collapse"
+#'     value.
 #' @return the prefix common to all entries of str.
 #' @examples
 #' files <- sprintf("smmala-sample-%i-of-3.RDS",seq(1,3))
@@ -75,13 +79,21 @@ return(paste(
 #' This function must append all required attributes to the MCMC
 #' varible, for the Markov chain to update correctly.
 #'
-#' @param beta inverse temperature for the Markov chain (parallel tempering)
+#' @param beta inverse temperature for the Markov chain (parallel
+#'     tempering)
 #' @param parMCMC a plain starting value for the Markov chain
+#' @param simulate a closure that maps the MCMC variable to simulation
+#'     results (the simulation experiments are enclosed in this
+#'     function).
 #' @param logLikelihood a function that maps simulations to
 #'     logLikelihood values
+#' @param dprior density of the prior distribution
 #' @param gradLogLikelihood the gradient function of the logLikelihood
 #'     (optional) -- only if the algorithm requires it
-#' @param fisherInformation a function that calculates the Fisher Information matrix
+#' @param gprior the gradient pf the log-prior (for SMMALA and similar
+#'     algorithms).
+#' @param fisherInformation a function that calculates the Fisher
+#'     Information matrix
 #' @return the same starting parameter vector, but with attributes.
 #' @export
 #' @examples
@@ -931,11 +943,9 @@ ll <- function(parMCMC){
 #' claculated by the ode solver in this package, and return the sum of
 #' those vectors over all experiments. The gll-value the simulator
 #' returns is calculated with the assumption of a normal distribution
-#' on measurement errors.
-#'
-#' This function uses the log10ParMapJac(parMCMC) function by default,
-#' which assumes that sampling takes place in logarithmic space with
-#' base 10.
+#' on measurement errors, and uses the "identity" map between MCMC
+#' parameters and model-parameters by default (i.e. no
+#' transformation).
 #'
 #' Like [ll] this function does almost no work, it merely sums up the
 #' gradient values calculated during simulation, but it also performs a
@@ -943,7 +953,12 @@ ll <- function(parMCMC){
 #' parameter-mapping between the sampling-space and
 #' model-parameter-space into account.
 #'
-#' @param parMCMC a numeric vector, with attributes for MCMC, specifically smmala
+#' The returned function takes one argument, the MCMC variable
+#' `parMCMC` (a numeric vector). This variable requires all smmala
+#' specific attributes.
+#'
+#' @param parMapJac a function; maps parameter vectors to the Jacobian
+#'     of the parameter transformation.
 #' @return a numeric vector: grad(log(likelihood(data|parMCMC)))
 #' @export
 #' @examples
@@ -957,7 +972,7 @@ ll <- function(parMCMC){
 #' p <- values(m$Parameter)
 #' attr(p,"simulations") <- s(p)
 #' print(ll(p))
-#' trivialJac <- \(x) diag(1,length(x),length(x))
+#' trivialJac <- \(x) diag(1,length(x),length(x)) # the default
 #' gll <- gllf(parMapJac=trivialJac)
 #' print(gll(p))
 gllf <- function(parMapJac=\(x) diag(1,length(x),length(x))) {
@@ -986,11 +1001,9 @@ gllf <- function(parMapJac=\(x) diag(1,length(x),length(x))) {
 #' by the ode solver in this package, and return the sum of those
 #' values over all experiments. The gll-value the simulator returns is
 #' calculated with the assumption of a normal distribution on
-#' measurement errors.
-#'
-#' This function uses the log10ParMapJac(parMCMC) function by default,
-#' which assumes that sampling takes place in logarithmic space with
-#' base 10.
+#' measurement errors, and uses the `identity` map between the MCMC
+#' variable and the model's parameters by default (i.e. no
+#' transformation).
 #'
 #' Like [ll] and [gllf] this function does almost no work, it merely
 #' sums up the FI values calculated during simulation, but it also
@@ -998,7 +1011,12 @@ gllf <- function(parMapJac=\(x) diag(1,length(x),length(x))) {
 #' the parameter-mapping between the sampling-space and
 #' model-parameter-space into account.
 #'
-#' @param parMCMC a numeric vector, with attributes for MCMC, specifically smmala
+#' The only argument is a function that takes the current MCMC
+#' variable, `parMCMC` (a numeric vector), with all necessary
+#' attributes for smmala to work (e.g. through initialization).
+#'
+#' @param parMapJac a function; maps parameter vectors to the Jacobian
+#'     of the parameter transformation.
 #' @return a scalar value: log(likelihood(data|parMCMC))
 #' @export
 #' @examples
@@ -1222,7 +1240,7 @@ automatic_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(
 #' implicitly; simulations is a list as returned by
 #' rgsl::r_gsl_odeiv2_outer().
 #'
-#' @param experiment will be compared tp the simulation results
+#' @param experiments will be compared tp the simulation results
 #' @param perExpLLF (optional) a user supplied function with the
 #'     interface `perExpLLF(p,s,e)`, where `p` are the parameters, `s`
 #'     are the simulations and `e` are the experiments (with

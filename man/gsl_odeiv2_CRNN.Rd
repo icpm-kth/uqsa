@@ -30,9 +30,9 @@ parameters, initial value, events).}
 
 \item{l}{a matrix of parameters with M columns, in log-space.}
 
-\item{nu}{a stoichiometry matrix (N\enc{×}{x}R) where N is the number of
-state variables and R the number of reactions, all reactions
-are assumed to be reversible.}
+\item{nu}{a stoichiometry matrix (N\enc{×}{x}R) where N is the
+number of state variables and R the number of reactions, all
+reactions are assumed to be reversible.}
 
 \item{m}{modifiers -- similar to stoichiometry, but indicates
 whether the species takes part in the reaction without being
@@ -45,6 +45,9 @@ consumed.}
 \item{initial.step.size}{initial value for the step size; the step
 size will adapt to a value that observes the tolerances, real
 scalar.}
+
+\item{method}{one of the integration methods bundled with GSL (see
+\link{method} and \link{name_method}).}
 
 \item{time.out}{time limit in seconds}
 }

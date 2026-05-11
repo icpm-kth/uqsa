@@ -9,7 +9,12 @@ determinePrefix(str, split = "-", collapse = "-")
 \arguments{
 \item{str}{a character vector}
 
-\item{split}{the token to use for strsplit instead of '-', this should be \code{character(0)} if you want to split letter by letter}
+\item{split}{the token to use for strsplit instead of '-', this
+should be \code{character(0)} if you want to split letter by letter}
+
+\item{collapse}{the words constituents in the input that are found
+to be uniform in the input are connected via \link{paste} and this "collapse"
+value.}
 }
 \value{
 the prefix common to all entries of str.

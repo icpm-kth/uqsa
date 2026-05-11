@@ -13,11 +13,13 @@ solvers.}
 \item{cmeModel}{Either the cmeModel from \link{as_cme}, with a shared
 library path stored inside, or the path to the so file}
 
+\item{parMap}{map from MCMC variable (or ABC variable) to
+model-parameters.}
+
 \item{time.out}{in seconds}
 
-\item{nstep}{number of reactions for early exit, defaults to unlimited (0)}
-
-\item{parameters}{a numeric vector of appropriate size}
+\item{nstep}{number of reactions for early exit, defaults to
+unlimited (0)}
 }
 \value{
 a closure that simulates the model in \code{model.so}

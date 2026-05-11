@@ -28,6 +28,8 @@
 #' @param allow.reg allow regularization (logical), if TRUE, then
 #'     Sigma will be made smaller once a very low acceptance rate is
 #'     detected: one accepted update per batch
+#' @param parAcceptable a function that can reject a parameter vector
+#'     early based on user-requirements. Has to return a scalar boolean.
 #' @return a list containing a sample matrix and a vector of scores
 #'     (values of delta for each sample)
 #' @examples

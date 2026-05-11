@@ -8,9 +8,6 @@ unit.from.string(unit.str)
 }
 \arguments{
 \item{unit.str}{a string that contains a human readable unit}
-
-\item{verbose}{if TRUE, this function prints what it does (to find
-problems)}
 }
 \value{
 data.frame with an interpretation of the unit (multiplier

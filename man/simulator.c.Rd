@@ -40,7 +40,15 @@ the log-likelihood, and \code{omit=3} will omit the likelihood
 calculations alltogether. Omission is cumulative: \code{omit=3}
 omits all the previously mentioned optional quantities.}
 
-\item{time.out}{in seconds.}
+\item{method}{an integer offset, integration method (for ODE models), see
+\link{method} and \link{name_method}}
+
+\item{time.out}{in seconds, for early stops.}
+
+\item{num.steps}{maximum number of steps taken by the integrator
+(in the case of ODEs), or maximum number of total
+reaction-steps performed by the Gillespie algorithm (over time)
+for stochastic models.}
 
 \item{parABC}{the parameters for the model, subject to change by
 parMap.}

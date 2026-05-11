@@ -308,8 +308,6 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 #' denominator, so: l/mol s is the same as (l)/(mol s) Remark: not all
 #' units are understood.
 #' @param unit.str a string that contains a human readable unit
-#' @param verbose if TRUE, this function prints what it does (to find
-#'     problems)
 #' @return data.frame with an interpretation of the unit (multiplier
 #'     is unused here, but may be used later to deal with units such
 #'     as hours (kind=second, multiplier=60)

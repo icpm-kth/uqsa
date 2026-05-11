@@ -18,9 +18,9 @@ gsl_odeiv2_fi(
 )
 }
 \arguments{
-\item{odeModel}{the name of the ODE model to simulate (a shared library
-of the same name will be dynamically loaded and needs to be
-created first). Alternatively this can be the ode object
+\item{odeModel}{the name of the ODE model to simulate (a shared
+library of the same name will be dynamically loaded and needs
+to be created first). Alternatively this can be the ode object
 created by \link{as_ode}, with a shared library path attached to it.}
 
 \item{experiments}{a list of \code{N} simulation experiments (time,
@@ -36,9 +36,18 @@ parameters, initial value, events)}
 size will adapt to a value that observes the tolerances, real
 scalar}
 
+\item{method}{integration method (see \link{method} and \link{name_method}).}
+
 \item{omit}{an integer that indicates how many of these to omit in
 this order: fisher information, gradient of the log-likelihood,
 log-likelihood}
+
+\item{time.out}{in seconds (early rejection due to long simulation
+time). This can trigger at measurement times (outputTime).}
+
+\item{num.steps}{maximum number of steps the integration method is
+permitted to do; early rejection. This condition can trigger at any
+point during the integration.}
 }
 \value{
 a list of the solution trajectories \verb{y(t;p)} for all

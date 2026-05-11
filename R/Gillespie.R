@@ -753,9 +753,11 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 #'     solvers.
 #' @param cmeModel Either the cmeModel from [as_cme], with a shared
 #'     library path stored inside, or the path to the so file
-#' @param parameters a numeric vector of appropriate size
+#' @param parMap map from MCMC variable (or ABC variable) to
+#'     model-parameters.
 #' @param time.out in seconds
-#' @param nstep number of reactions for early exit, defaults to unlimited (0)
+#' @param nstep number of reactions for early exit, defaults to
+#'     unlimited (0)
 #' @export
 #' @return a closure that simulates the model in `model.so`
 #' @useDynLib uqsa gillespie

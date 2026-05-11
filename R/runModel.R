@@ -64,9 +64,9 @@ print.simulation <- function(x,...){
 #' The shared library needs to be created first. Either with `R CMD
 #' SHLIB`, [shlib], or manually on the system's command line (bash, zsh, etc.).
 #'
-#' @param odeModel the name of the ODE model to simulate (a shared library
-#'     of the same name will be dynamically loaded and needs to be
-#'     created first). Alternatively this can be the ode object
+#' @param odeModel the name of the ODE model to simulate (a shared
+#'     library of the same name will be dynamically loaded and needs
+#'     to be created first). Alternatively this can be the ode object
 #'     created by [as_ode], with a shared library path attached to it.
 #' @param experiments a list of `N` simulation experiments (time,
 #'     parameters, initial value, events)
@@ -79,6 +79,12 @@ print.simulation <- function(x,...){
 #' @param omit an integer that indicates how many of these to omit in
 #'     this order: fisher information, gradient of the log-likelihood,
 #'     log-likelihood
+#' @param method integration method (see [method] and [name_method]).
+#' @param time.out in seconds (early rejection due to long simulation
+#'     time). This can trigger at measurement times (outputTime).
+#' @param num.steps maximum number of steps the integration method is
+#'     permitted to do; early rejection. This condition can trigger at any
+#'     point during the integration.
 #' @return a list of the solution trajectories `y(t;p)` for all
 #'     experiments (named like the experiments), as well as the output
 #'     functions
@@ -163,9 +169,9 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #' @param experiments a list of `N` simulation experiments (time,
 #'     parameters, initial value, events).
 #' @param l a matrix of parameters with M columns, in log-space.
-#' @param nu a stoichiometry matrix (N\enc{×}{x}R) where N is the number of
-#'     state variables and R the number of reactions, all reactions
-#'     are assumed to be reversible.
+#' @param nu a stoichiometry matrix (N\enc{×}{x}R) where N is the
+#'     number of state variables and R the number of reactions, all
+#'     reactions are assumed to be reversible.
 #' @param m modifiers -- similar to stoichiometry, but indicates
 #'     whether the species takes part in the reaction without being
 #'     consumed.
@@ -174,6 +180,8 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #' @param initial.step.size initial value for the step size; the step
 #'     size will adapt to a value that observes the tolerances, real
 #'     scalar.
+#' @param method one of the integration methods bundled with GSL (see
+#'     [method] and [name_method]).
 #' @param time.out time limit in seconds
 #' @return a list of the solution trajectories y(t;p) for all
 #'     experiments (named like the experiments), as well as the output
@@ -333,8 +341,6 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #' @param odeModel Either the ode object created by [as_ode] (with a
 #'     shared library field inserted), or a string (with a comment
 #'     indicating an .so file) which points out the model to simulate
-#' @param parABC the parameters for the model, subject to change by
-#'     parMap.
 #' @param parMap the model will be called with parMap(parABC); so any
 #'     parameter transformation can happen there.
 #' @param method the integration method as an integer (higher numbers
@@ -459,6 +465,8 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #'     the log-likelihood, and `omit=3` will omit the likelihood
 #'     calculations alltogether. Omission is cumulative: `omit=3`
 #'     omits all the previously mentioned optional quantities.
+#' @param method an integer offset, integration method (for ODE models), see
+#'     [method] and [name_method]
 #' @param time.out in seconds, for early stops.
 #' @param num.steps maximum number of steps taken by the integrator
 #'     (in the case of ODEs), or maximum number of total
@@ -681,7 +689,7 @@ check_model <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.
 #' @export
 #' @examples
 #' d <- defaultDistance(seq(7),seq(7)+rnorm(7,0,0.1),rep(0.1,7))
-defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL),status=0){
+defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 	if (all(is.finite(funcSim))){
 		distance <- mean(abs(funcSim-dataVAL)/dataERR, na.rm=TRUE)
 	} else {

@@ -226,9 +226,14 @@ subtract_col_mean <- function(X){
 #' See Geir Halnes et al. (Halnes, Geir, et al. J. comp. neuroscience 27.3 (2009): 471.
 #'
 #' @export
-#' @param fM1 output (f)unction values for `M1`, \eqn{n_S \times n_O}{nSamples × nOuts}
-#' @param fM2 output (f)unction values for `M2`, \eqn{n_S \times n_O}{nSamples × nOuts}
-#' @param fN output (f)unction values for `N`, \eqn{n_S \times n_O \times n_P}{nSamples × nOuts × nPars}
+#' @param fM1 output (f)unction values for `M1`,
+#'    \eqn{n_S \times n_O}{nSamples × nOuts}
+#' @param fM2 output (f)unction values for `M2`,
+#'    \eqn{n_S \times n_O}{nSamples × nOuts}
+#' @param fN output (f)unction values for `N`,
+#'    \eqn{n_S \times n_O \times n_P}{nSamples × nOuts × nPars}
+#' @param subtract.mean whether or not to subtract the column-means from
+#'    all matrices/arrays
 #' @return a list with sensitivity indices `$SI` and total sensitivities `$SIT`
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
@@ -248,11 +253,11 @@ subtract_col_mean <- function(X){
 #'   "average relative senitivity S(p1) / S(p2): ",
 #'   mean(abs(GSA$SI[,1]/GSA$SI[,2]),na.rm=TRUE)
 #' )
-gsa_saltelli<- function(fM1,fM2,fN, subtractMean = TRUE){
+gsa_saltelli<- function(fM1,fM2,fN, subtract.mean = TRUE){
 	nSamples <- dim(fM1)[1]
 	nOuts <- dim(fM1)[2]
 	nPars <- dim(fN)[3]
-	if(subtractMean){
+	if(subtract.mean){
 		fM1 <- subtract_col_mean(fM1)
 		fM2 <- subtract_col_mean(fM2)
 		fN <- simplify2array(

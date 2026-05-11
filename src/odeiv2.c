@@ -829,7 +829,6 @@ r_gsl_odeiv2_outer_fi(
 	gsl_matrix_view y;
 	size_t nt;
 	unsigned long NMAX = abs(asInteger(nmax));
-	unsigned long num_steps_taken; /* actually */
 	struct event *ev=NULL;
 	double *f;
 	gsl_vector_view p;

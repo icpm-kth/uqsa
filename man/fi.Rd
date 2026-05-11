@@ -7,7 +7,8 @@
 fi(parMapJac = function(x) diag(1, length(x), length(x)))
 }
 \arguments{
-\item{parMCMC}{a numeric vector, with attributes for MCMC, specifically smmala}
+\item{parMapJac}{a function; maps parameter vectors to the Jacobian
+of the parameter transformation.}
 }
 \value{
 a scalar value: log(likelihood(data|parMCMC))
@@ -25,17 +26,19 @@ This function will take the Fisher-Information-matrices claculated
 by the ode solver in this package, and return the sum of those
 values over all experiments. The gll-value the simulator returns is
 calculated with the assumption of a normal distribution on
-measurement errors.
-
-This function uses the log10ParMapJac(parMCMC) function by default,
-which assumes that sampling takes place in logarithmic space with
-base 10.
+measurement errors, and uses the \code{identity} map between the MCMC
+variable and the model's parameters by default (i.e. no
+transformation).
 
 Like \link{ll} and \link{gllf} this function does almost no work, it merely
 sums up the FI values calculated during simulation, but it also
 performs a transformation of the Fisher Information Matrix, taking
 the parameter-mapping between the sampling-space and
 model-parameter-space into account.
+
+The only argument is a function that takes the current MCMC
+variable, \code{parMCMC} (a numeric vector), with all necessary
+attributes for smmala to work (e.g. through initialization).
 }
 \examples{
 m <- model_from_tsv(uqsa_example("AKAR4"))
