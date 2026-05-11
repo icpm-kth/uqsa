@@ -44,45 +44,45 @@ void* load_model(const char *model_so){
 	char *model_so_2=NULL;
 	union symbol conversion; /* pointer conversion */
 	if (!lib) {
-		fprintf(stderr,"[%s] %s.\n",__func__,dlerror());
+		REprintf("[%s] %s.\n",__func__,dlerror());
 		model_so_2 = malloc(strlen(model_so)+3);
 		stpcpy(stpcpy(model_so_2,"./"),model_so);
-		fprintf(stderr,"[%s] retrying with: «%s»\n",__func__,model_so_2);
+		REprintf("[%s] retrying with: «%s»\n",__func__,model_so_2);
 		lib = dlopen(model_so_2,RTLD_LAZY);
 	}
 	if (lib){
 		if ((conversion.ptr=dlsym(lib,"model_effects"))==NULL){
-			fprintf(stderr,"[%s] loading model_effects has failed.\n",__func__);
+			REprintf("[%s] loading model_effects has failed.\n",__func__);
 		} else {
 			model_effects = conversion.model_effects;
 		}
 		if ((conversion.ptr=dlsym(lib,"model_propensities"))==NULL){
-			fprintf(stderr,"[%s] loading model_propensities has failed.\n",__func__);
+			REprintf("[%s] loading model_propensities has failed.\n",__func__);
 		} else {
 			model_propensities = conversion.model_propensities;
 		}
 		if ((conversion.ptr=dlsym(lib,"model_reaction_coefficients"))==NULL){
-			fprintf(stderr,"[%s] loading model_reaction_coefficients has failed.\n",__func__);
+			REprintf("[%s] loading model_reaction_coefficients has failed.\n",__func__);
 		} else {
 			model_reaction_coefficients = conversion.model_reaction_coefficients;
 		}
 		if ((conversion.ptr=dlsym(lib,"model_initial_counts"))==NULL){
-			fprintf(stderr,"[%s] loading model_initial_counts has failed.\n",__func__);
+			REprintf("[%s] loading model_initial_counts has failed.\n",__func__);
 		} else {
 			model_initial_counts = conversion.model_initial_counts;
 		}
 		if ((conversion.ptr=dlsym(lib,"model_func"))==NULL){
-			fprintf(stderr,"[%s] loading model_func has failed.\n",__func__);
+			REprintf("[%s] loading model_func has failed.\n",__func__);
 		} else {
 			model_func = conversion.model_func;
 		}
 		if ((conversion.ptr=dlsym(lib,"model_particle_count"))==NULL){
-			fprintf(stderr,"[%s] loading model_particle_count has failed.\n",__func__);
+			REprintf("[%s] loading model_particle_count has failed.\n",__func__);
 		} else {
 			model_particle_count = conversion.model_particle_count;
 		}
 		if ((conversion.ptr = dlsym(lib,"model_stochastic_parameters"))==NULL){
-			fprintf(stderr,"[%s] loading model_stochastic_parameters has failed.\n",__func__);
+			REprintf("[%s] loading model_stochastic_parameters has failed.\n",__func__);
 		} else {
 			model_stochastic_parameters = conversion.model_stochastic_parameters;
 		}
@@ -104,13 +104,13 @@ int pick_reaction(gsl_vector *a, double r_sum_a){
 }
 
 void print_counts(double t, gsl_vector_int *x){
-	printf("%10f ",t);
+	Rprintf("%10f ",t);
 	size_t n = x->size;
 	int i;
 	for (i=0;i<n;i++){
-		printf("%10i ",x->data[i]);
+		Rprintf("%10i ",x->data[i]);
 	}
-	printf("\n");
+	Rprintf("\n");
 }
 
 int advance_in_time(double *t, gsl_vector_int *x, gsl_vector *c, gsl_vector *a, gsl_rng *RNG){

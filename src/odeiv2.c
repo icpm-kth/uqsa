@@ -167,9 +167,9 @@ affine_transformation(
 		L->type=DIAG;
 	} else {
 		REprintf("[%s] A and b have weird dimensionality: A is ",__func__);
-		for (j=0;j<n;j++) printf("%i%s",dim[j],j==n-1?"×":" ");
+		for (j=0;j<n;j++) Rprintf("%i%s",dim[j],j==n-1?"×":" ");
 		REprintf(" and b is ");
-		for (j=0;j<n;j++) printf("%i%s",dim_b[j],j==n-1?"×":" ");
+		for (j=0;j<n;j++) Rprintf("%i%s",dim_b[j],j==n-1?"×":" ");
 		REprintf("\nThey should be both three dimensional (length(dim(A))==3).\n");
 		return NULL;
 	}
