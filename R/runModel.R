@@ -459,7 +459,11 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #'     the log-likelihood, and `omit=3` will omit the likelihood
 #'     calculations alltogether. Omission is cumulative: `omit=3`
 #'     omits all the previously mentioned optional quantities.
-#' @param time.out in seconds.
+#' @param time.out in seconds, for early stops.
+#' @param num.steps maximum number of steps taken by the integrator
+#'     (in the case of ODEs), or maximum number of total
+#'     reaction-steps performed by the Gillespie algorithm (over time)
+#'     for stochastic models.
 #' @export
 #' @useDynLib uqsa gillespie
 #' @return a closure that returns the model's output for a given
@@ -534,7 +538,8 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 							so_path(modelName),
 							list(EX),
 							as.matrix(modelPar),
-							as.double(time.out)
+							as.double(time.out),
+							as.integer(num.steps)
 						)
 					)
 				),
