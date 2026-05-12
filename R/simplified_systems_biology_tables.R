@@ -144,7 +144,7 @@ values <- function(df){
 uncertainty <- function(df){
 	type <- list(
 		sd=c("stdv","sd","st.dv","standard.deviation","sigma"),
-		se="se","st.err","standard.error","uncertainty"),
+		se=c("se","st.err","standard.error","uncertainty"),
 		bounds=c("min","lb","lower.bound","max","ub","upper.bound")
 	)
 	dist <- df[[grep("distribution",tolower(colnames(df)),useBytes=TRUE)]] # distribution column
