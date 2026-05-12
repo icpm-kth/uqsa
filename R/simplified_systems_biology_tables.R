@@ -21,7 +21,13 @@ standard_error_matrix <- function(M){
 		E <- errors::errors(M)
 		dim(E) <- d
 		dimnames(E) <- dimnames(M)
+	} else if (is.matrix(M) && M %has% "errors"){
+		d <- dim(M)
+		E <- attr(M,"errors")
+		dim(E) <- d
+		dimnames(E) <- dimnames(M)
 	} else {
+		warning("Argument is not a matrix and thus has no standard error matrix")
 		E <- NULL
 	}
 	return(E)
@@ -96,6 +102,73 @@ values <- function(df){
 	names(v) <- rownames(df)
 	attr(v,"unit") <- units_from_table(df)
 	return(v)
+}
+
+#' Find the uncertainty of values in a data.frame that is derived from a tsv file or similar
+#'
+#' given a data.frame, this function will look for a column that
+#' contains some kind of standard error and retrieve it. The returned
+#' numeric vector will be named. This function is not intended for
+#' data, for data, the [values] function will retrieve both the value
+#' and the standard error if it was specified.
+#'
+#' This function is for the case that the table specifies a
+#' distribution with a mean and an range (of some sort). The type of
+#' uncertainty found will be attached as a comment to the returned
+#' value: "sd" standard deviation for normal distribution, "se"
+#' standard error (for a normal prior), and "range" for a uniform
+#' prior. Other priors are not recognised yet.
+#'
+#' The distinction between standard-error and standard-deviation
+#' doesn't matter much here: either the value is some kind of mean and
+#' the _uncertainty_ is the standard-error or standard-deviation of
+#' the mean, or it is a raw data-point (not averaged) and we know the
+#' standard deviation (noise) of the device that measured it, then
+#' _uncertainty_ is the standard deviation of the noise
+#' distribution. In either case, the value will be taken at face value
+#' and the uncertainty is used as sigma in the default log-likelihood
+#' function.
+#'
+#' Any entry of prior.distribution other than "uniform", will start a
+#' search for some kind of standard deviation or standard error (or
+#' sigma). As more priors are added, this function will look for the
+#' parameters of those distributions.
+#'
+#' This function makes many assumptions specifically that all
+#' variables in the table have the same type of prior distribution
+#' (but not identically distributed).
+#'
+#' @param df a data frame with a "value" column
+#' @return a named numeric vector
+#' @export
+uncertainty <- function(df){
+	type <- list(
+		sd=c("stdv","sd","st.dv","standard.deviation","sigma"),
+		se="se","st.err","standard.error","uncertainty"),
+		bounds=c("min","lb","lower.bound","max","ub","upper.bound")
+	)
+	dist <- df[[grep("distribution",tolower(colnames(df)),useBytes=TRUE)]] # distribution column
+	if (all(grepl("uniform",dist,ignore.case=TRUE,useBytes=TRUE))){
+		m <- na.omit(pmatch(type[["bounds"]],tolower(colnames(df))))
+		if (length(m)==2){
+			u <- abs(as.numeric(diff(t(df[,m]))))
+			names(u) <- rownames(df)
+			comment(u) <- "range"
+			return(u)
+		}
+	} else { # if (all(grepl("normal",dist,ignore.case=TRUE,useBytes=TRUE))){
+		for (j in seq(2)){
+			m <- na.omit(pmatch(type[[j]],tolower(colnames(df))))
+			if (length(m) > 0){
+				i <- m[1]
+				u <- df[[i]]
+				names(u) <- rownames(df)
+				comment(u) <- names(type)[j]
+				return(u)
+			}
+		}
+	}
+	return(NULL)
 }
 
 #' Find a column that contains some kind of mathematic expression in a data.frame
