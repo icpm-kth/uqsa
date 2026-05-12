@@ -1,3 +1,22 @@
+#' Subset simulations with preserved class
+#'
+#' The normal list subset operation would drop the class from the
+#' simulation object (which is fine in theory). With this override,
+#' the class is preserved.
+#'
+#' @param x an object with class "simulation"
+#' @param i an index-set
+#' @param ... passed on the list-\[ function
+#' @export
+#' @return subset of experiments
+`[.simulation` <- function(x, i, ...) {
+  # Use NextMethod to perform the actual subsetting as a list
+  out <- NextMethod("[")
+  # Re-assign the class back to the result
+  class(out) <- class(x)
+  return(out)
+}
+
 #' prints the simulation results
 #'
 #' The results, if accidentally printed, are difficult to read.  This
@@ -801,7 +820,7 @@ name_method <- function(key=seq(0,10)){
 #'
 #' Given a ODE solver name (from the GSL solver module odeiv2), return
 #' an integer offset `{0..10}`. This integer can be passed as the
-#' "method" argument for all ODE simulator functions ([simulator.c, simfi])
+#' "method" argument for all ODE simulator functions ([simulator.c], [simfi])
 #'
 #' @param name character scalar, name of the method
 #' @return an integer that is acceptable to [simfi] and [simulator.c]

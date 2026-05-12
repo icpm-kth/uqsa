@@ -768,3 +768,28 @@ print.experiments <- function(x,...){
 	}
 	cat("experiments: ",paste(names(ex),collapse=", "),"\n")
 }
+
+
+#' Subset experiments with preserved class
+#'
+#' The normal list subset operation would drop the class from the
+#' experiment object (which is fine in theory). With this override,
+#' the class is preserved.
+#'
+#' @param x an object with class "experiment"
+#' @param i an index-set
+#' @param ... passed on the list-\[ function
+#' @export
+#' @return subset of experiments
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' x <- experiments(m)
+#' class(x)
+#' class(x[seq(2)])
+`[.experiment` <- function(x, i, ...) {
+  # Use NextMethod to perform the actual subsetting as a list
+  out <- NextMethod("[")
+  # Re-assign the class back to the result
+  class(out) <- class(x)
+  return(out)
+}

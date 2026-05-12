@@ -15,5 +15,5 @@ an integer that is acceptable to \link{simfi} and \link{simulator.c}
 \description{
 Given a ODE solver name (from the GSL solver module odeiv2), return
 an integer offset \verb{\{0..10\}}. This integer can be passed as the
-"method" argument for all ODE simulator functions (\link{simulator.c, simfi})
+"method" argument for all ODE simulator functions (\link{simulator.c}, \link{simfi})
 }

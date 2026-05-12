@@ -148,7 +148,7 @@ y <- s(t(rprior(300)))
 
 Next we plot the result:
 
-```{r plotting, out.width="100%", res=200, fig.width=10, fig.height=7}
+```{r plotting, out.width="100%", res=200, fig.width=12, fig.height=10}
 e.g. <- 18
 plot(
 	as.errors(ex[[e.g.]]$outputTimes), # exact
@@ -169,6 +169,14 @@ matplot(
 )
 ```
 
+There is also a specialized plot function for simulations, but we
+subset the simulation results:
+
+```{r plot-generic, out.width="100%", res=300, fig.width=12, fig.height=18}
+print(class(y))
+par(mfrow=c(3,2))
+plot(y[seq(6)],ex[seq(6)],ylim=c(90,140))
+```
 
 This is an overview of the simulation:
 
