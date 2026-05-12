@@ -49,9 +49,6 @@ omits all the previously mentioned optional quantities.}
 (in the case of ODEs), or maximum number of total
 reaction-steps performed by the Gillespie algorithm (over time)
 for stochastic models.}
-
-\item{parABC}{the parameters for the model, subject to change by
-parMap.}
 }
 \value{
 a closure that returns the model's output for a given

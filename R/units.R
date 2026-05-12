@@ -298,7 +298,7 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 #'           will be translated into two SI units (mol and litre)
 #'        3. prefixes and units can be words or single letters
 #'        4. everything after a slash is the denominator
-#'        5. u is an accepted replacement for \enc{μ}{mu}
+#'        5. u is an accepted replacement for \eqn{\mu}{μ}
 #'           (unicode greek mu or unicode micro symbol)
 #'        6. no parentheses (ignored): "(m/s)*kg" will be misinterpreted
 #'
@@ -442,7 +442,7 @@ unit.info <- function(unit.str,unit=unit.from.string(unit.str)){
 #' \dontrun{
 #'   ## needs `unit` utility (system utility)
 #'   y <- "21 cm" %as% "inches"
-#'   y <- "12 μmol/L" %as% "mol/L"
+#'   y <- "12 nmol/L" %as% "mol/L"
 #'   print(comment(y))
 #'   y <- "12 mol/m^3" %as% "mmol/L"
 #' }

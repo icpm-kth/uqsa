@@ -25,7 +25,12 @@ Imports:
     Ryacas,
     VineCopula,
     MASS,
-    errors
+    errors,
+    pbdMPI,
+    mvtnorm,
+    digest,
+    colorspace,
+    pracma
 Suggests:
     ks,
     remotes,
