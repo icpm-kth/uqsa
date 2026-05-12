@@ -449,8 +449,6 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #' @param modelName a string (with optional comment indicating an .so
 #'     file) which points out the model to simulate if modelName is a
 #'     cme object, the simulation will be done stochasitcally
-#' @param parABC the parameters for the model, subject to change by
-#'     parMap.
 #' @param parMap the model will be called with parMap(parABC); so any
 #'     parameter transformation can happen there.
 #' @param noise boolean variable. If `noise=TRUE`, Gaussian noise is
@@ -802,7 +800,8 @@ name_method <- function(key=seq(0,10)){
 #' Find Integer
 #'
 #' Given a ODE solver name (from the GSL solver module odeiv2), return
-#' an integer offset {0..10}.
+#' an integer offset `{0..10}`. This integer can be passed as the
+#' "method" argument for all ODE simulator functions ([simulator.c, simfi])
 #'
 #' @param name character scalar, name of the method
 #' @return an integer that is acceptable to [simfi] and [simulator.c]
