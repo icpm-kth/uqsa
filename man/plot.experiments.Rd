@@ -27,5 +27,5 @@ ex <- experiments(m,o)
 s <- simulator.c(ex,o)
 p0 <- values(m$Parameter)
 y <- s(p0)
-plot(y,ex)
+plot(ex,y)
 }

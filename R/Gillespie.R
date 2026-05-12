@@ -30,10 +30,9 @@ kinetic_law_matrix <- function(r){
 	direction <- list(c("fwd","forward"),c("bwd","backward"))
 	F <- matrix("",NROW(r),2,dimnames=list(rownames(r),c("fwd","bwd")))
 	for (d in direction){
-		j <- pmatch(d,colnames(r))
-		if (any(is.finite(j))){
-			j <- j[which(is.finite(j))[1]]
-			F[,head(d,1)] <- r[[j]]
+		j <- na.omit(pmatch(d,colnames(r)))
+		if (length(j)>0){
+			F[,head(d,1)] <- r[[j[1]]]
 		} else {
 			print(colnames(r))
 			warning(sprintf("no %s rates found in reaction table.",tail(d,1)))
@@ -98,6 +97,8 @@ is_empty <- function(b){
 #' Given a list representation of stoichiometry (list of named integer
 #' vectors), and a character vector of kinetic laws, this function
 #' returns the correct stoichiometry for the given parameter.
+#'
+#' @noRd
 #' @param p parameter name
 #' @param reactants stoichiometry of the reaction's left side
 #' @param products stoichiometry of the reaction's right side
@@ -162,68 +163,6 @@ stoichiometry <- function(formulaList){
 	return(sc)
 }
 
-#' Find the Reaction a parameter appears in
-#'
-#' Usually Parameters are a list of names and values, Reactions have
-#' reaction kinetics, which can contain any number of parameters. To
-#' make matters worse, a parameter may influence two or more
-#' reactions. The goal is to decide on the parameter's conversion
-#' factor. We shall assume that if the parameter appears in more than
-#' one reaction, it is the same kind of context, and thus it must be
-#' converted exactly the sam eway.  This function finds the first
-#' reaction a given parameter appears in.
-#'
-#' Note that the entire conversion may not work at all for complicated
-#' kinetics, we use very simple rules here.
-#'
-#' @param reactionKinetic a character vector with all of the kinetic
-#'     law expressions
-#' @param parNames parameter names
-#' @return list with two named components: fwd, bwd; each is a named
-#'     vector of integers, th enames are taken from parNames, the
-#'     integer indicates a reaction.
-#' @noRd
-parameterReaction <- function(reactionKinetic,parNames){
-	N <- length(reactionKinetic)
-	RC <- ifelse(
-		grepl("-",reactionKinetic,fixed=TRUE),
-		reactionKinetic,
-		paste0(reactionKinetic," - 0")
-	)
-	RC <- trimws(unlist(strsplit(RC,"-",fixed=TRUE)))
-	dim(RC) <- c(2,N)
-	RC <- t(RC)
-	# forward and backward reaction kinetics
-	k_fwd <- lapply(
-		parNames,
-		function(x){
-			return(
-				head(
-					grep(
-						paste0("\\b",x,"\\b"),RC[,1]
-					),
-					1
-				)
-			)
-		}
-	)
-	names(k_fwd) <- parNames
-	k_bwd <- lapply(
-		parNames,
-		function(x) {
-			return(
-				head(
-					grep(
-						paste0("\\b",x,"\\b"),RC[,2]
-					),
-					1
-				)
-			)
-		}
-	)
-	names(k_bwd) <- parNames
-	return(list(fwd=unlist(k_fwd),bwd=unlist(k_bwd)))
-}
 
 #' Initial count of reacting Compounds
 #'
@@ -235,6 +174,7 @@ parameterReaction <- function(reactionKinetic,parNames){
 #' user to change the volume of the system in the C-file, without
 #' re-generating it from a model. The same c-file can be re-used that
 #' way.
+#' @noRd
 #' @param m the model data.frames obtained from [model_from_tsv]
 #' @return numeric vector or character vector, depending on how the
 #'     initial concentration was provided

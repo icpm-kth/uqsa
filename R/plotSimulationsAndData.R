@@ -15,7 +15,7 @@
 #' s <- simulator.c(ex,o)
 #' p0 <- values(m$Parameter)
 #' y <- s(p0)
-#' plot(y,ex)
+#' plot(ex,y)
 plot.experiments <- function(x, y, ...){
 	experiments <- x
 	if (missing(y)) {

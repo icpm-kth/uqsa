@@ -24,7 +24,7 @@ alternative value in one expression:
 x <- numeric(10)
 l <- dim(x) \%otherwise\% c(length(x),1)
 ## example with attributes:
-attr(x,"logLikelihood") <- logLikelihood(x)
+attr(x,"logLikelihood") <- -980
 ## elsewhere:
 logLF <- attr(x,"logLikelihood") \%otherwise\% -Inf
 }

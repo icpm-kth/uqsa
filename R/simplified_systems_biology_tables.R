@@ -12,7 +12,7 @@
 #' @return A matrix similar to E, with standard error values
 #' @examples
 #' M <- matrix(seq(12),3,4,dimnames=list(letters[seq(3)],LETTERS[seq(4)]))
-#' errors(M) <- abs(M*0.1 + 0.1)
+#' errors::errors(M) <- abs(M*0.1 + 0.1)
 #' E <- standard_error_matrix(M)
 #' print(E)
 standard_error_matrix <- function(M){
@@ -62,14 +62,19 @@ model_from_tsv <- function(src="."){
 
 #' Get j-th column with names
 #'
-#' When indexing a matrix, rownames are lost. This function will
+#' When indexing a matrix or data.frame, rownames are lost. This function will
 #' return a column of a matrix, as a vector (dropping rank so to
 #' speak), but the vector will retain the rownames of the matrix
+#'
+#' @export
 #' @param m a matrix
 #' @param j a column index
 #' @return a named vector
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAP79"))
+#' u <- column(m$Parameter,"unit")
 column <- function(m,j=1){
-	v <- as.double(m[,j])
+	v <- m[,j]
 	names(v) <- rownames(m)
 	return(v)
 }

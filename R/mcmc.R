@@ -12,7 +12,7 @@
 #' x <- numeric(10)
 #' l <- dim(x) %otherwise% c(length(x),1)
 #' ## example with attributes:
-#' attr(x,"logLikelihood") <- logLikelihood(x)
+#' attr(x,"logLikelihood") <- -980
 #' ## elsewhere:
 #' logLF <- attr(x,"logLikelihood") %otherwise% -Inf
 `%otherwise%` <- function(a,b){
@@ -598,32 +598,18 @@ gatherSample <- function(files,beta=1.0,size=NA){
 #' print(dim(Z))
 #' print(names(attributes(Z)))
 gatherReplicas <- function(files){
-	if (requireNamespace("hadron") && requireNamespace("errors")){
-		tau <- lapply(
-			lapply(
-				parallel::mclapply(files,readRDS),
-				attr,"logLikelihood"
-			),
-			function(l) {
-				res <- hadron::uwerr(data=l)
-				tau <- errors::set_errors(res$tauint,res$dtauint)
-				return(tau)
-			}
-		)
-	} else {
-		tau <- lapply(
-			lapply(
-				parallel::mclapply(files,readRDS),
-				attr,"logLikelihood"
-			),
-			function(l) {
-				res <- acf(l,plot=FALSE,lag.max=length(l))
-				th <- res$acf > 0.2
-				tau <- sum(res$acf[th])
-				return(tau)
-			}
-		)
-	}
+	tau <- lapply(
+		lapply(
+			parallel::mclapply(files,readRDS),
+			attr,"logLikelihood"
+		),
+		function(l) {
+			res <- acf(l,lag.max=round(length(l)/2),plot=FALSE)
+			j <- min(which(res$acf < 0.2))
+			tauint <- sum(res$acf[seq(j)])
+			return(tauint)
+		}
+	)
 	x <- Reduce(
 		rbind,
 		parallel::mcmapply(
@@ -1665,7 +1651,7 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 #' @return optimal step size
 #' @export
 #' @examples
-#' \donttest{\
+#' \donttest{
 #' m <- model_from_tsv(uqsa_example("AKAP79"))
 #' rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
 #' p <- rwm %@% "init"             # a valid starting point

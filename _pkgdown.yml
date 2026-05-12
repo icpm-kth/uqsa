@@ -19,7 +19,7 @@ navbar:
       text: Documentation
       menu:
       - text: Importing Models
-        href: articles/models.html
+        href: articles/model-details.html
       - text: Importing Data
         href: articles/data.html
       - text: Simulating a model

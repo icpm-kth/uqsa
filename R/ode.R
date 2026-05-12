@@ -136,7 +136,7 @@ print.ode <- function(x,...){
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' o <- as_ode(m)
-#' c_path(o) <- write_c_file(generate_code(o))
+#' c_path(o) <- write_c_code(generate_code(o))
 #' so_path(o) <- shlib(o)
 #' print(o)
 `so_path<-` <- function(o,value){
@@ -159,7 +159,7 @@ print.ode <- function(x,...){
 #' @return modified o, with information about compiled code
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' o <- as_ode(m)
-#' c_path(o) <- write_c_file(generate_code(o))
+#' c_path(o) <- write_c_code(generate_code(o))
 #' so_path(o) <- shlib(o)
 #' print(o)
 `c_path<-` <- function(o,value){
@@ -180,7 +180,7 @@ print.ode <- function(x,...){
 #' @return modified o, with information about compiled code
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' o <- as_ode(m)
-#' c_path(o) <- write_c_file(generate_code(o))
+#' c_path(o) <- write_c_code(generate_code(o))
 #' so_path(o) <- shlib(o)
 #' print(so_path(o))
 so_path <- function(o){
