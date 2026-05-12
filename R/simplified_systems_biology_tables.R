@@ -786,7 +786,7 @@ print.experiments <- function(x,...){
 #' x <- experiments(m)
 #' class(x)
 #' class(x[seq(2)])
-`[.experiment` <- function(x, i, ...) {
+`[.experiments` <- function(x, i, ...) {
   # Use NextMethod to perform the actual subsetting as a list
   out <- NextMethod("[")
   # Re-assign the class back to the result

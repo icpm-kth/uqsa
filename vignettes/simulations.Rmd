@@ -175,7 +175,7 @@ subset the simulation results:
 ```{r plot-generic, out.width="100%", res=300, fig.width=12, fig.height=18}
 print(class(y))
 par(mfrow=c(3,2))
-plot(y[seq(6)],ex[seq(6)],ylim=c(90,140))
+plot(ex[seq(6)],y[seq(6)],ylim=c(90,140))
 ```
 
 This is an overview of the simulation:
