@@ -540,7 +540,7 @@ conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
 #' @param v a named vector
 #' @param d data.frame with column names that correspond to those of `v`
 #' @param as_type a character scalar indicating a type ('character','numeric','logical',etc.)
-#' @return a matrix of dimension length(v) \enc{\\times}{×} NROW(d)
+#' @return a matrix of dimension: length(v) × NROW(d)
 #' @examples
 #' \dontrun{
 #' f <- uqsa_example("AKAR4")

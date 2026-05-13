@@ -188,7 +188,7 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #' @param experiments a list of `N` simulation experiments (time,
 #'     parameters, initial value, events).
 #' @param l a matrix of parameters with M columns, in log-space.
-#' @param nu a stoichiometry matrix (N\enc{×}{x}R) where N is the
+#' @param nu a stoichiometry matrix (N × R) where N is the
 #'     number of state variables and R the number of reactions, all
 #'     reactions are assumed to be reversible.
 #' @param m modifiers -- similar to stoichiometry, but indicates
