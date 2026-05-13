@@ -86,12 +86,11 @@ of the GSL ODE solvers and can trigger precisely.
   m <- model_from_tsv(f)
   o <- as_ode(m)
   ex <- experiments(m,o)
-  C <- generateCode(o)
-  ## as an alternative to the uqsa functions, we can use R builtins as well:
-  c.file <- tempfile("AKAR4_",fileext=".c")
-  cat(C,sep='\n',file=c.file)
-  so.file <- shlib(c.file)
-  s <- simfi(ex,c("AKAR4",so.file))
+  C <- generate_code(o)
+  c_path(o) <- write_c_code(C)
+  so_path(o) <- shlib(o)
+  s <- simfi(ex,o)
   y <- s(values(m$Parameter)) # simulates
+  print(y)
 }
 }

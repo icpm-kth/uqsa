@@ -14,7 +14,7 @@ preserves the dimensions of the host matrix)."><!-- mathjax --><script src="http
     
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.3</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,7 +35,7 @@ preserves the dimensions of the host matrix)."><!-- mathjax --><script src="http
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
-    <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
+    <a class="dropdown-item" href="../articles/model-details.html">Importing Models</a>
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
     <div class="dropdown-divider"></div>
@@ -55,7 +55,6 @@ preserves the dimensions of the host matrix)."><!-- mathjax --><script src="http
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate stochastic AKAR4</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4.html">UQ on deterministic AKAR4</a>
     <a class="dropdown-item" href="../articles/smcAKAR4.html">UQ on stochasic AKAR4 -- ABCSMC</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">UQ on stochasic AKAR4 -- ABCMCMC</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <a class="dropdown-item" href="../articles/uqsaAKAR4.html">UQ and SA on AKAR4</a>
     <div class="dropdown-divider"></div>
@@ -117,11 +116,13 @@ preserves the dimensions of the host matrix).</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">12</span><span class="op">)</span>,<span class="fl">3</span>,<span class="fl">4</span>,dimnames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">letters</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">]</span>,<span class="va">LETTERS</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">errors</span><span class="op">(</span><span class="va">M</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">M</span><span class="op">*</span><span class="fl">0.1</span> <span class="op">+</span> <span class="fl">0.1</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in errors(M) &lt;- abs(M * 0.1 + 0.1):</span> could not find function "errors&lt;-"</span>
+<span class="r-in"><span><span class="fu">errors</span><span class="fu">::</span><span class="fu"><a href="https://r-quantities.github.io/errors/reference/errors.html" class="external-link">errors</a></span><span class="op">(</span><span class="va">M</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">M</span><span class="op">*</span><span class="fl">0.1</span> <span class="op">+</span> <span class="fl">0.1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">E</span> <span class="op">&lt;-</span> <span class="fu">standard_error_matrix</span><span class="op">(</span><span class="va">M</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">E</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     A   B   C   D</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> a 0.2 0.5 0.8 1.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> b 0.3 0.6 0.9 1.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> c 0.4 0.7 1.0 1.3</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

@@ -60,16 +60,26 @@ throughout.
 \donttest{
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
-  ex <- experiments(m,as_ode(m,cla=FALSE))
+  ex <- experiments(m)
   nu <- stoichiometric_matrix(m)
-  l <- matrix(c(log(values(m$Parameter)),0),2,2,dimnames=list(rownames(m$Reaction),c("fwd","bwd")))
-  C <- CRNN(NCOL(nu),initialValues=values(m$Compound),funcValues=formulae(m$Output))
-  c.file <- tempfile("AKAR4_CRNN_",fileext=".c")
+  nu <- cbind(nu,-nu) # fwd and bwd reactions
+  l <- matrix(
+    c(log(values(m$Parameter)),-1e6),
+    2,2,
+    dimnames=list(rownames(m$Reaction),c("fwd","bwd"))
+  )
+  C <- CRNN(
+    NCOL(nu),
+    initialValues=values(m$Compound),
+    funcValues=formulae(m$Output)
+  )
+  c.file <- tempfile("AKAR4",fileext=".c")
   cat(C,file=c.file,sep='\n')
-  modelName <- "AKAR4"
-  comment(modelName) <- shlib(c.file,model.name="AKAR4")
+  modelName <- "CRNN"
+  comment(modelName) <- shlib(c.file)
   s <- scrnn(ex, modelName)
   p <- list(l=l,nu=nu,m=nu*0)
   y <- s(p)
+  plot(ex,y)
 }
 }

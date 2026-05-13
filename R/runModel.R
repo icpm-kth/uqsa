@@ -293,17 +293,27 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 #' \donttest{
 #'   f <- uqsa_example("AKAR4")
 #'   m <- model_from_tsv(f)
-#'   ex <- experiments(m,as_ode(m,cla=FALSE))
+#'   ex <- experiments(m)
 #'   nu <- stoichiometric_matrix(m)
-#'   l <- matrix(c(log(values(m$Parameter)),0),2,2,dimnames=list(rownames(m$Reaction),c("fwd","bwd")))
-#'   C <- CRNN(NCOL(nu),initialValues=values(m$Compound),funcValues=formulae(m$Output))
-#'   c.file <- tempfile("AKAR4_CRNN_",fileext=".c")
+#'   nu <- cbind(nu,-nu) # fwd and bwd reactions
+#'   l <- matrix(
+#'     c(log(values(m$Parameter)),-1e6),
+#'     2,2,
+#'     dimnames=list(rownames(m$Reaction),c("fwd","bwd"))
+#'   )
+#'   C <- CRNN(
+#'     NCOL(nu),
+#'     initialValues=values(m$Compound),
+#'     funcValues=formulae(m$Output)
+#'   )
+#'   c.file <- tempfile("AKAR4",fileext=".c")
 #'   cat(C,file=c.file,sep='\n')
-#'   modelName <- "AKAR4"
-#'   comment(modelName) <- shlib(c.file,model.name="AKAR4")
+#'   modelName <- "CRNN"
+#'   comment(modelName) <- shlib(c.file)
 #'   s <- scrnn(ex, modelName)
 #'   p <- list(l=l,nu=nu,m=nu*0)
 #'   y <- s(p)
+#'   plot(ex,y)
 #' }
 scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$nu, modifiers=\(p) p$m, method = 0, time.out = 1){
 	N <- length(experiments)
@@ -385,13 +395,12 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'   m <- model_from_tsv(f)
 #'   o <- as_ode(m)
 #'   ex <- experiments(m,o)
-#'   C <- generateCode(o)
-#'   ## as an alternative to the uqsa functions, we can use R builtins as well:
-#'   c.file <- tempfile("AKAR4_",fileext=".c")
-#'   cat(C,sep='\n',file=c.file)
-#'   so.file <- shlib(c.file)
-#'   s <- simfi(ex,c("AKAR4",so.file))
+#'   C <- generate_code(o)
+#'   c_path(o) <- write_c_code(C)
+#'   so_path(o) <- shlib(o)
+#'   s <- simfi(ex,o)
 #'   y <- s(values(m$Parameter)) # simulates
+#'   print(y)
 #' }
 simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, time.out = 1, num.steps = 0){
 	N <- length(experiments)

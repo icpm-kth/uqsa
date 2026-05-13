@@ -18,7 +18,7 @@ a list of conservation laws
 }
 \description{
 Given a stoichiometric matrix, this function performs model
-reduction via linear algebra operations, with \link[pracma:null]{pracma::null}.
+reduction via linear algebra operations, with \link[pracma:nullspace]{pracma::null}.
 }
 \examples{
 f <- uqsa_example("AKAR4")

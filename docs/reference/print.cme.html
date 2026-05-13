@@ -14,7 +14,7 @@ structure CME."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/l
     
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.3</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,7 +35,7 @@ structure CME."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/l
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
-    <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
+    <a class="dropdown-item" href="../articles/model-details.html">Importing Models</a>
     <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
     <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
     <div class="dropdown-divider"></div>
@@ -55,7 +55,6 @@ structure CME."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/l
     <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate stochastic AKAR4</a>
     <a class="dropdown-item" href="../articles/sampleAKAR4.html">UQ on deterministic AKAR4</a>
     <a class="dropdown-item" href="../articles/smcAKAR4.html">UQ on stochasic AKAR4 -- ABCSMC</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">UQ on stochasic AKAR4 -- ABCMCMC</a>
     <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
     <a class="dropdown-item" href="../articles/uqsaAKAR4.html">UQ and SA on AKAR4</a>
     <div class="dropdown-divider"></div>
@@ -99,13 +98,17 @@ structure <code>CME</code>.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for cme</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cmeModel</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>cmeModel</dt>
+    <dl><dt>x</dt>
 <dd><p>a model created by <a href="as_cme.html">as_cme</a></p></dd>
+
+
+<dt>...</dt>
+<dd><p>requirement of print generic, not used.</p></dd>
 
 </dl></div>
     <div class="section level2">
