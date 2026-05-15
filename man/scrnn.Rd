@@ -66,6 +66,7 @@ throughout.
   l <- matrix(
     c(log(values(m$Parameter)),-1e6),
     2,2,
+    byrow=TRUE,
     dimnames=list(rownames(m$Reaction),c("fwd","bwd"))
   )
   C <- CRNN(

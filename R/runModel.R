@@ -188,9 +188,9 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #' @param experiments a list of `N` simulation experiments (time,
 #'     parameters, initial value, events).
 #' @param l a matrix of parameters with M columns, in log-space.
-#' @param nu a stoichiometry matrix (N × R) where N is the
-#'     number of state variables and R the number of reactions, all
-#'     reactions are assumed to be reversible.
+#' @param nu a stoichiometry matrix (N × R) where N is the number of
+#'     state variables and R the number of reactions, all reactions
+#'     are assumed to be reversible.
 #' @param m modifiers -- similar to stoichiometry, but indicates
 #'     whether the species takes part in the reaction without being
 #'     consumed.
@@ -201,7 +201,10 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #'     scalar.
 #' @param method one of the integration methods bundled with GSL (see
 #'     [method] and [name_method]).
-#' @param time.out time limit in seconds
+#' @param time.out time limit in seconds, checked at every measurement
+#'     time-point (in the data).
+#' @param nstep maximum number of ODE integrator steps, checked at
+#'     every step, defaults to unlimited (0).
 #' @return a list of the solution trajectories y(t;p) for all
 #'     experiments (named like the experiments), as well as the output
 #'     functions.
@@ -221,7 +224,7 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #'   so.file <- shlib(c.file,model.name="AKAR4")
 #'   y <- gsl_odeiv2_CRNN(so.file,ex,l,nu,nu*0)
 #' }
-gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0, time.out = 1){
+gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0, time.out = 1, nstep=0){
 	if (is.character(name) && endsWith(name,".so")){
 		so <- name
 		name <- "CRNN"
@@ -236,7 +239,9 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 	if (!file.exists(so)){
             warning(sprintf("[gsl_odeiv2_CRNN] for model name \u00ab%s\u00bb, file \u00ab%s\u00bb not found.",name,so))
 	}
-	if (!is.matrix(l)) l <- as.matrix(p)
+	if (!is.matrix(l) && is.numeric(l)) {
+		l <- matrix(l,NCOL(nu),2,dimnames=list(colnames(nu),c("fwd","bwd")))
+	}
 	y <- .Call(
 		r_gsl_odeiv2_outer_CRNN,
 		name,       # with comment about shared library
@@ -246,7 +251,8 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 		rel.tol,    # relative tolerance
 		initial.step.size,
 		method,     # integrattion method
-		as.double(time.out) # in seconds
+		as.double(time.out), # in seconds
+		nstep
 	)
 	for (i in seq_along(experiments)){
 		if ("initialState" %in% names(experiments[[i]])){
@@ -299,6 +305,7 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 #'   l <- matrix(
 #'     c(log(values(m$Parameter)),-1e6),
 #'     2,2,
+#'     byrow=TRUE,
 #'     dimnames=list(rownames(m$Reaction),c("fwd","bwd"))
 #'   )
 #'   C <- CRNN(

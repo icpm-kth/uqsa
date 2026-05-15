@@ -11,7 +11,7 @@
 
 \item{y}{simulation results (a list)}
 
-\item{...}{forwarded to the more specific plot function \link{plot.errors}}
+\item{...}{forwarded to the more specific plot function \link[errors:plot.errors]{plot.errors}}
 }
 \value{
 plot object

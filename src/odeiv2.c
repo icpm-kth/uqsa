@@ -97,13 +97,13 @@ struct event {
 	affine_tf *par;
 };
 
-double sec(clock_t c){
+static double sec(clock_t c){
 	double t=(double) c;
 	return t/CLOCKS_PER_SEC;
 }
 
 /* finds named item in List, `name` can be a space separated list of possible names */
-int in_list(Rdata List, const char *name){
+static int in_list(Rdata List, const char *name){
 	if (!isVector(List)) return -1;
 	int i;
 	int N=length(List);
@@ -139,7 +139,7 @@ Rdata from_list(Rdata List, const char *name){
 /* creates an affine transformation struct from R objects, Rdata
 	 objects need to be kept alive as A and b arfe taken from R via
 	 pointers. Some memory is allocated to store an intermediate result. */
-affine_tf* /* an affine transformation (linear with offset) map: x -> A*x+b */
+static affine_tf* /* an affine transformation (linear with offset) map: x -> A*x+b */
 affine_transformation(
  Rdata A,/*a series of matrices, possibly just a set of diagonals*/
  Rdata b)/*a series of offsets*/
@@ -180,7 +180,7 @@ affine_transformation(
 	return L;
 }
 
-void free_tf(affine_tf *L){
+static void free_tf(affine_tf *L){
 	if (L){
 		gsl_vector_free(L->y);
 		free(L);
@@ -192,7 +192,7 @@ void free_tf(affine_tf *L){
 	 n×n for matrices and n for vectors. A can be n-sized as well, if A
 	 is a diagonal matrix, then we only store the diagonal. n is stored
 	 in the transformation structure as length_b. */
-int /* the returned status of the gsl operations */
+static int /* the returned status of the gsl operations */
 apply_tf(affine_tf *L, /* a transformation struct: A and b are cast to gsl_vectors here */
 	 double *z,/* an array of size n, it is updated using L */
 	 int t_index)/* if A and b are each a series of matrices, pick the one with this offset */
@@ -272,7 +272,7 @@ struct event* event_from_R(Rdata E){
 /* this function takes the address of an event structure pointer, clears the
 	 memory and changes the pointer to NULL, so that the event cannot be
 	 accessed after being freed (except through a different pointer). */
-void event_free(struct event **ev){
+static void event_free(struct event **ev){
 	if (ev && *ev){
 		switch ((*ev)->type){
 			case affine_tf_event:
@@ -1024,7 +1024,7 @@ r_gsl_odeiv2_outer_CRNN(
 	double rel_tol=asReal(relative_tolerance);
 	double h=asReal(initial_step_size);
 	int N=GET_LENGTH(experiments);
-	size_t M=1; //ncols(lparameters);
+	size_t M=1; //dim(lparameters)[3];
 	const gsl_odeiv2_step_type * T=step_types[asInteger(method)]; //gsl_odeiv2_step_msbdf;
 	struct par p = {REAL(lparameters), REAL(stoichiometry), REAL(modifiers)}; /* l, nu, m */
 	Rdata res_list = PROTECT(NEW_LIST(N)); /* use VECTOR_ELT and SET_VECTOR_ELT */
@@ -1048,15 +1048,30 @@ r_gsl_odeiv2_outer_CRNN(
 	sys.params = (void *) &p;
 	int nf = ODE_func(0,NULL,NULL,NULL);
 	int ny = sys.dimension;
-	int np = length(lparameters);
+	int np = nrows(lparameters); /* also number of reactions */
 	unsigned long NMAX=asInteger(nmax);
 	gsl_odeiv2_driver *driver = gsl_odeiv2_driver_alloc_y_new(&sys,T,h,abs_tol,rel_tol);
 	if (NMAX) gsl_odeiv2_driver_set_nmax(driver,NMAX);
 	for (i=0; i<N; i++){
-		iv = from_list(VECTOR_ELT(experiments,i),"initial_value initialState initialValue initialValues iv");
+		iv = from_list(
+			VECTOR_ELT(experiments,i),
+			"initial_value initialState initialValue initialValues iv"
+		);
 		t = from_list(VECTOR_ELT(experiments,i),"time times t outputTimes");
-		t0 = asReal(AS_NUMERIC(from_list(VECTOR_ELT(experiments,i),"intial_time initialTime t0 T0")));
-		ev = event_from_R(from_list(VECTOR_ELT(experiments,i),"event events scheduledEvents scheduledEvent scheduled_event"));
+		t0 = asReal(
+			AS_NUMERIC(
+				from_list(
+					VECTOR_ELT(experiments,i),
+					"intial_time initialTime t0 T0"
+				)
+			)
+		);
+		ev = event_from_R(
+			from_list(
+				VECTOR_ELT(experiments,i),
+				"event events scheduledEvents scheduledEvent scheduled_event"
+			)
+		);
 		initial_value = gsl_vector_view_array(REAL(iv),ny);
 		nt = length(t);
 		time=gsl_vector_view_array(REAL(AS_NUMERIC(t)),nt);
@@ -1064,12 +1079,11 @@ r_gsl_odeiv2_outer_CRNN(
 		cpuSeconds=PROTECT(NEW_NUMERIC(M));
 		numSteps=PROTECT(NEW_INTEGER(M));
 		Status=PROTECT(NEW_INTEGER(M));
-
 		for (j=0; j<ny*nt*M; j++) REAL(Y)[j]=NA_REAL; /* initialize to NA */
 		F=PROTECT(alloc3DArray(REALSXP,nf,nt,M));
 		for (j=0;j<nf*nt*M;j++) REAL(F)[j]=NA_REAL;   /* initialize to NA */
 		for (k=0;k<M;k++){
-			p.l = (REAL(lparameters)+np*k);
+			p.l = (REAL(lparameters)+np*2*k); /* number of reactions, fwd & bwd */
 			y=gsl_matrix_view_array(REAL(AS_NUMERIC(Y))+(nt*ny*k),nt,ny);
 			ct0=clock();
 			status=simulate_timeseries(
@@ -1088,7 +1102,7 @@ r_gsl_odeiv2_outer_CRNN(
 			INTEGER(Status)[k] = status;
 			if (status==GSL_SUCCESS) {
 				for (j=0;j<nt;j++){
-					f=REAL(F)+(0+j*nf+k*nf*nt);
+					f=REAL(F)+(0 + j*nf + k*nf*nt);
 					ODE_func(
 						gsl_vector_get(&(time.vector),j),
 						gsl_matrix_ptr(&(y.matrix),j,0),
@@ -1106,14 +1120,8 @@ r_gsl_odeiv2_outer_CRNN(
 		SET_VECTOR_ELT(yf_list,4,Status);
 		set_names(yf_list,yf_names);
 		SET_VECTOR_ELT(res_list,i,yf_list);
-		event_free(&ev);
-
-		UNPROTECT(1); /* yf_list */
-		UNPROTECT(1); /* F */
-		UNPROTECT(1); /* Y */
-		UNPROTECT(1); /* cpuSeconds */
-		UNPROTECT(1); /* numSteps */
-		UNPROTECT(1); /* Status */
+		if (ev) event_free(&ev);
+		UNPROTECT(6);
 	} // experiments: 0 to N-1
 	UNPROTECT(1); /* res_list */
 	gsl_odeiv2_driver_free(driver);
