@@ -62,7 +62,6 @@ throughout.
   m <- model_from_tsv(f)
   ex <- experiments(m)
   nu <- stoichiometric_matrix(m)
-  nu <- cbind(nu,-nu) # fwd and bwd reactions
   l <- matrix(
     c(log(values(m$Parameter)),-1e6),
     2,2,
