@@ -112,7 +112,7 @@ pcDist <- function(posterior,prior,color=rgb(0.5,0.5,0.5,0.05),...){
 	l <- m-sd
 	names(pI) <- colnames(posterior)
 
-	matplot(pI,t(posterior),type="l",lty=1,col=color,xlab=NA,axes = FALSE,lw=3,...)
+	matplot(pI,t(posterior),type="l",lty=1,col=color,xlab=NA,axes = FALSE,lwd=3,...)
 	if ("color" %in% names(prior)){
 		pColor <- prior$color
 	} else {
@@ -123,8 +123,8 @@ pcDist <- function(posterior,prior,color=rgb(0.5,0.5,0.5,0.05),...){
 	} else {
 		pColorOutline <- "black"
 	}
-	arrows(pI,m,pI,u,angle=90,col=pColorOutline,lw=2)
-	arrows(pI,m,pI,l,angle=90,col=pColorOutline,lw=2)
+	arrows(pI,m,pI,u,angle=90,col=pColorOutline,lwd=2)
+	arrows(pI,m,pI,l,angle=90,col=pColorOutline,lwd=2)
 	lines(pI,posterior[1,],col="red3",lw=2)
 	arrows(pI,m,pI,u,angle=90,col=pColor)
 	arrows(pI,m,pI,l,angle=90,col=pColor)

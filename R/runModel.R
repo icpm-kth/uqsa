@@ -587,8 +587,8 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 			)
 			names(yf) <- names(experiments)
 			for (i in seq_along(yf)){
-				rownames(yf[[i]]$state) <- names(ex[[i]]$initialState)
-				rownames(yf[[i]]$func) <- rownames(ex[[i]]$data)
+				rownames(yf[[i]]$state) <- names(experiments[[i]]$initialState)
+				rownames(yf[[i]]$func) <- rownames(experiments[[i]]$data)
 			}
 			stopifnot(length(experiments)==length(yf))
 			class(yf) <- "simulation"

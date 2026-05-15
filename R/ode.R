@@ -281,7 +281,7 @@ yJacobian <- function(f,x){
 	J <- Ryacas::yac_str(Ryacas::y_fn(sprintf("{%s},{%s}",F,X),"JacobianMatrix"))
 	J <- gsub("[{}]","",J)
 	J <- matrix(unlist(strsplit(J,",")),nrow=length(f),ncol=length(x),byrow=TRUE)
-	return(yacasMath(J,rev=TRUE))
+	return(yacasMath(J,reverse=TRUE))
 }
 
 #' replace_powers
