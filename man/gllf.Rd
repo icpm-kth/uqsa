@@ -7,7 +7,8 @@
 gllf(parMapJac = function(x) diag(1, length(x), length(x)))
 }
 \arguments{
-\item{parMCMC}{a numeric vector, with attributes for MCMC, specifically smmala}
+\item{parMapJac}{a function; maps parameter vectors to the Jacobian
+of the parameter transformation.}
 }
 \value{
 a numeric vector: grad(log(likelihood(data|parMCMC)))
@@ -25,17 +26,19 @@ This function will take the log-likelihood gradient values
 claculated by the ode solver in this package, and return the sum of
 those vectors over all experiments. The gll-value the simulator
 returns is calculated with the assumption of a normal distribution
-on measurement errors.
-
-This function uses the log10ParMapJac(parMCMC) function by default,
-which assumes that sampling takes place in logarithmic space with
-base 10.
+on measurement errors, and uses the "identity" map between MCMC
+parameters and model-parameters by default (i.e. no
+transformation).
 
 Like \link{ll} this function does almost no work, it merely sums up the
 gradient values calculated during simulation, but it also performs a
 transformation of the gradient vector, taking the
 parameter-mapping between the sampling-space and
 model-parameter-space into account.
+
+The returned function takes one argument, the MCMC variable
+\code{parMCMC} (a numeric vector). This variable requires all smmala
+specific attributes.
 }
 \examples{
 m <- model_from_tsv(uqsa_example("AKAR4"))
@@ -48,7 +51,7 @@ s <- simulator.c(ex,o,omit=1) # not 3
 p <- values(m$Parameter)
 attr(p,"simulations") <- s(p)
 print(ll(p))
-trivialJac <- \(x) diag(1,length(x),length(x))
+trivialJac <- \(x) diag(1,length(x),length(x)) # the default
 gll <- gllf(parMapJac=trivialJac)
 print(gll(p))
 }

@@ -49,6 +49,7 @@ up <- function(x,y,num=round(min(NROW(x)/2,NROW(y)/2)),subscripts,...){
 #' @param upper.panel an upper panel plot function which defaults to
 #'     shaded density plots of the posterior with contour lines for
 #'     the prior distribution.
+#' @param ... passed to `graphics::pairs()`
 #' @return pairs plot object
 #' @export
 #' @examples

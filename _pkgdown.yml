@@ -19,7 +19,7 @@ navbar:
       text: Documentation
       menu:
       - text: Importing Models
-        href: articles/models.html
+        href: articles/model-details.html
       - text: Importing Data
         href: articles/data.html
       - text: Simulating a model
@@ -76,12 +76,11 @@ reference:
   - as_cme
   - write_and_compile
   - values
+  - uncertainty
   - experiments
   - standard_error_matrix
   - conservation_law_analysis
   - kinetic_law_matrix
-  - parameter_stoichiometry
-  - parameterConversion
   - replace_powers
   - stoichiometry
   - stoichiometric_matrix
@@ -178,25 +177,23 @@ reference:
 - title: "Plotting functions"
   contents:
   - pcDist
-  - plot_time_series_base
   - sensitivity.graph
   - showPosterior
 - title: "Internal functions"
   contents:
-  - ggplot_time_series
-  - ggplot_time_series_states
   - onlyCoefficients
   - onlyNames
   - CRNN
   - clear_yacas_environment
   - defaultDistance
   - formulae
-  - initialCount
   - linear_scale
-  - moleCountConversion
   - parse_concise
   - "reaction<-"
   - update_values
   - simple.unit
-  - unit.kind
-  - unit.scale
+  - method
+  - plot.experiments
+  - "[.experiments"
+  - "[.simulation"
+

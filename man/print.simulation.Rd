@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{x}{simulation results}
+
+\item{...}{requirement of print generic, not used.}
 }
 \description{
 The results, if accidentally printed, are difficult to read.  This

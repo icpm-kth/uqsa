@@ -30,7 +30,7 @@ the same (given) temperature.
 This function should be used if you need to inspect only one of the
 temperatures, not all of them. This function is similar to
 \link{loadSample_mpi}, which returns all temperatures. But, whearas
-\link{lodSample_mpi} returns a list, this function returns the
+\link{loadSample_mpi} returns a list, this function returns the
 sample-matrix itself (because the result of this function is conceptually
 similar to sampling on one node, with one temperature).
 }

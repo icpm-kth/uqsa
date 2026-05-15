@@ -7,6 +7,8 @@
 logLikelihoodFunc(experiments, perExpLLF = NULL, simpleUserLLF = NULL)
 }
 \arguments{
+\item{experiments}{will be compared tp the simulation results}
+
 \item{perExpLLF}{(optional) a user supplied function with the
 interface \code{perExpLLF(p,s,e)}, where \code{p} are the parameters, \code{s}
 are the simulations and \code{e} are the experiments (with
@@ -23,8 +25,6 @@ is \code{t(experiments[[i]]$data)} and may contain NA
 values.  This function should also accept an optional \emph{name}
 argument (this is the name of the experiment this function is
 currently called for).}
-
-\item{experiment}{will be compared tp the simulation results}
 }
 \value{
 \code{llf(parMCMC)}, a closure (function) of the mcmc-variable:

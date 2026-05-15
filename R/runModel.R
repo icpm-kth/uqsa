@@ -1,9 +1,29 @@
+#' Subset simulations with preserved class
+#'
+#' The normal list subset operation would drop the class from the
+#' simulation object (which is fine in theory). With this override,
+#' the class is preserved.
+#'
+#' @param x an object with class "simulation"
+#' @param i an index-set
+#' @param ... passed on the list-\[ function
+#' @export
+#' @return subset of experiments
+`[.simulation` <- function(x, i, ...) {
+  # Use NextMethod to perform the actual subsetting as a list
+  out <- NextMethod("[")
+  # Re-assign the class back to the result
+  class(out) <- class(x)
+  return(out)
+}
+
 #' prints the simulation results
 #'
 #' The results, if accidentally printed, are difficult to read.  This
 #' function prevents these accidental prints. It summarizes the
 #' results instead.
 #' @param x simulation results
+#' @param ... requirement of print generic, not used.
 #' @export
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
@@ -63,9 +83,9 @@ print.simulation <- function(x,...){
 #' The shared library needs to be created first. Either with `R CMD
 #' SHLIB`, [shlib], or manually on the system's command line (bash, zsh, etc.).
 #'
-#' @param odeModel the name of the ODE model to simulate (a shared library
-#'     of the same name will be dynamically loaded and needs to be
-#'     created first). Alternatively this can be the ode object
+#' @param odeModel the name of the ODE model to simulate (a shared
+#'     library of the same name will be dynamically loaded and needs
+#'     to be created first). Alternatively this can be the ode object
 #'     created by [as_ode], with a shared library path attached to it.
 #' @param experiments a list of `N` simulation experiments (time,
 #'     parameters, initial value, events)
@@ -78,6 +98,12 @@ print.simulation <- function(x,...){
 #' @param omit an integer that indicates how many of these to omit in
 #'     this order: fisher information, gradient of the log-likelihood,
 #'     log-likelihood
+#' @param method integration method (see [method] and [name_method]).
+#' @param time.out in seconds (early rejection due to long simulation
+#'     time). This can trigger at measurement times (outputTime).
+#' @param num.steps maximum number of steps the integration method is
+#'     permitted to do; early rejection. This condition can trigger at any
+#'     point during the integration.
 #' @return a list of the solution trajectories `y(t;p)` for all
 #'     experiments (named like the experiments), as well as the output
 #'     functions
@@ -111,7 +137,7 @@ print.simulation <- function(x,...){
 #'       lines(ex[[i]]$outputTimes,drop(y[[i]]$func),col='red')
 #'   }
 #' }
-gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3, method=0, omit=0, time.out = 1){
+gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3, method=0, omit=0, time.out = 1, num.steps = 0){
 	if (is(odeModel,"ode")){
 		so <- so_path(odeModel)
 		odeModel <- odeModel$name
@@ -134,7 +160,8 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 		initial.step.size,
 		omit,
 		method,
-		time.out=as.double(time.out)
+		as.double(time.out),
+		num.steps
 	)
 	for (i in seq_along(experiments)){
 		if ("initialState" %in% names(experiments[[i]]) && length(experiments[[i]]$initialState)==NROW(y[[i]]$state)){
@@ -161,7 +188,7 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #' @param experiments a list of `N` simulation experiments (time,
 #'     parameters, initial value, events).
 #' @param l a matrix of parameters with M columns, in log-space.
-#' @param nu a stoichiometry matrix (N\enc{×}{x}R) where N is the number of
+#' @param nu a stoichiometry matrix (N × R) where N is the number of
 #'     state variables and R the number of reactions, all reactions
 #'     are assumed to be reversible.
 #' @param m modifiers -- similar to stoichiometry, but indicates
@@ -172,7 +199,12 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #' @param initial.step.size initial value for the step size; the step
 #'     size will adapt to a value that observes the tolerances, real
 #'     scalar.
-#' @param time.out time limit in seconds
+#' @param method one of the integration methods bundled with GSL (see
+#'     [method] and [name_method]).
+#' @param time.out time limit in seconds, checked at every measurement
+#'     time-point (in the data).
+#' @param nstep maximum number of ODE integrator steps, checked at
+#'     every step, defaults to unlimited (0).
 #' @return a list of the solution trajectories y(t;p) for all
 #'     experiments (named like the experiments), as well as the output
 #'     functions.
@@ -192,7 +224,7 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #'   so.file <- shlib(c.file,model.name="AKAR4")
 #'   y <- gsl_odeiv2_CRNN(so.file,ex,l,nu,nu*0)
 #' }
-gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0, time.out = 1){
+gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0, time.out = 1, nstep=0){
 	if (is.character(name) && endsWith(name,".so")){
 		so <- name
 		name <- "CRNN"
@@ -207,7 +239,9 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 	if (!file.exists(so)){
             warning(sprintf("[gsl_odeiv2_CRNN] for model name \u00ab%s\u00bb, file \u00ab%s\u00bb not found.",name,so))
 	}
-	if (!is.matrix(l)) l <- as.matrix(p)
+	if (!is.matrix(l) && is.numeric(l)) {
+		l <- matrix(l,NCOL(nu),2,dimnames=list(colnames(nu),c("fwd","bwd")))
+	}
 	y <- .Call(
 		r_gsl_odeiv2_outer_CRNN,
 		name,       # with comment about shared library
@@ -217,7 +251,8 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 		rel.tol,    # relative tolerance
 		initial.step.size,
 		method,     # integrattion method
-		as.double(time.out) # in seconds
+		as.double(time.out), # in seconds
+		nstep
 	)
 	for (i in seq_along(experiments)){
 		if ("initialState" %in% names(experiments[[i]])){
@@ -264,17 +299,27 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 #' \donttest{
 #'   f <- uqsa_example("AKAR4")
 #'   m <- model_from_tsv(f)
-#'   ex <- experiments(m,as_ode(m,cla=FALSE))
+#'   ex <- experiments(m)
 #'   nu <- stoichiometric_matrix(m)
-#'   l <- matrix(c(log(values(m$Parameter)),0),2,2,dimnames=list(rownames(m$Reaction),c("fwd","bwd")))
-#'   C <- CRNN(NCOL(nu),initialValues=values(m$Compound),funcValues=formulae(m$Output))
-#'   c.file <- tempfile("AKAR4_CRNN_",fileext=".c")
+#'   l <- matrix(
+#'     c(log(values(m$Parameter)),-1e6),
+#'     2,2,
+#'     byrow=TRUE,
+#'     dimnames=list(rownames(m$Reaction),c("fwd","bwd"))
+#'   )
+#'   C <- CRNN(
+#'     NCOL(nu),
+#'     initialValues=values(m$Compound),
+#'     funcValues=formulae(m$Output)
+#'   )
+#'   c.file <- tempfile("AKAR4",fileext=".c")
 #'   cat(C,file=c.file,sep='\n')
-#'   modelName <- "AKAR4"
-#'   comment(modelName) <- shlib(c.file,model.name="AKAR4")
+#'   modelName <- "CRNN"
+#'   comment(modelName) <- shlib(c.file)
 #'   s <- scrnn(ex, modelName)
 #'   p <- list(l=l,nu=nu,m=nu*0)
 #'   y <- s(p)
+#'   plot(ex,y)
 #' }
 scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$nu, modifiers=\(p) p$m, method = 0, time.out = 1){
 	N <- length(experiments)
@@ -307,18 +352,30 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'     - parameter mapping
 #'
 #' The returned function depends only on parABC (the sampling
-#' parameters). The simulation will be done suing the rgsl backend.
+#' parameters).
 #'
 #' This version of the function does not use the parallel package at
 #' all and cannot add noise to the simulations (unlike simulator.c).
+#'
+#' A hopeless simulation can be stopped early using the settings
+#' `num.steps` and `time.out`. The value of `num.steps` applies to
+#' every continuous simulation stretch (e.g. betwee two events), teh
+#' count of steps is reset whenever an event occurs or one simulation
+#' ends (between different parameters and different experiments).
+#'
+#' The `time.out` is given in seconds and can trigger at measurement
+#' time points (when `t_wallclock > time.out`), not between
+#' points. How much time has passed is checked when the integrator is
+#' stopped to record the state.
+#'
+#' The limit on the number of steps, on the other hand, is a feature
+#' of the GSL ODE solvers and can trigger precisely.
 #'
 #' @param experiments a list of experiments to simulate: inital
 #'     values, inputs, time vectors, initial times
 #' @param odeModel Either the ode object created by [as_ode] (with a
 #'     shared library field inserted), or a string (with a comment
 #'     indicating an .so file) which points out the model to simulate
-#' @param parABC the parameters for the model, subject to change by
-#'     parMap.
 #' @param parMap the model will be called with parMap(parABC); so any
 #'     parameter transformation can happen there.
 #' @param method the integration method as an integer (higher numbers
@@ -331,6 +388,8 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'     `omit=3`, omits FI, grad-ll, and log-likelihood calculations.
 #' @param time.out (in seconds); simulations are aborted at a time
 #'     greater than this.
+#' @param num.steps unlimited by default, setting this to a finite
+#'     value can help to stop very stiff simulations early.
 #' @export
 #' @return a closure that returns the model's output for a given
 #'     parameter vector, and approximate sensitivity matrices, for
@@ -342,15 +401,14 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'   m <- model_from_tsv(f)
 #'   o <- as_ode(m)
 #'   ex <- experiments(m,o)
-#'   C <- generateCode(o)
-#'   ## as an alternative to the uqsa functions, we can use R builtins as well:
-#'   c.file <- tempfile("AKAR4_",fileext=".c")
-#'   cat(C,sep='\n',file=c.file)
-#'   so.file <- shlib(c.file)
-#'   s <- simfi(ex,c("AKAR4",so.file))
+#'   C <- generate_code(o)
+#'   c_path(o) <- write_c_code(C)
+#'   so_path(o) <- shlib(o)
+#'   s <- simfi(ex,o)
 #'   y <- s(values(m$Parameter)) # simulates
+#'   print(y)
 #' }
-simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, time.out = 1){
+simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, time.out = 1, num.steps = 0){
 	N <- length(experiments)
 	if (is(odeModel,"ode")){
 		so <- so_path(odeModel)
@@ -376,7 +434,8 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 				as.matrix(modelPar),
 				method=method,
 				omit=min(omit,3),
-				time.out=time.out
+				time.out=time.out,
+				num.steps=num.steps
 			)
 			if (N==length(yf)) {
 				names(yf) <- names(experiments)
@@ -409,7 +468,7 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #' The returned function depends only on the parameter vector (or
 #' matrix if more than one simulation per experiment is desired). The
 #' parameter vector this simnulator accepts is probably derived from
-#' the sampling space of a Bayesian method \enc{θ}{theta}, so in the list of
+#' the sampling space of a Bayesian method \eqn{\theta}{θ}, so in the list of
 #' arguments, it is called `parABC` or (parMCMC would also have been a
 #' valid choice). These sampling parameters can be mapped to values
 #' the simulator can use via `parMap`. `parModel <- parMap(parABC)`,
@@ -424,8 +483,6 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #' @param modelName a string (with optional comment indicating an .so
 #'     file) which points out the model to simulate if modelName is a
 #'     cme object, the simulation will be done stochasitcally
-#' @param parABC the parameters for the model, subject to change by
-#'     parMap.
 #' @param parMap the model will be called with parMap(parABC); so any
 #'     parameter transformation can happen there.
 #' @param noise boolean variable. If `noise=TRUE`, Gaussian noise is
@@ -440,7 +497,13 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #'     the log-likelihood, and `omit=3` will omit the likelihood
 #'     calculations alltogether. Omission is cumulative: `omit=3`
 #'     omits all the previously mentioned optional quantities.
-#' @param time.out in seconds.
+#' @param method an integer offset, integration method (for ODE models), see
+#'     [method] and [name_method]
+#' @param time.out in seconds, for early stops.
+#' @param num.steps maximum number of steps taken by the integrator
+#'     (in the case of ODEs), or maximum number of total
+#'     reaction-steps performed by the Gillespie algorithm (over time)
+#'     for stochastic models.
 #' @export
 #' @useDynLib uqsa gillespie
 #' @return a closure that returns the model's output for a given
@@ -458,7 +521,7 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #'   s <- simulator.c(ex,o)
 #'   y <- s(values(m$Parameter))
 #' }
-simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, omit=3, method = 0, time.out=1){
+simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, omit=3, method = 0, time.out=1, num.steps=0){
 	if (is.na(pmatch("data",names(experiments[[1]]))) && omit < 3){
 		warning(
 			sprintf(
@@ -486,7 +549,8 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 							as.matrix(modelPar),
 							method=method,
 							omit=min(omit,3),
-							time.out=time.out
+							time.out=time.out,
+							num.steps=num.steps
 						)
 					}
 				),
@@ -514,7 +578,8 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 							so_path(modelName),
 							list(EX),
 							as.matrix(modelPar),
-							as.double(time.out)
+							as.double(time.out),
+							as.integer(num.steps)
 						)
 					)
 				),
@@ -543,7 +608,8 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 								as.matrix(modelPar),
 								method=method,
 								omit=min(omit,3),
-								time.out=time.out
+								time.out=time.out,
+								num.steps=num.steps
 							),
 							error = function(e) {print(e); return(NA)}
 						)
@@ -655,7 +721,7 @@ check_model <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.
 #' @export
 #' @examples
 #' d <- defaultDistance(seq(7),seq(7)+rnorm(7,0,0.1),rep(0.1,7))
-defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL),status=0){
+defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 	if (all(is.finite(funcSim))){
 		distance <- mean(abs(funcSim-dataVAL)/dataERR, na.rm=TRUE)
 	} else {
@@ -714,7 +780,7 @@ makeObjective <- function(experiments,simulate,distance=defaultDistance){
 					}
 				)
 			)
-			S[i,status==1] <- Inf
+			S[i,as.logical(status)] <- Inf # any non-zero status
 		}
 		return(S)
 	}
@@ -763,4 +829,19 @@ name_method <- function(key=seq(0,10)){
 		warning(sprintf("invalid key %i",key[k==0 | k>length(charMethod)]))
 		return("")
 	}
+}
+
+#' Find Integer
+#'
+#' Given a ODE solver name (from the GSL solver module odeiv2), return
+#' an integer offset `{0..10}`. This integer can be passed as the
+#' "method" argument for all ODE simulator functions ([simulator.c], [simfi])
+#'
+#' @param name character scalar, name of the method
+#' @return an integer that is acceptable to [simfi] and [simulator.c]
+#' @export
+method <- function(name){
+	m <- seq_along(c("msbdf","msadams","bsimp","rk4imp","rk2imp","rk1imp","rk8pd","rkck","rkf45","rk4","rk2"))-1
+	names(m) <- c("msbdf","msadams","bsimp","rk4imp","rk2imp","rk1imp","rk8pd","rkck","rkf45","rk4","rk2")
+	return(m[name])
 }

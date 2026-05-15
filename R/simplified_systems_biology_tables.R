@@ -12,7 +12,7 @@
 #' @return A matrix similar to E, with standard error values
 #' @examples
 #' M <- matrix(seq(12),3,4,dimnames=list(letters[seq(3)],LETTERS[seq(4)]))
-#' errors(M) <- abs(M*0.1 + 0.1)
+#' errors::errors(M) <- abs(M*0.1 + 0.1)
 #' E <- standard_error_matrix(M)
 #' print(E)
 standard_error_matrix <- function(M){
@@ -21,7 +21,13 @@ standard_error_matrix <- function(M){
 		E <- errors::errors(M)
 		dim(E) <- d
 		dimnames(E) <- dimnames(M)
+	} else if (is.matrix(M) && M %has% "errors"){
+		d <- dim(M)
+		E <- attr(M,"errors")
+		dim(E) <- d
+		dimnames(E) <- dimnames(M)
 	} else {
+		warning("Argument is not a matrix and thus has no standard error matrix")
 		E <- NULL
 	}
 	return(E)
@@ -56,14 +62,19 @@ model_from_tsv <- function(src="."){
 
 #' Get j-th column with names
 #'
-#' When indexing a matrix, rownames are lost. This function will
+#' When indexing a matrix or data.frame, rownames are lost. This function will
 #' return a column of a matrix, as a vector (dropping rank so to
 #' speak), but the vector will retain the rownames of the matrix
+#'
+#' @export
 #' @param m a matrix
 #' @param j a column index
 #' @return a named vector
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAP79"))
+#' u <- column(m$Parameter,"unit")
 column <- function(m,j=1){
-	v <- as.double(m[,j])
+	v <- m[,j]
 	names(v) <- rownames(m)
 	return(v)
 }
@@ -96,6 +107,73 @@ values <- function(df){
 	names(v) <- rownames(df)
 	attr(v,"unit") <- units_from_table(df)
 	return(v)
+}
+
+#' Find the uncertainty of values in a data.frame that is derived from a tsv file or similar
+#'
+#' given a data.frame, this function will look for a column that
+#' contains some kind of standard error and retrieve it. The returned
+#' numeric vector will be named. This function is not intended for
+#' data, for data, the [values] function will retrieve both the value
+#' and the standard error if it was specified.
+#'
+#' This function is for the case that the table specifies a
+#' distribution with a mean and an range (of some sort). The type of
+#' uncertainty found will be attached as a comment to the returned
+#' value: "sd" standard deviation for normal distribution, "se"
+#' standard error (for a normal prior), and "range" for a uniform
+#' prior. Other priors are not recognised yet.
+#'
+#' The distinction between standard-error and standard-deviation
+#' doesn't matter much here: either the value is some kind of mean and
+#' the _uncertainty_ is the standard-error or standard-deviation of
+#' the mean, or it is a raw data-point (not averaged) and we know the
+#' standard deviation (noise) of the device that measured it, then
+#' _uncertainty_ is the standard deviation of the noise
+#' distribution. In either case, the value will be taken at face value
+#' and the uncertainty is used as sigma in the default log-likelihood
+#' function.
+#'
+#' Any entry of prior.distribution other than "uniform", will start a
+#' search for some kind of standard deviation or standard error (or
+#' sigma). As more priors are added, this function will look for the
+#' parameters of those distributions.
+#'
+#' This function makes many assumptions specifically that all
+#' variables in the table have the same type of prior distribution
+#' (but not identically distributed).
+#'
+#' @param df a data frame with a "value" column
+#' @return a named numeric vector
+#' @export
+uncertainty <- function(df){
+	type <- list(
+		sd=c("stdv","sd","st.dv","standard.deviation","sigma"),
+		se=c("se","st.err","standard.error","uncertainty"),
+		bounds=c("min","lb","lower.bound","max","ub","upper.bound")
+	)
+	dist <- df[[grep("distribution",tolower(colnames(df)),useBytes=TRUE)]] # distribution column
+	if (all(grepl("uniform",dist,ignore.case=TRUE,useBytes=TRUE))){
+		m <- na.omit(pmatch(type[["bounds"]],tolower(colnames(df))))
+		if (length(m)==2){
+			u <- abs(as.numeric(diff(t(df[,m]))))
+			names(u) <- rownames(df)
+			comment(u) <- "range"
+			return(u)
+		}
+	} else { # if (all(grepl("normal",dist,ignore.case=TRUE,useBytes=TRUE))){
+		for (j in seq(2)){
+			m <- na.omit(pmatch(type[[j]],tolower(colnames(df))))
+			if (length(m) > 0){
+				i <- m[1]
+				u <- df[[i]]
+				names(u) <- rownames(df)
+				comment(u) <- names(type)[j]
+				return(u)
+			}
+		}
+	}
+	return(NULL)
 }
 
 #' Find a column that contains some kind of mathematic expression in a data.frame
@@ -462,7 +540,7 @@ conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
 #' @param v a named vector
 #' @param d data.frame with column names that correspond to those of `v`
 #' @param as_type a character scalar indicating a type ('character','numeric','logical',etc.)
-#' @return a matrix of dimension length(v) \enc{\\times}{×} NROW(d)
+#' @return a matrix of dimension: length(v) × NROW(d)
 #' @examples
 #' \dontrun{
 #' f <- uqsa_example("AKAR4")
@@ -721,6 +799,7 @@ experiments <- function(m,o=NULL){
 #' This function prevents these accidental prints. It summarizes the
 #' data and simulation experiments instead.
 #' @param x simulation experiments with data
+#' @param ... ignored.
 #' @export
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
@@ -766,4 +845,29 @@ print.experiments <- function(x,...){
 		cat("\n")
 	}
 	cat("experiments: ",paste(names(ex),collapse=", "),"\n")
+}
+
+
+#' Subset experiments with preserved class
+#'
+#' The normal list subset operation would drop the class from the
+#' experiment object (which is fine in theory). With this override,
+#' the class is preserved.
+#'
+#' @param x an object with class "experiment"
+#' @param i an index-set
+#' @param ... passed on the list-\[ function
+#' @export
+#' @return subset of experiments
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' x <- experiments(m)
+#' class(x)
+#' class(x[seq(2)])
+`[.experiments` <- function(x, i, ...) {
+  # Use NextMethod to perform the actual subsetting as a list
+  out <- NextMethod("[")
+  # Re-assign the class back to the result
+  class(out) <- class(x)
+  return(out)
 }

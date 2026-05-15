@@ -30,10 +30,9 @@ kinetic_law_matrix <- function(r){
 	direction <- list(c("fwd","forward"),c("bwd","backward"))
 	F <- matrix("",NROW(r),2,dimnames=list(rownames(r),c("fwd","bwd")))
 	for (d in direction){
-		j <- pmatch(d,colnames(r))
-		if (any(is.finite(j))){
-			j <- j[which(is.finite(j))[1]]
-			F[,head(d,1)] <- r[[j]]
+		j <- na.omit(pmatch(d,colnames(r)))
+		if (length(j)>0){
+			F[,head(d,1)] <- r[[j[1]]]
 		} else {
 			print(colnames(r))
 			warning(sprintf("no %s rates found in reaction table.",tail(d,1)))
@@ -98,6 +97,8 @@ is_empty <- function(b){
 #' Given a list representation of stoichiometry (list of named integer
 #' vectors), and a character vector of kinetic laws, this function
 #' returns the correct stoichiometry for the given parameter.
+#'
+#' @noRd
 #' @param p parameter name
 #' @param reactants stoichiometry of the reaction's left side
 #' @param products stoichiometry of the reaction's right side
@@ -162,68 +163,6 @@ stoichiometry <- function(formulaList){
 	return(sc)
 }
 
-#' Find the Reaction a parameter appears in
-#'
-#' Usually Parameters are a list of names and values, Reactions have
-#' reaction kinetics, which can contain any number of parameters. To
-#' make matters worse, a parameter may influence two or more
-#' reactions. The goal is to decide on the parameter's conversion
-#' factor. We shall assume that if the parameter appears in more than
-#' one reaction, it is the same kind of context, and thus it must be
-#' converted exactly the sam eway.  This function finds the first
-#' reaction a given parameter appears in.
-#'
-#' Note that the entire conversion may not work at all for complicated
-#' kinetics, we use very simple rules here.
-#'
-#' @param reactionKinetic a character vector with all of the kinetic
-#'     law expressions
-#' @param parNames parameter names
-#' @return list with two named components: fwd, bwd; each is a named
-#'     vector of integers, th enames are taken from parNames, the
-#'     integer indicates a reaction.
-#' @noRd
-parameterReaction <- function(reactionKinetic,parNames){
-	N <- length(reactionKinetic)
-	RC <- ifelse(
-		grepl("-",reactionKinetic,fixed=TRUE),
-		reactionKinetic,
-		paste0(reactionKinetic," - 0")
-	)
-	RC <- trimws(unlist(strsplit(RC,"-",fixed=TRUE)))
-	dim(RC) <- c(2,N)
-	RC <- t(RC)
-	# forward and backward reaction kinetics
-	k_fwd <- lapply(
-		parNames,
-		function(x){
-			return(
-				head(
-					grep(
-						paste0("\\b",x,"\\b"),RC[,1]
-					),
-					1
-				)
-			)
-		}
-	)
-	names(k_fwd) <- parNames
-	k_bwd <- lapply(
-		parNames,
-		function(x) {
-			return(
-				head(
-					grep(
-						paste0("\\b",x,"\\b"),RC[,2]
-					),
-					1
-				)
-			)
-		}
-	)
-	names(k_bwd) <- parNames
-	return(list(fwd=unlist(k_fwd),bwd=unlist(k_bwd)))
-}
 
 #' Initial count of reacting Compounds
 #'
@@ -235,6 +174,7 @@ parameterReaction <- function(reactionKinetic,parNames){
 #' user to change the volume of the system in the C-file, without
 #' re-generating it from a model. The same c-file can be re-used that
 #' way.
+#' @noRd
 #' @param m the model data.frames obtained from [model_from_tsv]
 #' @return numeric vector or character vector, depending on how the
 #'     initial concentration was provided
@@ -405,6 +345,7 @@ as_cme <- function(m){
 #' structure `CME`.
 #'
 #' @param x a model created by [as_cme]
+#' @param ... requirement of print generic, not used.
 #' @return Nil
 #' @export
 #' @examples
@@ -743,12 +684,20 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 #' not just "model.so", otherwise the shared library is interpreted as
 #' a system library by `dlopen()` (it will not be found).
 #'
+#' The number of reactions can be limited by `nstep` (micro time-steps
+#' forward). The maximum can be set by performing a good simulation
+#' and reading out the number of steps taken in that reference
+#' simulation: `y[[i]]$numSteps`.
+#'
 #' @param ex list of experiments, same as for the deterministic
 #'     solvers.
 #' @param cmeModel Either the cmeModel from [as_cme], with a shared
 #'     library path stored inside, or the path to the so file
-#' @param parameters a numeric vector of appropriate size
+#' @param parMap map from MCMC variable (or ABC variable) to
+#'     model-parameters.
 #' @param time.out in seconds
+#' @param nstep number of reactions for early exit, defaults to
+#'     unlimited (0)
 #' @export
 #' @return a closure that simulates the model in `model.so`
 #' @useDynLib uqsa gillespie
@@ -765,7 +714,7 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 #' require(errors)
 #' plot(as.errors(ex[[1]]$outputTimes),ex[[1]]$data,xlab="time",ylab="AKAR4p",main=names(ex)[1])
 #' lines(ex[[1]]$outputTimes,res[[1]]$func,type="s",lwd=2,col="red3")
-simstoch <- function(ex, cmeModel, parMap=identity, time.out=1){
+simstoch <- function(ex, cmeModel, parMap=identity, time.out=1, nstep=0){
 	if (is.character(cmeModel)) {
 		model.so <- cmeModel
 	} else if (is(cmeModel,"cme")) {
@@ -786,13 +735,14 @@ simstoch <- function(ex, cmeModel, parMap=identity, time.out=1){
 	return(
 		function(parMCMC){
 			p <- as.matrix(parMap(parMCMC))
-			y <- .Call(gillespie, model.so, ex, p, as.double(time.out))
+			y <- .Call(gillespie, model.so, ex, p, as.double(time.out), nstep)
 			names(y) <- names(ex)
 			stopifnot(length(y) == length(ex))
 			for (i in seq_along(y)){
 				rownames(y[[i]]$state) <- names(ex[[i]]$initialState)
 				rownames(y[[i]]$func) <- rownames(ex[[i]]$data)
 			}
+			class(y) <- "simulation"
 			return(y)
 		}
 	)

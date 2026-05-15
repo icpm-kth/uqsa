@@ -38,6 +38,9 @@ values}
 
 \item{batchSize}{number of points to produce to record one point}
 
+\item{parAcceptable}{a function that can reject a parameter vector
+early based on user-requirements. Has to return a scalar boolean.}
+
 \item{allow.reg}{allow regularization (logical), if TRUE, then
 Sigma will be made smaller once a very low acceptance rate is
 detected: one accepted update per batch}

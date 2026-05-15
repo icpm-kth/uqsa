@@ -14,7 +14,8 @@ gsl_odeiv2_CRNN(
   rel.tol = 1e-05,
   initial.step.size = 0.001,
   method = 0,
-  time.out = 1
+  time.out = 1,
+  nstep = 0
 )
 }
 \arguments{
@@ -30,7 +31,7 @@ parameters, initial value, events).}
 
 \item{l}{a matrix of parameters with M columns, in log-space.}
 
-\item{nu}{a stoichiometry matrix (N\enc{×}{x}R) where N is the number of
+\item{nu}{a stoichiometry matrix (N × R) where N is the number of
 state variables and R the number of reactions, all reactions
 are assumed to be reversible.}
 
@@ -46,7 +47,14 @@ consumed.}
 size will adapt to a value that observes the tolerances, real
 scalar.}
 
-\item{time.out}{time limit in seconds}
+\item{method}{one of the integration methods bundled with GSL (see
+\link{method} and \link{name_method}).}
+
+\item{time.out}{time limit in seconds, checked at every measurement
+time-point (in the data).}
+
+\item{nstep}{maximum number of ODE integrator steps, checked at
+every step, defaults to unlimited (0).}
 }
 \value{
 a list of the solution trajectories y(t;p) for all

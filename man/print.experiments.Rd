@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{x}{simulation experiments with data}
+
+\item{...}{ignored.}
 }
 \description{
 The experiments, if accidentally printed, are difficult to read.

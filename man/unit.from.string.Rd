@@ -8,9 +8,6 @@ unit.from.string(unit.str)
 }
 \arguments{
 \item{unit.str}{a string that contains a human readable unit}
-
-\item{verbose}{if TRUE, this function prints what it does (to find
-problems)}
 }
 \value{
 data.frame with an interpretation of the unit (multiplier
@@ -26,8 +23,8 @@ molarity as it's own unit kind; writing "molarity"
 will be translated into two SI units (mol and litre)
 3. prefixes and units can be words or single letters
 4. everything after a slash is the denominator
-5. u is an accepted replacement for \enc{mu}{μ}
-(unicode greek mu or unicode micro symbol)
+5. u is an accepted replacement for \eqn{\mu}{μ}
+          (unicode greek mu or unicode micro symbol)
 6. no parentheses (ignored): "(m/s)*kg" will be misinterpreted
 }
 \details{

@@ -4,14 +4,20 @@
 \alias{gsa_saltelli}
 \title{Outputs the global sensitivity scores SI and SIT, calculated by the Sobol-Homma-Saltelli method}
 \usage{
-gsa_saltelli(fM1, fM2, fN, subtractMean = TRUE)
+gsa_saltelli(fM1, fM2, fN, subtract.mean = TRUE)
 }
 \arguments{
-\item{fM1}{output (f)unction values for \code{M1}, \eqn{n_S \times n_O}{nSamples × nOuts}}
+\item{fM1}{output (f)unction values for \code{M1},
+\eqn{n_S \times n_O}{nSamples × nOuts}}
 
-\item{fM2}{output (f)unction values for \code{M2}, \eqn{n_S \times n_O}{nSamples × nOuts}}
+\item{fM2}{output (f)unction values for \code{M2},
+\eqn{n_S \times n_O}{nSamples × nOuts}}
 
-\item{fN}{output (f)unction values for \code{N}, \eqn{n_S \times n_O \times n_P}{nSamples × nOuts × nPars}}
+\item{fN}{output (f)unction values for \code{N},
+\eqn{n_S \times n_O \times n_P}{nSamples × nOuts × nPars}}
+
+\item{subtract.mean}{whether or not to subtract the column-means from
+all matrices/arrays}
 }
 \value{
 a list with sensitivity indices \verb{$SI} and total sensitivities \verb{$SIT}

@@ -33,6 +33,7 @@ units_from_table <- function(df,default="1"){
 #' well as what the exponent of LV (Avogadro's constant * Volume)
 #' applies in this case. This is an internal function.
 #'
+#' @noRd
 #' @param unit character vector, will be parsed for SI prefixes and to
 #'     determine the mole component
 #' @return a data.frame with an lvpower and factor component, with
@@ -55,57 +56,6 @@ moleCountConversion <- function(unit) {
 	return(data.frame(lvpower=l, factor=f, effectively=new_unit, row.names=names(unit)))
 }
 
-#' Returns information about parameter conversion
-#'
-#' Given parameters of a reaction kinetic coefficient model with
-#' concentrations as state variables, this function returns the
-#' parameters of the stochastic version of that model
-#'
-#' For this function, it is important that "2 A -> B" is not written
-#' as "A + A -> B" (this may be fixed later).
-#'
-#' @param unit of the kinetic parameters (a character vector), named.
-#' @param reactants a list of the stoichiometric constants of each
-#'     reaction, a list of integer vectors
-#' @param products a list of the stoichiometric constants of each
-#'     reaction, a list of integer vectors
-#' @param kinetic.law a character matrix with two columns: [,1] for
-#'     forward reaction rates, and [,2] for backward reaction rates.
-#' @return a vector of parameter conversion factors
-#' @export
-#' @examples
-#' m <- model_from_tsv(uqsa_examples("AKAP79"))
-#' r <- lapply(strsplit(m$Reaction$reactants,"+",fixed=TRUE),trimws)
-#' p <- lapply(strsplit(m$Reaction$products ,"+",fixed=TRUE),trimws)
-#' k <- ifelse(grepl("-",m$Reaction$kinetic.law,fixed=TRUE),m$Reaction$kinetic.law,paste0(m$Reaction$kinetic.law," - 0"))
-#' f <- parameterConversion(u,stoichiometry(r),stoichiometry(p),k)
-#' print(f)
-parameterConversion <- function(unit, reactants, products, kinetic.law){
-	stopifnot(unit %has% "names")
-	parST <- lapply(
-		names(unit),
-		\(x) {
-			find_parameter_reaction(x,reactants,products,kinetic.law)
-		}
-	)
-	order <- sapply(parST,sum)
-	l <- sapply(parST,length)
-	u <- lapply(unit,unit.from.string) # data.frames
-	print(u)
-	# 2 A -> B reactions
-	aa <- abs(order - l)
-	print(aa)
-	# unit conversion factor
-	f <- unlist(lapply(u,\(x) 10^sum(x$scale*x$exponent)))
-	# taking reaction order into account:
-	CF <- data.frame(
-		order=order,
-		lvpower=(1-order),
-		factor=f*(1+aa),
-		row.names=names(unit)
-	)
-	return(CF)
-}
 
 #' find unit category
 #'
@@ -115,7 +65,7 @@ parameterConversion <- function(unit, reactants, products, kinetic.law){
 #' "meter", "m" and "metre".
 #'
 #' The unit kind of "m" is "metre", the kind of "g" is "gram".
-#'
+#' @noRd
 #' @param kind the unnormalized string that humans use to write a unit
 #'     (but without prefix)
 #' @return normalized category name of the unit kind: litre, mole,
@@ -160,7 +110,8 @@ unit.kind <- function(kind){
 #' This function reads a prefix from a string and returns the exponent
 #' (base-10) that this prefix represents.
 #'
-#' @param prefix a string, e.g.: "M", "mega", "m", "milli", "µ", "micro", etc.
+#' @noRd
+#' @param prefix a string, e.g.: "M", "mega", "m", "milli", "\eqn{\mu}{µ}", "micro", etc.
 #' @return an integer that corresponds to the prefix, defaults to 0.
 #' @examples
 #' print(unit.scale("M"))
@@ -298,7 +249,7 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 #'           will be translated into two SI units (mol and litre)
 #'        3. prefixes and units can be words or single letters
 #'        4. everything after a slash is the denominator
-#'        5. u is an accepted replacement for \enc{μ}{mu}
+#'        5. u is an accepted replacement for \eqn{\mu}{μ}
 #'           (unicode greek mu or unicode micro symbol)
 #'        6. no parentheses (ignored): "(m/s)*kg" will be misinterpreted
 #'
@@ -308,8 +259,6 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 #' denominator, so: l/mol s is the same as (l)/(mol s) Remark: not all
 #' units are understood.
 #' @param unit.str a string that contains a human readable unit
-#' @param verbose if TRUE, this function prints what it does (to find
-#'     problems)
 #' @return data.frame with an interpretation of the unit (multiplier
 #'     is unused here, but may be used later to deal with units such
 #'     as hours (kind=second, multiplier=60)
@@ -444,7 +393,7 @@ unit.info <- function(unit.str,unit=unit.from.string(unit.str)){
 #' \dontrun{
 #'   ## needs `unit` utility (system utility)
 #'   y <- "21 cm" %as% "inches"
-#'   y <- "12 μmol/L" %as% "mol/L"
+#'   y <- "12 nmol/L" %as% "mol/L"
 #'   print(comment(y))
 #'   y <- "12 mol/m^3" %as% "mmol/L"
 #' }

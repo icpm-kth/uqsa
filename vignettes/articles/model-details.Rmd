@@ -1,5 +1,5 @@
 ---
-title: "Importing Models into R"
+title: "Importing Models"
 ---
 
 ```{r, include = FALSE}
@@ -28,21 +28,29 @@ library(uqsa)
 library(errors)
 
 ## Read the TSV files, create an ODE model
-m <- model_from_tsv()    # defaults to files from $(pwd)
-o <- as_ode(m)           # the ODE
+m <- model_from_tsv()     # defaults to files from $(pwd)
+o <- as_ode(m)            # the ODE
 
-C <- generateCode(o)     # list of strings
-odeModel <- write_and_compile(C)
-ex <- experiments(m,o)
+C <- generate_code(o)     # list of strings
+c_path(o) <- write_c_code(C)
+so_path(o) <- shlib(o)    # shared library
+ex <- experiments(m,o)    # simulation experiments
 ```
+
+To write a model file, look at one of the example TSV file collections
+and copy their structure.
 
 The model tables follow these guidelines:
 
-- A list of quantities, like parameters have these columns:
+- A list of quantities, like parameters have these columns (spaces are allowed):
   + id (first column, any heading)
-  + value
+  + value (a default value, possibly subject to estimation)
   + unit
   + scale (optional, assumed to be linear)
+  + prior distribution (optional, assumed Gaussian)
+  + mean (optional parameter for prior distribution)
+  + median (optional)
+  + sd, stdv, standard deviation, standard error (all optional)
 - A list of mathematical expressions can use the term `formula`
   instead of `value`:
   + id

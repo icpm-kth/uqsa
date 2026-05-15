@@ -16,17 +16,28 @@ mcmc_init(
 )
 }
 \arguments{
-\item{beta}{inverse temperature for the Markov chain (parallel tempering)}
+\item{beta}{inverse temperature for the Markov chain (parallel
+tempering)}
 
 \item{parMCMC}{a plain starting value for the Markov chain}
+
+\item{simulate}{a closure that maps the MCMC variable to simulation
+results (the simulation experiments are enclosed in this
+function).}
 
 \item{logLikelihood}{a function that maps simulations to
 logLikelihood values}
 
+\item{dprior}{density of the prior distribution}
+
 \item{gradLogLikelihood}{the gradient function of the logLikelihood
 (optional) -- only if the algorithm requires it}
 
-\item{fisherInformation}{a function that calculates the Fisher Information matrix}
+\item{gprior}{the gradient pf the log-prior (for SMMALA and similar
+algorithms).}
+
+\item{fisherInformation}{a function that calculates the Fisher
+Information matrix}
 }
 \value{
 the same starting parameter vector, but with attributes.

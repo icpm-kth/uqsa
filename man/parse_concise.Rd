@@ -4,7 +4,7 @@
 \alias{parse_concise}
 \title{Read Concise Error Notation}
 \usage{
-parse_concise(v, use.errors = requireNamespace("errors"), na = c(0, Inf))
+parse_concise(v, use.errors = requireNamespace("errors"), na = c(NA, NA))
 }
 \arguments{
 \item{v}{a character vector of numbers in concise error notation}
@@ -16,8 +16,7 @@ attribute (also called "errors" to be consistent with the
 errors package)}
 
 \item{na}{a two element vector which will replace NA values,
-e.g. c(NA,NA), defaults to c(0,Inf), meaning \emph{infinite
-uncertainty} for missing values}
+e.g. c(NA,NA); na=c(0,Inf) means \emph{infinite uncertainty} for missing values}
 }
 \value{
 either a numeric object with class errors (with the same

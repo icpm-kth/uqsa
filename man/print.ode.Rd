@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{x}{the ode}
+
+\item{...}{requirement of print generic, not used.}
 }
 \description{
 An ODE model was crteated by \code{as_ode} can be summarized here,

@@ -44,7 +44,7 @@ high.
 This function will do at most
 }
 \examples{
-\donttest{\
+\donttest{
 m <- model_from_tsv(uqsa_example("AKAP79"))
 rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
 p <- rwm \%@\% "init"             # a valid starting point

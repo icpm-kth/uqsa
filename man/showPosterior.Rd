@@ -17,6 +17,8 @@ shows correlation values (color coded)}
 \item{upper.panel}{an upper panel plot function which defaults to
 shaded density plots of the posterior with contour lines for
 the prior distribution.}
+
+\item{...}{passed to \code{graphics::pairs()}}
 }
 \value{
 pairs plot object

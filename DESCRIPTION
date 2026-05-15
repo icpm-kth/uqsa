@@ -1,7 +1,7 @@
 Package: uqsa
 Type: Package
 Title: Uncertainty Quantification and Global Sensitivity Analysis via ABC sampling
-Version: 0.6.1
+Version: 0.6.3
 Authors@R: c(
     person("Alexandra","Jauhiainen",email="Alexandra.Jauhiainen@astrazeneca.com",role=c("aut")),
     person("Olivia","Eriksson",email="olivia@kth.se",role=c("aut","ctb")),
@@ -25,7 +25,12 @@ Imports:
     Ryacas,
     VineCopula,
     MASS,
-    errors
+    errors,
+    pbdMPI,
+    mvtnorm,
+    digest,
+    colorspace,
+    pracma
 Suggests:
     ks,
     remotes,
@@ -34,8 +39,9 @@ Suggests:
     knitr,
     rmarkdown,
     hexbin
-RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://icpm-kth.github.io/uqsa/
+Config/roxygen2/version: 8.0.0
+RoxygenNote: 7.3.1

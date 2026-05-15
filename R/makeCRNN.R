@@ -90,7 +90,7 @@ CRNN <- function(numReactions,initialValues,funcValues, model.name="CRNN"){
 	C <- c(C,
 		"struct par {",
 		"\tdouble *l;  /* log(k), rate coefficients */",
-		sprintf("\tdouble *nu; /* stoichiometry (%i×%i)*/",length(initialValues),numReactions*2),
+		sprintf("\tdouble *nu; /* stoichiometry (%i,%i*2)*/",length(initialValues),numReactions),
 		"\tdouble *m;  /* modifiers (enzymes); not consumed or produced */",
 		"};",
 		""
