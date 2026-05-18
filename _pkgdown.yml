@@ -176,6 +176,7 @@ reference:
   - print.simulation
 - title: "Plotting functions"
   contents:
+  - highCor
   - pcDist
   - sensitivity.graph
   - showPosterior

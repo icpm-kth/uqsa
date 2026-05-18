@@ -47,6 +47,15 @@ up <- function(x,y,num=round(min(NROW(x)/2,NROW(y)/2)),subscripts,...){
 #'     present other than dim.
 #' @return data.frame with columns i and j, representing the rows and columns of high to low correlation pairs.
 #' @export
+#' @examples
+#' A <- matrix(
+#'   c(
+#'      1,  -1, 0.1,
+#'     -1,   1, 0.4,
+#'    0.1, 0.4,   1
+#'   ),3,3
+#' )
+#' print(highCor(A))
 highCor <- function(C){
 	stopifnot(is.matrix(C))
 	if (diff(dim(C))!=0){
