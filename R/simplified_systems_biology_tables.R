@@ -451,7 +451,6 @@ linear_scale <- function(x,str_scale=attr(x,"scale")){
 #' @param nu stoichiometric matrix
 #' @param iv initial values
 #' @param verbose if `TRUE`, this function will print the conservation laws on screen
-#' @useDynLib uqsa, lstrtod
 #' @return a list of conservation laws
 #' @export
 #' @examples
@@ -480,7 +479,7 @@ conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
 	allText <- character(NROW(C))
 	if (is.character(iv)) {
 		warning("initial values are not numeric.")
-		iv <- .Call(lstrtod,iv) # guarantees no NA values
+		iv <- .Call("lstrtod",iv) # guarantees no NA values
 	}
 	for (i in seq(NROW(C))){
 		l <- which(abs(C[i,])>1e-3)

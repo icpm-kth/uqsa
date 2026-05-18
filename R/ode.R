@@ -288,11 +288,10 @@ yJacobian <- function(f,x){
 #'
 #' @export
 #' @param v a character vector
-#' @useDynLib uqsa, replace_pow=replace_pow
 #' @examples
 #' print(replace_powers(c("2^3.1","10^-6","x^2")))
 replace_powers <- function(v){
-	w<-.Call(replace_pow,as.character(v))
+	w<-.Call("replace_pow",as.character(v))
 	return(w)
 }
 

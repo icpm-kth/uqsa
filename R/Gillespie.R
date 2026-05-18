@@ -56,7 +56,6 @@ kinetic_law_matrix <- function(r){
 #' be parsed: "A" and "2 B" for the left side and "C" for the right
 #' side. The numbers are the stoichiometric constants, or coefficients.
 #'
-#' @useDynLib uqsa, lstrtod
 #' @param formulaList a list of character vectors, derived from the
 #'     left or right side of a reaction formula:
 #' @return a list of numeric coefficient vectors
@@ -64,7 +63,7 @@ kinetic_law_matrix <- function(r){
 #' @examples
 #' print(onlyCoefficients("12 A"))
 onlyCoefficients <- function(formulaList){
-	C <- lapply(formulaList,\(v) .Call(lstrtod,as.character(v)))
+	C <- lapply(formulaList,\(v) .Call("lstrtod",as.character(v)))
 	return(ifelse(nchar(formulaList)>0,C,0))
 }
 
@@ -700,7 +699,6 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 #'     unlimited (0)
 #' @export
 #' @return a closure that simulates the model in `model.so`
-#' @useDynLib uqsa gillespie
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' cme <- as_cme(m)
@@ -735,7 +733,7 @@ simstoch <- function(ex, cmeModel, parMap=identity, time.out=1, nstep=0){
 	return(
 		function(parMCMC){
 			p <- as.matrix(parMap(parMCMC))
-			y <- .Call(gillespie, model.so, ex, p, as.double(time.out), nstep)
+			y <- .Call("gillespie", model.so, ex, p, as.double(time.out), nstep)
 			names(y) <- names(ex)
 			stopifnot(length(y) == length(ex))
 			for (i in seq_along(y)){

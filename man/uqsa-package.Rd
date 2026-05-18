@@ -4,9 +4,9 @@
 \name{uqsa-package}
 \alias{uqsa}
 \alias{uqsa-package}
-\title{uqsa: Uncertainty Quantification and Global Sensitivity Analysis via ABC sampling}
+\title{uqsa: Uncertainty Quantification and Global Sensitivity Analysis}
 \description{
-This package will solve an initial value problem (given an ordinary differential equation) for a list of simulation experiments. The simulations will be compared to data, repeatedly. The package can sample the parameters of the model via ABC (approximate Bayesian computation) and by doing so quantify the uncertainty that remains within the model even after considering the data. Experiments are evaluated in a sequence, intermediate probability densities are modeled using the VineCopula package.
+In the field of systems biology, chemical reaction networks are modeled in various ways, two of those are: (i) stochastic simulations (e.g. Gillespie algorithm) and (ii) ordinary differential equations. In this package we use a simple tabular model description of reaction systems and automatically generate C code for either solver type. We use the ODE solvers from the GNU Scientific Library and proveide an interface that deals with lists of simulation experiments. Each simulation experiment contains both the data, and instructions for the model to replicate the data. We use ABC methods (combined with MCMC and SMC) as well as classic MCMC methods such as Random Walk Metropolis (Gaussian transition kernel) and SMMALA (Simplified Manifold Metropolis adjusted Langevin algorithm) for a Bayesian investigation of the model´s parameter space. Experiments can be evaluated in a sequence; intermediate probability densities are modeled using the VineCopula package. UQSA is also intended to be useful in an HPC envortonment, with some functions that use pbdMPI capabilities.
 }
 \seealso{
 Useful links:

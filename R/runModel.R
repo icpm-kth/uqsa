@@ -109,7 +109,6 @@ print.simulation <- function(x,...){
 #'     functions
 #' @export
 #' @keywords ODE
-#' @useDynLib uqsa r_gsl_odeiv2_outer_fi
 #' @examples
 #' \donttest{
 #'   requireNamespace("errors")
@@ -151,7 +150,7 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 	}
 	if (!is.matrix(p)) p <- as.matrix(p)
 	y <- .Call(
-		r_gsl_odeiv2_outer_fi,
+		"r_gsl_odeiv2_outer_fi",
 		odeModel,
 		experiments,
 		p,
@@ -210,7 +209,6 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #'     functions.
 #' @export
 #' @keywords ODE
-#' @useDynLib uqsa r_gsl_odeiv2_outer_CRNN
 #' @examples
 #' \dontrun{
 #'   f <- uqsa_example("AKAR4")
@@ -243,7 +241,7 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 		l <- matrix(l,NCOL(nu),2,dimnames=list(colnames(nu),c("fwd","bwd")))
 	}
 	y <- .Call(
-		r_gsl_odeiv2_outer_CRNN,
+		"r_gsl_odeiv2_outer_CRNN",
 		name,       # with comment about shared library
 		experiments,
 		l,nu,m,     # log-parameters, stoichiometry, and modifiers
@@ -505,7 +503,6 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #'     reaction-steps performed by the Gillespie algorithm (over time)
 #'     for stochastic models.
 #' @export
-#' @useDynLib uqsa gillespie
 #' @return a closure that returns the model's output for a given
 #'     parameter vector
 #' @examples
@@ -574,7 +571,7 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 					experiments,
 					\(EX) return(
 						.Call(
-							gillespie,
+							"gillespie",
 							so_path(modelName),
 							list(EX),
 							as.matrix(modelPar),

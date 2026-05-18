@@ -138,7 +138,7 @@ space and performs `10^p` (to get back to the model-paramerts):
 
 ```{r, sim}
 stopifnot(all(m$Parameter$scale=="log10")) # just to make sure
-options(mc.cores = parallel::detectCores())
+options(mc.cores = 2) # required by CRAN
 s <- simulator.c(ex,o,parMap=log10ParMap)
 
 p0 <- values(m$Parameter) # default parameters, in log10-space

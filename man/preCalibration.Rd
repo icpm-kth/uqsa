@@ -54,7 +54,7 @@ p0 <- log10(values(m$Parameter))
 s <- simstoch(ex,cme,parMap=log10ParMap)
 Obj <- makeObjective(ex,s)
 rprior <- rNormalPrior(p0,0.5)
-PC <- preCalibration(Obj,500,rprior,delta=1)
+PC <- preCalibration(Obj,50,rprior,delta=1) # should be more than 50
 print(names(PC))
 print(PC$Sigma)
 }

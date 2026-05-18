@@ -74,7 +74,6 @@ o <- as_ode(m)
 c_path(o) <- write_c_code(generate_code(o))
 so_path(o) <- shlib(o)
 ex <- experiments(m,o)
-options(mc.cores=length(ex))
 s <- simulator.c(ex,o,omit=0)
 ### without parameter transformations
 gll <- gllf()

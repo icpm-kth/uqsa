@@ -75,7 +75,6 @@ parameterizations \code{NCOL(P)}.
   C <- generate_code(G)
   c_path(G) <- write_c_code(C)
   so_path(G) <- shlib(G)
-  options(mc.cores=detectCores())
   muX <- m$Parameter$value
   sdX <- m$Parameter$stdv
   rprior <- rNormalPrior(log(muX^2/(muX^2+sdX^2)),sqrt(log(1+sdX^2/muX^2)))

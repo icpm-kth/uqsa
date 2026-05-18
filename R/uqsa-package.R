@@ -1,6 +1,6 @@
 #' @keywords internal
 "_PACKAGE"
-
+#' @useDynLib uqsa, .registration = TRUE
 ## usethis namespace: start
 #' @importFrom parallel detectCores
 #' @importFrom parallel mclapply

@@ -28,15 +28,11 @@
 #' s <- simstoch(ex,cme,parMap=log10ParMap)
 #' Obj <- makeObjective(ex,s)
 #' rprior <- rNormalPrior(p0,0.5)
-#' PC <- preCalibration(Obj,500,rprior,delta=1)
+#' PC <- preCalibration(Obj,50,rprior,delta=1) # should be more than 50
 #' print(names(PC))
 #' print(PC$Sigma)
 preCalibration <- function(objectiveFunction, npc=1000, rprior, rep = 1, p=0.05, sfactor=0.1, delta=0.01, num=1){
-	nCores <- unlist(options("mc.cores"))
-	if (is.null(nCores)){
-		nCores <- parallel::detectCores()
-		options(mc.cores=nCores)
-	}
+	nCores <- getOption("mc.cores", 2L)
 	# make npc a multiple of cores
 	npc <- (max(2,ceiling(npc/nCores)))*nCores
 	prePar <- t(rprior(npc))
