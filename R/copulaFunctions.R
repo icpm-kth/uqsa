@@ -78,7 +78,7 @@ makeIndepCopula <- function(ll, ul){
      Z[,i] <- seq(0,1, length.out=npoints)
      Y[,i] <- rep(1/(maxx-minx), npoints)
   }
-  vineCop <- RVineStructureSelect(Z, family=0)
+  vineCop <- RVineStructureSelect(Z, familyset=0)
   return(list(copula=vineCop, U=U, Z=Z, Y=Y))
 }
 
