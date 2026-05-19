@@ -12,7 +12,7 @@ struct stack {
 
 #ifndef _GNU_SOURCE
 void *mempcpy(void *dest, const void *src, size_t len){
-  return memcpy (dest, src, len) + len;
+	return (char*) memcpy (dest, src, len) + len; /* the cast is to allow pointer arithmetic */
 }
 #endif
 
