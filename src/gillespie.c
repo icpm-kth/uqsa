@@ -11,6 +11,13 @@
 #include <Rdefines.h>
 #include <time.h>
 
+/* stpcpy is a POSIX function and may not exist on other platforms, this is to compensate for their inadequacies */
+#ifndef _POSIX_C_SOURCE
+char *stpcpy(char *restrict dst, const char *restrict src){
+	return strcpy(dst,src) + strlen(src);
+}
+#endif
+
 typedef SEXP Rdata;
 enum status {success, timeout, nstep_max};
 

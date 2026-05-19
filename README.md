@@ -1,3 +1,7 @@
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/icpm-kth/uqsa/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/icpm-kth/uqsa/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
 # Uncertainty Quantification (UQ) and Sensitivity Analysis (SA)
 
 This is an R package that performs *parameter estimation*,
