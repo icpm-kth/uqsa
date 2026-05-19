@@ -21,7 +21,6 @@ Imports:
     VineCopula,
     MASS,
     errors,
-    pbdMPI,
     mvtnorm,
     digest,
     colorspace,
@@ -29,6 +28,7 @@ Imports:
 Suggests:
     ks,
     remotes,
+    pbdMPI,
     ggplot2,
     testthat (>= 3.0.0),
     knitr,

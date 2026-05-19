@@ -285,6 +285,7 @@ mcmc <- function(update){
 #'   )
 #' }
 pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
+	if (!requireNamespace("pbdMPI")) stop("this functions requires that pbdMPI is installed.")
 	root <- (i %% cs) # rank of root process
 	rootLL <- pbdMPI::bcast(LL,root,comm)
 	rootB  <- pbdMPI::bcast(B,root,comm)
@@ -358,6 +359,7 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 #'   pt_mcmc <- mcmc_mpi(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures)
 #' }
 mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures){
+	if (!requireNamespace("pbdMPI")) stop("this functions requires that pbdMPI is installed.")
 	D <- max(2*swapDelay+1,1)
 	M <- function(parMCMC,N=1000,eps=1e-4){
 		r <- attr(comm,"rank") # 0..n-1
