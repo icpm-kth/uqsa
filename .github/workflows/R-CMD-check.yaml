@@ -41,7 +41,7 @@ jobs:
 
       - name: Install MPI (macOS)
         if: runner.os == 'macOS'
-        run: brew install open-mpi
+        run: brew install open-mpi gsl
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
