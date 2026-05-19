@@ -11,12 +11,13 @@
 #include <Rdefines.h>
 #include <time.h>
 
-/* stpcpy is a POSIX function and may not exist on other platforms, this is to compensate for their inadequacies */
-#ifndef _POSIX_C_SOURCE
-char *stpcpy(char *restrict dst, const char *restrict src){
+/* The following function works like stpcpy. The builtin stpcpy is a
+ * POSIX function and may not exist on other platforms, this is to
+ * compensate for their inadequacies.
+ */
+static char *pcopy(char *restrict dst, const char *restrict src){
 	return strcpy(dst,src) + strlen(src);
 }
-#endif
 
 typedef SEXP Rdata;
 enum status {success, timeout, nstep_max};
@@ -53,7 +54,7 @@ void* load_model(const char *model_so){
 	if (!lib) {
 		REprintf("[%s] %s.\n",__func__,dlerror());
 		model_so_2 = malloc(strlen(model_so)+3);
-		stpcpy(stpcpy(model_so_2,"./"),model_so);
+		pcopy(pcopy(model_so_2,"./"),model_so);
 		REprintf("[%s] retrying with: «%s»\n",__func__,model_so_2);
 		lib = dlopen(model_so_2,RTLD_LAZY);
 	}
