@@ -4,19 +4,12 @@
 \alias{showPosterior}
 \title{showPosterior makes a pairs plot for a sample}
 \usage{
-showPosterior(posterior, prior, lower.panel = lp, upper.panel = up, ...)
+showPosterior(posterior, prior, ...)
 }
 \arguments{
 \item{posterior}{a matrix, each row is a sample member}
 
 \item{prior}{a matrix of the same size as the posterior}
-
-\item{lower.panel}{a lower panel plot function with a default that
-shows correlation values (color coded)}
-
-\item{upper.panel}{an upper panel plot function which defaults to
-shaded density plots of the posterior with contour lines for
-the prior distribution.}
 
 \item{...}{passed to \code{graphics::pairs()}}
 }

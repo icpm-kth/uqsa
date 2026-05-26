@@ -1,3 +1,8 @@
+# uqsa 0.7.1
+
+Windows compatibility: all checks pass.
+
+
 # uqsa 0.6.3
 
 The way that we generate C code and how shared libraries are made has
