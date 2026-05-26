@@ -5,22 +5,45 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_randist.h>
 #include <math.h>
+
+/* This is an attempt to make this package work on windows */
+#ifdef _WIN32
+/* begin: Prevent windows.h from including things not needed here, */
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+/* end */
+#include <windows.h>
+typedef HMODULE shared_library;
+#define DLSYM(lib, fn) GetProcAddress((lib), (fn))
+#else
 #include <dlfcn.h>
+#define DLSYM(lib, fn) dlsym((lib), (fn))
+typedef void* shared_library;
+#endif
+/* the rest of the code must make considerations as well */
+
 #include <R.h>
 #include <Rinternals.h>
 #include <Rdefines.h>
 #include <time.h>
-
-/* The following function works like stpcpy. The builtin stpcpy is a
- * POSIX function and may not exist on other platforms, this is to
- * compensate for their inadequacies.
- */
-static char *pcopy(char *restrict dst, const char *restrict src){
-	return strcpy(dst,src) + strlen(src);
-}
+#include <stdint.h>
 
 typedef SEXP Rdata;
 enum status {success, timeout, nstep_max};
+
+
+/* The standard 64-bit FNV-1a hash function */
+static uint64_t FNV1a(const char* str) {
+	const uint64_t FNV_offset_basis =  0xcbf29ce484222325ULL;
+	const uint64_t FNV_prime = 0x100000001b3ULL;
+	uint64_t hash = FNV_offset_basis;
+	for (const char* ptr = str; *ptr != '\0'; ++ptr) {
+		hash ^= (uint64_t)(unsigned char)(*ptr);
+		hash *= FNV_prime;
+	}
+	return hash;
+}
+
 
 int (*model_effects)(double t, int *x, double *c, double* a,  int j);
 int (*model_propensities)(double t, int *x, double *c, double *a);
@@ -47,56 +70,65 @@ union symbol {
 	int (*model_stochastic_parameters)(double t, double *par);
 };
 
-void* load_model(const char *model_so){
-	void *lib=dlopen(model_so,RTLD_LAZY);
-	char *model_so_2=NULL;
+int load_model(const char *model_so){
+	static shared_library lib = NULL; // this happens once
+	static uint64_t old_path_hash = 0;
+	uint64_t current_path_hash = FNV1a(model_so);
+	const char *err_msg = NULL;
 	union symbol conversion; /* pointer conversion */
-	if (!lib) {
-		REprintf("[%s] %s.\n",__func__,dlerror());
-		model_so_2 = malloc(strlen(model_so)+3);
-		pcopy(pcopy(model_so_2,"./"),model_so);
-		REprintf("[%s] retrying with: «%s»\n",__func__,model_so_2);
-		lib = dlopen(model_so_2,RTLD_LAZY);
+	if (!lib || old_path_hash != current_path_hash){ // a new library was specified
+#ifdef _WIN32
+		if (lib) FreeLibrary(lib); // discard old library
+		lib = LoadLibrary(model_so);
+#else
+		/* do normal UNIX/POSIX things */
+		if (lib) dlclose(lib);     // discard old library
+		lib = dlopen(model_so,RTLD_LAZY);
+		err_msg = dlerror();
+#endif
+		old_path_hash = current_path_hash;
 	}
 	if (lib){
-		if ((conversion.ptr=dlsym(lib,"model_effects"))==NULL){
+		if ((conversion.ptr=DLSYM(lib,"model_effects"))==NULL){
 			REprintf("[%s] loading model_effects has failed.\n",__func__);
 		} else {
 			model_effects = conversion.model_effects;
 		}
-		if ((conversion.ptr=dlsym(lib,"model_propensities"))==NULL){
+		if ((conversion.ptr=DLSYM(lib,"model_propensities"))==NULL){
 			REprintf("[%s] loading model_propensities has failed.\n",__func__);
 		} else {
 			model_propensities = conversion.model_propensities;
 		}
-		if ((conversion.ptr=dlsym(lib,"model_reaction_coefficients"))==NULL){
+		if ((conversion.ptr=DLSYM(lib,"model_reaction_coefficients"))==NULL){
 			REprintf("[%s] loading model_reaction_coefficients has failed.\n",__func__);
 		} else {
 			model_reaction_coefficients = conversion.model_reaction_coefficients;
 		}
-		if ((conversion.ptr=dlsym(lib,"model_initial_counts"))==NULL){
+		if ((conversion.ptr=DLSYM(lib,"model_initial_counts"))==NULL){
 			REprintf("[%s] loading model_initial_counts has failed.\n",__func__);
 		} else {
 			model_initial_counts = conversion.model_initial_counts;
 		}
-		if ((conversion.ptr=dlsym(lib,"model_func"))==NULL){
+		if ((conversion.ptr=DLSYM(lib,"model_func"))==NULL){
 			REprintf("[%s] loading model_func has failed.\n",__func__);
 		} else {
 			model_func = conversion.model_func;
 		}
-		if ((conversion.ptr=dlsym(lib,"model_particle_count"))==NULL){
+		if ((conversion.ptr=DLSYM(lib,"model_particle_count"))==NULL){
 			REprintf("[%s] loading model_particle_count has failed.\n",__func__);
 		} else {
 			model_particle_count = conversion.model_particle_count;
 		}
-		if ((conversion.ptr = dlsym(lib,"model_stochastic_parameters"))==NULL){
+		if ((conversion.ptr = DLSYM(lib,"model_stochastic_parameters"))==NULL){
 			REprintf("[%s] loading model_stochastic_parameters has failed.\n",__func__);
 		} else {
 			model_stochastic_parameters = conversion.model_stochastic_parameters;
 		}
+	} else {
+		error("[%s] %s.\n",__func__,err_msg);
+		return EXIT_FAILURE;
 	}
-	if (model_so_2) free(model_so_2);
-	return lib;
+	return EXIT_SUCCESS;
 }
 
 int pick_reaction(gsl_vector *a, double r_sum_a){
@@ -160,8 +192,7 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters, Rdata time_
 	gsl_set_error_handler_off();
 	int i,j,k;
 	//int l;
-	void *handle = load_model(CHAR(STRING_ELT(model_so,0)));
-	if (!handle) return R_NilValue;
+	if (load_model(CHAR(STRING_ELT(model_so,0))) != EXIT_SUCCESS) return R_NilValue;
 	size_t M = ncols(parameters);
 	size_t nrp = nrows(parameters);
 	size_t n = model_initial_counts(NULL,NULL);

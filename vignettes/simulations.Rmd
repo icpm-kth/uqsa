@@ -59,12 +59,13 @@ several parameter vectors in one call (otherwise `l` is exactly `1`).
 This model is included with the package. To load your own model, see
 the article ["Build and simulate your own Model"](user_model.html).
 
-```{r}
+```{r shared-library}
 m <- model_from_tsv(uqsa_example("AKAP79"))
 o <- as_ode(m)
 c_path(o) <- write_c_code(generate_code(o))
 so_path(o) <- shlib(o)
 print(o)
+if (!file.exists(so_path(o))) stop('creation of shared library failed')
 ```
 
 By default, `as_ode` performs a conservation law analysis that can be
@@ -95,7 +96,7 @@ specific, initial condition.
 This list of data-sets also includes instructions for the simulator on
 how to simulate the scenario with the model.
 
-```{r, experiments}
+```{r experiments}
 ex <- experiments(m,o)
 ```
 
@@ -136,14 +137,17 @@ to model-parameter space, based on which transformation the user
 performed in the model files: log10ParMap belongs to a log10 sampling
 space and performs `10^p` (to get back to the model-paramerts):
 
-```{r, sim}
+```{r sim}
 stopifnot(all(m$Parameter$scale=="log10")) # just to make sure
-options(mc.cores = 2) # required by CRAN
+options(mc.cores = 2) # required by CRAN, set this to a bigger value for yourself
 s <- simulator.c(ex,o,parMap=log10ParMap)
 
 p0 <- values(m$Parameter) # default parameters, in log10-space
 rprior <- rNormalPrior(p0,rep(0.1,length(p0))) # a small neighborhood
 y <- s(t(rprior(300)))
+status <- unlist(lapply(y,\(E) as.logical(E$status))) # non-zero means an error occurred
+print(status)
+if (any(status)) stop("simulation failed.")
 ```
 
 Next we plot the result:

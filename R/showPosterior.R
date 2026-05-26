@@ -137,7 +137,7 @@ showPosterior <- function(posterior, prior, lower.panel=lp, upper.panel=up,...){
 #' pr <- data.frame(median=apply(X,2,median),stdv=apply(X,2,sd))
 #' pcDist(Z,pr)
 pcDist <- function(posterior,prior,color=rgb(0.5,0.5,0.5,0.05),...){
-	if (is.matrix(X)){
+	if (is.matrix(prior)){
 		X <- prior
 		prior <- data.frame(median=apply(X,2,median),stdv=apply(X,2,sd))
 	}

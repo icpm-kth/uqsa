@@ -12,10 +12,29 @@
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_sf.h>
 #include <math.h>
+
+
+/* This is an attempt to make this package work on windows */
+#ifdef _WIN32
+/* begin: Prevent windows.h from including things not needed here, */
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+/* end */
+#include <windows.h>
+typedef HMODULE shared_library;
+#define DLSYM(lib, fn) GetProcAddress((lib), (fn))
+#else
 #include <dlfcn.h>
+#define DLSYM(lib, fn) dlsym((lib), (fn))
+typedef void* shared_library;
+#endif
+/* the rest of the code must make considerations as well */
+
 #include <R.h>
 #include <Rinternals.h>
 #include <Rdefines.h>
+#include <stdint.h>
+
 #define MATCH 0
 #define NO_DIFFERENCE 0
 #define RCOND_LIMIT 1e-10
@@ -26,7 +45,22 @@
  */
 typedef SEXP Rdata;
 
-char* pcpy(char *dest, const char *src, size_t n){
+
+/* The standard 64-bit FNV-1a hash function */
+static uint64_t FNV1a(const char* str) {
+	const uint64_t FNV_offset_basis =  0xcbf29ce484222325ULL;
+	const uint64_t FNV_prime = 0x100000001b3ULL;
+	uint64_t hash = FNV_offset_basis;
+	for (const char* ptr = str; *ptr != '\0'; ++ptr) {
+		hash ^= (uint64_t)(unsigned char)(*ptr);
+		hash *= FNV_prime;
+	}
+	return hash;
+}
+
+
+
+static char* pcpy(char *dest, const char *src, size_t n){
 	return ((char*) memcpy(dest,src,n)+n);
 }
 
@@ -106,7 +140,7 @@ static double sec(clock_t c){
 static int in_list(Rdata List, const char *name){
 	if (!isVector(List)) return -1;
 	int i;
-	int N=length(List);
+	R_xlen_t N=length(List);
 	int l=strlen(name);
 	char *str=malloc(l+1);
 	char *context=NULL;
@@ -149,7 +183,7 @@ affine_transformation(
 	Rdata dA=GET_DIM(A);
 	Rdata db=GET_DIM(b);
 	assert(length(dA)==length(db));
-	int n=length(dA);
+	R_xlen_t n=length(dA);
 	int *dim=INTEGER(dA);
 	int *dim_b=INTEGER(db);
 	int j;
@@ -188,14 +222,16 @@ static void free_tf(affine_tf *L){
 }
 
 /* This function applies a affine transformation to the vector z. We
-	 assume that A and b and z in the input are all of sufficient size:
-	 n×n for matrices and n for vectors. A can be n-sized as well, if A
-	 is a diagonal matrix, then we only store the diagonal. n is stored
-	 in the transformation structure as length_b. */
+	assume that A and b and z in the input are all of sufficient size:
+	n×n for matrices and n for vectors. A can be n-sized as well, if A
+	is a diagonal matrix, then we only store the diagonal. n is stored
+	in the transformation structure as length_b. */
 static int /* the returned status of the gsl operations */
-apply_tf(affine_tf *L, /* a transformation struct: A and b are cast to gsl_vectors here */
-	 double *z,/* an array of size n, it is updated using L */
-	 int t_index)/* if A and b are each a series of matrices, pick the one with this offset */
+apply_tf(
+	affine_tf *L, /* a transformation struct: A and b are cast to gsl_vectors here */
+	double *z,/* an array of size n, it is updated using L */
+	int t_index /* if A and b are each a series of matrices, pick the one with this offset */
+)
 {
 	if (!L) return GSL_SUCCESS; /* nothing to be done */
 	if (!z || !(t_index >=0 && L->l > 0)) {
@@ -260,18 +296,18 @@ struct event* event_from_R(Rdata E){
 	} else {
 		REprintf("[%s] unknown type of event.\n",__func__);
 	}
-	int lt=length(time);
+	ssize_t lt=length(time);
 	if (event->type == model_func_event && lt != event->nL){
-		REprintf("[%s] event time vector and event label vector must be the same length for this type of event. (%i != %i)\n",__func__,lt,event->nL);
+		REprintf("[%s] event time vector and event label vector must be the same length for this type of event. (%zd != %i)\n",__func__,lt,event->nL);
 	}
 	event->time = REAL(AS_NUMERIC(time));
 	event->nt=lt;
 	return event;
 }
 
-/* this function takes the address of an event structure pointer, clears the
-	 memory and changes the pointer to NULL, so that the event cannot be
-	 accessed after being freed (except through a different pointer). */
+/* this function takes the address of an event structure pointer, clears the */
+/* memory and changes the pointer to NULL, so that the event cannot be       */
+/* accessed after being freed (except through a different pointer).          */
 static void event_free(struct event **ev){
 	if (ev && *ev){
 		switch ((*ev)->type){
@@ -288,18 +324,33 @@ static void event_free(struct event **ev){
 	}
 }
 
-/* Loads the ODE system from an `.so` file, the file is given by name,
-	 the returned structure is intended for the `gsl_odeiv2` library of
-	 solvers. The jacobian dfdx is loaded alongside the right hand side;
-	 `gsl_odeiv2_system`. Other model functions (_jacp, _func, _init,
-	 _default, funcJac, funcJacp) are assigned to global variables. */
-gsl_odeiv2_system /* the system structure, see gsl documentation. */
+/* Loads the ODE system from an `.so` file, the file is given by name, */
+/* the returned structure is intended for the `gsl_odeiv2` library of  */
+/* solvers. The jacobian dfdx is loaded alongside the right hand side; */
+/* `gsl_odeiv2_system`. Other model functions (_jacp, _func, _init,    */
+/* _default, funcJac, funcJacp) are assigned to global variables.      */
+gsl_odeiv2_system /* the system structure, see gsl documentation.      */
 load_system(
- const char *model_name, /* the name of the model, function names will be inferred from that: model_name_vf, model_name_jac, etc. */
- const char *model_so) /* the path to the shared library that contains the model. */
+	const char *model_name, /* the name of the model, function names will be inferred from that */
+	const char *model_so  /* the path to the shared library that contains the model. */
+)
 {
-	void *lib=dlopen(model_so,RTLD_LAZY);
-	const char *err_msg = dlerror();
+	static shared_library lib = NULL; // this happens once
+	static uint64_t old_path_hash = 0;
+	uint64_t current_path_hash = FNV1a(model_so);
+	const char *err_msg = NULL;
+	if (!lib || old_path_hash != current_path_hash){ // a new library was specified
+#ifdef _WIN32
+		if (lib) FreeLibrary(lib); // discard old library
+		lib = LoadLibrary(model_so);
+#else
+		/* do normal UNIX/POSIX things */
+		if (lib) dlclose(lib);     // discard old library
+		lib = dlopen(model_so,RTLD_LAZY);
+		err_msg = dlerror();
+#endif
+		old_path_hash = current_path_hash;
+	}
 	gsl_odeiv2_system sys={NULL,NULL,0,NULL};
 	size_t n,l;
 	size_t m=strlen(model_name);
@@ -308,54 +359,56 @@ load_system(
 	*suffix='\0';
 	union symbol conversion;
 	if (lib){
+		/* In this block, we use the DLSYM macro defined in the preamble (this file) */
+		/* DLSYM is dlsym on UNIX systems and the windows equivalent on windows      */
 		*((char*) pcpy(suffix,"_vf",3))='\0';
-		if ((conversion.ptr=dlsym(lib,symbol_name))==NULL){
+		if ((conversion.ptr=DLSYM(lib,symbol_name))==NULL){
 			REprintf("[%s] loading «%s» is required.\n",__func__,symbol_name);
-			REprintf("%p: %p\n",lib,conversion.ptr);
+			REprintf("%p: %p\n",(void*) lib,conversion.ptr);
 			free(symbol_name);
 			return sys;
 		}
 		ODE_vf = conversion.ODE_vf;
 
 		*((char*) pcpy(suffix,"_jac",4))='\0';
-		conversion.ptr = dlsym(lib,symbol_name);
+		conversion.ptr = DLSYM(lib,symbol_name);
 		ODE_jac = conversion.ODE_jac;
 
 		*((char*) pcpy(suffix,"_jacp",5))='\0';
-		conversion.ptr = dlsym(lib,symbol_name);
+		conversion.ptr = DLSYM(lib,symbol_name);
 		ODE_jacp = conversion.ODE_jacp;
 
 		*((char*) pcpy(suffix,"_func",5))='\0';
-		conversion.ptr = dlsym(lib,symbol_name);
+		conversion.ptr = DLSYM(lib,symbol_name);
 		ODE_func = conversion.ODE_func;
 
 		*((char*) pcpy(suffix,"_funcJac",8))='\0';
-		conversion.ptr = dlsym(lib,symbol_name);
+		conversion.ptr = DLSYM(lib,symbol_name);
 		ODE_funcJac = conversion.ODE_funcJac;
 
 		*((char*) pcpy(suffix,"_funcJacp",9))='\0';
-		conversion.ptr = dlsym(lib,symbol_name);
+		conversion.ptr = DLSYM(lib,symbol_name);
 		ODE_funcJacp = conversion.ODE_funcJacp;
 
 		*((char*) pcpy(suffix,"_default",8))='\0';
-		conversion.ptr = dlsym(lib,symbol_name);
+		conversion.ptr = DLSYM(lib,symbol_name);
 		ODE_default = conversion.ODE_default;
 
 		*((char*) pcpy(suffix,"_init",5))='\0';
-		conversion.ptr = dlsym(lib,symbol_name);
+		conversion.ptr = DLSYM(lib,symbol_name);
 		ODE_init = conversion.ODE_init;
 
 		*((char*) pcpy(suffix,"_event",6))='\0';
-		conversion.ptr = dlsym(lib,symbol_name);
+		conversion.ptr = DLSYM(lib,symbol_name);
 		ODE_event = conversion.ODE_event;
 	} else {
-		REprintf("[%s] library «%s» could not be loaded: %s\n",__func__,model_so,err_msg);
 		if (err_msg){
 			Rf_error("[dlopen] %s.",err_msg);
 		} else {
 			Rf_error("[dlopen] unknown error.");
 		}
-		return sys;
+		error("[%s] library «%s» could not be loaded: %s\n",__func__,model_so,err_msg);
+		return sys; // just in case error fails for some reason
 	}
 	n=ODE_vf(0,NULL,NULL,NULL);
 	l=ODE_default(0,NULL);
@@ -452,9 +505,10 @@ simulate_timeseries(
 
 // allocates a matrix of parameters, onw row per experiment;
 gsl_matrix* params_alloc(Rdata experiments){
-	int i,N;
+	int i;
+	ssize_t N;
 	gsl_matrix *P=NULL;
-	int np,nu;
+	int np=0,nu=0;
 	gsl_vector *p=NULL;
 	Rdata input;
 	double* u;
@@ -463,6 +517,9 @@ gsl_matrix* params_alloc(Rdata experiments){
 		np=ODE_default(0.0,NULL);
 		p=gsl_vector_alloc(np);
 		ODE_default(0.0,p->data);
+	} else {
+		warning("the seemingly has no parameters (no default parameter function).");
+		return NULL;
 	}
 	if (experiments != R_NilValue && IS_VECTOR(experiments)){
 		N=length(experiments);
@@ -516,8 +573,8 @@ void update_initial_values(gsl_vector *y0, gsl_odeiv2_system sys, Rdata iv){
 
 void set_names(Rdata list, const char *names[])
 {
-	int i=0;
-	size_t n=0;
+	ssize_t i=0;
+	ssize_t n=0;
 	while (names && names[i++]){
 		n++;
 	}
@@ -607,9 +664,9 @@ void transition_matrix(gsl_matrix *Ji, /* the jacobian at t=ti */
 int sensitivityApproximation(double t0, gsl_vector *t, gsl_vector *p, gsl_matrix *Y, double *dYdp, double *dFdp, struct sensApproxMem M)
 {
 	int j,k;
-	int m=t->size;
-	int n=Y->size2;
-	int l=p->size;
+	size_t m=t->size;
+	size_t n=Y->size2;
+	size_t l=p->size;
 	int f=ODE_func(0,NULL,NULL,NULL);
 	double tj,tj_1=t0,delta_t;
 	gsl_vector_view col, diag;
@@ -624,7 +681,7 @@ int sensitivityApproximation(double t0, gsl_vector *t, gsl_vector *p, gsl_matrix
 	int sign;
 	const double *y;
 	int status=GSL_SUCCESS;
-	if (m != Y->size1) REprintf("[%s] t has length %i, but Y has %li rows.\n",__func__,m,Y->size1);
+	if (m != Y->size1) REprintf("[%s] t has length %zu, but Y has %zu rows.\n",__func__,m,Y->size1);
 
 	for (j=0;j<m;j++){
 		tj=gsl_vector_get(t,j);
@@ -689,7 +746,7 @@ double logLikelihood(Rdata experiment, double *f){
 	double ll=0;
 	double d,s;
 	int i;
-	int nt=length(time);
+	R_xlen_t nt=length(time);
 	int n=ODE_func(0,NULL,NULL,NULL);
 	double C;
 	for (i=0;i<n*nt;i++){
@@ -716,7 +773,7 @@ int gradLogLikelihood(double *gll, Rdata experiment, double *func, double *funcS
 	}
 	//Rdata stdv=from_list(experiment,"stdv standardError standardDeviationOfTheMean");
 	Rdata time=from_list(experiment,"time times t outputTimes");
-	int nt=length(time);
+	R_xlen_t nt=length(time);
 	int n=v->size;
 	gsl_vector_view d,s,g,f;
 	gsl_matrix_view Sf;
@@ -755,9 +812,9 @@ int FisherInformation(double *FI, Rdata experiment, double *funcSens, gsl_matrix
 		stdv = from_list(experiment,"stdv sd standardError standardDeviationOfTheMean");
 	}
 	Rdata time=from_list(experiment,"time times t outputTimes OutputTimes");
-	int nt=length(time);
-	int n=Sf_sd->size2; //ODE_func(0,NULL,NULL,NULL);
-	int m=Sf_sd->size1;
+	R_xlen_t nt=length(time);
+	size_t n=Sf_sd->size2; //ODE_func(0,NULL,NULL,NULL);
+	size_t m=Sf_sd->size1;
 	gsl_vector_view s,row;
 	gsl_matrix_view Sf,fi;
 	//gsl_matrix *Sf_sd=gsl_matrix_alloc(m,n);
@@ -770,7 +827,7 @@ int FisherInformation(double *FI, Rdata experiment, double *funcSens, gsl_matrix
 		s = gsl_vector_view_array(REAL(stdv)+(j*n),n);
 		Sf = gsl_matrix_view_array(funcSens+(j*n*m),m,n);
 		if (gsl_matrix_memcpy(Sf_sd,&Sf.matrix) != GSL_SUCCESS){
-			REprintf("[%s] memcpy didn't work for Sf.matrix(%li,%li).",__func__,(&Sf.matrix)->size1,(&Sf.matrix)->size2);
+			REprintf("[%s] memcpy didn't work for Sf.matrix(%zu,%zu).",__func__,(&Sf.matrix)->size1,(&Sf.matrix)->size2);
 		}
 		for (i=0;i<m;i++) {
 			row = gsl_matrix_row(Sf_sd,i);
@@ -814,37 +871,37 @@ r_gsl_odeiv2_outer_fi(
 	double abs_tol=asReal(absolute_tolerance);
 	double rel_tol=asReal(relative_tolerance);
 	double h=asReal(initial_step_size);
-	int N=GET_LENGTH(experiments);
+	R_xlen_t N=GET_LENGTH(experiments);
 	size_t M=ncols(parameters);
 	const gsl_odeiv2_step_type * T=step_types[asInteger(method)];
 	int OUTPUTS = asInteger(optional_outputs);                        /* 0,1,2,3 */
 	enum possible_outputs {output_fisher_information, output_grad_log_likelihood, output_log_likelihood, output_functions, numOptOutputs};
 	Rdata res_list = PROTECT(NEW_LIST(N));                            /* use VECTOR_ELT and SET_VECTOR_ELT */
 	SET_NAMES(res_list,GET_NAMES(experiments));
-	Rdata yf_list, state, func, iv, t, cpuSeconds, numSteps, Status;
+	Rdata yf_list, state=R_NilValue, func=R_NilValue, iv, t, cpuSeconds, numSteps, Status;
 	double t0;
 	clock_t ct0, ct1;
 	const char *yf_names[]={"cpuSeconds","numSteps","status","state","func","logLikelihood","gradLogLikelihood","FisherInformation",NULL};
 	gsl_vector_view initial_value, time;
 	gsl_matrix_view y;
-	size_t nt;
-	unsigned long NMAX = abs(asInteger(nmax));
+	R_xlen_t nt;
+	unsigned long NMAX = asInteger(nmax);
 	struct event *ev=NULL;
 	double *f;
 	gsl_vector_view p;
-	double *sy_k, *sf_k;
-	Rdata FI, gll, ll;
+	double *sy_k=NULL, *sf_k=NULL;
+	Rdata FI=R_NilValue, gll=R_NilValue, ll=R_NilValue;
 	gsl_odeiv2_system sys = load_system(model_name, model_so); /* also sets ODE_*() functions */
 	if (sys.dimension == 0 || ODE_default==NULL || ODE_init==NULL){
-		REprintf("[%s] loading model has failed (system dimension: «%li»).\n",__func__,sys.dimension);
+		REprintf("[%s] loading model has failed (system dimension: «%zu»).\n",__func__,sys.dimension);
 		UNPROTECT(1); /* res_list */
 		return R_NilValue;
 	}
 	gsl_matrix *P = params_alloc(experiments);
 	gsl_matrix *Y0 = init_alloc(sys,P);
-	int nf = ODE_func ? ODE_func(0,NULL,NULL,NULL):0;
-	int ny = sys.dimension;
-	int np = P->size2;
+	size_t nf = ODE_func ? abs(ODE_func(0,NULL,NULL,NULL)):0;
+	size_t ny = sys.dimension;
+	size_t np = P->size2;
 	gsl_matrix *Sf_sd=gsl_matrix_alloc(np,nf);
 	gsl_vector *v=gsl_vector_alloc(nf);
 	struct sensApproxMem saMem = sensApproxMemAlloc(ny,np,nf);
@@ -887,7 +944,7 @@ r_gsl_odeiv2_outer_fi(
 		}
 		for (k=0;k<M;k++){
 			y=gsl_matrix_view_array(REAL(AS_NUMERIC(state))+(nt*ny*k),nt,ny);
-			memcpy((double*) sys.params, REAL(AS_NUMERIC(parameters))+nrows(parameters)*k, nrows(parameters)*sizeof(double));
+			memcpy((double*) sys.params, REAL(AS_NUMERIC(parameters))+abs(nrows(parameters))*k, abs(nrows(parameters))*sizeof(double));
 			update_initial_values(&initial_value.vector,sys,iv);
 			ct0=clock();
 			status=simulate_timeseries(
@@ -924,7 +981,13 @@ r_gsl_odeiv2_outer_fi(
 					REAL(ll)[k]=logLikelihood(VECTOR_ELT(experiments,i),REAL(func)+(k*nf*nt));
 				}
 			} else {
-				REprintf("[%s] simulation of provided parameters failed for experiment %i with error %i: %s\n",__func__,i,status,gsl_strerror (status));
+				REprintf(
+					"[%s] simulation of provided parameters failed for experiment %i with error %i: %s\n",
+					__func__,
+					i,
+					status,
+					gsl_strerror(status)
+				);
 				switch(OUTPUTS){
 				case output_fisher_information:
 					memset(REAL(FI)+(k*np*np),0,sizeof(double)*np*np);
@@ -976,7 +1039,7 @@ r_gsl_odeiv2_outer_fi(
 			UNPROTECT(1);
 		}
 		if (status!=GSL_SUCCESS){
-			REprintf("[%s] parameter set lead to solver errors (%s) in experiment %i/%i\n",__func__,gsl_strerror(status),i,N);
+			REprintf("[%s] parameter set lead to solver errors (%s) in experiment %i/%zd\n",__func__,gsl_strerror(status),i,N);
 		}
 	} // experiments: 0 to N-1
 	sensApproxMemFree(saMem); /* frees the memory of temporary matrices of sensitivity approximation */
@@ -1023,7 +1086,7 @@ r_gsl_odeiv2_outer_CRNN(
 	double abs_tol=asReal(absolute_tolerance);
 	double rel_tol=asReal(relative_tolerance);
 	double h=asReal(initial_step_size);
-	int N=GET_LENGTH(experiments);
+	R_xlen_t N=GET_LENGTH(experiments);
 	size_t M=1; //dim(lparameters)[3];
 	const gsl_odeiv2_step_type * T=step_types[asInteger(method)]; //gsl_odeiv2_step_msbdf;
 	struct par p = {REAL(lparameters), REAL(stoichiometry), REAL(modifiers)}; /* l, nu, m */
@@ -1040,15 +1103,15 @@ r_gsl_odeiv2_outer_CRNN(
 	double *f;
 	gsl_odeiv2_system sys = load_system(model_name, model_so); /* also sets ODE_*() functions */
 	if (sys.dimension == 0 || ODE_default==NULL || ODE_init==NULL){
-		REprintf("[%s] loading model has failed (system dimension: «%li»).\n",__func__,sys.dimension);
+		REprintf("[%s] loading model has failed (system dimension: «%zu»).\n",__func__,sys.dimension);
 		UNPROTECT(1); /* res_list */
 		return R_NilValue;
 	}
 	free(sys.params); /* auto-allocated by load system */
 	sys.params = (void *) &p;
-	int nf = ODE_func(0,NULL,NULL,NULL);
-	int ny = sys.dimension;
-	int np = nrows(lparameters); /* also number of reactions */
+	size_t nf = abs(ODE_func(0,NULL,NULL,NULL));
+	size_t ny = sys.dimension;
+	size_t np = abs(nrows(lparameters)); /* also number of reactions */
 	unsigned long NMAX=asInteger(nmax);
 	gsl_odeiv2_driver *driver = gsl_odeiv2_driver_alloc_y_new(&sys,T,h,abs_tol,rel_tol);
 	if (NMAX) gsl_odeiv2_driver_set_nmax(driver,NMAX);

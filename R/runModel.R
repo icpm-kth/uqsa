@@ -148,6 +148,10 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 		odeModel <- name
 		comment(odeModel) <- so
 	}
+	if (Sys.info()[["sysname"]] == "Windows") {
+		# Flip forward slashes back to native Windows backslashes
+		comment(odeModel) <- chartr("/", "\\", comment(odeModel))
+	}
 	if (!is.matrix(p)) p <- as.matrix(p)
 	y <- .Call(
 		"r_gsl_odeiv2_outer_fi",
@@ -236,6 +240,10 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 	}
 	if (!file.exists(so)){
             warning(sprintf("[gsl_odeiv2_CRNN] for model name \u00ab%s\u00bb, file \u00ab%s\u00bb not found.",name,so))
+	}
+	if (Sys.info()[["sysname"]] == "Windows") {
+		# Flip forward slashes back to native Windows backslashes
+		comment(name) <- chartr("/", "\\", comment(name))
 	}
 	if (!is.matrix(l) && is.numeric(l)) {
 		l <- matrix(l,NCOL(nu),2,dimnames=list(colnames(nu),c("fwd","bwd")))
@@ -566,13 +574,18 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 	} else if (is(modelName,"cme")) {
 		sim <- function(parABC){
 			modelPar <- parMap(parABC)
+			so <- so_path(modelName)
+			if (Sys.info()[["sysname"]] == "Windows") {
+				# Flip forward slashes back to native Windows backslashes
+				so <- chartr("/", "\\", so)
+			}
 			yf <- unlist(
 				mclapply(
 					experiments,
 					\(EX) return(
 						.Call(
 							"gillespie",
-							so_path(modelName),
+							so,
 							list(EX),
 							as.matrix(modelPar),
 							as.double(time.out),

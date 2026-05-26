@@ -4,11 +4,7 @@
 \alias{write_c_code}
 \title{Write the C code to a file}
 \usage{
-write_c_code(
-  C,
-  model.name = comment(C),
-  file = file.path(tempdir(), digest::digest(C, "xxhash64"), paste0(model.name, ".c"))
-)
+write_c_code(C, model.name = comment(C), file = NULL)
 }
 \arguments{
 \item{C}{the code to write, as a character array.}

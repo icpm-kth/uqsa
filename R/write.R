@@ -65,19 +65,61 @@ shlib <- function(file){
 		so_name <- sub("[.]c$","",basename(file))
 	}
 	if (is.null(file)) stop("No C file specified")
+	file <- normalizePath(file,winslash='/',mustWork=FALSE)
 	if (!file.exists(file)) stop(sprintf("%s does not exist.",file))
 
-	so <- file.path(dirname(file), paste0(so_name, .Platform$dynlib.ext))
-	cflags <- system2("pkg-config", c("--cflags", "gsl"), stdout = TRUE)
-	libs <- system2("pkg-config", c("--libs", "gsl"), stdout = TRUE)
-	compile_env <- c(
-		sprintf("PKG_CPPFLAGS='%s'",paste("-O3",cflags)),
-		if (nzchar(libs)) sprintf("PKG_LIBS='%s'", libs)
+	so <- normalizePath(
+		file.path(dirname(file), paste0(so_name, .Platform$dynlib.ext)),
+		winslash='/',
+		mustWork=FALSE
 	)
+
+	if (nzchar(Sys.which("pkg-config")) && system2("pkg-config", c("--exists", "gsl"), stdout = FALSE, stderr = FALSE)==0) {
+		cflags <- tryCatch(system2("pkg-config", c("--cflags", "gsl"), stdout = TRUE), error = function(e) sprintf("failure in 'pkg-config --cflags': %s",e))
+		libs <- tryCatch(system2("pkg-config", c("--libs", "gsl"), stdout = TRUE), error = function(e) sprintf("failure in 'pkg-config --libs': %s",e))
+	} else if (nzchar(Sys.which("gsl-config"))){
+		cflags <- tryCatch(system2("gsl-config", "--cflags", stdout = TRUE), error = function(e) sprintf("failure in 'gsl-config --cflags': %s",e))
+		libs   <- tryCatch(system2("gsl-config", "--libs", stdout = TRUE), error = function(e) sprintf("failure in 'gsl-config --cflags': %s",e))
+	} else if (Sys.info()[["sysname"]] == "Windows"){
+		## perhaps pkg-config is available internally to R CMD SHLIB
+		cat(
+			c(
+				"PKG_CPPFLAGS = $(shell pkg-config --cflags gsl) -O3",
+				"PKG_LIBS = $(shell pkg-config --libs gsl)"
+			),
+			sep="\n",
+			file=file.path(dirname(file),"Makevars.win")
+		)
+		cflags = ""
+		libs = ""
+	} else {
+		warning(
+			"Neither pkg-config (with gsl.pc), nor gsl-config exist on this system (",
+			Sys.info()[["sysname"]],
+			"), perhaps the GNU Scientific Library isn't installed?",
+			"Trying hard-coded values for GSL location."
+		)
+		cflags <- Sys.getenv("GSL_CFLAGS", unset = "")
+		libs <- Sys.getenv("GSL_LIBS", unset = "-lgsl -lgslcblas")
+		cat(cflags,libs,sep="\n")
+	}
+	## Environment variables
+	### 1. get current values to restor later
+	old_cppflags <- Sys.getenv("PKG_CPPFLAGS", unset = NA)
+	old_libs <- Sys.getenv("PKG_LIBS", unset = NA)
+	on.exit(
+		{
+			if (is.na(old_cppflags)) Sys.unsetenv("PKG_CPPFLAGS") else Sys.setenv(PKG_CPPFLAGS = old_cppflags)
+			if (is.na(old_libs)) Sys.unsetenv("PKG_LIBS") else Sys.setenv(PKG_LIBS = old_libs)
+		},
+		add = TRUE
+	)
+	### 2. set new values, determined by pkg-config
+	if (nzchar(cflags)) Sys.setenv(PKG_CPPFLAGS = cflags)
+	if (nzchar(libs)) Sys.setenv(PKG_LIBS = libs)
 	status <- system2(
 		command = file.path(R.home("bin"), "R"),
 		args = c("CMD", "SHLIB",file),
-		env = compile_env,
 		stdout = TRUE,
 		stderr = TRUE,
 		wait = TRUE
@@ -112,7 +154,18 @@ shlib <- function(file){
 #' c_path(o) <- write_c_code(C)
 #' print(o)
 #' if (file.exists(c_path(o))) cat("c file exists.\n")
-write_c_code <- function(C, model.name=comment(C), file=file.path(tempdir(),digest::digest(C,"xxhash64"),paste0(model.name,".c"))){
+write_c_code <- function(C, model.name=comment(C), file=NULL){
+	if (missing(file)){
+		file  <- normalizePath(
+			file.path(
+				normalizePath(tempdir(),winslash='/',mustWork=FALSE),
+				digest::digest(C,"xxhash64"),
+				paste0(model.name,".c")
+			),
+			winslash='/',
+			mustWork=FALSE
+		)
+	}
 	if (is(C,"ode")) { # an ode model was passed instead of code
 		ode <- C
 		model.name <- ode$name
