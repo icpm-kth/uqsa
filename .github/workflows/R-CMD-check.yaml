@@ -50,7 +50,7 @@ jobs:
             any::knitr
             any::rmarkdown
           needs: check
-          dependencies: ${{ runner.os == 'Windows' && '"hard"' || '"all"' }}
+          dependencies: '"all"'
 
       - uses: r-lib/actions/check-r-package@v2
         with:
