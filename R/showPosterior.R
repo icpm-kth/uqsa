@@ -90,6 +90,7 @@ highCor <- function(C){
 #' @return pairs plot object
 #' @export
 #' @examples
+#' \donttest{
 #' rprior <- rNormalPrior(c(-1,0,1),c(1,2,3))
 #' A <- matrix(rnorm(9),3,3)
 #' A <- (A + t(A))^2/norm(A)^2
@@ -97,7 +98,8 @@ highCor <- function(C){
 #' Z <- X %*% A
 #' colnames(Z) <- letters[seq(3)]
 #' colnames(X) <- letters[seq(3)]
-#' showPosterior(Z,X)
+#' showPosterior(Z,X) # this can take a while
+#' }
 showPosterior <- function(posterior, prior, lower.panel=lp, upper.panel=up,...){
 	return(
 		pairs(

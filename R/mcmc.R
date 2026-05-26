@@ -1005,6 +1005,7 @@ gllf <- function(parMapJac=\(x) diag(1,length(x),length(x))) {
 #' @return a scalar value: log(likelihood(data|parMCMC))
 #' @export
 #' @examples
+#' \donttest{
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' o <- as_ode(m)
 #' c_path(o) <- write_c_code(generate_code(o))
@@ -1019,6 +1020,7 @@ gllf <- function(parMapJac=\(x) diag(1,length(x),length(x))) {
 #' print(ll(p))
 #' print(gll(p))
 #' print(FI(p))
+#' }
 fi <- function(parMapJac=\(x) diag(1,length(x),length(x))){
 	return(
 		function(parMCMC) {

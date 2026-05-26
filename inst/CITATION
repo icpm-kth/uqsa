@@ -7,7 +7,7 @@ bibentry(
   eprint="2308.05527",
   archivePrefix="arXiv",
   primaryClass="q-bio.QM",
-  doi="https://doi.org/10.48550/arXiv.2308.05527"
+  doi="10.48550/arXiv.2308.05527"
 )
 
 year  <- format(Sys.Date(),"%Y")

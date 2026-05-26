@@ -56,8 +56,11 @@ several parameter vectors in one call (otherwise `l` is exactly `1`).
 
 # Load the AKAP79 Model
 
-This model is included with the package. To load your own model, see
-the article ["Build and simulate your own Model"](user_model.html).
+This model is included with the package. To load your own model (also
+a collection of TSV files) call `model_from_tsv()` with a
+character-vector of file names or the name of the directory that
+contains the TSV files. To use an example model included with the
+package, we use `uqsa_example()`:
 
 ```{r shared-library}
 m <- model_from_tsv(uqsa_example("AKAP79"))

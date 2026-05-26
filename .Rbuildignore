@@ -13,3 +13,5 @@
 ^PosteriorSamples$
 ^symbols\.rds$
 ^\.github$
+^LICENSE$
+^LICENSE\.md$
