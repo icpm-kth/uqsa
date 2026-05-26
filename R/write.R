@@ -117,9 +117,16 @@ shlib <- function(file){
 	### 2. set new values, determined by pkg-config
 	if (nzchar(cflags)) Sys.setenv(PKG_CPPFLAGS = cflags)
 	if (nzchar(libs)) Sys.setenv(PKG_LIBS = libs)
+	### 3. R CMD SHLIB writes a file called symbols.rds
+	###    we need to make sure that this file lands in `tempdir()`
+	wd <- getwd()
+	on.exit({
+		setwd(wd)
+	})
+	setwd(dirname(file))
 	status <- system2(
 		command = file.path(R.home("bin"), "R"),
-		args = c("CMD", "SHLIB",file),
+		args = c("CMD", "SHLIB",basename(file)),
 		stdout = TRUE,
 		stderr = TRUE,
 		wait = TRUE
