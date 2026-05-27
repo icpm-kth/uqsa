@@ -77,18 +77,11 @@ showPosterior <- function(posterior, prior,...){
 	}
 	up <- function(x,y,...){
 		m <- mean(x)
-		Qx <- quantile(x,probs=c(0.02,0.98))
-		Qy <- quantile(y,probs=c(0.02,0.98))
-		dx <- 0.05*diff(Qx)
-		dy <- 0.05*diff(Qy)
+		Qx <- quantile(x,probs=c(0.01,0.99))
+		Qy <- quantile(y,probs=c(0.01,0.99))
+		dx <- 0.1*diff(Qx)
+		dy <- 0.1*diff(Qy)
 		LIM <- c(min(Qx)-dx,max(Qx)+dx,min(Qy)-dy,max(Qy)+dy)
-		if (min(y) < min(x)){
-			poly_X <- LIM[c(1,1,2,2)]
-			poly_Y <- LIM[c(1,3,3,2)]
-		} else {
-			poly_X <- LIM[c(1,2,2)]
-			poly_Y <- LIM[c(1,1,2)]
-		}
 		k1 <- MASS::kde2d(head(x,n_posterior),head(y,n_posterior),n=200,lims=LIM)
 		k2 <- MASS::kde2d(tail(x,n_prior),tail(y,n_prior),n=200,lims=LIM)
 		C <- contourLines(k2)
@@ -98,7 +91,13 @@ showPosterior <- function(posterior, prior,...){
 		for (i in seq_along(C)){
 			lines(C[[i]],col=colContour[i])
 		}
-		polygon(poly_X,poly_Y,col=rgb(0.2,1,0.2,0.05),border=NA)
+		usr <- par("usr")
+		polygon(
+			c(usr[1],usr[1],usr[2],usr[2]),
+			c(usr[1],usr[3],usr[3],usr[2]),
+			col=rgb(0.2,1,0.2,0.05),
+			border=NA
+		)
 	}
 	return(
 		pairs(
