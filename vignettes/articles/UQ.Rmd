@@ -3,7 +3,7 @@ title: "Bayesian Uncertainty Quantification"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
+knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )

@@ -4,7 +4,7 @@ title: "Simulation of a Stochastic Model for the AKAP79 reaction network"
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  cache = FALSE,
+  
   eval=TRUE,
   collapse = TRUE,
   comment = "#>"

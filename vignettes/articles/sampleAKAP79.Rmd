@@ -5,7 +5,6 @@ title: "Uncertainty Quantification of AKAP79 (deterministic model)"
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   eval=TRUE,
-  cache=TRUE,
   collapse = TRUE,
   comment = "#>"
 )
@@ -57,7 +56,7 @@ First we load the model in its tabular form and create all derived model
 files:
 
 ```{r tsv}
-f <- uqsa::uqsa_example("AKAP79")
+f <- uqsa_example("AKAP79")
 m <- model_from_tsv(f)
 ```
 
@@ -110,7 +109,9 @@ if (require(hexbin)){
 
 # Sample via MPI
 
-Here we run a prepared R script from the command line (any POSIX shell will do: bash/zsh/fish/dash)
+Here we run a prepared R script from the command line (any POSIX shell
+will do: bash/zsh/fish/dash). We make the same number of iterations as
+before, to keep the execution time short.
 
 ```{bash MPI, eval=TRUE}
 N=4 #  default number of MPI workers
@@ -119,7 +120,7 @@ echo "We will use $N cores with $nm"
 
 start_time=$((`date +%s`))
 date
-mpirun -H localhost:$N ./pt-smmala-akap79.R 10000 > /dev/null 2>&1
+mpirun -H localhost:$N ./pt-smmala-akap79.R 1000 > /dev/null 2>&1
 date
 end_time=$((`date +%s`))
 echo "Time spent sampling: $((end_time - start_time)) seconds ($(( (end_time - start_time)/60 )) minutes)."
@@ -128,34 +129,37 @@ echo "Time spent sampling: $((end_time - start_time)) seconds ($(( (end_time - s
 On a high performance computing (hpc) cluster, the above would be in a
 slurm script or similar workload manager.
 
-# Inspect the Results
+## Inspect the Results
 
 Here we check the integrated auto-correlation length (Markov chain
 time)
 
 ```{r uwerr, out.width="100%"}
-Sample <- readRDS(file="/dev/shm/AKAP79-temperature-ordered-pt-smmala-sample-2-for-rank-0.RDS")
-n <- NROW(Sample)
-l <- attr(Sample,"logLikelihood")
+TMPDIR <- ifelse(dir.exists('/dev/shm'),'/dev/shm',Sys.getenv(TMPDIR,unset='/tmp'))
+r <- 0 # rank we want to see
+j <- 2 # iteration we want to see
+f <- file.path(TMPDIR,sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.rds",j,r)
 
+Sample <- readRDS(file=f)
+l <- attr(Sample,"logLikelihood")
 plot(l,type="l",xlab="mcmc index",ylab="log-likelihood")
 
 if (require(hadron)){
     res <- hadron::uwerr(data=l,pl=TRUE)
     tau <- ceiling(res$tauint + res$dtauint) # upper bound
 } else {
-    A <- acf(l,lag.max=10000)
-    tau <- ceiling(sum(A$acf))
+    A <- acf(l)
+    tau <- ceiling(sum(A$acf[A$acf>0.2]))
 }
 ```
 
 We reduce the sample for plotting purposes, by showing only every
-\(\tau_{\text{int.}}\)-th point and create a
+$\tau_{\text{int.}}$-th point and create a
 _pairs_ plot for the first
 6 parameters:
 
 ```{r pairs, out.width="100%", fig.width=12, fig.height=12, dpi=200}
-X <- Sample[seq(1,n,by=tau),]
+X <- Sample[seq(1,NROW(Sample),by=tau),]
 colnames(X) <- rownames(m$Parameter)
 if (require(hexbin)){
     hexplom(X[,seq(6)],xbins=12)
@@ -165,3 +169,26 @@ if (require(hexbin)){
 ```
 
 
+## Bigger Sample
+
+Running the script in the previous section for many more iterations,
+results in a much bigger sample:
+
+```{sh, eval=FALSE}
+N=4 #  default number of MPI workers
+[ -e '/proc/cpuinfo' ] && N=$((`grep -c processor /proc/cpuinfo`)) && nm="`grep -m1 'model name' /proc/cpuinfo`"
+echo "We will use $N cores with $nm"
+
+start_time=$((`date +%s`))
+date
+#
+mpirun -H localhost:$N ./pt-smmala-akap79.R 5e5 > /dev/null 2>&1
+#                      much bigger sample:  ^^^
+date
+end_time=$((`date +%s`))
+echo "Time spent sampling: $((end_time - start_time)) seconds ($(( (end_time - start_time)/60 )) minutes)."
+```
+
+This results in a much less spotty posterior plot:
+
+<!-- ![posterior](pt-smmala-akap79-posterior.png) -->

@@ -1,44 +1,44 @@
 pandoc: 3.1.3
-pkgdown: 2.0.7
+pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
-  AKAR4: AKAR4.html
-  GSA: GSA.html
-  GSA_AKAR4: GSA_AKAR4.html
-  ODE-Model: ODE-Model.html
-  UQ: UQ.html
-  cite: cite.html
-  code-principles: code-principles.html
-  crnn: crnn.html
-  data: data.html
-  events: events.html
-  examples_overview: examples_overview.html
-  extraExamples: extraExamples.html
-  installExplanations: installExplanations.html
-  installation: installation.html
-  intermediateFiles: intermediateFiles.html
-  literature_references: literature_references.html
+  articles/AKAR4: AKAR4.html
+  articles/cite: cite.html
+  articles/code-principles: code-principles.html
+  articles/crnn: crnn.html
+  articles/data: data.html
+  articles/events: events.html
+  articles/examples_overview: examples_overview.html
+  articles/extraExamples: extraExamples.html
+  articles/GSA_AKAR4: GSA_AKAR4.html
+  articles/GSA: GSA.html
+  articles/installation: installation.html
+  articles/installExplanations: installExplanations.html
+  articles/intermediateFiles: intermediateFiles.html
+  articles/literature_references: literature_references.html
+  articles/model-details: model-details.html
   models: models.html
-  more_details: more_details.html
-  mpi: mpi.html
-  sa: sa.html
-  sampleAKAP79: sampleAKAP79.html
-  sampleAKAR4: sampleAKAR4.html
-  sampleAKAR4mpi: sampleAKAR4mpi.html
-  sampleAKAR4stochastic: sampleAKAR4stochastic.html
-  simAKAP79: simAKAP79.html
-  simAKAP79stochastic: simAKAP79stochastic.html
-  simAKAR4: simAKAR4.html
-  simAKAR4stochastic: simAKAR4stochastic.html
-  simulate: simulate.html
-  smcAKAR4: smcAKAR4.html
-  smmala: smmala.html
-  tsv: tsv.html
-  uq: uq.html
-  uqsa: uqsa.html
-  uqsaAKAR4: uqsaAKAR4.html
-last_built: 2026-05-04T08:49Z
+  articles/more_details: more_details.html
+  articles/mpi: mpi.html
+  articles/ODE-Model: ODE-Model.html
+  articles/sa: sa.html
+  articles/sampleAKAP79: sampleAKAP79.html
+  articles/sampleAKAR4: sampleAKAR4.html
+  articles/sampleAKAR4mpi: sampleAKAR4mpi.html
+  articles/simAKAP79: simAKAP79.html
+  articles/simAKAP79stochastic: simAKAP79stochastic.html
+  articles/simAKAR4: simAKAR4.html
+  articles/simAKAR4stochastic: simAKAR4stochastic.html
+  articles/simulate: simulate.html
+  simulations: simulations.html
+  articles/smcAKAR4: smcAKAR4.html
+  articles/smmala: smmala.html
+  articles/tsv: tsv.html
+  articles/uq: uq.html
+  articles/UQ: UQ.html
+  articles/uqsa: uqsa.html
+  articles/uqsaAKAR4: uqsaAKAR4.html
+last_built: 2026-05-28T13:53Z
 urls:
   reference: https://icpm-kth.github.io/uqsa/reference
   article: https://icpm-kth.github.io/uqsa/articles
-

@@ -4,7 +4,7 @@ title: "UQ for AKAR4 (stochastic model)"
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  cache = FALSE,
+  
   eval = TRUE,
   collapse = TRUE,
   comment = "#>"

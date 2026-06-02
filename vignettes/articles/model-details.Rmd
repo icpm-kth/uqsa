@@ -3,7 +3,7 @@ title: "Importing Models"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE, eval=FALSE,
+knitr::opts_chunk$set( eval=FALSE,
   collapse = TRUE,
   comment = "#>"
 )
