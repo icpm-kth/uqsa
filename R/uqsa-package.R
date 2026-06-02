@@ -10,5 +10,7 @@
 #' @importFrom methods as is show
 #' @importFrom stats acf approx cor cov dnorm dunif median na.omit quantile rnorm runif sd spline var
 #' @importFrom utils flush.console head read.delim tail
+#' @importFrom uuid UUIDgenerate
+#' @importFrom bigmemory filebacked.big.matrix
 ## usethis namespace: end
 NULL

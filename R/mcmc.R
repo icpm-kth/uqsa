@@ -212,9 +212,28 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #' the given parameters, all other dependencies have to be either
 #' implicit (as a closure) or attributes of parGiven.
 #'
+#' When backingpath and backingfile are both unset, a normal matrix is
+#' returned. If these options are set, then the returned closure will
+#' create `big.matrix` objects. The backingpath alone is sufficient to
+#' create a `big.matrix`, with default names for the sample files.
+#'
+#' The returned closure will itself either return (A) a matrix (a
+#' sample) with N rows (one row per sample member), with attributes
+#' related to how the Markov chain performed, or (B) a list with a
+#' [bigmemory::big.matrix] object for the sample and a second matrix with just
+#' the MCMC attributes (such as log-likelihood values).
+#'
 #' @param update and update function
-#' @return M(initiPar,N), a function of initial starting values and
-#'     number of Markov chain steps
+#' @param backingpath if this is set, a big.matrix will be used to
+#'     store the sample.
+#' @param backingfile without extension. The will be used as a prefix
+#'     for the backing file of the `filebacked.big.matrix` object:
+#'     `file.path(backingpath,paste0(backingfile,UUID,".desc"))`
+#' @param descriptorfile without extension. the descriptor file-name
+#'     prefix for the `filebacked.big.matrix` object:
+#'     `file.path(backingpath,paste0(backingfile,UUID,".desc"))`
+#' @return M(initiPar,N), a function (closure) of initial starting
+#'     values and number of Markov chain steps
 #' @export
 #' @examples
 #' \dontrun{
@@ -224,29 +243,69 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #' smallSample <- rwm(rwm %@% "init",600,1e-4)
 #' pairs(smallSample[,seq(6)])
 #' }
-mcmc <- function(update){
-	M <- function(parMCMC,N=1000,eps=1e-4){
-		sample <- matrix(NA,nrow=N,ncol=length(parMCMC))
-		colnames(sample) <- names(parMCMC)
-		ll <- numeric(N)
-		b <- numeric(N)
-		a <- logical(N)
-		for (i in seq(N)){
-			parMCMC <- update(parMCMC,eps)
-			ll[[i]] <- attr(parMCMC,"logLikelihood")
-			sample[i,] <- as.numeric(parMCMC)
-			b[i] <- attr(parMCMC,"beta")
-			a[i] <- attr(parMCMC,"accepted")
+mcmc <- function(update,backingpath=NULL, backingfile=NULL, descriptorfile=NULL){
+	if (missing(backingfile) && missing(backingpath)){
+		M <- function(parMCMC,N=1000,eps=1e-4){
+			sample <- matrix(NA,nrow=N,ncol=length(parMCMC))
+			colnames(sample) <- names(parMCMC)
+			ll <- numeric(N)
+			b <- numeric(N)
+			a <- logical(N)
+			for (i in seq(N)){
+				parMCMC <- update(parMCMC,eps)
+				ll[i] <- attr(parMCMC,"logLikelihood")
+				sample[i,] <- as.numeric(parMCMC)
+				b[i] <- attr(parMCMC,"beta")
+				a[i] <- attr(parMCMC,"accepted")
+			}
+			attr(sample,"acceptanceRate") <- mean(a)
+			attr(sample,"acceptance") <- a
+			attr(sample,"logLikelihood") <- ll
+			attr(sample,"lastPoint") <- parMCMC
+			attr(sample,"beta") <- b
+			attr(sample,"stepSize") <- eps
+			return(sample)
 		}
-		attr(sample,"acceptanceRate") <- mean(a)
-		attr(sample,"acceptance") <- a
-		attr(sample,"logLikelihood") <- ll
-		attr(sample,"lastPoint") <- parMCMC
-		attr(sample,"beta") <- b
-		attr(sample,"stepSize") <- eps
-		return(sample)
+		comment(M) <- "function(parMCMC,N=1000,eps=1e-4) where eps is the step-size (numeric scalar)"
+	} else {
+		## safe default values, if any are missing:
+		if (missing(backingfile)) backingfile <- "sample_"
+		if (missing(backingpath)) backingpath <- tempdir()
+		if (missing(descriptorfile)) descriptorfile <- "sample_"
+		M <- function(parMCMC,N=1000,eps=1e-4){
+			uid <- uuid::UUIDgenerate()
+			bigSample <- filebacked.big.matrix(
+				nrow=length(parMCMC),
+				ncol=N,
+				type = "double",
+				dimnames = list(names(parMCMC),NULL),
+				backingfile = paste0(backingfile,uid,".bin"),
+				backingpath = backingpath,
+				descriptorfile = paste0(descriptorfile,uid,".desc"),
+			)
+			attrs <- c("logLikelihood","acceptance","stepSize","beta")
+			bigAttributes <- filebacked.big.matrix(
+				nrow = length(attrs),
+				ncol = N,
+				type = "double",
+				dimnames = list(attrs,NULL),
+				backingfile = paste0("attr_",backingfile,uid,".bin"),
+				backingpath = backingpath,
+				descriptorfile = paste0("attr_",descriptorfile,uid,".desc"),
+			)
+			for (i in seq(N)){
+				parMCMC <- update(parMCMC,eps)
+				bigSample[,i] <- as.numeric(parMCMC)
+				bigAttributes[,i] <- c(
+					attr(parMCMC,"logLikelihood"),
+					attr(parMCMC,"accepted"),
+					eps,
+					attr(parMCMC,"beta")
+				)
+			}
+			return(list(bigSample=bigSample, bigAttributes=bigAttributes, UUID=uid))
+		}
 	}
-	comment(M) <- "function(parMCMC,N=1000,eps=1e-4) where eps is the step-size (numeric scalar)"
 	return(M)
 }
 

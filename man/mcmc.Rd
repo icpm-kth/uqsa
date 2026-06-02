@@ -4,13 +4,21 @@
 \alias{mcmc}
 \title{Markov Chain Monte Carlo}
 \usage{
-mcmc(update)
+mcmc(update, backingpath = NULL, backingfile = NULL, descriptorfile = NULL)
 }
 \arguments{
 \item{update}{and update function}
+
+\item{backingpath}{if this is set, a big.matrix will be used to
+store the sample.}
+
+\item{backingfile}{the name of the backing file for the big.matrix}
+
+\item{descriptorfile}{the descriptor file-name for the big.matrix
+object}
 }
 \value{
-M(initiPar,N), a function of initial starting values and
+M(initiPar,N), a function (closure) of initial starting values and
 number of Markov chain steps
 }
 \description{
@@ -26,6 +34,17 @@ results have to be attributes of the MCMC variable: parMCMC.
 The update function: update(parGiven) -> parUpdate depends only on
 the given parameters, all other dependencies have to be either
 implicit (as a closure) or attributes of parGiven.
+
+When backingpath and backingfile are both unset, a normal matrix is
+returned. If these options are set, then the returned closure will
+create \code{big.matrix} objects. The backingpath alone is sufficient to
+create a \code{big.matrix}, with default names for the sample files.
+
+The returned closure will itself either return (A) a matrix (a
+sample) with N rows (one row per sample member), with attributes
+related to how the Markov chain performed, or (B) a list with a
+\link[bigmemory:big.matrix]{bigmemory::big.matrix} object for the sample and a second matrix with just
+the MCMC attributes (such as log-likelihood values).
 }
 \examples{
 \dontrun{
