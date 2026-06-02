@@ -63,34 +63,15 @@ ptSMMALA <- mcmc_mpi(
 	comm=comm
 )
 
-x <- mcmc_init(
-	beta,
-	values(m$Parameter),
-	simulate=sim,
-	logLikelihood=ll,
-	gradLogLikelihood=gllf(log10ParMapJac),
-	dprior=dprior,
-	gprior=gprior,
-	fisherInformation=fi(log10ParMapJac)
-)
+p0 <- values(m$Parameter)
 
-h <- 1e-5 # initially
+h <- stepSize(beta) # initially
 
 for (j in seq(2)){
-	h <- tune_step_size(MC,x,h=h) # adjust using test chain
-	pbdMPI::barrier()
-	## ---- here, the sampling happens
-	X <- ptSMMALA(x,N,h) # the main amount of work is done here
-	saveRDS(X,file=sprintf("/dev/shm/AKAP79-pt-smmala-sample-%i-rank-%i.RDS",j,r))
-	pbdMPI::barrier()
-	f <- dir("/dev/shm",pattern=sprintf("^AKAP79-pt-smmala-sample-%i-rank-.*RDS$",j),full.names=TRUE)
-	Z <- uqsa::gatherSample(f,beta)
-	print(dim(Z))
-	print(head(Z))
-	saveRDS(Z,file=sprintf("/dev/shm/AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.RDS",j,r))
+	## 1. initialize Markov chain
 	x <- mcmc_init(
 		beta,
-		as.numeric(tail(Z,1)),
+		p0,
 		simulate=sim,
 		logLikelihood=ll,
 		gradLogLikelihood=gllf(log10ParMapJac),
@@ -98,6 +79,32 @@ for (j in seq(2)){
 		gprior=gprior,
 		fisherInformation=fi(log10ParMapJac)
 	)
+	## 2. adjust step soze
+	h <- tune_step_size(MC,x,h=h) # adjust using test chain
+	pbdMPI::barrier()
+	## 3. Prepare a location for sample files, use '/dev/shm' if available
+	TMPDIR <- ifelse(dir.exists('/dev/shm'),'/dev/shm',Sys.getenv(TMPDIR,unset='/tmp'))
+	rank_file.rds <- tempfile(
+		pattern=sprintf("AKAP79-pt-smmala-sample-%i-rank-%i",j,r),
+		tmpdir=ifelse(dir.exists('/dev/shm'),'/dev/shm',TMPDIR),
+		fileext='.rds'
+	)
+	## 4. sampling
+	X <- ptSMMALA(x,N,h) # the main amount of work is done here
+	## 5. save the sample to previously determined location TMPDIR
+	saveRDS(X,file=rank_file.rds)
+	pbdMPI::barrier()
+	## 6. from all written files, load only the rows with consistent beta values
+	f <- dir(TMPDIR,pattern=sprintf("^AKAP79-pt-smmala-sample-%i-rank-.*rds$",j),full.names=TRUE)
+	Z <- uqsa::gatherSample(f,beta) # <- we only want this value of beta
+	print(dim(Z))                   # little sanity check
+	print(head(Z))                  #
+	## 6. save the temperature consistent sample (constant beta) to a different file
+	saveRDS(Z,file=file.path(TMPDIR,sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.rds",j,r))
+	## 7. remove the non-ordered file
+	file.remove(rank_file.rds)
+	## 8. set a new starting location for the next iteration
+	p0 <- as.numeric(tail(Z,1))
 }
 time_ <- difftime(Sys.time(),start_time,units="min")
 print(time_)

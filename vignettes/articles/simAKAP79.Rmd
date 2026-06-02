@@ -3,7 +3,7 @@ title: "Simulate AKAP79 deterministically and add noise"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE, eval=TRUE,
+knitr::opts_chunk$set( eval=TRUE,
   collapse = TRUE,
   comment = "#>"
 )

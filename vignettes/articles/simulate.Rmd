@@ -5,7 +5,7 @@ output: rmarkdown::html_vignette
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  cache = FALSE,
+  
   collapse = TRUE,
   comment = "#>"
 )

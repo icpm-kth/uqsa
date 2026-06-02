@@ -3,7 +3,7 @@ title: "Global sensitivity analysis on AKAR4 - independent input factors"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
+knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )

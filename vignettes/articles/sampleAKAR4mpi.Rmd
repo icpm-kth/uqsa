@@ -4,7 +4,7 @@ title: "Sample AKAR4 with Parallel Tempering"
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  cache = FALSE,
+  
   eval = TRUE,
   collapse = TRUE,
   comment = "#>"

@@ -3,7 +3,7 @@ title: "Simulate the AKAR4 deterministic model"
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(cache = FALSE,
+knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )

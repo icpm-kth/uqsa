@@ -5,98 +5,91 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="uqsa">
 <title>Source Code Principles (Devs) • uqsa</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js" integrity="sha512-7O5pXpc0oCRrxk8RUfDYFgn0nO1t+jLuIOQdOMRp4APB7uZ4vSjspzp5y6YDtDs4VzUSTbWzBFZ/LKJhnyFOKw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Source Code Principles (Devs)">
-<meta property="og:description" content="uqsa">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
+  window.MathJax = {
+    chtml: {
+      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
+    }
+  };
+</script><script src="../deps/jquery-3.6.1/jquery-3.6.1.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Source Code Principles (Devs)">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
-    
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light" data-bs-theme="light"><div class="container">
-    
+
+    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.4</small>
 
-    
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item">
-  <a class="nav-link" href="../articles/uqsa.html">Get started</a>
+<li class="nav-item"><a class="nav-link" href="../articles/uqsa.html">Get started</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-installation" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Installation</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-installation">
+<li><a class="dropdown-item" href="../articles/installation.html">Short Instructions</a></li>
+    <li><a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a></li>
+  </ul>
 </li>
 <li class="nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-installation">Installation</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-installation">
-    <a class="dropdown-item" href="../articles/installation.html">Short Instructions</a>
-    <a class="dropdown-item" href="../articles/installExplanations.html">Explanation for System Prerequisites</a>
-  </div>
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-documentation" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Documentation</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-documentation">
+<li><a class="dropdown-item" href="../articles/model-details.html">Importing Models</a></li>
+    <li><a class="dropdown-item" href="../articles/data.html">Importing Data</a></li>
+    <li><a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/UQ.html">Uncertainty Quantification</a></li>
+    <li><a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/more_details.html">More details...</a></li>
+  </ul>
 </li>
 <li class="nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-documentation">Documentation</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-documentation">
-    <a class="dropdown-item" href="../articles/models.html">Importing Models</a>
-    <a class="dropdown-item" href="../articles/data.html">Importing Data</a>
-    <a class="dropdown-item" href="../articles/simulate.html">Simulating a model</a>
-    <div class="dropdown-divider"></div>
-    <a class="dropdown-item" href="../articles/UQ.html">Uncertainty Quantification</a>
-    <a class="dropdown-item" href="../articles/GSA.html">Global Sensitivity Analysis</a>
-    <div class="dropdown-divider"></div>
-    <a class="dropdown-item" href="../articles/more_details.html">More details...</a>
-  </div>
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-examples" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Examples</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-examples">
+<li><a class="dropdown-item" href="../articles/examples_overview.html">Overview</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>AKAR4</h6></li>
+    <li><a class="dropdown-item" href="../articles/simAKAR4.html">Simulate deterministic AKAR4</a></li>
+    <li><a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate stochastic AKAR4</a></li>
+    <li><a class="dropdown-item" href="../articles/sampleAKAR4.html">UQ on deterministic AKAR4</a></li>
+    <li><a class="dropdown-item" href="../articles/smcAKAR4.html">UQ on stochasic AKAR4 -- ABCSMC</a></li>
+    <li><a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a></li>
+    <li><a class="dropdown-item" href="../articles/uqsaAKAR4.html">UQ and SA on AKAR4</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>AKAP79</h6></li>
+    <li><a class="dropdown-item" href="../articles/sampleAKAP79.html">UQ on deterministic AKAP79</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>CaMKII</h6></li>
+    <li><a class="dropdown-item" href="../articles/smmala.html">Calibrate CaMKII with SMMALA</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>CRNN</h6></li>
+    <li><a class="dropdown-item" href="../articles/crnn.html">CRNN models</a></li>
+  </ul>
 </li>
-<li class="nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-examples">Examples</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-examples">
-    <a class="dropdown-item" href="../articles/examples_overview.html">Overview</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>AKAR4</h6>
-    <a class="dropdown-item" href="../articles/simAKAR4.html">Simulate deterministic AKAR4</a>
-    <a class="dropdown-item" href="../articles/simAKAR4stochastic.html">Simulate stochastic AKAR4</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4.html">UQ on deterministic AKAR4</a>
-    <a class="dropdown-item" href="../articles/smcAKAR4.html">UQ on stochasic AKAR4 -- ABCSMC</a>
-    <a class="dropdown-item" href="../articles/sampleAKAR4stochastic.html">UQ on stochasic AKAR4 -- ABCMCMC</a>
-    <a class="dropdown-item" href="../articles/GSA_AKAR4.html">GSA on AKAR4</a>
-    <a class="dropdown-item" href="../articles/uqsaAKAR4.html">UQ and SA on AKAR4</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>AKAP79</h6>
-    <a class="dropdown-item" href="../articles/sampleAKAP79.html">UQ on deterministic AKAP79</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>CaMKII</h6>
-    <a class="dropdown-item" href="../articles/smmala.html">Calibrate CaMKII with SMMALA</a>
-    <div class="dropdown-divider"></div>
-    <h6 class="dropdown-header" data-toc-skip>CRNN</h6>
-    <a class="dropdown-item" href="../articles/crnn.html">CRNN models</a>
-  </div>
-</li>
-<li class="nav-item">
-  <a class="nav-link" href="../reference/index.html">Function reference</a>
-</li>
-<li class="nav-item">
-  <a class="nav-link" href="../news/index.html">Changelog</a>
-</li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Function reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
-<form class="form-inline my-2 my-lg-0" role="search">
-        <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
-</form>
-
-      <ul class="navbar-nav"></ul>
+<ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
+      </ul>
 </div>
 
-    
+
   </div>
 </nav><div class="container template-article">
 
@@ -105,10 +98,11 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="" class="logo" alt=""><h1>Source Code Principles (Devs)</h1>
+
+      <h1>Source Code Principles (Devs)</h1>
             
       
-      
+
       <div class="d-none name"><code>code-principles.Rmd</code></div>
     </div>
 
@@ -125,17 +119,19 @@ packages when a feature is good, and difficult to replicate.</p>
 <div class="section level2">
 <h2 id="objects">Objects<a class="anchor" aria-label="anchor" href="#objects"></a>
 </h2>
-<p>We do not define <em>S3</em>, or <em>S4</em> objects for this
-package. All functions accept/return base R types (vectors, lists,
-matrices, data.frames). We may occasionally use objects from other
-packages.</p>
+<p>For the most part we do not define <em>S3</em>, or <em>S4</em>
+objects for this package. All functions accept/return base R types
+(vectors, lists, matrices, data.frames). We may occasionally use objects
+from other packages. When we do define objects then the purpose is
+mostly to prevent accidental printouts of huge amounts of data and
+cluttering the screen.</p>
 </div>
 <div class="section level2">
 <h2 id="closures">Closures<a class="anchor" aria-label="anchor" href="#closures"></a>
 </h2>
 <p>The MCMC code tries to follow the mathematical formulation of the
-subject (in literature). The goal is to make it easy to read the
-code.</p>
+subject (in literature). The goal is to make it at least somewhat easy
+to read the code.</p>
 <p>A probability distribution typically takes a main argument, and
 several <em>given</em> values. Whenever we want to distinguish the
 <em>main</em> argument from the others, we typically create a closure.
@@ -264,7 +260,7 @@ attributes). To see which attributes are attached by a specific update
 function, the user can call the update funciton and inspect the
 result.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/experiments.html">experiments</a></span><span class="op">(</span><span class="va">m</span>,<span class="va">o</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">logLikelihood</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">theta</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="st">"simulations"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/attributes.html" class="external-link">attributes</a></span><span class="op">(</span><span class="va">theta</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -294,12 +290,9 @@ in the optimization function <code>fn</code> (all R functions can
 reference the environment they were created in). Let us assume that
 there is exactly one experiment.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu">SBtabVFGEN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SBtabVFGEN/man/sbtab.data.html" class="external-link">sbtab.data</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span>    <span class="co"># load some data set</span></span>
-<span></span>
-<span><span class="va">modelName</span> <span class="op">&lt;-</span> <span class="st">"my_model"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/comment.html" class="external-link">comment</a></span><span class="op">(</span><span class="va">modelName</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"./my_model.so"</span></span>
-<span></span>
-<span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">ex</span>,<span class="va">modelName</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/write_and_compile.html">write_and_compile</a></span><span class="op">(</span><span class="fu"><a href="../reference/as_ode.html">as_ode</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/experiments.html">experiments</a></span><span class="op">(</span><span class="va">m</span>,<span class="va">o</span><span class="op">)</span>    <span class="co"># load some data set</span></span>
+<span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulator.c.html">simulator.c</a></span><span class="op">(</span><span class="va">ex</span>,<span class="va">o</span><span class="op">)</span></span>
 <span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"optimx"</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span><span class="co">##  user code, using the variables ex, and s implicitly</span></span>
@@ -324,11 +317,6 @@ vector <code>theta</code>, the third dimension is 1:
 <code>dim(z[[1]]$func))[3] == NCOL(theta) == 1</code> (for vectors).</p>
 <p>This third dimension can be dropped (<code>drop</code>) if none of
 the other dimension’s are singular.</p>
-<p><em>Remark:</em> We are aware of this possibility, to use variables
-in the global environment, but for package functions, we want it to be
-immediately apparent where a value comes from (by reading the function’s
-code). Package functions must (of course) make no assumptions about
-variables in the user’s global environment.</p>
 </div>
 </div>
 </div>
@@ -338,7 +326,7 @@ variables in the user’s global environment.</p>
 <p>Some of the ABC code was created before these decisions were made and
 may require some adjustment still.</p>
 </div>
-  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
 
@@ -349,15 +337,15 @@ may require some adjustment still.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
 </div>
 
-  
 
-  
+
+
 
   </body>
 </html>
