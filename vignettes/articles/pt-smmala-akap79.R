@@ -63,7 +63,12 @@ ptSMMALA <- mcmc_mpi(
 	comm=comm
 )
 
-p0 <- values(m$Parameter)
+p0 <- c(
+	1.535276, 0.2129433, -2.337059, -0.2758802, -1.097471, -2.148527, -2.310619, -3.046435,
+	-2.11772, -0.9887686, -0.32303, 0.1178787, -0.9677111, -0.9030976, -1.682916, 1.469942,
+	-3.538294, -0.53798, 1.320372, -0.3500506, 0.2507297, -1.737913, -0.9742049, 1.008909,
+	2.003937, 0.002032132, -0.1675174
+) # values(m$Parameter)
 
 h <- stepSize(beta) # initially
 
@@ -100,7 +105,7 @@ for (j in seq(2)){
 	print(dim(Z))                   # little sanity check
 	print(head(Z))                  #
 	## 6. save the temperature consistent sample (constant beta) to a different file
-	saveRDS(Z,file=file.path(TMPDIR,sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.rds",j,r))
+	saveRDS(Z,file=file.path(TMPDIR,sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.rds",j,r)))
 	## 7. remove the non-ordered file
 	file.remove(rank_file.rds)
 	## 8. set a new starting location for the next iteration
