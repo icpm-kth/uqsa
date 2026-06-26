@@ -1,0 +1,109 @@
+# Tab Separated Values
+
+## Storing models in the TSV format
+
+Advantages:
+
+- tsv files are text files. You can use version control to track changes
+  (git)
+- tsv files are easy to read in any programming language, xml is not
+  - both `ods` and `xlsx` are compressed xml
+  - all real spreadsheet formats, and sbml, require a library with
+    language bindings to import the content into a language like R (or
+    similar)
+  - if the import libraries become unmaintained, and the R package is
+    removed from CRAN, the format becomes unavailable.
+- spreadsheets have many features that don’t translate well into other
+  data objects (like data frames, or arrays)
+  - hidden columns
+  - hidden rows
+  - cells with comments
+  - colors
+  - multiline cell content
+
+You may be asking yourself: json, yaml, toml? All valid questions! But,
+tsv is the simplest of the lot.
+
+Disadvantages:
+
+- TSV files are best when they contain one table at a time, thus an
+  SBtab document should be a collection of tsv files (for us, this is a
+  *must*)
+- TSV files are usually not displayed in a pretty way when opening them
+  in a text editor (the columns do not align)
+- text files can have different line endings
+  - `\n` on some systems
+  - `\r\n` on others (or was it `\n\r`?)
+- some fields could be unnecessarily quoted by exporters, e.g.:
+  - `kf * A * B` could be exported as `"kf * A * B"` (even though there
+    are spaces, not tabs)
+
+### Line Endings
+
+To remove the `\r`, if it was inserted by a spreadsheet program:
+
+``` sh
+tr -d '\r'
+```
+
+or the reverse:
+
+``` sh
+tr '\n' '\r\n'
+```
+
+to restore line endings that operating systems ending in \*dows will
+prefer.
+
+### Conversion
+
+Excel and LibreOffice will not just export a spreadsheet into a
+collection of `.tsv` files. But the `ssconvert` program from the
+gnumeric package can do this.
+
+Our [SBtabVFGEN package](https://www.github.com/icpm-kth/SBtabVFGEN)
+contains a convenience script to do this (still using ssconvert), with
+the most important line being:
+
+``` sh
+LC_ALL="C" ssconvert -S \
+ --export-type=Gnumeric_stf:stf_assistant \
+ --export-options="quoting-mode=never separator='   ' locale=C" \
+   DemoModel.{ods,xlsx,gnumeric} "%s.tsv"
+```
+
+There is also a companion script that combines several `.tsv` files into
+one spreadsheet:
+
+``` sh
+$ ls -1 ~/SBtabVFGEN/*.sh
+~/SBtabVFGEN/ods_to_tsv.sh
+~/SBtabVFGEN/tsv_to_ods.sh
+```
+
+Where the tsv to ods conversion amounts to:
+
+``` sh
+ssconvert --merge-to="OUT-FILE.ods" *.tsv
+```
+
+and the `.ods` file ending can be replaced by a different format.
+
+### Boolean Values
+
+Spreadsheets can contain the values `TRUE` and `FALSE`, these Boolean
+values are written exactly like this in both C and R. So, even when not
+converted to numerical values these words should work out of the box.
+
+Some spreadsheet software converts them to `1` and `0` when exporting to
+TSV. This works even better.
+
+If, for some reason, the C model still contains `TRUE` and `FALSE`
+values written out literally and the `TRUE`/`FALSE` macros are not
+defined (so that the compiler complains), you can define them yourself
+without rebuilding the model. Insert the following code block at the
+beginning of the model file:
+
+``` c
+enum logical {FALSE, TRUE};
+```

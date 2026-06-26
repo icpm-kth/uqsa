@@ -1,0 +1,50 @@
+# Simulate an Experiment using the named ODE Model
+
+Simulation experiments consist at least of initial values for the state
+variables, a parameter vector, and a list of times at which the solution
+needs to be known.
+
+## Usage
+
+``` r
+runModel(experiments, modelName, parABC, parMap = identity)
+```
+
+## Arguments
+
+- experiments:
+
+  list of experiments to simulate
+
+- modelName:
+
+  used to find model files and functions within the file (a prefix)
+
+- parABC:
+
+  a matrix of column vectors; each column contains a vector of both
+  normal parameters (e.g. kinetic params like kf and kr) and
+  input_parameters (concatenated in that order). With N columns, N
+  simulations will be performed.
+
+## Value
+
+output function values
+
+## Details
+
+This function will use the GSL solvers, or deSolve \[default\]. In
+addition, a model usually has observables: values that depend on the
+state variables and can be measured in a real experiment. These are
+modeled by output functions.
+
+We distinguish normal parameters and input parameters. Input parameters
+are known and not subject to any estimation procedure. Furthermore, they
+are meant to represent the experimental conditions, so they are either
+under direct control of the experimenter or very carefully measured. The
+inputs are probably different for each simulation experiment in at least
+one value.
+
+If the environment variable is set to "C", then this function will
+attempt to compile the file modelName_gvf.c to a shared library
+modelName.so, if it doesn't already exist.

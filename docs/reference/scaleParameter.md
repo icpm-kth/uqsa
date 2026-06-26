@@ -1,0 +1,36 @@
+# Returns a string that contains code to scale the parameter
+
+The goal is to convertthe kinetic parameter k to the stochastic
+parameter c.
+
+## Usage
+
+``` r
+scaleParameter(f, x, name, arg = "par")
+```
+
+## Arguments
+
+- f:
+
+  the value of the scaling factor (a numeric vector), derived from the
+  unit of the kinetic parameter and stoichiometry.
+
+- x:
+
+  the reaction order based exponent of LV
+
+- name:
+
+  the name of the parameter
+
+## Value
+
+string with scaling instructions (C)
+
+## Details
+
+The input is a pre-calculated factor f, determined from the parameter's
+unit and reaction order. LV is an importantfactor for conversion between
+molecule numbers and concentrations, the appropriate exponent for LV is
+passed as x: c = f \* LV^x \* k

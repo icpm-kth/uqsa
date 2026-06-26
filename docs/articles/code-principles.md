@@ -1,0 +1,212 @@
+# Source Code Principles (Devs)
+
+``` r
+library(uqsa)
+```
+
+Many of these things are subject to change. Some function names seem
+inconsistent (naming patterns), because they were written by different
+people. We will improve naming coherence slowly and carefully.
+
+One of our goals is to keep dependencies minimal and recreate
+functionality in other packages, if this is easy to do. We use external
+packages when a feature is good, and difficult to replicate.
+
+## Objects
+
+For the most part we do not define *S3*, or *S4* objects for this
+package. All functions accept/return base R types (vectors, lists,
+matrices, data.frames). We may occasionally use objects from other
+packages. When we do define objects then the purpose is mostly to
+prevent accidental printouts of huge amounts of data and cluttering the
+screen.
+
+## Closures
+
+The MCMC code tries to follow the mathematical formulation of the
+subject (in literature). The goal is to make it at least somewhat easy
+to read the code.
+
+A probability distribution typically takes a main argument, and several
+*given* values. Whenever we want to distinguish the *main* argument from
+the others, we typically create a closure. Let’s consider the likelihood
+function:
+
+\\ \begin{align} p(y\|\theta,M) &=
+\frac{1}{\sqrt{2\pi\sigma^2}}\exp\left(-\frac{1}{2}\sum\_{i,j}\left(\frac{y\_{ij} -
+h_i(x(t_j;\theta,M))}{\sigma}\right)^2\right)\\,\\ L(\theta;y,M) &=
+p(y\|\theta,M)\\, \end{align} \\
+
+where \\L\\ is the likelihood function (its main argument is \\\theta\\,
+separated by `;`). The Likelihood’s argument list omits several implict
+items:
+
+- given
+  - \\M\\ is the model,
+  - \\y\_{ij}\\ are the measured data points (for time-point \\j\\ and
+    output \\i\\),
+- omitted is the
+  - ODE solver and integration method,
+  - the details of the simulation experiment (such as *initial values*,
+    and *input parameters* – if they exist),
+  - the output function \\h\\ used to map the model’s state \\x\\ to the
+    vector space of \\y\\
+  - the measurement time vector \\t\\
+
+These itmes are omitted because it would be very tedious to write them
+every time. In a manuscript, we would mention these implicit
+dependencies once and then omit for the ease of notation.
+
+We want to replicate this distinction between explicit and implicit
+arguments in our code, and avoid writing long lists of arguments, most
+of which stay the same throughout a program’s run-time.
+
+We deal with this by creating closures, e.g. for the solver (roughly
+equivalent to \\h\\ and \\x\\):
+
+``` r
+s <- simulator.c(experiments,modelName)  # returns a closure
+z <- s(theta)                            # with one main argument
+```
+
+The value `z` contains the model’s state \\x\\ and output values
+\\h(x(\dots))\\:
+
+- `z[[k]]$state` is roughly equivalent to \\x(t;\theta,M)\\ for
+  experiment \\k\\
+- `z[[k]]$func` is roughly equivalent to \\h(x(t;\theta,M))\\
+
+The closure `s` is a function of only \\\theta\\. Enclosed within `s`
+are:
+
+- The model \\M\\
+  - represented by `modelName`, and the corresponding shared library,
+  - `./path/to/model.so` (or whichever path applies)
+- The simulation experiment to perform
+  - `experiments`
+
+We don’t have to re-state these when calling the solver. The benefits
+increase when the number of implicit, unchanging arguments increases.
+
+Similarly, the likelihood is also a closure around the experiments. But,
+to keep this function fairly general, it isn’t a closure around the
+simulator:
+
+``` r
+L <- logLikelihoodFunc(experiments) # a closure
+L(theta)                            # with one main argument, theta
+```
+
+The user can create their own likelihood function that does in fact
+enclose the solver as well.
+
+The model’s solution doesn’t have to be derived from an ODE using one of
+our solvers, it may be a stochastic solver, or an external solver such
+as deSolve.
+
+Crucially, the solver may return a value that the MCMC update function
+may require to work properly. We don’t want to call the solver twice,
+and the simulatiuon results `z` are of course not implicit as they
+depend on the main argument `theta`. We may need `z` in:
+
+1.  the update function
+2.  the likelihood function
+3.  other follow-up functions
+
+But, a solution must always travel together with the parameters
+\\\theta\\ that the solution was obtained for. They must become a paired
+entity. But, we also want to keep the idea that `theta` is the *main*
+variable for MCMC sampling or optimization, rather than turning these
+two items into a list: `list(theta=theta,simulations=s(theta))`
+
+As a workaround, we use attributes:
+`attr(theta,"simulations") <- s(theta)`
+
+### Attributes
+
+Attributes can be attached to any variable, using the `attr` function. A
+function can work on theta without even knowing about the existence of
+the attributes.
+
+If the likeihood function needs *any* implicit values, they are attached
+to theta as attributes: fisher information, gradient of the
+log-likelihood, prior probability of theta are all attached as
+attributes.
+
+#### Example of a Custom Likelihood
+
+Here is an example of a user-defined likelihood function that references
+the attributes. The `mcmcUpdate(theta)` function will call the solver
+and attach the results to the returned value (as attributes). To see
+which attributes are attached by a specific update function, the user
+can call the update funciton and inspect the result.
+
+``` r
+ex <- experiments(m,o)
+
+logLikelihood <- function(theta){
+    stopifnot("simulations" %in% names(attributes(theta)))
+
+    y <- attr(theta,"simulations") # here, we know that y belongs to theta
+
+    stopifnot(length(y) == length(ex))
+    for (i in seq_along(y)){
+        # [...]
+    }
+}
+```
+
+There are certainly disadvantages in using attributes: it is harder to
+debug errors related to missing attributes. But, we prefer having the
+distinction between the main argument (explicit) and implicit arguments
+(enclosed or attributes).
+
+A user may also circumvent the entire attribute system in a context that
+doesn’t require any.
+
+#### Example with Optimization
+
+In this example, we want to use an optimization routine from the optimx
+package. Since we are not using any of the MCMC update functions, there
+is no need to work with attributes at all.
+
+Instead, we create some variables in the global scope, and use them in
+the optimization function `fn` (all R functions can reference the
+environment they were created in). Let us assume that there is exactly
+one experiment.
+
+``` r
+o <- write_and_compile(as_ode(o))
+ex <- experiments(m,o)    # load some data set
+s <- simulator.c(ex,o)
+
+if (requireNamespace("optimx")){
+##  user code, using the variables ex, and s implicitly
+    fn <- function(theta){           # function to minimize
+        z <- s(theta)                # simulate
+        h <- drop(z[[1]]$func)       # extract model output
+        y <- t(ex[[1]]$outputValues) # get measured data
+        sd <- t(ex[[1]]$errorValues) # and standard error
+        return(
+            sum(
+                ((y - h)/sd)^2,
+                na.rm=TRUE
+            )
+        )
+    }
+    optimx::optimx(...) # use fn
+}
+```
+
+Normally `s` will loop over several columns of `as.matrix(theta)` and
+return 3-dimensional arrays: `length(dim(z[[1]]$func))==3` (same for
+state). For one vector `theta`, the third dimension is 1:
+`dim(z[[1]]$func))[3] == NCOL(theta) == 1` (for vectors).
+
+This third dimension can be dropped (`drop`) if none of the other
+dimension’s are singular.
+
+## ABC
+
+Some of the ABC code was created before these decisions were made and
+may require some adjustment still.

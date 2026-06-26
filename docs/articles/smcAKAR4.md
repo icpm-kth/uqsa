@@ -1,0 +1,203 @@
+# UQ for AKAR4 (stochastic model)
+
+``` r
+library(uqsa)
+library(errors)
+library(parallel)
+```
+
+We use a particle filter (aka SMC) on the stochastic AKAR4 model,
+combined with ABC (due to the stochasticity of the model)
+
+For information about the stochastic model, please read the article
+[Simulate AKAR4
+stochastically](https://icpm-kth.github.io/uqsa/articles/simAKAR4stochastic.md).
+
+## Load the Model
+
+This model is included with the package, as one of the example models.
+
+``` r
+f <- uqsa_example("AKAR4")
+m <- model_from_tsv(f)
+ex <- experiments(m)
+```
+
+### Make a Stochastic Version of AKAR4
+
+``` r
+sm <- as_cme(m)
+C <- generate_code(sm)
+c_path(sm) <- write_c_code(C)
+so_path(sm) <- shlib(sm)
+```
+
+To simulate the stochastic reaction network model we use the *Gillespie
+algorithm*.
+
+## Define MCMC settings
+
+``` r
+# scale to determine prior values
+defRange <- 1000
+par_val <- values(m$Parameter)
+
+# Define Lower and Upper Limits for logUniform prior distribution for the parameters
+ll <- c(par_val/defRange)
+ul <- c(par_val*defRange)
+ll = log10(ll) # log10-scale
+ul = log10(ul) # log10-scale
+
+# Define the prior distribution. In this case Uniform(ll,ul)
+dprior <- dUniformPrior(ll, ul) # dprior evaluates the prior density function
+rprior <- rUniformPrior(ll, ul) # rprior generates random samples from the prior
+```
+
+## Generate an objective function
+
+The objective function simulates the model, to do this it needs a
+simulator, it also needs direct access to the data, so `ex` is also an
+explicit arument for `makeObjective`:
+
+``` r
+s <- simstoch(
+    ex, # list of experiments
+    sm, # stochastic model, *with* shared library entry
+    parMap=log10ParMap
+)
+objFunc <- makeObjective(ex,s)
+```
+
+Test evaluation of the objective function:
+
+``` r
+d <- objFunc(log10(values(m$Parameter)))
+#> Warning: In 'Ops' : non-'errors' operand automatically coerced to an 'errors'
+#> object with no uncertainty
+print(d)
+#>            [,1]
+#> 400nM 0.2159661
+#> 100nM 0.0981006
+#> 25nM  0.2529964
+```
+
+It returns a vector of distance values (one per simulation experiment).
+But, when supplied with several parameters, it returns several columns:
+
+``` r
+D <- objFunc(t(rprior(7)))
+print(D)
+#>           [,1]     [,2]      [,3]      [,4]     [,5]     [,6]     [,7]
+#> 400nM 3.706413 3.471893 0.2213616 1.5082723 3.674368 3.630655 3.671981
+#> 100nM 2.594305 2.566674 0.1673111 1.4905757 2.600011 2.597007 2.600011
+#> 25nM  1.156957 1.126462 0.2161215 0.7407346 1.156957 1.156957 1.156957
+```
+
+## Run ABCSMC
+
+We launch the particle filter from the prior (cold start), and pick
+resonable values for `delta` (the ABC distance threshold).
+
+The data has measurement errors (standard error). The distance function
+takes the standard error into account, so the distances returned are
+relative, and expected to be close to 1. The function `ABCSMC` accepts
+two values for `delta`, an initial guess that is very permissive and a
+final value that triggers the SMC algorithm to terminate.
+
+``` r
+t_initial <- Sys.time()
+options(mc.cores = parallel::detectCores())
+X <- rprior(5000)    # this determines the sample size
+colnames(X) <- names(par_val)
+posterior <- ABCSMC(
+    objFunc,
+    startPar=t(X),
+    Sigma=cov(X),
+    delta=c(initial=3,final=0.5),
+    dprior=dprior
+)
+t_final <- Sys.time()
+
+cat(difftime(t_final,t_initial,units="min")," minutes")
+#> 11.44907  minutes
+```
+
+## Visualize the sampled parameters
+
+The parameter-values in `ABCMCMCoutput$draws` are approximate samples
+from the posterior distribution, given the experiments.
+
+The sampled three dimensional parameters for the AKAR4 model can be
+visualized via pairs of scatter plots, or two dimensional binning:
+
+``` r
+Z <- posterior$draws
+if (requireNamespace("rgl")){
+    rgl::plot3d(
+        Z[,1],Z[,2],Z[,3],
+        xlab=names(par_val)[1],
+        ylab=names(par_val)[2],
+        zlab=names(par_val)[3],
+        type='p',
+        col=rgb(0,0,1,0.5)
+    )
+    rgl::rglwidget()
+} else if (requireNamespace("hexbin")){
+    hexbin::hexplom(posterior$draws, xbins = 24)
+} else {
+    pairs(posterior$draws, pch=20)
+}
+#> Loading required namespace: rgl
+```
+
+### Marhinals
+
+The marginal distributions of each parameter in the parameter vector can
+be visualized via histograms as follows.
+
+``` r
+for(i in seq_along(par_val)){
+    hist(
+        posterior$draws[,i],
+        breaks = 20,
+        main=names(par_val)[i],
+        xlab = "Value in log scale"
+    )
+}
+```
+
+![](smcAKAR4_files/figure-html/marginals-1.png)![](smcAKAR4_files/figure-html/marginals-2.png)![](smcAKAR4_files/figure-html/marginals-3.png)
+
+### State Trajectories
+
+``` r
+t_initial <- Sys.time()
+y <- s(t(Z)) # using the stochastic simulator one final time
+t_final <- Sys.time()
+
+cat(difftime(t_final,t_initial,units="min")," minutes")
+#> 0.6144153  minutes
+
+par(mfrow=c(3,1))
+for (i in seq_along(ex)){
+    tm <- ex[[i]]$outputTimes
+    plot(     # the data (errorbars)
+        as.errors(tm),
+        ex[[i]]$data,
+        xlab="time",
+        ylab="AKAR4p",
+        main=names(ex)[i]
+    )
+    matplot(  # the simulation
+        tm,
+        drop(y[[i]]$func),
+        type='s',
+        col=rgb(50,50,200,1,max=255),
+        lty=1,
+        lwd=2,
+        add=TRUE
+    )
+}
+```
+
+![](smcAKAR4_files/figure-html/trajectories-1.png)

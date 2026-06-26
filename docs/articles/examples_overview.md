@@ -1,0 +1,69 @@
+# Examples Overview
+
+We here provide some examples to simulate, calibrate or analyse
+different models. The calibration (parameter estimation) process
+includes uncertainty quantification (UQ) and it can be followed by
+global sensitivity analysis (SA). You find more details about the
+different tools in the accompanying
+[article](https://doi.org/10.48550/arXiv.2308.05527).
+
+The examples are listed in order of increasing difficulty and run time.
+
+## AKAR4
+
+These examples can be run on a laptop.
+
+- [Simulate AKAR4
+  deterministically](https://icpm-kth.github.io/uqsa/articles/simAKAR4.md)
+  Builds the AKAR4 reaction network as an ODE and simulates it with an
+  ODE solver.
+- [Simulate AKAR4
+  stochastically](https://icpm-kth.github.io/uqsa/articles/simAKAR4stochastic.md)
+  Builds the AKAR4 reaction network as a stochastic model and simulates
+  it with the Gillespie algorithm.
+- [UQ of deterministic
+  AKAR4](https://icpm-kth.github.io/uqsa/articles/sampleAKAR4.md) AKAR4
+  is calibrated using Markov chain Monte Carlo (MCMC) methods in a
+  likelihood-based approach.
+- [UQ of stochastic
+  AKAR4](https://icpm-kth.github.io/uqsa/articles/sampleAKAR4stochastic.md)
+  AKAR4 is calibrated with an Approximate Bayesian Computation (ABC)
+  approach.
+- [SA of AKAR4](https://icpm-kth.github.io/uqsa/articles/GSA_AKAR4.md)
+  Global sensitivity analysis is performed on the deterministic AKAR4
+  model using independent prior parameter distributions.
+- [UQ and SA of
+  AKAR4](https://icpm-kth.github.io/uqsa/articles/uqsaAKAR4.md) First UQ
+  and then SA is performed on the deterministic AKAR4 model.
+
+## AKAP79
+
+These examples are meant to be run on a compute cluster, but with some
+patience you can test them on a multicore workstation or laptop.
+
+- [Parallel chains with
+  MPI](https://icpm-kth.github.io/uqsa/articles/mpi.md) Describes how to
+  run the package in parallel.
+- [UQ and SA of AKAP79 deterministic
+  model](https://icpm-kth.github.io/uqsa/articles/sampleAKAP79.md)
+- [UQ and SA of AKAP79 stochastic
+  model](https://icpm-kth.github.io/uqsa/articles/error.md)
+
+The Documentation article [Parallel chains with
+MPI](https://icpm-kth.github.io/uqsa/articles/mpi.md) includes a script
+that needs to be present as a *file* to be able to execute it with
+`mpirun`, so the order of these articles is important.
+
+## CAMKII
+
+- [UQ and SA on CaMKII with
+  SMMALA](https://icpm-kth.github.io/uqsa/articles/smmala.md)
+
+------------------------------------------------------------------------
+
+The demo R scrips can be found in the folder
+[`inst/extdata`](https://github.com/icpm-kth/uqsa/tree/master/inst/extdata).
+
+The
+[`?uqsa::uqsa_example`](https://icpm-kth.github.io/uqsa/reference/uqsa_example.md)
+function can locate the example folders after package installation.

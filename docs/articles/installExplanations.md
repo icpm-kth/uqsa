@@ -1,0 +1,270 @@
+# Explanation for System Prerequisites
+
+Everything in this article should be already known to all users and
+cover basic interactions with an operating system in the context of
+modelling, scientific computing, and simulations. Read this only for
+*troubleshooting* purposes.
+
+In this guide we explain these things in much more detail than will be
+necessary for most (you probably already know how to install things).
+
+So here is the shortest version of what you need to do, assuming that
+you use `debian` or `ubuntu`:
+
+``` sh
+# tl;dr:
+sudo apt install gcc pkg-config libgsl-dev r-base
+```
+
+You almost certainly already know which commands to run on your
+distribution, with the package manager it uses.
+
+The package `pkgconf` on Alpine Linux is not the original `pkg-config`
+but provides the `pkg-config` command (no further action needed):
+
+``` sh
+sudo apk add gcc gsl pkgconf R         # should suffice
+```
+
+The following material is the long explanation on a few example systems.
+
+## Motivation for C related Packages
+
+In this package, we frequently solve an ordinary differential equation
+model in the context of biological experiments. This can be done using
+`deSolve`, but we prefer to use the solvers from the [GNU Scientific
+Library](https://www.gnu.org/software/gsl/), GSL (the `gsl_odeiv2`
+library).
+
+**Comment** If you insist on using `deSolve` you can write a custom
+`simulate(p)` function which takes as argument a parameter vector `p`
+and returns a list with simulation results shaped like the results of
+the simulator in this package. R functions are closures, so as long as
+the necessary constant ingredients for `simulate` are in your workspace,
+the function will have access to them. UQSA will not even know the
+difference.
+
+We have written an interface to the GSL solvers (`simulator.c`). The
+user facing functions are designed around the idea of simulation
+*experiments*: a list of instructions that result in a model simulation,
+possibly with multiple calls to the ODE solver to obtain the final
+time-series.
+
+This experiment oriented interface is more convenient in our context
+(and usually faster than using deSolve with R functions).
+
+The GNU Scientific Library (GSL) is a system level dependency, which R
+cannot install by itself. Usually the administrator of your machine can
+do this (on the cluster). If that is you (e.g. on your laptop) and you
+don’t have GSL yet, then it is usually a one or two line command to
+install it.
+
+## System Prerequisites
+
+If you are using an apple device, then you need some package manager
+that macbooks don’t come pre-configured with (which is a bummer). One
+such package-manager is [homebrew](https://brew.sh/), this is unofficial
+work by volunteers, funded by donations. Install it using the command
+pasted on the homebrew homepage.
+
+You are probably already using it or something very similar, but if not
+then please do.
+
+If you have used it in the past, a long time ago, then it would be great
+to do an upgrade beforehand.
+
+``` sh
+brew update && brew outdated && brew upgrade && brew cleanup
+```
+
+Alternatively do a fresh installation of homebrew, if all homebrew
+packages are terribly out of date.
+
+WARNING: macOS may mention xcode at some point, apple is really keen on
+this. We have (of course) absolutely nothing to do with xcode, neither
+does *gcc*, or *pkg-config* (both are in no way owned by apple). The
+insistence of macOS to provide *gcc* only through xcode with mandatory
+*developer ids* is quite despicable as they have no fundamental right to
+put any constraints on things that don’t belong to them.
+
+### GNU Scientific Library and pkg-config
+
+To compile C sources at all (with or without gsl) requires a c compiler
+(any one will do, they provide the command `cc`, regardless of vendor).
+
+But, we also need system specific compiler options related to linking
+and the location where `libgsl` is stored. These compiler options can
+look like this: `-lgsl -lgslcblas -lm`, but also more complex (this
+depends on your system) – in an HPC environment they will almost
+certainly be very different.
+
+We use
+[pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) to
+determine the right compiler options (or `pkgconf`, which does the same
+thing (but faster)); `pkg-config` is available for macOS, GNU Linux,
+Unix, and \*BSD (even Windows, not that it helps).
+
+|  Operating System | install gsl                   | install pkg-config              |
+|------------------:|:------------------------------|:--------------------------------|
+| Debian and Ubuntu | `sudo apt install libgsl-dev` | `sudo apt install pkg-config`   |
+|      Alpine Linux | `doas apk add gsl`            | `doas apk add pkgconf`          |
+|          GNU Guix | `guix install gsl`            | `guix install pkg-config`       |
+|        Arch Linux | `sudo pacman -S gsl`          | `sudo pacman -S pkgconf`        |
+|            Gentoo | `sudo emerge sci-libs/gsl`    | `sudo emerge virtual/pkgconfig` |
+|             macOS | `brew install gsl`            | `brew install pkg-config`       |
+
+If you are in a *normal user* shell (not a root shell, via `su -` or
+similar), and not using `guix` (or `NixOS`), then the commands require
+`sudo` or `doas` in front of them to have the required system
+administration rights.
+
+GNU Guix and NIXOS have package managers that don’t require
+administration rights.
+
+#### macOS and pkgconf
+
+You can use `pkgconf` instead of `pkg-config` on macOS. However, it is
+possible that
+
+``` sh
+brew install pkgconf
+```
+
+will not actually provide the `pkg-config` command in this spelling (it
+may just be pkgconf).
+
+This is again not something that has anything to do with us. Everyone
+who wants to use `pkg-config` via pkgconf on macOS needs to consider
+these things.
+
+Make sure that the literal command `pkg-config` is actually available
+after installation. If it is not, then you can make a symbolic link to
+`pkgconf` and make it available:
+
+``` sh
+which pkg-config      # e.g.: /usr/bin/pkg-config
+```
+
+should print a path if that command is available (or nothing, then it
+isn’t).
+
+### R itself
+
+Availability of specific versions of R depend on the version of your OS,
+how up-to-date your package database is, etc.. Here is a quick list of
+the approximate command:
+
+| Operating System | install R                 |
+|-----------------:|:--------------------------|
+|     Alpine linux | `doas apk add R`          |
+|    Debian/Ubuntu | `sudo apt install r-base` |
+|         GNU Guix | `guix install r`          |
+|             Arch | `sudo pacman -S r`        |
+|           Gentoo | `emerge --ask dev-lang/R` |
+
+On MAC, please follow the instructions on the
+[R-Studio](https://posit.co/download/rstudio-desktop/) web-site. Or
+install the version from homebrew. These two will almost certainly
+be/have different R versions, with different *locations* for packages.
+It is probably better to use only one of them (*R-Studio* or *brew R*).
+
+## R packages
+
+Your system’s package manager may have system-wide R packages, e.g.:
+ubuntu has `r-cran-desolve`, such that `sudo apt install r-cran-desolve`
+would install the *deSolve* package for all users of your machine. In
+HPC environments this is preferable as user accounts can have harsh
+quotas on *file sizes* and *file numbers*.
+
+R packages can also be installed from within R (for individual users),
+but only to a location that is writable to you, typically in your
+`$HOME` diectory. Please ensure that
+[`.libPaths()`](https://rdrr.io/r/base/libPaths.html) returns at least
+one location that you have write access to (this – again – is true for
+everyone, has nothing to do with us).
+
+``` r
+.libPaths()
+```
+
+If this command doesn’t print a path that you can write to, then you can
+create a new directory (in your home), and make it known to R:
+
+``` r
+dir.create(
+    Sys.getenv("R_LIBS_USER"),
+    recursive = TRUE,
+    showWarnings = FALSE
+)
+
+.libPaths(
+    Sys.getenv("R_LIBS_USER")
+)
+```
+
+Now, you can install R packages from *The Comprehensive R Archive
+Network* [cran](https://cran.r-project.org/) and
+[github](https://github.com/):
+
+``` r
+install.packages("remotes")
+```
+
+UQSA is not on CRAN (yet), and can be installed like this:
+
+``` r
+remotes::install_github("icpm-kth/uqsa")
+```
+
+## Installation of Companion packages (Optional)
+
+We have developed two companion packages:
+
+- [rgsl](https://icpm-kth.github.io/uqsa/articles/icpm-kth/rgsl)
+  - only simulates a model, no uncertainty quantification
+  - solves ODEs with an interface organised around *simulation
+    experiments*
+  - uses solvers from the GNU Scientific Library
+  - can be used in most of our examples, instead of
+    [`uqsa::simulator.c`](https://icpm-kth.github.io/uqsa/reference/simulator.c.md)
+- [SBtabVFGEN](https://icpm-kth.github.io/uqsa/articles/icpm-kth/SBtabVFGEN)
+  - organises the storage and loading of models in SBtab form
+  - loads SBtab content from tsv, ods, and excel files
+  - creates vfgen, MOD, sbml, and format free ODE files
+  - also loads biological data contained in the SBtab files into R
+    variables (lists of *simulation experiment* setups)
+
+Both are optional. Their capabilities resemble the ones in UQSA, but
+different.
+
+### RGSL
+
+Like the functions in this package `rgsl` solves ODE initial value
+problems, given as lists of simulation experiments, with sudden
+interventions (like *activation*, or a sudden signal).
+
+``` r
+remotes::install_github("icpm-kth/rgsl")       # requires gsl in your OS, see above
+```
+
+This package has several subtly different solver interfaces, but is very
+similar to the solvers in the UQSA package. It can be used independently
+of this package and has no uncertainty quantification or sensitivity
+analysis functions, just the simulator.
+
+### SBtab Model Handling
+
+This package loads a model written in the SBtab format, which is
+designed for models in systems biology, but much easier to read than
+SBML:
+
+``` r
+remotes::install_github("icpm-kth/SBtabVFGEN") # if you plan to use SBtab
+```
+
+This is highly optional, if you have a different method of model
+creation or want to write the model source files by hand (which is hard
+for large models).
+
+It is an alternative for the TSV model format in this package. Use
+SBtabVFGEN if your model alfready is in SBtab form.

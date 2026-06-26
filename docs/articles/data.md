@@ -1,0 +1,228 @@
+# Importing Data into R
+
+In the previous article [Importing
+Models](https://icpm-kth.github.io/uqsa/articles/models.md) we have seen
+the command `experiments(m,o)`. This commands reads the data from `m`,
+but not only this, it also attempts to find simulation instructions for
+`o`, to reproduce the sam effect using the model:
+
+``` r
+library(uqsa)
+library(errors)
+
+## Read the TSV files, create an ODE model
+m <- model_from_tsv(uqsa_example("AKAR4"))
+o <- as_ode(m)                                 # the ODE
+#> Loading required namespace: pracma
+
+C <- generate_code(o)                          # list of strings
+c_path(o) <- write_c_code(C)
+so_path(o) <- shlib(o)
+ex <- experiments(m,o)
+```
+
+The variable `ex` is a list of simulation experiments. If there are only
+time-series experiments available in the files, the length of `ex` will
+be the same as the number of rows in the table *Experiment*
+(Experiment.tsv).
+
+For convenience, we have implemented parsing for dose-response
+experiments: experiments in which some condition (initial value, or
+input) is varied between the data points, but for each data-point, a
+fresh simulation is required. Experiments with `type` *dose response*
+will be split into time-series simulation instructions, one line at a
+time.
+
+An Experiment Table can look like this (as a TSV):
+
+    id  t0  cAMP    type
+    X1  100 1.5 time-series
+    X2  100 3.0 time-series
+    X3  100 4.5 time-series
+
+In this table, we update the default initial value of `cAMP`, different
+for each experiment. the `ex` variable will have these values in it:
+
+``` r
+print(ex$X2$initialState['cAMP'])
+# 3.0
+```
+
+Any reacting compound and input can be updated here. But, parameters can
+not be updated: they are not considered experimental conditions. We are
+concerned with inferring their values from data, and thus shouldn’t
+assign values to them during an experiment.
+
+If you wish to omit a parameter from *uncertainty quantification* or
+inference, then move it into the list of inputs even if they aren’t set
+differently between the experiments.
+
+### Normal Case
+
+Our assumption is that the model has a defined list of possible
+observables. They are described in the `Output.tsv` file. Each line
+defines some mathematical expression of the model’s state and any other
+internal variable, e.g.: `A + AB + AC + ABC` for an observable that
+measures all compounds that contain `A`, bound or otherwise.
+
+In addition to this, we assume that the measurements, are related to
+these output functions.
+
+Let us assume that we have an output called `totalAmountOfA` (defined
+like above). And the lab has measured this, but in arbitrary units. This
+means that the measured value will not numerically agree with the
+calculation above, the measurement is more like this:
+`f*(A + AB + AC + ABC)`, with an unknown `f`. This is fine.
+
+We only require that the measurement has something to do with the
+Outputs. The
+[`experiments()`](https://icpm-kth.github.io/uqsa/reference/experiments.md)
+function will find the measurement column named `totalAmountOfA` and
+parse the values in that column to create a data-matrix. The comparison
+between data and measurement happens in the likelihood function. It is
+left to the user to write a likelihood function that deals with the
+problem of unknown factors like `f`.
+
+We only require a one-to-one relationship between data and output.
+
+### Special Cases
+
+If the situation is very special, and the data-sets have a different
+dimensionality to the output, then a different treatment is required,
+and `experiments` shouldn’t be used probably.
+
+Perhaps th eraw data can be processed enough so that it begins to
+reflect some output function. But, if the user insists on having data
+like: `Channel1_Y` and `Channel1_B`, but output functions like `PKA`,
+then there is no way we can automatically find out which values in the
+data belong to which of the outputs.
+
+## Data Tables
+
+The data must be given together with the uncertainty. Precisely like the
+`errors` package does this:
+
+``` r
+x <- seq(12)
+errors(x) <- runif(12)
+print(as.data.frame(x))
+#>           x
+#> 1   1.00(8)
+#> 2    2.0(8)
+#> 3    3.0(6)
+#> 4    4.0(2)
+#> 5  5.000(7)
+#> 6    6.0(5)
+#> 7    7.0(5)
+#> 8    8.0(3)
+#> 9    9.0(7)
+#> 10  10.0(8)
+#> 11  11.0(9)
+#> 12  12.0(2)
+```
+
+If you really don’t want to use this notation, our parser also allows
+this: `12±0.1` (same as `12.0(1)`), and the `±` symbol can also be
+replaced with a semicolon `;` (and some other characters as well). The
+function
+[`uqsa::parse_concise()`](https://icpm-kth.github.io/uqsa/reference/parse_concise.md)
+parses these data entries, the \[experiments\] function uses this
+parser:
+
+``` r
+z <- data.frame(
+    data=parse_concise(
+        c("12.0,0.1","12;0.1","12±0.1","12.0(1)")
+    )
+)
+print(as.data.frame(z))
+#>      data
+#> 1 12.0(1)
+#> 2 12.0(1)
+#> 3 12.0(1)
+#> 4 12.0(1)
+```
+
+These are all equivalent, but only the last entry uses concise
+parenthesised error notation that this function was written for. Parsing
+a delimited entry with `;`, `±`, or `,` is much easier, and happens a as
+a fall-back). *Note*: `+-` cannot be used instead of `±`.
+
+In all of this, it is only important that a value and its uncertainty
+always travel together.
+
+### Note on Aesthetics
+
+The notation that the errors package uses is the best, shortest way to
+write numbers with standard errors. The mass of the electron:
+
+- \\0.51099895069(16)\\\text{MeV}\\ or
+- \\9.1093837139(28)\times 10^{−31}\\\text{kg}\\
+
+would look like this with the normal notation: \\(9.1093837139 \pm
+0.0000000028) \times 10^{−31}\\\text{kg}\\. So, the more precise your
+measurements are, the more appealing this notation becomes.
+
+#### Aesthetics in Spreadsheets
+
+It may look good to write this as a data table: value, separator, and
+standard error in three different columns. The separator would go
+entirely unparsed and is there for us human readers. This is what we do
+for the reaction products and reactants. This table looks quite clean:
+
+| id  | time | AKAR4p_m | pm  | AKAR4p_se |
+|-----|------|---------:|-----|:----------|
+| t0  | -10  |      200 | +-  | 12        |
+| t1  | -5   |      234 | +-  | 14        |
+| ..  | …    |        … | ..  | ..        |
+| tf  | 100  |     1031 | +-  | 51        |
+
+This table is also easy to plot with directly in
+numbers/calc/gnumeric/google-sheets, as the values are separate from the
+error-bars. So, we see the appeal.
+
+But, once this table provides data for 5 different quantities, we need
+to find the column of standard errors for each of the measured values
+according to *some* rule. In addition, several different syntax rules
+for *column names* may sound intuitive:
+
+- `length_m`: length is in *meters*
+- `length_m`: *mean* value of length (the estimated value)
+- `area_se`: *standard error* of `area`
+- `volume_sd`: *standard deviation* of `volume`
+- `ATP_u`: *uncertainty* of `ATP`
+- `ATP_v`: *value* of `ATP`
+
+Prefix/Suffix-Rules like that are used somewhere, I’m sure. And we would
+like to avoid such rules.
+
+Furthermore, several groupings of values and their uncertainties make
+sense to us (see below). So, we opted for not having special rules for
+how to read the column names in this format, and keep the measurement
+uncertainty very close to the values.
+
+##### Error is next to value
+
+| id  | A_m | A_u | B_m | B_u |
+|-----|-----|-----|-----|-----|
+| D1  | 1   | 0.1 | 2   | 0.2 |
+| D2  | 2   | 0.1 | 6   | 0.2 |
+| D3  | 3   | 0.1 | 8   | 0.2 |
+
+##### Values form a Block, Errors form a second Block
+
+| id  | A_m | B_m | A_u | B_u |
+|-----|-----|-----|-----|-----|
+| D1  | 1   | 2   | 0.1 | 0.2 |
+| D2  | 2   | 6   | 0.1 | 0.2 |
+| D3  | 3   | 8   | 0.1 | 0.2 |
+
+### SBtab
+
+In the [SBtabVGEN](https://github.com/icpm-kth/SBtabVFGEN) we actually
+have a custom rule for this: data is marked with `>` and uncertainty is
+marked with `~`, e.g.: `>AKAR4p` and `~AKAR4p`. The official SBtab
+documentation doesn’t commetn on this issue.
+
+SBtab is an alternative format that we can use. The SBtabVFGEN package
+provides the translation layer to import from that model type.

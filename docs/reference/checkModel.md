@@ -1,0 +1,59 @@
+# checkModel tries to establish the simulation file for a given model
+
+This function returns the model name, with some additional comments
+about the file
+
+## Usage
+
+``` r
+checkModel(
+  modelName,
+  modelFile = paste0("./", modelName, c(".so", "_gvf.c")),
+  OPTS = c("-O2")
+)
+```
+
+## Arguments
+
+- modelName:
+
+  a string
+
+- modelFile:
+
+  a string, if the model file is different from "modelName.R". If the
+  file name ends in .c, the c source will be compiled to a shared
+  library.
+
+## Value
+
+modelName with an additional comment about which file to use for
+simulations
+
+## Details
+
+As an alternative to this function, it is sufficient to write
+
+    modelName <- "test_ode_model"             # or some other model name
+    comment(modelName) <- "./test_ode_model.so"
+
+This function will not attempt to find a model file, other than in the
+current directory. But, `checkModel` will compile a GSL compatible C
+source file into a shared object if `modelFile` ends with `.c` and stop
+if that doesn't work. The compiler is called using a system call, which
+may be incorrect for your system -- if this funciton fails, you'll have
+to make the shared library of the model using the correct compiler and
+options for your system.
+
+In any case, this function stops execution if the model file doesn't
+exist, because simulations are not possible.
+
+## Examples
+
+``` r
+if (FALSE) {
+  modelName <- checkModel("AKAR4","./AKAR4_gvf.c") # compiles the model
+  modelName <- checkModel("AKAR4","./AKAR4.so")    # only checks whether ./AKAR4.so exists
+  comment(modelName)                               # will be "./AKAR4.so" in either case
+}
+```

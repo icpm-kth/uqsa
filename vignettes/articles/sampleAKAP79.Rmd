@@ -118,11 +118,11 @@ N=4 #  default number of MPI workers
 [ -e '/proc/cpuinfo' ] && N=$((`grep -c processor /proc/cpuinfo`)) && nm="`grep -m1 'model name' /proc/cpuinfo`"
 echo "We will use $N cores with $nm"
 
-start_time=$((`date +%s`))
+start_time=$(date +%s)
 date
 mpirun -H localhost:$N ./pt-smmala-akap79.R 1000 > /dev/null 2>&1
 date
-end_time=$((`date +%s`))
+end_time=$(date +%s)
 echo "Time spent sampling: $((end_time - start_time)) seconds ($(( (end_time - start_time)/60 )) minutes)."
 ```
 
@@ -138,8 +138,7 @@ time)
 TMPDIR <- ifelse(dir.exists('/dev/shm'),'/dev/shm',Sys.getenv(TMPDIR,unset='/tmp'))
 r <- 0 # rank we want to see
 j <- 2 # iteration we want to see
-f <- file.path(TMPDIR,sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.rds",j,r)
-
+f <- file.path(TMPDIR,sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.rds",j,r))
 Sample <- readRDS(file=f)
 l <- attr(Sample,"logLikelihood")
 plot(l,type="l",xlab="mcmc index",ylab="log-likelihood")

@@ -1,0 +1,48 @@
+# default distance function for one experiment
+
+if each experiment corresponds to one simulation and is fully
+quanitified by itself, then calculating the overall distance between
+data and experiment can be done one by one. This function describes the
+default way a simulation is compared to data.
+
+## Usage
+
+``` r
+defaultDistance(funcSim, dataVAL, dataERR = max(dataVAL))
+```
+
+## Arguments
+
+- funcSim:
+
+  a matrix, contains model solution (output values), columns of output
+  vectors
+
+- dataVAL:
+
+  a matrix of experimental data, shaped like funcSim
+
+- dataERR:
+
+  a matrix of measurement errors, if available, defaults to the maximum
+  data value.
+
+## Details
+
+If the data is more complex, and two or more simulations are needed to
+calculate one distance value then the objective-Function needs to be
+entirely user-supplied. This is the case with experiments that have a
+"control" – this is needed when the measurement is in arbitrary units
+and only makes sense comparatively to a secondary (control) scenario.
+
+This function will be used if none is provided by the user.
+
+The funcSim values need to be supplied as a matrix of size N×T with N
+the length of the model's output vectors and T the amount of measurement
+times (this is how the rgsl package returns the simulation results).
+
+## Examples
+
+``` r
+d <- defaultDistance(seq(7),seq(7)+rnorm(7,0,0.1),rep(0.1,7))
+```

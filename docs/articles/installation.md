@@ -1,0 +1,116 @@
+# Short Installation Instructions
+
+## Prerequisits
+
+The simulators (ODE solvers) we use need the **GNU Scientific library**
+[(GSL)](https://www.gnu.org/software/gsl/) to be installed in your
+system.
+
+``` sh
+sudo apt install libgsl-dev # on Ubuntu
+```
+
+The model building part of UQSA (transferring the SBtab network model to
+a mathematical model in C or R) also requires that you have a **C
+compiler** (e.g. [gcc](https://gcc.gnu.org)).
+
+``` sh
+sudo apt install gcc        # on Ubuntu
+```
+
+On some systems the GSL may be installed in an unexpected location (on
+clusters this will almost certainly be the case). So, we rely on
+[pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) to
+find this location.
+
+``` sh
+sudo apt install pkg-config # on Ubuntu
+```
+
+You probably know the equivalent commands on your system.
+
+The following Sections have instructions for several different operating
+systems, for convenience.
+
+### On macOS
+
+To install libraries and science related software, people typically opt
+for [homebrew](https://brew.sh/), or [nix](https://nixos.org). Here is
+an example using homebrew:
+
+``` sh
+# macOS has a lot of issues with xcode, maybe agree to Xcode license?
+brew install pkg-config gsl
+```
+
+MacOS does not have a default package manager for software of this kind.
+There is probably no easier way of getting the above done on a factory
+fresh device without first installing brew or nix.
+
+It may be unnecessary to install gcc, if you already have `clang`.
+
+### On GNU/Linux
+
+Debian/Ubuntu derived:
+
+``` sh
+sudo apt install pkg-config gcc libgsl-dev
+```
+
+Other distributions have some version of this:
+
+    sudo apk add gsl pkgconf            # Alpine
+    sudo guix install gsl pkg-config    # GNU Guix
+    sudo pacman -S gsl pkgconf          # Arch, btw.
+    sudo zypper install gsl pkg-config  # OpenSuSE, SLES
+
+… and many
+[more](https://icpm-kth.github.io/uqsa/articles/articles/installExplanations.md).
+
+## Installation of the R packages
+
+In order to use UQSA you (obviously) need the [R
+language](https://www.r-project.org/) (maybe
+[R-studio](https://posit.co/download/rstudio-desktop/)). We will assume
+that you already have R.
+
+To auto-generate model-code in R, you need to install the package
+[Ryacas](https://cran.r-project.org/web/packages/Ryacas/index.html),
+which is needed for model building:
+
+``` r
+install.packages("Ryacas")
+```
+
+You can now install the packages developed by the UQSA team:
+
+``` r
+remotes::install_github("icpm-kth/uqsa",dependencies=TRUE)
+```
+
+## MPI
+
+MPI is intended for compute clusters (HPC) and is typically not needed
+if you have one machine you want to do simulations on.
+
+We do have several examples about MPI usage with this package (see
+documentation on [Parallel chains with
+MPI](https://icpm-kth.github.io/uqsa/articles/mpi.md) and Example [UQ on
+deterministic AKAR4 with
+MPI](https://icpm-kth.github.io/uqsa/articles/sampleAKAR4mpi.md)).
+However, if you want to try them, you will need MPI.
+
+To install MPI on Debian/Ubuntu, in the shell:
+
+``` sh
+sudo apt install libopenmpi-dev
+```
+
+To install R bindings, in R:
+
+``` r
+install.packages("pbdMPI")
+```
+
+On other systems, install the equivalent package for *OpenMPI* (R
+package interfacing with MPI libraries on your system).
