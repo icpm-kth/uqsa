@@ -33,7 +33,7 @@ Andrei, (2026). uqsa: Uncertainty Quantification and Global Sensitivity
 Analysis. R package version 0.7.4, https://icpm-kth.github.io/uqsa/
 
     @Manual{,
-      title = {{uqsa}: Uncertainty Quantification and Global Sensitivity Analysis},
+      title = {uqsa: Uncertainty Quantification and Global Sensitivity Analysis},
       author = {Alexandra Jauhiainen and Olivia Eriksson and Federica Milinanni and Andrei Kramer},
       year = {2026},
       note = {R package version 0.7.4},
