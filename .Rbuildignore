@@ -15,3 +15,5 @@
 ^\.github$
 ^LICENSE$
 ^LICENSE\.md$
+^index\.md$
+^index\.Rmd$
