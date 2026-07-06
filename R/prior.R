@@ -19,22 +19,39 @@ dCopulaPrior <- function(Copula){
 	Y <- Copula$Y
 	Z <- Copula$Z
 	copula <- Copula$copula
-	np  <- ncol(U)
-	priorPDF<-function(inx){
-		if(all(!is.na(inx))){
-		  lbU <- sapply(1:np, function(i) min(U[,i]) - 0.5*c(-1,1) %*% range(U[,i]))
-		  ubU <- sapply(1:np, function(i) max(U[,i]) + 0.5*c(-1,1) %*% range(U[,i]))
-		  ed <- sapply(1:np, function(i) approx(c(unique(U[,i]), lbU[i], ubU[i]), c(unique(Z[,i]), 0, 1), xout=inx[i])$y)
-			mpdf <- sapply(1:np, function(i) approx(c(unique(U[,i]), lbU[i], ubU[i]), c(unique(Y[,i]), 0, 0), xout=inx[i])$y)
-			if(any(is.na(ed)) || any(is.na(mpdf))){ # outside of copula defined limits
-				jpdf <- 0
-			} else {
-				jpdf <- RVinePDF(ed, copula, verbose = TRUE)*prod(mpdf)
-			}
-		} else {
-			jpdf <- 0
+	np <- ncol(U)
+	priorPDF <- function(inX){
+		if (!is.matrix(inX)) {
+			inX <- t(inX)
 		}
-		return(jpdf)
+		apply(inX,1,
+			function(inx){
+				if (any(is.na(inx))) return(0)
+				lbU <- sapply(seq(np), \(i) min(U[,i]) - 0.5*c(-1,1) %*% range(U[,i]))
+				ubU <- sapply(seq(np), \(i) max(U[,i]) + 0.5*c(-1,1) %*% range(U[,i]))
+				ed <- sapply(
+					seq(np),
+					\(i)
+						approx(
+						c(unique(U[,i]), lbU[i], ubU[i]),
+						c(unique(Z[,i]), 0, 1),
+						xout=inx[i]
+					)$y
+				)
+				mpdf <- sapply(
+					seq(np),
+					\(i) approx(
+						c(unique(U[,i]), lbU[i], ubU[i]),
+						c(unique(Y[,i]), 0, 0),
+						xout=inx[i]
+					)$y
+				)
+				if (any(is.na(ed)) || any(is.na(mpdf))){ # outside of copula defined limits
+					return(0)
+				}
+				return(RVinePDF(ed, copula, verbose = TRUE)*prod(mpdf))
+			}
+		)
 	}
 	return(priorPDF)
 }
