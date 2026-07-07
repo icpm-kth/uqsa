@@ -73,10 +73,10 @@ KLD <- function(X,Y,de=c("copula","ks","mclust","mvtnorm")){
 #' $\mathcal{N}_{A}$ and $\mathcal{N}_{B}$.  The two distributions are
 #' specified using $\mu$ and $\Sigma$ values (mean and covariance).
 #'
-#' @param muA
-#' @param SigmaA
-#' @param muB
-#' @param SigmaB
+#' @param muA mean of distribution A
+#' @param SigmaA Covariance of distribution A
+#' @param muB mean of distribution B
+#' @param SigmaB Covariance of distribution B
 #' @return the KLD value D(A|B)
 #' @export
 exact_normal_kld <- function(muA,SigmaA,muB,SigmaB){
