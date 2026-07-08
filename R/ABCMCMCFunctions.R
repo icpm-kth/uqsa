@@ -172,21 +172,23 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
 #'     batchSize = 100
 #'   )
 #' }
-abc_mcmc <- function(objectiveFunction, startPar, N, Sigma0, dprior, parAcceptable=\(p){all(is.finite(p))}){
+abc_mcmc <- function(objectiveFunction, startPar, N, Sigma0, dprior, batchSize=100*NROW(Sigma0), parAcceptable=\(p){all(is.finite(p))}){
 	delta <- 2*max(objectiveFunction(startPar))
-	batchSize <- 100
+	np <- nrow(Sigma0)
 	b <- sample.int(NCOL(startPar),size=batchSize,replace=TRUE)
-	curPar <- as.matrix(startPar)[,b] # make startPar _batch shaped_ (with batchSize columns)
+	## make startPar _batch shaped_ (with batchSize columns), and add a little noise to it, in case it was exactly one vector
+	curPar <- as.matrix(startPar)[,b] + matrix(rnorm(np*batchSize,0,norm(Sigma0)*0.01),np,batchSize)
 	curPrior <- dprior(t(curPar))
 	curDistance <- NULL
-	np <- nrow(Sigma0)
+
 	I <- diag(nrow=nrow(Sigma0))
+	Sigma1 <- diag(diag(Sigma0))
 	batchSample <- matrix(nrow=batchSize,ncol=length(startPar))
 	draws <- NULL
 	distanceRecord <- NULL
 	acceptanceRate <- NULL
 	deltaRecord <- NULL
-	for (i in seq(-round(N/2),N)) {
+	for (i in seq(-N,N)) {
 		message(i)
 		L <- chol(Sigma0)
 		Z <- matrix(rnorm(batchSize*np),np,batchSize)          # this shape is expected by the Objective function
@@ -194,17 +196,12 @@ abc_mcmc <- function(objectiveFunction, startPar, N, Sigma0, dprior, parAcceptab
 		canPrior <- dprior(t(canPar))                          # a vector
 		canWeight <- canPrior/curPrior                         # element-wise division
 		canWeight[!is.finite(canWeight)] <- 0
-		cat("canWeight, pre l:\n"); print(canWeight)
 		l <- as.logical((runif(batchSize) <= canWeight) & apply(canPar,2,parAcceptable))   # l marks parameters that can be investigated further
-		cat("l:\n"); print(l)
 		canWeight[!l] <- 0
 		if (any(l)){
-			cat("canDistance:\n"); canDistance <- colMeans(objectiveFunction(canPar[,l])) # Obj is a matrix: nExperiment x length(l)
-			print(canDistance)
-			print(delta)
+			canDistance <- colMeans(objectiveFunction(canPar[,l])) # Obj is a matrix: nExperiment x length(l)
 			canWeight[l] <- canWeight[l] * (canDistance <= delta)
 		}
-		cat("canWeight, post l:\n"); print(canWeight)
 		a <- mean(canWeight>0,na.rm=TRUE)                      # acceptance rate
 		if (any(canWeight>0,na.rm=TRUE)){
 			canWeight[is.na(canWeight)] <- 0
@@ -222,11 +219,12 @@ abc_mcmc <- function(objectiveFunction, startPar, N, Sigma0, dprior, parAcceptab
 		message(sprintf("acceptance rate: %g",a))
 		if (i <= 0) {
 			delta <- median(curDistance,na.rm=TRUE)
-			A <- a^2/(0.1^2 + a^2) + 0.5
-			C <- cov(t(curPar))
-			print(C)
-			if (abs(det(C)) < 1e-6 + 1e-6*norm(C)) C <- I
-			Sigma0 <- solve(A*solve(Sigma0) + a*solve(C) + 0.01*I)
+			A <- a^2/(0.05^2 + a^2) + 0.5 # or exp(2.5 * (a - 0.10))
+			w <- a/(0.05 + a)
+			C <- cov(t(curPar))+I*0.01
+			if (abs(det(C)) < 1e-6 + 1e-6*norm(C)) C <- I*norm(Sigma1)
+			Sigma0 <- A*((1-w)*Sigma0 + w*C + 1e-6*Sigma1)
+			## A different option would be: A*solve(solve(Sigma0) + 0.1*a*solve(C) + 0.01*I*norm(Sigma0))
 		} else {
 			draws  <- rbind(draws,t(curPar))
 			distanceRecord <- c(distanceRecord,curDistance)
@@ -239,7 +237,8 @@ abc_mcmc <- function(objectiveFunction, startPar, N, Sigma0, dprior, parAcceptab
 			draws = draws,
 			distances = distanceRecord,
 			acceptanceRate = acceptanceRate,
-			delta = deltaRecord
+			delta = deltaRecord,
+			Sigma = Sigma0
 		)
 	)
 }
