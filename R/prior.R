@@ -100,10 +100,10 @@ rCopulaPrior <- function(Copula){
 #' dup<-dUniformPrior(ll=c(0,1,2),ul=c(1,2,3))
 #' dup(c(0.5,1.5,2.5))
 dUniformPrior <- function(ll,ul){
-  dprior <- function(x){
-    return(prod(dunif(x,min=ll,max=ul)))
-  }
-  return(dprior)
+	dprior <- function(x){
+		return(apply(as.matrix(x),1,\(r) prod(dunif(r,min=ll,max=ul))))
+	}
+	return(dprior)
 }
 
 #' rUniformPrior returns a random vector generator

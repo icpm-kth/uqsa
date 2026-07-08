@@ -119,6 +119,131 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
 	)
 }
 
+#' Performs and Approximate Bayesian Computation Sampling of Model Parameters
+#'
+#' Given a set of simulation experiments (list), a model, parameter
+#' boundaries, this function will draw a sample of parameters from the
+#' posterior probability density of the given problem.
+#'
+#' Normally, ABC would produce a highly auto-correlated sample,
+#' wasting lots of disk-space; `batchSize` can be used to thin out the
+#' sample, recording every batchSize-th point: with `batchSize=100`,
+#' we perform 100 updates to the Markov chain variable and then save
+#' the state to the sample. Higher batchSize numbers improve the
+#' apparent quality of the sample, but create more work per sampled
+#' point.
+#'
+#' @export
+#' @param objectiveFunction function that, given a (vectorial)
+#'     parameter as input, simulates the model, and outputs the
+#'     distance between experimental data and data simulated from the
+#'     model with the parameter provided in input
+#' @param startPar starting value for the parameter vector
+#' @param N requested sample size
+#' @param Sigma0 multivariate normal covariance of Markov chain
+#'     transition kernel
+#' @param dprior a function that returns prior probability density
+#'     values
+#' @param parAcceptable a function that can reject a parameter vector
+#'     early based on user-requirements. Has to return a scalar boolean.
+#' @return a list containing a sample matrix and a vector of scores
+#'     (values of delta for each sample)
+#' @examples
+#' \dontrun{
+#'   f <- uqsa_example("AKAR4")
+#'   m <- model_from_tsv(f)
+#'   o <- as_ode(m)
+#'   ex <- experiments(m,o)
+#'   C <- generate_code(o)
+#'   c_path(o) <- write_c_code(C)
+#'   so_path(o) <- shlib(o)
+#'   s <- simulator.c(ex,o)
+#'   objFunc <- makeObjective(ex,s)
+#'   startPar <- values(m$Parameter)
+#'   lowerBound <- startPar - m$Paramster$stdv # m$Parameter$min
+#'   upperBound <- startPar + m$Paramster$stdv # m$Parameter$max
+#'   abcSample <- ABCMCMC(
+#'     objFunc,
+#'     startPar=values(m$Parameter),
+#'     100,
+#'     cov(rprior(1000)),
+#'     delta=1,
+#'     dprior=dUniformPrior(lowerBound,upperBound),
+#'     batchSize = 100
+#'   )
+#' }
+abc_mcmc <- function(objectiveFunction, startPar, N, Sigma0, dprior, parAcceptable=\(p){all(is.finite(p))}){
+	delta <- 2*max(objectiveFunction(startPar))
+	batchSize <- 100
+	b <- sample.int(NCOL(startPar),size=batchSize,replace=TRUE)
+	curPar <- as.matrix(startPar)[,b] # make startPar _batch shaped_ (with batchSize columns)
+	curPrior <- dprior(t(curPar))
+	curDistance <- NULL
+	np <- nrow(Sigma0)
+	I <- diag(nrow=nrow(Sigma0))
+	batchSample <- matrix(nrow=batchSize,ncol=length(startPar))
+	draws <- NULL
+	distanceRecord <- NULL
+	acceptanceRate <- NULL
+	deltaRecord <- NULL
+	for (i in seq(-round(N/2),N)) {
+		message(i)
+		L <- chol(Sigma0)
+		Z <- matrix(rnorm(batchSize*np),np,batchSize)          # this shape is expected by the Objective function
+		canPar <- curPar + L %*% Z                             # canPar is a multivariate normal batch derived from the previous batch
+		canPrior <- dprior(t(canPar))                          # a vector
+		canWeight <- canPrior/curPrior                         # element-wise division
+		canWeight[!is.finite(canWeight)] <- 0
+		cat("canWeight, pre l:\n"); print(canWeight)
+		l <- as.logical((runif(batchSize) <= canWeight) & apply(canPar,2,parAcceptable))   # l marks parameters that can be investigated further
+		cat("l:\n"); print(l)
+		canWeight[!l] <- 0
+		if (any(l)){
+			cat("canDistance:\n"); canDistance <- colMeans(objectiveFunction(canPar[,l])) # Obj is a matrix: nExperiment x length(l)
+			print(canDistance)
+			print(delta)
+			canWeight[l] <- canWeight[l] * (canDistance <= delta)
+		}
+		cat("canWeight, post l:\n"); print(canWeight)
+		a <- mean(canWeight>0,na.rm=TRUE)                      # acceptance rate
+		if (any(canWeight>0,na.rm=TRUE)){
+			canWeight[is.na(canWeight)] <- 0
+			j <- sample.int(batchSize,size=batchSize,replace=TRUE,prob=canWeight)
+			curDistance <- canDistance[j]
+			curPrior <- canPrior[j]
+			curPar <- canPar[,j]
+		} else {
+			a <- 0
+		}
+		if (!all(is.finite(curPar))){
+			warning("candidate parameters aren't all finite")
+			print(curPar)
+		}
+		message(sprintf("acceptance rate: %g",a))
+		if (i <= 0) {
+			delta <- median(curDistance,na.rm=TRUE)
+			A <- a^2/(0.1^2 + a^2) + 0.5
+			C <- cov(t(curPar))
+			print(C)
+			if (abs(det(C)) < 1e-6 + 1e-6*norm(C)) C <- I
+			Sigma0 <- solve(A*solve(Sigma0) + a*solve(C) + 0.01*I)
+		} else {
+			draws  <- rbind(draws,t(curPar))
+			distanceRecord <- c(distanceRecord,curDistance)
+			acceptanceRate <- c(acceptanceRate,a)
+			deltaRecord <- c(deltaRecord,delta)
+		}
+	}
+	return(
+		list(
+			draws = draws,
+			distances = distanceRecord,
+			acceptanceRate = acceptanceRate,
+			delta = deltaRecord
+		)
+	)
+}
+
 
 #' Updates Parameter Values
 #'
