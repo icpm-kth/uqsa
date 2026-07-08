@@ -8,8 +8,10 @@ abc_mcmc(
   objectiveFunction,
   startPar,
   N,
-  Sigma0,
+  burnIn = N,
+  Sigma0 = cov(t(startPar)),
   dprior,
+  batchSize = 100 * NROW(Sigma0),
   parAcceptable = function(p) {
      all(is.finite(p))
  }
@@ -21,18 +23,27 @@ parameter as input, simulates the model, and outputs the
 distance between experimental data and data simulated from the
 model with the parameter provided in input}
 
-\item{startPar}{starting value for the parameter vector}
+\item{startPar}{starting values for the parameter vector, can (and
+should) be a matrix with n columns, where ech column is a valid
+parameter vector}
 
-\item{N}{requested sample size}
+\item{N}{requested number of batches to return, the sample will be
+of size \code{batchSize*N}}
+
+\item{burnIn}{number of batches where the transition kernel will be
+adjusted to achieve an acceptance rate of below 10\%.}
 
 \item{Sigma0}{multivariate normal covariance of Markov chain
-transition kernel}
+transition kernel, defaults to the covariance of the initial
+parameters. If startPar is one vector, this matrix must be
+provided explicitly.}
 
 \item{dprior}{a function that returns prior probability density
-values}
+values.}
 
 \item{parAcceptable}{a function that can reject a parameter vector
-early based on user-requirements. Has to return a scalar boolean.}
+early based on user-requirements. Has to return a scalar
+Boolean.}
 }
 \value{
 a list containing a sample matrix and a vector of scores
@@ -61,9 +72,9 @@ point.
   C <- generate_code(o)
   c_path(o) <- write_c_code(C)
   so_path(o) <- shlib(o)
-  s <- simulator.c(ex,o)
+  s <- simulator.c(ex,o,parMap=log10ParMap)
   objFunc <- makeObjective(ex,s)
-  startPar <- values(m$Parameter)
+  startPar <- log10(values(m$Parameter))
   lowerBound <- startPar - m$Paramster$stdv # m$Parameter$min
   upperBound <- startPar + m$Paramster$stdv # m$Parameter$max
   abcSample <- ABCMCMC(
