@@ -198,7 +198,7 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
 #'     dprior=dUniformPrior(lowerBound,upperBound)
 #'   )
 #' }
-abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(startPar)), dprior=NULL, deltaSpan=NULL,batchSize=100*NROW(Sigma0), parAcceptable=\(p){all(is.finite(p))},verbose=FALSE){
+abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(startPar)), dprior=NULL, deltaSpan=NULL,batchSize=100*NROW(Sigma0), parAcceptable=\(p){all(is.finite(p))}){
 	if (is.null(deltaSpan)){
 		delta <- 2*max(objectiveFunction(startPar))
 		delta_LB <- 0 # lower bound
@@ -236,10 +236,10 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(star
 	n <- 1
 	for (i in seq(-burnIn,N)) {
 		L <- chol(Sigma0)
-		Z <- matrix(rnorm(batchSize*np),np,batchSize)          # this shape is expected by the Objective function
-		canPar <- curPar + L %*% Z                             # canPar is a multivariate normal batch derived from the previous batch
-		canPrior <- dprior(t(canPar))                          # a vector
-		canWeight <- canPrior/curPrior                         # element-wise division
+		Z <- matrix(rnorm(batchSize*np),np,batchSize) # this shape is expected by the Objective
+		canPar <- curPar + L %*% Z                    # canPar is a multivariate normal batch derived from the previous batch
+		canPrior <- dprior(t(canPar))                 # a vector
+		canWeight <- canPrior/curPrior                # element-wise division
 		canWeight[!is.finite(canWeight)] <- 0
 		l <- as.logical((runif(batchSize) <= canWeight) & apply(canPar,2,parAcceptable))   # l marks parameters that can be investigated further
 		canWeight[!l] <- 0
@@ -266,10 +266,6 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(star
 		} else {
 			a <- 0
 		}
-		if (!all(is.finite(curPar))){
-			warning("candidate parameters aren't all finite")
-			print(curPar)
-		}
 		message(
 			sprintf(
 				"iteration %5i, delta: %g, acceptance rate: %.3g, h ~ %g",
@@ -280,32 +276,22 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(star
 			)
 		)
 		if (i <= 0) {
-			if (delta>delta_LB &&  a>0.1) {
+			if (delta>delta_LB &&  a>0.1) { # adjust delta down
 				md <- median(curDistance,na.rm=TRUE)
 				delta <- max(delta_LB,md)
 			}
 			A <- a^2/(0.1^2 + a^2) + 0.5 # or exp(2.5 * (a - 0.10))
 			w <- a/(0.1 + a)
+			## calculate a new value for Sigma0, by tracking global covariance S (unscaled)
 			mu_batch <- rowMeans(curPar)
 			S_batch  <- cov(t(curPar)) * (batchSize - 1)
 			Dmu <- (mu_batch - mu)
 			S <- S + S_batch + (Dmu %*% t(Dmu)) * ((n/(n+1))*batchSize)
 			mu <- mu + Dmu/(n+1)
 			n <- n+1
-			C <- S/(n*batchSize-1)
-			if (abs(det(C)) < 1e-6 + 1e-6*norm(C)) C <- I*norm(Sigma1)
-			if (verbose) {
-				print(Sigma0)
-				message(sprintf("norm(Sigma0): %g",norm(Sigma0)))
-			}
+			C <- S/(n*batchSize-1) # C is now the updated global covariance
+			if (abs(det(C)) < 1e-6 + 1e-6*norm(C)) C <- I*norm(Sigma1) # reset if in danger
 			Sigma0 <- A*((1-w)*Sigma0 + w*C + 1e-8*Sigma1)
-			if (verbose){
-				message("changes to:")
-				print(Sigma0)
-				message(sprintf("norm(Sigma0): %g",norm(Sigma0)))
-				message(sprintf("with A: %g",A))
-			}
-			## A different option would be: A*solve(solve(Sigma0) + 0.1*a*solve(C) + 0.01*I*norm(Sigma0))
 		} else {
 			draws  <- rbind(draws,t(curPar))
 			distanceRecord <- c(distanceRecord,curDistance)
