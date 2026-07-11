@@ -3,6 +3,8 @@
 library(uqsa)
 library(errors)
 library(bench)
+library(parallel)
+options(mc.cores=detectCores())
 
 f <- uqsa_example("AKAR4")
 m <- model_from_tsv(f)
@@ -30,7 +32,7 @@ rprior <- rUniformPrior(p0-3,p0+3)
 P <- p0 + matrix(rnorm(3*100),3,100)
 
 autocorrelation <- function(D){ # a crude approximation
-	if (any(is.na(D)) warning("some NA values in the argument to 'autocorrelation'")
+	if (any(is.na(D))) warning("some NA values in the argument to 'autocorrelation'")
 	f <- is.finite(D) # just in case there is anything invalid there
 	A <- acf(D[f])$acf
 	tau <- 0.5*A[A>0.2]
@@ -46,8 +48,7 @@ B <- bench::mark(
 		ret <- ABCMCMC(Obj, p0, 100, Sigma0=cov(t(P))*0.1,delta=1,dprior=dprior, allow.reg=TRUE)
 		tau <- autocorrelation(ret$scores)
 	},
-	max_iterations=3,
-	min_time=Inf,
+	max_iterations=1,
 	check=\(a,b){TRUE},
 	memory = FALSE
 )
