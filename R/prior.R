@@ -101,7 +101,8 @@ rCopulaPrior <- function(Copula){
 #' dup(c(0.5,1.5,2.5))
 dUniformPrior <- function(ll,ul){
 	dprior <- function(x){
-		return(apply(as.matrix(x),1,\(r) prod(dunif(r,min=ll,max=ul))))
+		if (!is.matrix(x)) x <- t(x)
+		return(apply(x,1,\(r) prod(dunif(r,min=ll,max=ul))))
 	}
 	return(dprior)
 }

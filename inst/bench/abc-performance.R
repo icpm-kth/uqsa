@@ -18,7 +18,7 @@ s <- simulator.c(
 	o,              # the model
 	log10ParMap,    # reverse map, to get back from Markov chain space to model
 	omit=2,         # omit Fisher-Information and Gradient calculations
-	num.steps=intergrator_step_limit,
+	num.steps=integrator_step_limit,
 	time.out=time_out_seconds
 )
 Obj <- makeObjective(ex,s)
@@ -31,17 +31,17 @@ P <- p0 + matrix(rnorm(3*100),3,100)
 
 B <- bench::mark(
 	"ABCMCMC" = { # old algorithm
-		ret <- ABCMCMC(Obj, p0, 100, Sigma0=cov(t(P))*0.1,delta=1,dprior=dprior, allow.reg.TRUE)
+		ret <- ABCMCMC(Obj, p0, 100, Sigma0=cov(t(P))*0.1,delta=1,dprior=dprior, allow.reg=TRUE)
 		ACF <- acf(ret$scores)$acf
 		tau <- sum(A[A>0.2])
-	}
+	},
 	"abc mcmc" = { # new algorithm
 		ret <- abc_mcmc(Obj,P,100,burnIn=50,Sigma0=cov(t(P))*0.1,dprior=dprior)
 		ACF <- acf(ret$distances)$acf
 		tau <- sum(A[A>0.2])
 	},
 	"abc mcmc, no batches" = { # all adaptive features turned off
-		ret <- abc_mcmc(Obj,P,10000,burnIn=0,Sigma0=cov(t(P))*0.1,batchSize=1,dprior=dprior)
+		ret <- abc_mcmc(Obj,P,1000,burnIn=0,Sigma0=cov(t(P))*0.1,batchSize=1,dprior=dprior)
 		ACF <- acf(ret$distances)$acf
 		tau <- sum(A[A>0.2])
 	},
@@ -52,7 +52,9 @@ B <- bench::mark(
 )
 ##hexbin::hexplom(ret$draws)
 
-tau <- as.data.frame(Reduce(\(a,b) c(a,b),B$result))
-v <- 10000/(2*tau)
-B <- B |> dplyr::mutate(effective_speed=v)
-print(B[,c("expression","median","effective_speed")])
+N <- c(100e2,100e2,1e3)
+tau <- Reduce(\(a,b) c(a,b),B$result)
+v <- N/(2*tau)
+
+B <- B |> dplyr::mutate(sample_size=N,effective_speed=v,tau=tau)
+print(B[,c("expression","median","tau","effective_speed")])
