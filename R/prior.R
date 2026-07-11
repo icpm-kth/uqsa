@@ -150,10 +150,11 @@ rUniformPrior <- function(ll,ul){
 #' dnp<-dNormalPrior(mean=c(0,1,2),sd=c(1,2,3))
 #' dnp(c(0.5,1.5,2.5))
 dNormalPrior <- function(mean,sd){
-  dprior <- function(x){
-    return(prod(dnorm(x, mean=mean, sd = sd)))
-  }
-  return(dprior)
+	dprior <- function(x){
+		if (!is.matrix(x)) x <- t(x)
+		return(mvtnorm::dmvnorm(x,mean=mean, sigma = diag(sd)))
+	}
+	return(dprior)
 }
 
 #' gNormalPrior creates the gradient function of a multivariate normal
