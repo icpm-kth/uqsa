@@ -133,6 +133,16 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
 #' apparent quality of the sample, but create more work per sampled
 #' point.
 #'
+#' NOTE: this function currently doesn't receive a delta. We can
+#' include such a value in the future. But it is possible to live
+#' without it by setting a terminal acceptance rate. We may not know
+#' the "correct" or best value for delta. So, there needs to be an
+#' automatic decision about delta anyway. Currently "delta" is lowered
+#' during the inital burn in phase, until the acceptance rate drops to
+#' near 5%. But always based on the currently observed distances, so
+#' there is a lower bound that will not be undercut. At the same time
+#' we adjust the transition kernel, with the same goal of 5% acceptance.
+#'
 #' @export
 #' @param objectiveFunction function that, given a (vectorial)
 #'     parameter as input, simulates the model, and outputs the
@@ -144,7 +154,10 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
 #' @param N requested number of batches to return, the sample will be
 #'     of size `batchSize*N`
 #' @param burnIn number of batches where the transition kernel will be
-#'     adjusted to achieve an acceptance rate of below 10%.
+#'     adjusted to achieve an acceptance rate of below 10%. These are
+#'     printed as negative numbers during progress printouts:
+#'     -N...0,1...N, where no adjustments to the MCMC parameters
+#'     happen on positive loop-counts.
 #' @param Sigma0 multivariate normal covariance of Markov chain
 #'     transition kernel, defaults to the covariance of the initial
 #'     parameters. If startPar is one vector, this matrix must be
@@ -153,7 +166,8 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
 #'     values.
 #' @param parAcceptable a function that can reject a parameter vector
 #'     early based on user-requirements. Has to return a scalar
-#'     Boolean.
+#'     Boolean. Use this to test for inequalities that you find
+#'     difficult to encode in the prior.
 #' @return a list containing a sample matrix and a vector of scores
 #'     (values of delta for each sample)
 #' @examples
@@ -168,24 +182,34 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
 #'   s <- simulator.c(ex,o,parMap=log10ParMap)
 #'   objFunc <- makeObjective(ex,s)
 #'   startPar <- log10(values(m$Parameter))
-#'   lowerBound <- startPar - m$Paramster$stdv # m$Parameter$min
-#'   upperBound <- startPar + m$Paramster$stdv # m$Parameter$max
-#'   abcSample <- ABCMCMC(
+#'   lowerBound <- startPar - 3
+#'   upperBound <- startPar + 3
+#'   abcSample <- abc_mcmc(
 #'     objFunc,
-#'     startPar=values(m$Parameter),
+#'     startPar=startPar
 #'     100,
-#'     cov(rprior(1000)),
-#'     delta=1,
-#'     dprior=dUniformPrior(lowerBound,upperBound),
-#'     batchSize = 100
+#'     Sigma0=cov(rprior(1000)),
+#'     dprior=dUniformPrior(lowerBound,upperBound)
 #'   )
 #' }
-abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(startPar)), dprior, batchSize=100*NROW(Sigma0), parAcceptable=\(p){all(is.finite(p))}){
+abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(startPar)), dprior=NULL, batchSize=100*NROW(Sigma0), parAcceptable=\(p){all(is.finite(p))}){
 	delta <- 2*max(objectiveFunction(startPar))
 	np <- nrow(Sigma0)
 	b <- sample.int(NCOL(startPar),size=batchSize,replace=TRUE)
 	## make startPar _batch shaped_ (with batchSize columns), and add a little noise to it, in case it was exactly one vector
 	curPar <- as.matrix(startPar)[,b] + matrix(rnorm(np*batchSize,0,norm(Sigma0)*0.01),np,batchSize)
+	if (missing(dprior) || is.null(dprior)) { # construct something useful
+		LB <- apply(curPar,1,min)
+		UB <- apply(curPar,1,max)
+		if (any(UB<=LB)){
+			MD <- apply(curPar,1,median)
+			LB <- MD - 2
+			UB <- MD + 2
+		}
+		dprior <- dUniformPrior(LB,UB)
+		warning("dprior is missing, will use uniform prior, with these bounds: ")
+		print(data.frame(lower.bound=LB,upper.bound=UB))
+	}
 	curPrior <- dprior(t(curPar))
 	curDistance <- NULL
 
@@ -228,10 +252,14 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(star
 		if (i <= 0) {
 			delta <- median(curDistance,na.rm=TRUE)
 			A <- a^2/(0.05^2 + a^2) + 0.5 # or exp(2.5 * (a - 0.10))
-			w <- a/(0.05 + a)
-			C <- cov(t(curPar))+I*0.01
+			w <- a/(0.25 + a)
+			if (batchSize>10) {
+				C <- cov(t(curPar))+I*0.01
+			} else {
+				C <- Sigma1/2+I*0.01
+			}
 			if (abs(det(C)) < 1e-6 + 1e-6*norm(C)) C <- I*norm(Sigma1)
-			Sigma0 <- A*((1-w)*Sigma0 + w*C + 1e-6*Sigma1)
+			Sigma0 <- A*((1-w)*Sigma0 + w*C + 1e-8*Sigma1)
 			## A different option would be: A*solve(solve(Sigma0) + 0.1*a*solve(C) + 0.01*I*norm(Sigma0))
 		} else {
 			draws  <- rbind(draws,t(curPar))
