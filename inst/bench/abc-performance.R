@@ -29,21 +29,26 @@ rprior <- rUniformPrior(p0-3,p0+3)
 
 P <- p0 + matrix(rnorm(3*100),3,100)
 
+autocorrelation <- function(D){ # a crude approximation
+	if (any(is.na(D)) warning("some NA values in the argument to 'autocorrelation'")
+	f <- is.finite(D) # just in case there is anything invalid there
+	A <- acf(D[f])$acf
+	tau <- 0.5*A[A>0.2]
+	return(tau)
+}
+
 B <- bench::mark(
 	"abc mcmc" = { # new algorithm
-		ret <- abc_mcmc(Obj,P,100,burnIn=50,Sigma0=cov(t(P))*0.1,dprior=dprior)
-		ACF <- acf(ret$distances)$acf
-		tau <- sum(A[A>0.2])
+		ret <- abc_mcmc(Obj,P,100,burnIn=15,Sigma0=cov(t(P))*0.1,dprior=dprior)
+		tau <- autocorrelation(ret$distances)
 	},
 	"ABCMCMC" = { # old algorithm
 		ret <- ABCMCMC(Obj, p0, 100, Sigma0=cov(t(P))*0.1,delta=1,dprior=dprior, allow.reg=TRUE)
-		ACF <- acf(ret$scores)$acf
-		tau <- sum(A[A>0.2])
+		tau <- autocorrelation(ret$scores)
 	},
 	"abc mcmc, no batches" = { # all adaptive features turned off
 		ret <- abc_mcmc(Obj,P,1000,burnIn=0,Sigma0=cov(t(P))*0.1,batchSize=1,dprior=dprior)
-		ACF <- acf(ret$distances)$acf
-		tau <- sum(A[A>0.2])
+		tau <- autocorrelation(ret$distances)
 	},
 	max_iterations=3,
 	min_time=Inf,
