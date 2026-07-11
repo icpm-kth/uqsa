@@ -164,6 +164,12 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
 #'     provided explicitly.
 #' @param dprior a function that returns prior probability density
 #'     values.
+#' @param deltaSpan either an initial and final value for the ABC
+#'     threshold delta, or a fixed value for delta that will never
+#'     change.
+#' @param batchSize the size of each batch, this should be a number
+#'     that could be sufficient to calculate the covariance of in the
+#'     given parameter space.
 #' @param parAcceptable a function that can reject a parameter vector
 #'     early based on user-requirements. Has to return a scalar
 #'     Boolean. Use this to test for inequalities that you find
@@ -192,8 +198,14 @@ ABCMCMC <- function(objectiveFunction, startPar, nSims, Sigma0, delta, dprior, b
 #'     dprior=dUniformPrior(lowerBound,upperBound)
 #'   )
 #' }
-abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(startPar)), dprior=NULL, batchSize=100*NROW(Sigma0), parAcceptable=\(p){all(is.finite(p))}){
-	delta <- 2*max(objectiveFunction(startPar))
+abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(startPar)), dprior=NULL, deltaSpan=NULL,batchSize=100*NROW(Sigma0), parAcceptable=\(p){all(is.finite(p))},verbose=FALSE){
+	if (is.null(deltaSpan)){
+		delta <- 2*max(objectiveFunction(startPar))
+		delta_LB <- 0 # lower bound
+	} else {
+		delta <- max(deltaSpan)
+		delta_LB <- min(deltaSpan)
+	}
 	np <- nrow(Sigma0)
 	b <- sample.int(NCOL(startPar),size=batchSize,replace=TRUE)
 	## make startPar _batch shaped_ (with batchSize columns), and add a little noise to it, in case it was exactly one vector
@@ -212,7 +224,8 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(star
 	}
 	curPrior <- dprior(t(curPar))
 	curDistance <- NULL
-
+	mu <- rowMeans(curPar)                # the posterior's mean (tracking)
+	S <- cov(t(curPar)) * (batchSize - 1) # the posterior's covariance (tracking)
 	I <- diag(nrow=nrow(Sigma0))
 	Sigma1 <- diag(diag(Sigma0))
 	batchSample <- matrix(nrow=batchSize,ncol=length(startPar))
@@ -220,8 +233,8 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(star
 	distanceRecord <- NULL
 	acceptanceRate <- NULL
 	deltaRecord <- NULL
+	n <- 1
 	for (i in seq(-burnIn,N)) {
-		message(i)
 		L <- chol(Sigma0)
 		Z <- matrix(rnorm(batchSize*np),np,batchSize)          # this shape is expected by the Objective function
 		canPar <- curPar + L %*% Z                             # canPar is a multivariate normal batch derived from the previous batch
@@ -230,10 +243,12 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(star
 		canWeight[!is.finite(canWeight)] <- 0
 		l <- as.logical((runif(batchSize) <= canWeight) & apply(canPar,2,parAcceptable))   # l marks parameters that can be investigated further
 		canWeight[!l] <- 0
+		canDistance <- rep(Inf,batchSize)
 		if (any(l)){
-			canDistance <- colMeans(objectiveFunction(canPar[,l])) # Obj is a matrix: nExperiment x length(l)
-			canWeight[l] <- canWeight[l] * (canDistance <= delta)
+			canDistance[l] <- colMeans(objectiveFunction(canPar[,l,drop=FALSE])) # Obj is a matrix: nExperiment x length(l)
+			canWeight <- canWeight * (canDistance <= delta) * is.finite(canDistance)
 		}
+
 		a <- mean(canWeight>0,na.rm=TRUE)                      # acceptance rate
 		if (any(canWeight>0,na.rm=TRUE)){
 			canWeight[is.na(canWeight)] <- 0
@@ -248,18 +263,40 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(star
 			warning("candidate parameters aren't all finite")
 			print(curPar)
 		}
-		message(sprintf("acceptance rate: %g",a))
+		message(
+			sprintf(
+				"iteration %5i, delta: %g, acceptance rate: %.3g, h ~ %g",
+				i,
+				delta,
+				a,
+				sqrt(norm(Sigma0))
+			)
+		)
 		if (i <= 0) {
-			delta <- median(curDistance,na.rm=TRUE)
-			A <- a^2/(0.05^2 + a^2) + 0.5 # or exp(2.5 * (a - 0.10))
-			w <- a/(0.25 + a)
-			if (batchSize>10) {
-				C <- cov(t(curPar))+I*0.01
-			} else {
-				C <- Sigma1/2+I*0.01
+			if (delta>delta_LB && as.logical(i%%2)) {
+				delta <- max(delta_LB,median(curDistance,na.rm=TRUE))
 			}
+			A <- a^2/(0.1^2 + a^2) + 0.5 # or exp(2.5 * (a - 0.10))
+			w <- a/(0.1 + a)
+			mu_batch <- rowMeans(curPar)
+			S_batch  <- cov(t(curPar)) * (batchSize - 1)
+			Dmu <- (mu_batch - mu)
+			S <- S + S_batch + (Dmu %*% t(Dmu)) * ((n/(n+1))*batchSize)
+			mu <- mu + Dmu/(n+1)
+			n <- n+1
+			C <- S/(n*batchSize-1)
 			if (abs(det(C)) < 1e-6 + 1e-6*norm(C)) C <- I*norm(Sigma1)
+			if (verbose) {
+				print(Sigma0)
+				message(sprintf("norm(Sigma0): %g",norm(Sigma0)))
+			}
 			Sigma0 <- A*((1-w)*Sigma0 + w*C + 1e-8*Sigma1)
+			if (verbose){
+				message("changes to:")
+				print(Sigma0)
+				message(sprintf("norm(Sigma0): %g",norm(Sigma0)))
+				message(sprintf("with A: %g",A))
+			}
 			## A different option would be: A*solve(solve(Sigma0) + 0.1*a*solve(C) + 0.01*I*norm(Sigma0))
 		} else {
 			draws  <- rbind(draws,t(curPar))

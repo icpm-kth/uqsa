@@ -10,11 +10,13 @@ abc_mcmc(
   N,
   burnIn = N,
   Sigma0 = cov(t(startPar)),
-  dprior,
+  dprior = NULL,
+  deltaSpan = NULL,
   batchSize = 100 * NROW(Sigma0),
   parAcceptable = function(p) {
      all(is.finite(p))
- }
+ },
+  verbose = FALSE
 )
 }
 \arguments{
@@ -31,7 +33,10 @@ parameter vector}
 of size \code{batchSize*N}}
 
 \item{burnIn}{number of batches where the transition kernel will be
-adjusted to achieve an acceptance rate of below 10\%.}
+adjusted to achieve an acceptance rate of below 10\%. These are
+printed as negative numbers during progress printouts:
+-N...0,1...N, where no adjustments to the MCMC parameters
+happen on positive loop-counts.}
 
 \item{Sigma0}{multivariate normal covariance of Markov chain
 transition kernel, defaults to the covariance of the initial
@@ -41,9 +46,18 @@ provided explicitly.}
 \item{dprior}{a function that returns prior probability density
 values.}
 
+\item{deltaSpan}{either an initial and final value for the ABC
+threshold delta, or a fixed value for delta that will never
+change.}
+
+\item{batchSize}{the size of each batch, this should be a number
+that could be sufficient to calculate the covariance of in the
+given parameter space.}
+
 \item{parAcceptable}{a function that can reject a parameter vector
 early based on user-requirements. Has to return a scalar
-Boolean.}
+Boolean. Use this to test for inequalities that you find
+difficult to encode in the prior.}
 }
 \value{
 a list containing a sample matrix and a vector of scores
@@ -62,6 +76,16 @@ we perform 100 updates to the Markov chain variable and then save
 the state to the sample. Higher batchSize numbers improve the
 apparent quality of the sample, but create more work per sampled
 point.
+
+NOTE: this function currently doesn't receive a delta. We can
+include such a value in the future. But it is possible to live
+without it by setting a terminal acceptance rate. We may not know
+the "correct" or best value for delta. So, there needs to be an
+automatic decision about delta anyway. Currently "delta" is lowered
+during the inital burn in phase, until the acceptance rate drops to
+near 5\%. But always based on the currently observed distances, so
+there is a lower bound that will not be undercut. At the same time
+we adjust the transition kernel, with the same goal of 5\% acceptance.
 }
 \examples{
 \dontrun{
@@ -75,16 +99,14 @@ point.
   s <- simulator.c(ex,o,parMap=log10ParMap)
   objFunc <- makeObjective(ex,s)
   startPar <- log10(values(m$Parameter))
-  lowerBound <- startPar - m$Paramster$stdv # m$Parameter$min
-  upperBound <- startPar + m$Paramster$stdv # m$Parameter$max
-  abcSample <- ABCMCMC(
+  lowerBound <- startPar - 3
+  upperBound <- startPar + 3
+  abcSample <- abc_mcmc(
     objFunc,
-    startPar=values(m$Parameter),
+    startPar=startPar
     100,
-    cov(rprior(1000)),
-    delta=1,
-    dprior=dUniformPrior(lowerBound,upperBound),
-    batchSize = 100
+    Sigma0=cov(rprior(1000)),
+    dprior=dUniformPrior(lowerBound,upperBound)
   )
 }
 }
