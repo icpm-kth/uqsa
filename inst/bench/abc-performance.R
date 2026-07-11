@@ -30,14 +30,14 @@ rprior <- rUniformPrior(p0-3,p0+3)
 P <- p0 + matrix(rnorm(3*100),3,100)
 
 B <- bench::mark(
-	"ABCMCMC" = { # old algorithm
-		ret <- ABCMCMC(Obj, p0, 100, Sigma0=cov(t(P))*0.1,delta=1,dprior=dprior, allow.reg=TRUE)
-		ACF <- acf(ret$scores)$acf
-		tau <- sum(A[A>0.2])
-	},
 	"abc mcmc" = { # new algorithm
 		ret <- abc_mcmc(Obj,P,100,burnIn=50,Sigma0=cov(t(P))*0.1,dprior=dprior)
 		ACF <- acf(ret$distances)$acf
+		tau <- sum(A[A>0.2])
+	},
+	"ABCMCMC" = { # old algorithm
+		ret <- ABCMCMC(Obj, p0, 100, Sigma0=cov(t(P))*0.1,delta=1,dprior=dprior, allow.reg=TRUE)
+		ACF <- acf(ret$scores)$acf
 		tau <- sum(A[A>0.2])
 	},
 	"abc mcmc, no batches" = { # all adaptive features turned off
