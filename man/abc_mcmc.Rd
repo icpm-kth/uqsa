@@ -15,8 +15,7 @@ abc_mcmc(
   batchSize = 100 * NROW(Sigma0),
   parAcceptable = function(p) {
      all(is.finite(p))
- },
-  verbose = FALSE
+ }
 )
 }
 \arguments{
