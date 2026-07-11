@@ -46,10 +46,6 @@ B <- bench::mark(
 		ret <- ABCMCMC(Obj, p0, 100, Sigma0=cov(t(P))*0.1,delta=1,dprior=dprior, allow.reg=TRUE)
 		tau <- autocorrelation(ret$scores)
 	},
-	"abc mcmc, no batches" = { # all adaptive features turned off
-		ret <- abc_mcmc(Obj,P,1000,burnIn=0,Sigma0=cov(t(P))*0.1,batchSize=1,dprior=dprior)
-		tau <- autocorrelation(ret$distances)
-	},
 	max_iterations=3,
 	min_time=Inf,
 	check=\(a,b){TRUE},
@@ -57,7 +53,7 @@ B <- bench::mark(
 )
 ##hexbin::hexplom(ret$draws)
 
-N <- c(100e2,100e2,1e3)
+N <- c(100e2,100e2)
 tau <- Reduce(\(a,b) c(a,b),B$result)
 v <- N/(2*tau)
 
