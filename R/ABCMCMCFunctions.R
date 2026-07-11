@@ -252,10 +252,17 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(star
 		a <- mean(canWeight>0,na.rm=TRUE)                      # acceptance rate
 		if (any(canWeight>0,na.rm=TRUE)){
 			canWeight[is.na(canWeight)] <- 0
-			j <- sample.int(batchSize,size=batchSize,replace=TRUE,prob=canWeight)
-			curDistance <- canDistance[j]
-			curPrior <- canPrior[j]
-			curPar <- canPar[,j]
+			if (i<=0){
+				j <- sample.int(batchSize,size=batchSize,replace=TRUE,prob=canWeight)
+				curDistance <- canDistance[j]
+				curPrior <- canPrior[j]
+				curPar <- canPar[,j]
+			} else {
+				j <- which(canWeight>0)
+				curDistance[j] <- canDistance[j]
+				curPrior[j] <- canPrior[j]
+				curPar[,j] <- canPar[,j]
+			}
 		} else {
 			a <- 0
 		}
@@ -273,8 +280,9 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=N, Sigma0=cov(t(star
 			)
 		)
 		if (i <= 0) {
-			if (delta>delta_LB && as.logical(i%%2)) {
-				delta <- max(delta_LB,median(curDistance,na.rm=TRUE))
+			if (delta>delta_LB &&  a>0.1) {
+				md <- median(curDistance,na.rm=TRUE)
+				delta <- max(delta_LB,md)
 			}
 			A <- a^2/(0.1^2 + a^2) + 0.5 # or exp(2.5 * (a - 0.10))
 			w <- a/(0.1 + a)
