@@ -70,8 +70,8 @@ KLD <- function(X,Y,de=c("copula","ks","mclust","mvtnorm")){
 #'
 #' Like the [KLD] function, this function calculates KLD values, but
 #' for the specific case of multivariate normal distributions
-#' $\mathcal{N}_{A}$ and $\mathcal{N}_{B}$.  The two distributions are
-#' specified using $\mu$ and $\Sigma$ values (mean and covariance).
+#' \eqn{\\mathcal{N}_{A}}{N_A} and \eqn{\\mathcal{N}_{B}}{N_B}.  The two distributions are
+#' specified using \eqn{\\mu}{mu} and \eqn{\\Sigma}{Sigma} values (mean and covariance).
 #'
 #' @param muA mean of distribution A
 #' @param SigmaA Covariance of distribution A
