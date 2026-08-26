@@ -34,7 +34,7 @@ Suggests:
     knitr,
     rmarkdown,
     hexbin
-SystemRequirements: GSL (>= 2.8)
+SystemRequirements: GSL (>= 2.7)
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
 VignetteBuilder: knitr

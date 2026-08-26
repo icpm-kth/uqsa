@@ -111,7 +111,7 @@ unit.kind <- function(kind){
 #' (base-10) that this prefix represents.
 #'
 #' @noRd
-#' @param prefix a string, e.g.: "M", "mega", "m", "milli", "\eqn{\mu}{µ}", "micro", etc.
+#' @param prefix a string, e.g.: "M", "mega", "m", "milli", "\eqn{\\mu}{µ}", "micro", etc.
 #' @return an integer that corresponds to the prefix, defaults to 0.
 #' @examples
 #' print(unit.scale("M"))
@@ -249,7 +249,7 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 #'           will be translated into two SI units (mol and litre)
 #'        3. prefixes and units can be words or single letters
 #'        4. everything after a slash is the denominator
-#'        5. u is an accepted replacement for \eqn{\mu}{μ}
+#'        5. u is an accepted replacement for \eqn{\\mu}{μ}
 #'           (unicode greek mu or unicode micro symbol)
 #'        6. no parentheses (ignored): "(m/s)*kg" will be misinterpreted
 #'
