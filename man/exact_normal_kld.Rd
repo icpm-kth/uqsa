@@ -21,6 +21,6 @@ the KLD value D(A|B)
 \description{
 Like the \link{KLD} function, this function calculates KLD values, but
 for the specific case of multivariate normal distributions
-$\mathcal{N}\emph{{A}$ and $\mathcal{N}}{B}$.  The two distributions are
-specified using $\mu$ and $\Sigma$ values (mean and covariance).
+\eqn{\\mathcal{N}_{A}}{N_A} and \eqn{\\mathcal{N}_{B}}{N_B}.  The two distributions are
+specified using \eqn{\\mu}{mu} and \eqn{\\Sigma}{Sigma} values (mean and covariance).
 }
