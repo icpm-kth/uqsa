@@ -219,11 +219,11 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #' @export
 #' @examples
 #' \donttest{
-#' m <- model_from_tsv(uqsa_example("AKAP79"))
-#' rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
-#' p <- rwm %@% "init"             # a valid starting point
-#' smallSample <- rwm(rwm %@% "init",600,1e-4)
-#' pairs(smallSample[,seq(6)])
+#'   m <- model_from_tsv(uqsa_example("AKAP79"))
+#'   rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
+#'   p <- rwm %@% "init"             # a valid starting point
+#'   smallSample <- rwm(rwm %@% "init",100,1e-4)
+#'   if (interactive()) pairs(smallSample[,seq(6)])
 #' }
 mcmc <- function(update){
 	M <- function(parMCMC,N=1000,eps=1e-4){
@@ -1489,18 +1489,20 @@ logParMapJac <- function(parMCMC){
 #'     with a pre-initialized starting point.
 #' @examples
 #' \donttest{
-#' m <- model_from_tsv(uqsa_example("AKAP79"))
-#' rwm <- high_level_smmala(m) # "random walk", metropolis algorithm
-#' p <- rwm %@% "init"             # a valid starting point
-#' N <- 200
-#' smallSample <- rwm(rwm %@% "init",N,1e-4)
-#' plot(
-#'   smallSample %@% "logLikelihood",
-#'   type='l',
-#'   main=sprintf("%i iterations",N),
-#'   xlab="iterations",
-#'   ylab="log-likelihood"
-#' )
+#'   m <- model_from_tsv(uqsa_example("AKAP79"))
+#'   rwm <- high_level_smmala(m) # "random walk", metropolis algorithm
+#'   p <- rwm %@% "init"             # a valid starting point
+#'   N <- 100
+#'   smallSample <- rwm(rwm %@% "init",N,1e-4)
+#'   if (interactive()){
+#'     plot(
+#'       smallSample %@% "logLikelihood",
+#'       type='l',
+#'       main=sprintf("%i iterations",N),
+#'       xlab="iterations",
+#'       ylab="log-likelihood"
+#'     )
+#'   }
 #' }
 high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=values(m$Parameter)){
 	if (is.null(o$c_path) || is.null(o$so_path) || !file.exists(o$so_path)){
@@ -1583,18 +1585,18 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 #'     with a pre-initialized starting point.
 #' @examples
 #' \donttest{
-#' m <- model_from_tsv(uqsa_example("AKAP79"))
-#' rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
-#' p <- rwm %@% "init"             # a valid starting point
-#' N <- 200
-#' smallSample <- rwm(rwm %@% "init",N,1e-6)
-#' plot(
-#'   smallSample %@% "logLikelihood",
-#'   type="l",
-#'   main=sprintf("%i iterations",N),
-#'   xlab="iterations",
-#'   ylab="log-likelihood"
-#' )
+#'   m <- model_from_tsv(uqsa_example("AKAP79"))
+#'   rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
+#'   p <- rwm %@% "init"             # a valid starting point
+#'   N <- 100
+#'   smallSample <- rwm(rwm %@% "init",N,1e-6)
+#'   plot(
+#'     smallSample %@% "logLikelihood",
+#'     type="l",
+#'     main=sprintf("%i iterations",N),
+#'     xlab="iterations",
+#'     ylab="log-likelihood"
+#'   )
 #' }
 high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x=values(m$Parameter), beta=1.0){
 	if (is.null(so_path(o)) || !file.exists(so_path(o))){
@@ -1670,20 +1672,20 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 #' @export
 #' @examples
 #' \donttest{
-#' m <- model_from_tsv(uqsa_example("AKAP79"))
-#' rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
-#' p <- rwm %@% "init"             # a valid starting point
-#' h <- tune_step_size(rwm,p)
-#' N <- 200
-#' smallSample <- rwm(rwm %@% "init",N,h)
-#' print(h)
-#' plot(
-#'   smallSample %@% "logLikelihood",
-#'   type="l",
-#'   main=sprintf("step size: %g",h),
-#'   xlab="iterations",
-#'   ylab="log-likelihood"
-#' )
+#'   m <- model_from_tsv(uqsa_example("AKAP79"))
+#'   rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
+#'   p <- rwm %@% "init"             # a valid starting point
+#'   h <- tune_step_size(rwm,p)
+#'   N <- 100
+#'   smallSample <- rwm(rwm %@% "init",N,h)
+#'   print(h)
+#'   plot(
+#'     smallSample %@% "logLikelihood",
+#'     type="l",
+#'     main=sprintf("step size: %g",h),
+#'     xlab="iterations",
+#'     ylab="log-likelihood"
+#'   )
 #' }
 tune_step_size <- function(MCMC,parMCMC=attr(MCMC,"init"),target_acceptance=0.25, iter.max=6, h=1e-4){
 	A <- target_acceptance

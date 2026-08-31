@@ -365,17 +365,15 @@ stoichiometric_matrix <- function(m,compound.names=rownames(m$Compound)) {
 #' - log10
 #' - log2, ld
 #' - ln, log
-#' 
+#'
 #' @param x values
 #' @param str_scale character vector
 #' @return a copy of `x`,  transformed into linear space
 #' @export
 #' @examples
-#' \donttest{
 #' x <- c(1,2,3,1,1,1)
 #' attr(x,"scale") <- c("log10","log2","log","ln","ld","log5")
 #' print(linear_scale(x))
-#' }
 linear_scale <- function(x,str_scale=attr(x,"scale")){
 	if (is.character(str_scale)){
 		# general case: logXX

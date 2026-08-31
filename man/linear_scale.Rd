@@ -30,9 +30,7 @@ The words in \code{str_scale} name a logarithm, e.g. "log10". Currently understo
 }
 }
 \examples{
-\donttest{
 x <- c(1,2,3,1,1,1)
 attr(x,"scale") <- c("log10","log2","log","ln","ld","log5")
 print(linear_scale(x))
-}
 }

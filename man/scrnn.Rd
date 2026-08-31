@@ -80,6 +80,8 @@ throughout.
   s <- scrnn(ex, modelName)
   p <- list(l=l,nu=nu,m=nu*0)
   y <- s(p)
-  plot(ex,y)
+  if (interactive()){
+     plot(ex,y)
+  }
 }
 }

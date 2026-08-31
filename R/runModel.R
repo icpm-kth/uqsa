@@ -122,21 +122,23 @@ print.simulation <- function(x,...){
 #'   so_path(o) <- shlib(o)
 #'   print(o)
 #'   y <- gsl_odeiv2_fi(o,ex,values(m$Parameter))
-#'   print(length(y))
-#'   print(names(y[[1]]))
-#'   oldpar <- par(mfrow=c(length(ex),1))
-#'   for (i in seq_along(y)){
-#'       plot(
-#'           errors::as.errors(ex[[i]]$outputTimes),
-#'           ex[[i]]$data,
-#'           xlab="time",
-#'           ylab=rownames(y[[i]]$data)[1],
-#'           main=names(ex)[i],
-#'           ylim=c(100,200)
-#'       )
-#'       lines(ex[[i]]$outputTimes,drop(y[[i]]$func),col='red')
+#'   if (interactive()){
+#'      print(length(y))
+#'      print(names(y[[1]]))
+#'      oldpar <- par(mfrow=c(length(ex),1))
+#'      for (i in seq_along(y)){
+#'          plot(
+#'              errors::as.errors(ex[[i]]$outputTimes),
+#'              ex[[i]]$data,
+#'              xlab="time",
+#'              ylab=rownames(y[[i]]$data)[1],
+#'              main=names(ex)[i],
+#'              ylim=c(100,200)
+#'          )
+#'          lines(ex[[i]]$outputTimes,drop(y[[i]]$func),col='red')
+#'      }
+#'      par(oldpar)
 #'   }
-#'   par(oldpar)
 #' }
 gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3, method=0, omit=0, time.out = 1, num.steps = 0){
 	if (is(odeModel,"ode")){
@@ -327,7 +329,9 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 #'   s <- scrnn(ex, modelName)
 #'   p <- list(l=l,nu=nu,m=nu*0)
 #'   y <- s(p)
-#'   plot(ex,y)
+#'   if (interactive()){
+#'      plot(ex,y)
+#'   }
 #' }
 scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$nu, modifiers=\(p) p$m, method = 0, time.out = 1){
 	N <- length(experiments)
