@@ -4,7 +4,7 @@
 \alias{KLD}
 \title{Kullback Leibler Divergence}
 \usage{
-KLD(X, Y, de = c("copula", "ks", "mclust", "mvtnorm"))
+KLD(X, Y, de = c("copula", "ks", "mvtnorm"))
 }
 \arguments{
 \item{X}{sample from distribution P}
@@ -32,7 +32,6 @@ we use the copula based methods \link{fitCopula} and \link{dCopulaPrior}
 Effects of setting \code{de} to
 \itemize{
 \item \code{"ks"}: density is estimated via \code{ks::kde()}
-\item \code{"mclust"}: density is estimated via \code{mclust::dens()}
 \item \code{"mvtnorm"}: density is estimated via manual kernel
 density estimation, using the multivariate
 Gaussian density \code{mvtnorm::dmvnorm}

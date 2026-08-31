@@ -35,7 +35,6 @@ density_fn <- function(ZETA, h=NULL) {
 #'
 #' Effects of setting `de` to
 #' - `"ks"`: density is estimated via `ks::kde()`
-#' - `"mclust"`: density is estimated via `mclust::dens()`
 #' - `"mvtnorm"`: density is estimated via manual kernel
 #'    density estimation, using the multivariate
 #'    Gaussian density `mvtnorm::dmvnorm`
@@ -45,7 +44,7 @@ density_fn <- function(ZETA, h=NULL) {
 #' @param de density estimation mechanism (character scalar)
 #' @return D, a scalar value, the Kullback Leibler Divergence
 #' @export
-KLD <- function(X,Y,de=c("copula","ks","mclust","mvtnorm")){
+KLD <- function(X,Y,de=c("copula","ks","mvtnorm")){
 	de <- match.arg(de)
 	if (de == "mvtnorm" && requireNamespace("mvtnorm",quietly=TRUE)) { # quick and dirty KDE
 		P <- density_fn(X)
@@ -53,12 +52,6 @@ KLD <- function(X,Y,de=c("copula","ks","mclust","mvtnorm")){
 	} else if (de == "ks" && requireNamespace("ks",quietly=TRUE)) {
 		P <- \(xi) ks::kde(X, eval.points = xi, density=TRUE, binned=FALSE)$estimate
 		Q <- \(xi) ks::kde(Y, eval.points = xi, density=TRUE, binned=FALSE)$estimate
-	} else if (de == "mclust" && requireNamespace("mclust",quietly=TRUE)) {
-		loadNamespace("mclust") # this is NEEDED or mclust will not work for some crazy reason
-		MX <- mclust::Mclust(X)
-		MY <- mclust::Mclust(Y)
-		P <- \(xi) mclust::dens(xi,modelName=MX$modelName,parameters=MX$parameters)
-		Q <- \(xi) mclust::dens(xi,modelName=MY$modelName,parameters=MY$parameters)
 	} else {
 		P <- dCopulaPrior(fitCopula(X)) # density estimate for X
 		Q <- dCopulaPrior(fitCopula(Y)) # density estimate for Y
