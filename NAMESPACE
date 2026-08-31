@@ -16,7 +16,6 @@ export("base<-")
 export("c_path<-")
 export("modify<-")
 export("so_path<-")
-export(ABCMCMC)
 export(ABCSMC)
 export(CRNN)
 export(KLD)
@@ -25,7 +24,6 @@ export(as_cme)
 export(as_ode)
 export(c_path)
 export(change_temperature)
-export(checkFitWithPreviousExperiments)
 export(clear_yacas_environment)
 export(column)
 export(conservation_law_analysis)
@@ -107,6 +105,10 @@ importFrom(VineCopula,
   RVinePDF,
   RVineSim,
   RVineStructureSelect
+)
+importFrom(cli,
+  cli_progress_bar,
+  cli_progress_update
 )
 importFrom(errors,
   "errors<-",

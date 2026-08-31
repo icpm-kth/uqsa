@@ -8,28 +8,33 @@ abc_mcmc(
   objectiveFunction,
   startPar,
   N,
-  burnIn = N,
+  burnIn = ceiling(sqrt(N)),
   Sigma0 = cov(t(startPar)),
   dprior = NULL,
   deltaSpan = NULL,
   batchSize = 100 * NROW(Sigma0),
   parAcceptable = function(p) {
      all(is.finite(p))
- }
+ },
+  verbose = TRUE
 )
 }
 \arguments{
-\item{objectiveFunction}{function that, given a (vectorial)
-parameter as input, simulates the model, and outputs the
-distance between experimental data and data simulated from the
-model with the parameter provided in input}
+\item{objectiveFunction}{function that, given a parameter matrix as
+input, simulates the model, and outputs the distance between
+experimental data and data simulated from the model with the
+parameter provided in input. This has to be a closure that
+contains the experimental data within itself. The closure must
+be vectorized over the columns of its matrix argument.}
 
 \item{startPar}{starting values for the parameter vector, can (and
-should) be a matrix with n columns, where ech column is a valid
-parameter vector}
+should) be a matrix with n columns, where each column is a
+valid parameter vector; the number of columns determines the
+batch size.}
 
 \item{N}{requested number of batches to return, the sample will be
-of size \code{batchSize*N}}
+of size \code{batchSize*N} (batch size is the number of parallel
+Markov chains).}
 
 \item{burnIn}{number of batches where the transition kernel will be
 adjusted to achieve an acceptance rate of below 10\%. These are
@@ -63,31 +68,39 @@ a list containing a sample matrix and a vector of scores
 (values of delta for each sample)
 }
 \description{
-Given a set of simulation experiments (list), a model, parameter
-boundaries, this function will draw a sample of parameters from the
-posterior probability density of the given problem.
+ABC replaces the need for an exact likelihood function and uses a
+distance function instead: the distance between data and
+simulation. This distance function is very similar to a likelihood
+function but lacks a statistical justification. Nevertheless, this
+distance function, like the likelihood function of a deterministic
+model, performs a simulation of the scientific model, be it fully
+stochastic or a stochasically embedded, but deterministic in its
+core.
 }
 \details{
-Normally, ABC would produce a highly auto-correlated sample,
-wasting lots of disk-space; \code{batchSize} can be used to thin out the
-sample, recording every batchSize-th point: with \code{batchSize=100},
-we perform 100 updates to the Markov chain variable and then save
-the state to the sample. Higher batchSize numbers improve the
-apparent quality of the sample, but create more work per sampled
-point.
+The distance of the ABC setting is compared to a threshold value
+\eqn{\\delta}{delta}. The threshold doesn't need to be explicitly
+provided. You can however provide a span of acceptabel values in
+any order, the smaller value will be used as a lower bound, the
+larger value will be used initially.
 
-NOTE: this function currently doesn't receive a delta. We can
-include such a value in the future. But it is possible to live
-without it by setting a terminal acceptance rate. We may not know
-the "correct" or best value for delta. So, there needs to be an
-automatic decision about delta anyway. Currently "delta" is lowered
-during the inital burn in phase, until the acceptance rate drops to
-near 5\%. But always based on the currently observed distances, so
-there is a lower bound that will not be undercut. At the same time
-we adjust the transition kernel, with the same goal of 5\% acceptance.
+The ABC procedure will attempt to converge first, using the initial
+delta value, and decreasing it slowly using observed distance
+values.
+
+This function always operates on a bundle of Markov chains. The
+size of this bundle can be determined through \code{startPar} (a matrix
+of column vectors). Each column will be used as the initial point
+of a Markov chain. The chains will be resampled at each step during
+the convergence phase, and decouple from one another once the
+burn-in is complete.
+
+ABC methods (distance function, threshold delta) can be combined
+with several other methds (like particle filters). Here we use
+several parallle Markov chains to sample from the approximate
+posterior.
 }
 \examples{
-\dontrun{
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
   o <- as_ode(m)
@@ -97,15 +110,17 @@ we adjust the transition kernel, with the same goal of 5\% acceptance.
   so_path(o) <- shlib(o)
   s <- simulator.c(ex,o,parMap=log10ParMap)
   objFunc <- makeObjective(ex,s)
-  startPar <- log10(values(m$Parameter))
-  lowerBound <- startPar - 3
-  upperBound <- startPar + 3
+  p0 <- log10(values(m$Parameter))
+  lowerBound <- p0 - 3
+  upperBound <- p0 + 3
+  dprior <- dUniformPrior(lowerBound,upperBound)
+  rprior <- rUniformPrior(lowerBound,upperBound)
+  X <- rprior(24)   # increase this number ...
   abcSample <- abc_mcmc(
     objFunc,
-    startPar=startPar
-    100,
-    Sigma0=cov(rprior(1000)),
-    dprior=dUniformPrior(lowerBound,upperBound)
+    startPar=t(X),
+    N=10,           # ... and this number
+    Sigma0=cov(X),
+    dprior=dprior
   )
-}
 }
