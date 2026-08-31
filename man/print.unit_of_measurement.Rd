@@ -10,8 +10,6 @@
 \item{unit}{optionally, the data.frame that describes the unit}
 
 \item{...}{required by the generic print function.}
-
-\item{unit.str}{unit string}
 }
 \value{
 called for the side-effect; no value.

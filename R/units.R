@@ -364,7 +364,6 @@ unit_as_character <- function(unit){
 #' The original string that a unit was derived from is attached to the
 #' unit object as a [comment].
 #'
-#' @param unit.str unit string
 #' @param unit optionally, the data.frame that describes the unit
 #' @param ... required by the generic print function.
 #' @export
