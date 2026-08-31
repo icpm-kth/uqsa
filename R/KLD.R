@@ -54,6 +54,7 @@ KLD <- function(X,Y,de=c("copula","ks","mclust","mvtnorm")){
 		P <- \(xi) ks::kde(X, eval.points = xi, density=TRUE, binned=FALSE)$estimate
 		Q <- \(xi) ks::kde(Y, eval.points = xi, density=TRUE, binned=FALSE)$estimate
 	} else if (de == "mclust" && requireNamespace("mclust",quietly=TRUE)) {
+		loadNamespace("mclust") # this is NEEDED or mclust will not work for some crazy reason
 		MX <- mclust::Mclust(X)
 		MY <- mclust::Mclust(Y)
 		P <- \(xi) mclust::dens(xi,modelName=MX$modelName,parameters=MX$parameters)
