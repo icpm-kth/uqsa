@@ -4,10 +4,10 @@
 \alias{print.unit_of_measurement}
 \title{Prints an interpretation string of a unit}
 \usage{
-\method{print}{unit_of_measurement}(unit, ...)
+\method{print}{unit_of_measurement}(x, ...)
 }
 \arguments{
-\item{unit}{optionally, the data.frame that describes the unit}
+\item{x}{an object of type 'unit_of_measurement'}
 
 \item{...}{required by the generic print function.}
 }
@@ -31,6 +31,8 @@ allowed (e.g. SBML unit \code{id} attribute).
 
 The original string that a unit was derived from is attached to the
 unit object as a \link{comment}.
+
+Units are produced by the function \link{unit.from.string}.
 }
 \examples{
 lapply(lapply(c("km/h","s^-2","1/s"),unit.from.string),print)

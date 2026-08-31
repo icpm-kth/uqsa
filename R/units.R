@@ -364,7 +364,9 @@ unit_as_character <- function(unit){
 #' The original string that a unit was derived from is attached to the
 #' unit object as a [comment].
 #'
-#' @param unit optionally, the data.frame that describes the unit
+#' Units are produced by the function [unit.from.string].
+#'
+#' @param x an object of type 'unit_of_measurement'
 #' @param ... required by the generic print function.
 #' @export
 #' @return called for the side-effect; no value.
