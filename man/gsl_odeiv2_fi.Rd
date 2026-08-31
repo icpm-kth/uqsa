@@ -88,7 +88,7 @@ The shared library needs to be created first. Either with \verb{R CMD SHLIB}, \l
   y <- gsl_odeiv2_fi(o,ex,values(m$Parameter))
   print(length(y))
   print(names(y[[1]]))
-  par(mfrow=c(length(ex),1))
+  oldpar <- par(mfrow=c(length(ex),1))
   for (i in seq_along(y)){
       plot(
           errors::as.errors(ex[[i]]$outputTimes),
@@ -100,6 +100,7 @@ The shared library needs to be created first. Either with \verb{R CMD SHLIB}, \l
       )
       lines(ex[[i]]$outputTimes,drop(y[[i]]$func),col='red')
   }
+  par(oldpar)
 }
 }
 \keyword{ODE}

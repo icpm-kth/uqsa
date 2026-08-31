@@ -4,7 +4,6 @@ title: "Uncertainty Quantification on AKAR4 (deterministic model)"
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(eval=TRUE,
-  
   collapse = TRUE,
   comment = "#>"
 )
@@ -71,7 +70,7 @@ function takes the inital values, number of steps and the stepsize as
 arguments.
 
 ```{r Metropolis-Hastings}
-options(mc.cores=length(ex))
+opt <- options(mc.cores=length(ex))
 s <- simulator.c(
     ex,
     o,
@@ -124,4 +123,8 @@ We can try to obtain a higher quality sample, through simple means:
 4. Adjust the step size at least once to get close to 25% acceptance rate
 
 
+Restore original options:
 
+```{r}
+options(opt)
+```

@@ -112,25 +112,25 @@ print(so_path(cmeModel))
 
 ```{r plot-simstoch, fig.height=12, fig.width=7, out.width="100%"}
 tm <- ex[[1]]$outputTimes
-
-par(mfrow=c(3,1),bty="n")
+oldpar <- par(mfrow=c(3,1),bty="n")
 for (i in seq_along(ex)){
-plot(
-	as.errors(tm),
-	ex[[i]]$data,
-	xlab="time",
-	ylab="AKAR4p",
-	main=names(ex)[i],
-	ylim=c(90,210)
-)
-lines(
-	tm,
-	y[[i]]$func,
-	lwd=2,
-	col="red",
-	type='s'
-)
+	plot(
+		as.errors(tm),
+		ex[[i]]$data,
+		xlab="time",
+		ylab="AKAR4p",
+		main=names(ex)[i],
+		ylim=c(90,210)
+	)
+	lines(
+		tm,
+		y[[i]]$func,
+		lwd=2,
+		col="red",
+		type='s'
+	)
 }
+par(oldpar)
 ```
 
 ## Benchmark

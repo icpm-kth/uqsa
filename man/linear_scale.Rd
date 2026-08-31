@@ -12,7 +12,7 @@ linear_scale(x, str_scale = attr(x, "scale"))
 \item{str_scale}{character vector}
 }
 \value{
-a copy of \code{x},  transformed in to linear space
+a copy of \code{x},  transformed into linear space
 }
 \description{
 The values in \code{x} are possibly given in a logarithmic space. The
@@ -30,9 +30,9 @@ The words in \code{str_scale} name a logarithm, e.g. "log10". Currently understo
 }
 }
 \examples{
-\dontrun{
-x <- c(1,2,3)
-attr(x,"scale") <- c("log10","log2","log")
+\donttest{
+x <- c(1,2,3,1,1,1)
+attr(x,"scale") <- c("log10","log2","log","ln","ld","log5")
 print(linear_scale(x))
 }
 }

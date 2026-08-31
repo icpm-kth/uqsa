@@ -9,7 +9,13 @@ log10ParMap(parMCMC)
 \arguments{
 \item{parMCMC}{the sampling variables (numeric vector)}
 }
+\value{
+a numeric vector intended for the simulator.
+}
 \description{
 This map is used by the simulator to transform sampling variables
-into ODE-model porameters.
+into ODE-model porameters. This function is an example for the
+\code{parMap} slot in sampling functions. A \code{parMap} function, like this
+one, must tranform an MCMC variable (vector) to a parameter vector
+that the scientific model we simulate can work with.
 }

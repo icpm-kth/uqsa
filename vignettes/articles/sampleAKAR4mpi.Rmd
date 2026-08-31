@@ -4,7 +4,6 @@ title: "Sample AKAR4 with Parallel Tempering"
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  
   eval = TRUE,
   collapse = TRUE,
   comment = "#>"
@@ -76,11 +75,11 @@ time)
 Sample <- readRDS(file="/dev/shm/AKAR4-parameter-sample-for-rank-0.RDS")
 n <- NROW(Sample)
 l <- attr(Sample,"logLikelihood")
-
 if (requireNamespace("hadron")){
-    par(mfrow=c(3,1))
+    oldpar <- par(mfrow=c(3,1))
     res <- hadron::uwerr(data=l,pl=TRUE)
     tau <- ceiling(res$tauint+res$dtauint)
+    par(oldpar)
 } else {
     A <- acf(l)
     tau <- sum(A$acf[A$acf>0.2])

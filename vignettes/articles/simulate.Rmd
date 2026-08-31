@@ -5,7 +5,6 @@ output: rmarkdown::html_vignette
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  
   collapse = TRUE,
   comment = "#>"
 )
@@ -79,7 +78,7 @@ print(dim(P))
 All simulations happen here (timed):
 
 ```{r timed-simulation, eval=TRUE}
-options(mc.cores=parallel::detectCores())
+opt <- options(mc.cores=parallel::detectCores())
 
 ti <- Sys.time()
 y <- simulate(t(P))
@@ -93,7 +92,7 @@ distributed around OK-ish values (taken from the TSV file
 `AKAR4/Parameter.tsv`):
 
 ```{r, label="log-normal-sample", eval=TRUE, out.width="100%", fig.height=16}
-par(mfrow=c(3,1))
+oldpar <- par(mfrow=c(3,1))
 for (i in seq(ex)){
 	tm <- ex[[i]]$outputTimes
 	plot(               # data
@@ -110,4 +109,9 @@ for (i in seq(ex)){
 		lwd=3, lty=1, col=rgb(0,0,1,0.1)
 	)
 }
+par(oldpar)
+```
+
+```{r}
+options(opt)
 ```

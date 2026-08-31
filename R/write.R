@@ -120,9 +120,7 @@ shlib <- function(file){
 	### 3. R CMD SHLIB writes a file called symbols.rds
 	###    we need to make sure that this file lands in `tempdir()`
 	wd <- getwd()
-	on.exit({
-		setwd(wd)
-	})
+	on.exit(setwd(wd))
 	setwd(dirname(file))
 	status <- system2(
 		command = file.path(R.home("bin"), "R"),

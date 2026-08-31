@@ -132,6 +132,7 @@ mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rn
 #' @param x the variable
 #' @param ... requirement of print generic, not used.
 #' @export
+#' @return called for side-effect (printout); no value.
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' o <- as_ode(m)
@@ -217,7 +218,7 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #'     number of Markov chain steps
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' m <- model_from_tsv(uqsa_example("AKAP79"))
 #' rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
 #' p <- rwm %@% "init"             # a valid starting point
@@ -352,10 +353,10 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 #'     supplied update function
 #' @export
 #' @examples
-#' ## works in an MPI context
+#' ## works only in an MPI context (R session started with `mpirun Rscript ...`)
 #' ## similar to mcmc without _mpi prefix
 #' \dontrun{
-#'   ## prepare the update function
+#'   ## prepare the update functions
 #'   pt_mcmc <- mcmc_mpi(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures)
 #' }
 mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures){
@@ -425,6 +426,7 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 #'
 #' @export
 #' @param files the rds files where the individual samples are stored
+#' @param verbose logical, when FALSE nothing will be printed on screen
 #' @return a list of named items, with `$Sample` representing one
 #'     matrix where all file-samples are concatenated (with rbind).
 #' @examples
@@ -451,7 +453,7 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 #' Z <- loadSample_mpi(f)
 #' print(dim(Z$Sample))
 #' print(names(Z))
-loadSample_mpi <- function(files){
+loadSample_mpi <- function(files,verbose=interactive()){
 	s <- lapply(files,readRDS)
 	betaTrace <- Reduce(function(a,b) c(a,attr(b,"beta")),s,init=NULL)
 	uB <- sort(unique(betaTrace),decreasing=TRUE)
@@ -459,8 +461,10 @@ loadSample_mpi <- function(files){
 	acc <- Reduce(function(a,b) c(a,attr(b,"acceptanceRate")),s,init=NULL)
 	sR <- Reduce(function(a,b) c(a,attr(b,"swapRate")),s,init=NULL)
 	ll <- Reduce(function(a,b) c(a,attr(b,"logLikelihood")),s,init=NULL)
-	cat("loading sample files with acceptances:\n")
-	print(acc)
+	if (verbose){
+		cat("loading sample files with acceptances:\n")
+		print(acc)
+	}
 	Sample <- Reduce(rbind,s)
 	return(list(Sample=Sample,beta=betaTrace,acceptanceRate=acc,swapRate=sR,logLikelihood=ll,betaSelection=bSelection,uB=uB))
 }
@@ -702,15 +706,12 @@ smmala_move <- function(beta,parGiven,fisherInformationPrior,eps=1e-2){
 	G0 <- fisherInformationPrior
 	G <- (beta^2*fiGiven)+G0
 	stopifnot(!is.null(G) && is.matrix(G))
-	#cat("is.invertible(G): ",is.invertible(G), " (rcond: ",rcond(G),").\n")
 	if (isTRUE(is.invertible(G))){
 		g <- solve(G,as.numeric(beta*gradLGiven+gradPGiven))
-		#Sigma <- solve(G)
 	} else {
 		stopifnot(is.matrix(G0) && isSymmetric(G0))
 		g <- solve(G0,gradPGiven)
 		G <- G0
-		#Sigma <- solve(G0)
 	}
 	parProposal <- rmvnorm(
 		mean=parGiven+0.5*eps*g,
@@ -769,11 +770,16 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 #' An optional argument to this function is `parAcceptable`, during
 #' sampling, when `metropolis` is called as the update function, and
 #' `parAcceptable(parProposal)` returns `FALSE`, then metropolis
-#' shortcuts to `retrun(parGiven)` without performing simulations.
+#' shortcuts to `return(parGiven)` without performing simulations.
 #'
 #' This function can be used to weed out parameter combinations that
 #' would result in obviously nonsensical simulations without wasting
 #' CPU-time.
+#'
+#' The return value is a function (closure) that operates on mcmc
+#' variables, these variables are numeric vectors with some necessary
+#' attributes. The attributes record this vector's simulation results,
+#' and other derived quantities.
 #'
 #' @export
 #' @param simulate a function that simulates the model
@@ -786,6 +792,10 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 #' @param parAcceptable a function that can be used to reject a
 #'     proposal based on the values of the parameters alone (shortcut
 #'     to rejection, sans simulation)
+#' @return a closure with the arguments: (parGiven, eps=1e-4), where
+#'     `parGiven` is the current position of the Markov chain (a
+#'     numeric vector, with attributes), and `eps` the current step
+#'     size.
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' o <- as_ode(m)
@@ -827,15 +837,13 @@ metropolis_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm
 			llProposal <- logLikelihood(parProposal)
 			if (!is.numeric(llProposal) || length(llProposal)!=1){
 				warning(sprintf("metropolis_update encountered an invalid likelihood value: %f\n",llProposal[1]))
-				print(llProposal)
-				print(as.numeric(parGiven))
+				message(llProposal)
+				message(as.numeric(parGiven))
 			}
 			attr(parProposal,"logLikelihood") <- llProposal
-
 			class(parProposal) <- class(parGiven)
-
 			L <- exp(beta*(llProposal - llGiven))
-			if (is.null(L)) cat("llProposal: ",llProposal," llGiven: ",llGiven," beta: ",beta," L:",L,"\n")
+			if (is.null(L)) warning("Likelihood is NULL; llProposal: ",llProposal," llGiven: ",llGiven," beta: ",beta," L:",L,"\n")
 			P <- priorProposal/priorGiven
 			if (!is.null(L) && !is.null(P) && is.finite(L) && is.finite(P) && runif(1) < L*P){
 				attr(parProposal,"accepted") <- TRUE
@@ -865,12 +873,12 @@ metropolis_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm
 			llProposal <- logLikelihood(parProposal)
 			if (!is.numeric(llProposal) || length(llProposal)!=1){
 				warning(sprintf("metropolis update encountered an invalid likelihood value: %f\n",llProposal[1]))
-				print(llProposal)
-				print(as.numeric(parGiven))
+				message(llProposal)
+				message(as.numeric(parGiven))
 			}
 			attr(parProposal,"logLikelihood") <- llProposal
 			L <- exp(beta*(llProposal - llGiven))
-			if (is.null(L)) cat("llProposal: ",llProposal," llGiven: ",llGiven," beta: ",beta," L:",L,"\n")
+			if (is.null(L)) warning("Likelihood is NULL; llProposal: ",llProposal," llGiven: ",llGiven," beta: ",beta," L:",L,"\n")
 			P <- priorProposal/priorGiven
 			if (!is.null(L) && !is.null(P) && is.finite(L) && is.finite(P) && runif(1) < L*P){
 				attr(parProposal,"accepted") <- TRUE
@@ -1083,6 +1091,10 @@ fi <- function(parMapJac=\(x) diag(1,length(x),length(x))){
 #' @param parAcceptable a function that can be used to reject a
 #'     proposal based on the values of the parameters alone (shortcut
 #'     to rejection, sans simulation)
+#' @return a closure with the arguments: (parGiven, eps=1e-4), where
+#'     `parGiven` is the current position of the Markov chain (a
+#'     numeric vector, with attributes), and `eps` the current step
+#'     size.
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' o <- as_ode(m)
@@ -1121,8 +1133,8 @@ smmala_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(x))
 		llProposal <- logLikelihood(parProposal)
 		if (!is.numeric(llProposal) || length(llProposal)!=1){
 			warning(sprintf("smmala update encountered an invalid likelihood value: %f\n",llProposal[1]))
-			print(llProposal)
-			print(as.numeric(parGiven))
+			message(llProposal)
+			message(as.numeric(parGiven))
 		}
 		attr(parProposal,"beta") <- beta
 		attr(parProposal,"logLikelihood") <- llProposal
@@ -1351,9 +1363,13 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 #' LOG10 parameter mapping used by the MCMC module
 #'
 #' This map is used by the simulator to transform sampling variables
-#' into ODE-model porameters.
+#' into ODE-model porameters. This function is an example for the
+#' `parMap` slot in sampling functions. A `parMap` function, like this
+#' one, must tranform an MCMC variable (vector) to a parameter vector
+#' that the scientific model we simulate can work with.
 #'
 #' @param parMCMC the sampling variables (numeric vector)
+#' @return a numeric vector intended for the simulator.
 #' @export
 log10ParMap <- function(parMCMC){
 	return(10^(parMCMC))
@@ -1363,11 +1379,12 @@ log10ParMap <- function(parMCMC){
 #'
 #' This map is used by the simulator to transform sampling variables
 #' into ODE-model porameters. As we often calculate sensitivites, we
-#' alos need the jacobian of the map, due to the chain rule of
+#' alos need the Jacobian of the map, due to the chain rule of
 #' differentiation.
 #'
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
+#' @return a numeric matrix (dim: `c(length(parMCMC),length(parMCMC))`)
 #' @examples
 #' p <- c(-1,0,1)
 #' parMap <- log10ParMap
@@ -1385,6 +1402,7 @@ log10ParMapJac <- function(parMCMC){
 #'
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
+#' @return a numeric vector intended for the simulator.
 #' @examples
 #' p <- c(-1,0,1)
 #' parMap <- log2ParMap
@@ -1402,6 +1420,7 @@ log2ParMap <- function(parMCMC){
 #'
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
+#' @return a numeric matrix (dim: `c(length(parMCMC),length(parMCMC))`).
 #' @examples
 #' p <- c(-1,0,1)
 #' parMap <- log2ParMap
@@ -1420,6 +1439,7 @@ log2ParMapJac <- function(parMCMC){
 #'
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
+#' @return a numeric vector intended for the simulator.
 #' @examples
 #' p <- c(-1,0,1)
 #' parMap <- logParMap
@@ -1437,6 +1457,7 @@ logParMap <- function(parMCMC){
 #'
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
+#' @return a numeric matrix (dim: `c(length(parMCMC),length(parMCMC))`).
 #' @examples
 #' p <- c(-1,0,1)
 #' parMap <- logParMap

@@ -105,6 +105,7 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 #' @param ... requirement of print generic, not used.
 #' @return NULL
 #' @export
+#' @return called for side-effect (printout); no value.
 #' @examples
 #' f <- uqsa_example("AKAR4")
 #' m <- model_from_tsv(f)
@@ -284,12 +285,26 @@ yJacobian <- function(f,x){
 	return(yacasMath(J,reverse=TRUE))
 }
 
-#' replace_powers
+#' replace_powers does string manipulation
+#'
+#' This function takes a string argument with human readable math
+#' (e.g. R code), and replaces the power operator `z^n` with
+#' C-compatible function calls: `pow(x,n)`, it counts parentheses to
+#' determine the base and exponent automatically.
+#'
+#' This functions assumes that gsl functions can be used, the GNU
+#' Scientific Library includes powers of small integers. These
+#' functions may be faster than always calling `pow` from `math.h`.
+#'
+#' This is necessary because in C the `^` operator means something
+#' else (exclusive bitwise xor for integers). No attempt will be made
+#' to cast the numbers to `float` or `double`.
 #'
 #' @export
 #' @param v a character vector
+#' @return a string where all occurrences of `^` have been replaced by function calls like `pow()`
 #' @examples
-#' print(replace_powers(c("2^3.1","10^-6","x^2")))
+#' print(replace_powers(c("2^3.1","10^-6","x^2","(1+(1+x))^(n-0.5)")))
 replace_powers <- function(v){
 	w<-.Call("replace_pow",as.character(v))
 	return(w)

@@ -30,6 +30,12 @@ given parameter vector}
 proposal based on the values of the parameters alone (shortcut
 to rejection, sans simulation)}
 }
+\value{
+a closure with the arguments: (parGiven, eps=1e-4), where
+\code{parGiven} is the current position of the Markov chain (a
+numeric vector, with attributes), and \code{eps} the current step
+size.
+}
 \description{
 During Markov chain Monte Carlo a given parameter needs to be
 updated, the model needs to be simulated at the updated point.
@@ -44,11 +50,16 @@ as it's sole argument: \code{parProposal <- metropolis(parGiven)}
 An optional argument to this function is \code{parAcceptable}, during
 sampling, when \code{metropolis} is called as the update function, and
 \code{parAcceptable(parProposal)} returns \code{FALSE}, then metropolis
-shortcuts to \code{retrun(parGiven)} without performing simulations.
+shortcuts to \code{return(parGiven)} without performing simulations.
 
 This function can be used to weed out parameter combinations that
 would result in obviously nonsensical simulations without wasting
 CPU-time.
+
+The return value is a function (closure) that operates on mcmc
+variables, these variables are numeric vectors with some necessary
+attributes. The attributes record this vector's simulation results,
+and other derived quantities.
 }
 \examples{
 m <- model_from_tsv(uqsa_example("AKAR4"))

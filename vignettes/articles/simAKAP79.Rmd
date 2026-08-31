@@ -87,8 +87,7 @@ y <- s(p)
 
 e.g. <- 10 # which experiment to plot
 tm <- ex[[e.g.]]$outputTime
-
-par(bty='n',xaxp=c(80,120,4))
+oldpar <- par(bty='n',xaxp=c(80,120,4))
 plot(
 	as.errors(tm),
 	ex[[e.g.]]$data[1,],
@@ -98,4 +97,5 @@ plot(
 	main=sprintf("Experiment %s",names(ex)[e.g.])
 )
 lines(tm,y[[e.g.]]$func[1,,1],lwd=1.5,col="purple")
+par(oldpar)
 ```

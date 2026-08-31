@@ -24,7 +24,7 @@ utility is acceptable, as long as it makes sense with the command
 line arguments: \verb{units --strict --compact -1 "$originalUnit" "$targetUnit"}
 }
 \examples{
-\dontrun{
+\donttest{
   ## needs `unit` utility (system utility)
   y <- "21 cm" \%as\% "inches"
   y <- "12 nmol/L" \%as\% "mol/L"

@@ -11,6 +11,9 @@
 
 \item{...}{ignored.}
 }
+\value{
+called for side-effect (printout); no value.
+}
 \description{
 The experiments, if accidentally printed, are difficult to read.
 This function prevents these accidental prints. It summarizes the

@@ -365,13 +365,15 @@ stoichiometric_matrix <- function(m,compound.names=rownames(m$Compound)) {
 #' - log10
 #' - log2, ld
 #' - ln, log
+#' 
 #' @param x values
 #' @param str_scale character vector
-#' @return a copy of `x`,  transformed in to linear space
+#' @return a copy of `x`,  transformed into linear space
+#' @export
 #' @examples
-#' \dontrun{
-#' x <- c(1,2,3)
-#' attr(x,"scale") <- c("log10","log2","log")
+#' \donttest{
+#' x <- c(1,2,3,1,1,1)
+#' attr(x,"scale") <- c("log10","log2","log","ln","ld","log5")
 #' print(linear_scale(x))
 #' }
 linear_scale <- function(x,str_scale=attr(x,"scale")){
@@ -406,15 +408,14 @@ linear_scale <- function(x,str_scale=attr(x,"scale")){
 #' @param p a named vector of stoichiometric coefficients for the products
 #' @param value a reaction rate (string)
 #' @return updated vf
+#' @noRd
 #' @examples
-#' \dontrun{
 #' Reaction <- "A + B <=> C"
 #' r <- c(A=1,B=1)
 #' p <- c(C=1)
 #' vf <- c(A="",B="",C="") # empty
 #' reaction(vf,r,p) <- "A*B-C"
 #' print(vf)
-#' }
 `reaction<-` <- function(vf,r,p,value){
 	stopifnot(vf %has% "names")
 	if (value %has% "names") {
@@ -536,18 +537,18 @@ conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
 #' in `v` for that row's context. Example: the rows can be different
 #' experinemnts, with each experiment assigning new values to some
 #' members of `v` (but not necessarily all).
+#'
 #' @param v a named vector
 #' @param d data.frame with column names that correspond to those of `v`
 #' @param as_type a character scalar indicating a type ('character','numeric','logical',etc.)
 #' @return a matrix of dimension: length(v) × NROW(d)
+#' @noRd
 #' @examples
-#' \dontrun{
 #' f <- uqsa_example("AKAR4")
 #' m <- model_from_tsv(f)
 #' iv <- values(m$Compound)
 #' IV <- update_values(iv,m$Experiments)
 #' print(IV)
-#' }
 update_values <- function(v,d,as_type="numeric"){
 	if (is.null(v)) return(NULL)
 	if (is.matrix(v) && NCOL(v)==1) {
@@ -800,6 +801,7 @@ experiments <- function(m,o=NULL){
 #' @param x simulation experiments with data
 #' @param ... ignored.
 #' @export
+#' @return called for side-effect (printout); no value.
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' o <- as_ode(m)

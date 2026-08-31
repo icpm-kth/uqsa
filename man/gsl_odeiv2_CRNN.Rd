@@ -66,7 +66,7 @@ This function calls a C function which solves an initial value
 problem, derived from a CRNN.
 }
 \examples{
-\dontrun{
+\donttest{
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
   ex <- experiments(m,as_ode(m,cla=FALSE))
@@ -75,7 +75,7 @@ problem, derived from a CRNN.
   C <- CRNN(NCOL(nu),initialValues=values(m$Compound),funcValues=formulae(m$Output))
   c.file <- tempfile("AKAR4_",fileext=".c")
   cat(C,file=c.file,sep='\n')
-  so.file <- shlib(c.file,model.name="AKAR4")
+  so.file <- shlib(c.file)
   y <- gsl_odeiv2_CRNN(so.file,ex,l,nu,nu*0)
 }
 }

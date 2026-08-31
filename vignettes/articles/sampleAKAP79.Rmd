@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(uqsa)
 library(parallel)
-options(mc.cores=detectCores())
+opt <- options(mc.cores=detectCores())
 ```
 
 AKAP79 is a comparativelyh big model (for a demonstartive example). To
@@ -191,3 +191,9 @@ echo "Time spent sampling: $((end_time - start_time)) seconds ($(( (end_time - s
 This results in a much less spotty posterior plot:
 
 <!-- ![posterior](pt-smmala-akap79-posterior.png) -->
+
+Restore original options:
+
+```{r}
+options(opt)
+```

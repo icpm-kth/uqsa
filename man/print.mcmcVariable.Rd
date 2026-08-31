@@ -11,6 +11,9 @@
 
 \item{...}{requirement of print generic, not used.}
 }
+\value{
+called for side-effect (printout); no value.
+}
 \description{
 Some mcmc variables have many attributes, which clutter the screen
 when accidentally printed. This function prevents these long

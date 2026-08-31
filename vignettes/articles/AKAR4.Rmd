@@ -7,7 +7,6 @@ output:
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  
   collapse = TRUE,
   comment = "#>"
 )
@@ -143,7 +142,7 @@ chunks <- list(
 dprior <- dUniformPrior(ll, ul)
 rprior <- rUniformPrior(ll, ul)
 
-options(mc.cores=detectCores())
+opt <- options(mc.cores=detectCores())
 
 start_time = Sys.time()
 for (i in seq(length(chunks))){
@@ -170,10 +169,11 @@ the hexbin package:
 colnames(posterior$draws)<-names(parVal)
 #
 if (require(hadron)){
-    par(mfrow=c(3,1))
+    oldpar <- par(mfrow=c(3,1))
     ac <- hadron::uwerr(data=posterior$scores,pl=TRUE)
     tau <- ceiling(ac$tauint+ac$dtauint)
     i <- seq(1,NROW(posterior$draws),by=tau)
+    par(oldpar)
 } else {
     A <- acf(posterior$scores,lag.max=100)
     l <- which(A$acf>0.2)
@@ -213,4 +213,10 @@ plot(tm,cuS[,3],type="l",xlab="time",ylab="S",main="sensitivity (cumulative)")
 for (si in dim(S)[2]:1){
 	polygon(c(tm,rev(tm)),c(cuS[,si],numeric(length(tm))),col=si+1)
 }
+```
+
+Restore original options:
+
+```{r}
+options(opt)
 ```

@@ -34,7 +34,6 @@ kinetic_law_matrix <- function(r){
 		if (length(j)>0){
 			F[,head(d,1)] <- r[[j[1]]]
 		} else {
-			print(colnames(r))
 			warning(sprintf("no %s rates found in reaction table.",tail(d,1)))
 		}
 	}

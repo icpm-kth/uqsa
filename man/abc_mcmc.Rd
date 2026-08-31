@@ -37,10 +37,7 @@ of size \code{batchSize*N} (batch size is the number of parallel
 Markov chains).}
 
 \item{burnIn}{number of batches where the transition kernel will be
-adjusted to achieve an acceptance rate of below 10\%. These are
-printed as negative numbers during progress printouts:
--N...0,1...N, where no adjustments to the MCMC parameters
-happen on positive loop-counts.}
+adjusted to achieve an acceptance rate of below 10\%.}
 
 \item{Sigma0}{multivariate normal covariance of Markov chain
 transition kernel, defaults to the covariance of the initial
@@ -62,6 +59,9 @@ given parameter space.}
 early based on user-requirements. Has to return a scalar
 Boolean. Use this to test for inequalities that you find
 difficult to encode in the prior.}
+
+\item{verbose}{when TRUE, a progress bar is printed during burn-in
+and actual sampling.}
 }
 \value{
 a list containing a sample matrix and a vector of scores
@@ -115,12 +115,15 @@ posterior.
   upperBound <- p0 + 3
   dprior <- dUniformPrior(lowerBound,upperBound)
   rprior <- rUniformPrior(lowerBound,upperBound)
-  X <- rprior(24)   # increase this number ...
-  abcSample <- abc_mcmc(
-    objFunc,
-    startPar=t(X),
-    N=10,           # ... and this number
-    Sigma0=cov(X),
-    dprior=dprior
-  )
+  X <- rprior(96)    # increase this number ...
+  ## this always takes more than 5s to run:
+  if (interactive()){
+      abcSample <- abc_mcmc(
+      objFunc,
+      startPar=t(X),
+      N=128,           # ... and this number
+      Sigma0=cov(X),
+      dprior=dprior
+    )
+  }
 }

@@ -25,6 +25,7 @@
 #' @param x simulation results
 #' @param ... requirement of print generic, not used.
 #' @export
+#' @return called for side-effect (printout); no value.
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' o <- as_ode(m)
@@ -123,7 +124,7 @@ print.simulation <- function(x,...){
 #'   y <- gsl_odeiv2_fi(o,ex,values(m$Parameter))
 #'   print(length(y))
 #'   print(names(y[[1]]))
-#'   par(mfrow=c(length(ex),1))
+#'   oldpar <- par(mfrow=c(length(ex),1))
 #'   for (i in seq_along(y)){
 #'       plot(
 #'           errors::as.errors(ex[[i]]$outputTimes),
@@ -135,6 +136,7 @@ print.simulation <- function(x,...){
 #'       )
 #'       lines(ex[[i]]$outputTimes,drop(y[[i]]$func),col='red')
 #'   }
+#'   par(oldpar)
 #' }
 gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3, method=0, omit=0, time.out = 1, num.steps = 0){
 	if (is(odeModel,"ode")){
@@ -214,7 +216,7 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #' @export
 #' @keywords ODE
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   f <- uqsa_example("AKAR4")
 #'   m <- model_from_tsv(f)
 #'   ex <- experiments(m,as_ode(m,cla=FALSE))
@@ -223,7 +225,7 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #'   C <- CRNN(NCOL(nu),initialValues=values(m$Compound),funcValues=formulae(m$Output))
 #'   c.file <- tempfile("AKAR4_",fileext=".c")
 #'   cat(C,file=c.file,sep='\n')
-#'   so.file <- shlib(c.file,model.name="AKAR4")
+#'   so.file <- shlib(c.file)
 #'   y <- gsl_odeiv2_CRNN(so.file,ex,l,nu,nu*0)
 #' }
 gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0, time.out = 1, nstep=0){
@@ -729,6 +731,8 @@ check_model <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.
 #' @param dataERR a matrix of measurement errors, if available,
 #'     defaults to the maximum data value.
 #' @export
+#' @return a numeric scalar, the distance between data `dataVAL` and
+#'     simulation `funcSim`.
 #' @examples
 #' d <- defaultDistance(seq(7),seq(7)+rnorm(7,0,0.1),rep(0.1,7))
 defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){

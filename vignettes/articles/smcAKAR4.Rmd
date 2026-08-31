@@ -4,7 +4,6 @@ title: "UQ for AKAR4 (stochastic model)"
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  
   eval = TRUE,
   collapse = TRUE,
   comment = "#>"
@@ -108,7 +107,7 @@ terminate.
 
 ```{r abcsmc}
 t_initial <- Sys.time()
-options(mc.cores = parallel::detectCores())
+opt <-options(mc.cores = parallel::detectCores())
 X <- rprior(5000)    # this determines the sample size
 colnames(X) <- names(par_val)
 posterior <- ABCSMC(
@@ -174,8 +173,7 @@ y <- s(t(Z)) # using the stochastic simulator one final time
 t_final <- Sys.time()
 
 cat(difftime(t_final,t_initial,units="min")," minutes")
-
-par(mfrow=c(3,1))
+oldpar <- par(mfrow=c(3,1))
 for (i in seq_along(ex)){
 	tm <- ex[[i]]$outputTimes
 	plot(     # the data (errorbars)
@@ -195,4 +193,9 @@ for (i in seq_along(ex)){
 		add=TRUE
 	)
 }
+par(oldpar)
+```
+
+```{r}
+options(opt)
 ```

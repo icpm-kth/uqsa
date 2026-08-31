@@ -9,6 +9,9 @@ logParMap(parMCMC)
 \arguments{
 \item{parMCMC}{the sampling variables (numeric vector)}
 }
+\value{
+a numeric vector intended for the simulator.
+}
 \description{
 This map is used by the simulator to transform sampling variables
 into ODE-model porameters.

@@ -11,6 +11,9 @@
 
 \item{...}{requirement of print generic, not used.}
 }
+\value{
+called for side-effect (printout); no value.
+}
 \description{
 The results, if accidentally printed, are difficult to read.  This
 function prevents these accidental prints. It summarizes the

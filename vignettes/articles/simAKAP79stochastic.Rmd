@@ -4,7 +4,6 @@ title: "Simulation of a Stochastic Model for the AKAP79 reaction network"
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  
   eval=TRUE,
   collapse = TRUE,
   comment = "#>"
@@ -123,7 +122,7 @@ And also plot the results:
 
 ```{r plot_simstoch}
 tm <- ex[[E]]$outputTimes
-par(bty="n")
+oldpar <- par(bty="n")
 plot(
     as.errors(tm),
     ex[[E]]$data,
@@ -135,4 +134,5 @@ plot(
 
 lines(tm,as.numeric(ystc[[E]]$func["AKAR4pOUT",,1]),lwd=1,col="blue")
 lines(tm,as.numeric(yode[[E]]$func["AKAR4pOUT",,1]),lwd=3)
+par(oldpar)
 ```

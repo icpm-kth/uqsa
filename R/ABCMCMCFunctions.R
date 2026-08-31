@@ -46,10 +46,7 @@
 #'     of size `batchSize*N` (batch size is the number of parallel
 #'     Markov chains).
 #' @param burnIn number of batches where the transition kernel will be
-#'     adjusted to achieve an acceptance rate of below 10%. These are
-#'     printed as negative numbers during progress printouts:
-#'     -N...0,1...N, where no adjustments to the MCMC parameters
-#'     happen on positive loop-counts.
+#'     adjusted to achieve an acceptance rate of below 10%. 
 #' @param Sigma0 multivariate normal covariance of Markov chain
 #'     transition kernel, defaults to the covariance of the initial
 #'     parameters. If startPar is one vector, this matrix must be
@@ -66,6 +63,8 @@
 #'     early based on user-requirements. Has to return a scalar
 #'     Boolean. Use this to test for inequalities that you find
 #'     difficult to encode in the prior.
+#' @param verbose when TRUE, a progress bar is printed during burn-in
+#'     and actual sampling.
 #' @return a list containing a sample matrix and a vector of scores
 #'     (values of delta for each sample)
 #' @examples
@@ -83,14 +82,17 @@
 #'   upperBound <- p0 + 3
 #'   dprior <- dUniformPrior(lowerBound,upperBound)
 #'   rprior <- rUniformPrior(lowerBound,upperBound)
-#'   X <- rprior(24)   # increase this number ...
-#'   abcSample <- abc_mcmc(
-#'     objFunc,
-#'     startPar=t(X),
-#'     N=10,           # ... and this number
-#'     Sigma0=cov(X),
-#'     dprior=dprior
-#'   )
+#'   X <- rprior(96)    # increase this number ...
+#'   ## this always takes more than 5s to run:
+#'   if (interactive()){
+#'       abcSample <- abc_mcmc(
+#'       objFunc,
+#'       startPar=t(X),
+#'       N=128,           # ... and this number
+#'       Sigma0=cov(X),
+#'       dprior=dprior
+#'     )
+#'   }
 abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Sigma0=cov(t(startPar)), dprior=NULL, deltaSpan=NULL,batchSize=100*NROW(Sigma0), parAcceptable=\(p){all(is.finite(p))}, verbose=TRUE){
 	show_progress <- verbose && interactive()
 	if (is.null(deltaSpan)){
@@ -113,8 +115,12 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Si
 			UB <- MD + 2
 		}
 		dprior <- dUniformPrior(LB,UB)
-		warning("dprior is missing, will use uniform prior, with these bounds: ")
-		print(data.frame(lower.bound=LB,upper.bound=UB))
+		if (verbose){
+			message("dprior is missing, will use uniform prior, with these bounds: ")
+			print(data.frame(lower.bound=LB,upper.bound=UB)) # guarded by verbose
+		} else {
+			warning("prior probability density not specified; will infer from start values (uniform distribution).")
+		}
 	}
 	curPrior <- dprior(t(curPar))
 	curDistance <- NULL
@@ -131,6 +137,7 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Si
 	if (show_progress) {
 		cli::cli_progress_bar(name="abc", total = N+burnIn+1)
 	}
+	startTime <- Sys.time()
 	for (i in seq(-burnIn,N)) {
 		L <- chol(Sigma0)
 		Z <- matrix(rnorm(batchSize*np),np,batchSize) # this shape is expected by the Objective
@@ -189,6 +196,7 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Si
 			deltaRecord <- c(deltaRecord,delta)
 		}
 	}
+	endTime <- Sys.time()
 	cli::cli_progress_done()
 	return(
 		list(
@@ -196,7 +204,8 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Si
 			distances = distanceRecord,
 			acceptanceRate = acceptanceRate,
 			delta = deltaRecord,
-			Sigma = Sigma0
+			Sigma = Sigma0,
+			time = difftime(endTime,startTime)
 		)
 	)
 }

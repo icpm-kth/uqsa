@@ -43,6 +43,12 @@ prior distribution (or rather, the precision of the prior)}
 proposal based on the values of the parameters alone (shortcut
 to rejection, sans simulation)}
 }
+\value{
+a closure with the arguments: (parGiven, eps=1e-4), where
+\code{parGiven} is the current position of the Markov chain (a
+numeric vector, with attributes), and \code{eps} the current step
+size.
+}
 \description{
 During Markov chain Monte Carlo a given parameter needs to be
 updated, the model needs to be simulated at the updated point.

@@ -56,10 +56,10 @@ the MPI rank, comm, and comm-size. The swap function returnsa list:
 old values if the swap was rejected.
 }
 \examples{
-## works in an MPI context
+## works only in an MPI context (R session started with `mpirun Rscript ...`)
 ## similar to mcmc without _mpi prefix
 \dontrun{
-  ## prepare the update function
+  ## prepare the update functions
   pt_mcmc <- mcmc_mpi(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures)
 }
 }

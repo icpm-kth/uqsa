@@ -28,7 +28,7 @@ the given parameters, all other dependencies have to be either
 implicit (as a closure) or attributes of parGiven.
 }
 \examples{
-\dontrun{
+\donttest{
 m <- model_from_tsv(uqsa_example("AKAP79"))
 rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
 p <- rwm \%@\% "init"             # a valid starting point

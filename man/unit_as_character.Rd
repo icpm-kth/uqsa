@@ -16,12 +16,8 @@ a string representation of that data.frame purely for printing
 This is a crude function to make a printable representation of a
 unit data.frame, with very explicit parentheses and exponents.
 }
-\details{
-This function is similar to unit.info.
-}
 \examples{
 u <- unit.from.string("s^-1")
 str <- unit_as_character(u)
 print(str)
-unit.info("s^-1")
 }

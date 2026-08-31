@@ -133,8 +133,8 @@ c_path(o) <- write_c_code(C)
 so_path(o) <- shlib(o)
 
 print(length(ex))
-options(mc.cores = length(ex))
 
+opt <- options(mc.cores = length(ex)) # remember original options
 p <- values(m$Parameter) # in log-space
 stopifnot(all(m$Parameter$scale=="ln"))
 ```
@@ -168,7 +168,7 @@ print(cpuSeconds)
 Next, we plot the results of that dense simulation:
 
 ```{r plot-dense-time-series, out.width="100%", fig.height=7, fig.width=5}
-par(mfrow=c(3,2), bty="n")
+oldpar <- par(mfrow=c(3,2), bty="n")
 for (i in seq_along(ex)){
 	j  <- rownames(m$Output) %in% colnames(ex[[i]]$measurements)
 	t_siml <-ex[[i]]$outputTimes
@@ -183,6 +183,7 @@ for (i in seq_along(ex)){
 	)
 	lines(t_siml,f_siml,col='red4')
 }
+par(oldpar)
 ```
 
 Here we notice that in Experiment 1, the trajectory fails to reach
@@ -208,7 +209,7 @@ y <- s(p) # new solution
 
 We repeat the same plot from above:
 ```{r, label="longer-simulation-Bradshaw", echo=FALSE, out.width="100%", fig.height=7, fig.width=5}
-par(mfrow=c(3,2),bty="n")
+oldpar <- par(mfrow=c(3,2),bty="n")
 for (i in seq_along(ex)){
 	j  <- rownames(m$Output) %in% colnames(ex[[i]]$measurements)
 	t_siml <-ex[[i]]$outputTimes
@@ -223,6 +224,7 @@ for (i in seq_along(ex)){
 	)
 	lines(t_siml,f_siml,col='red')
 }
+par(oldpar)
 ```
 
 Giving this experiment more time shifts the simulated model response,
@@ -380,7 +382,7 @@ Ca <- unlist(lapply(ex[i],\(x) x$input['Ca_set']))
 f_ <- unlist(lapply(y,\(y) y$func[j,1,1]))
 v_ <- unlist(lapply(ex[i],\(x) x$data[j,1]))
 
-par(bty="n")
+oldpar <- par(bty="n")
 plot(
 	Ca,
 	v_,
@@ -390,6 +392,7 @@ plot(
 	log="x"
 )
 points(Ca,f_,pch=2,col="red4")
+par(oldpar)
 ```
 
 Here the triangles represent the independent simulation results.
@@ -406,3 +409,6 @@ sequentially (see previous section), and instead start more parallel
 Markov chains (and merge them in the end). This way, fewer
 MPI-workers/threads/cores idle.
 
+```
+options(opt)
+```

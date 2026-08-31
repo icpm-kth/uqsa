@@ -142,7 +142,7 @@ space and performs `10^p` (to get back to the model-paramerts):
 
 ```{r sim}
 stopifnot(all(m$Parameter$scale=="log10")) # just to make sure
-options(mc.cores = 2) # required by CRAN, set this to a bigger value for yourself
+opt <- options(mc.cores = 2)               # required by CRAN to be 2, set this to a bigger value for yourself
 s <- simulator.c(ex,o,parMap=log10ParMap)
 
 p0 <- values(m$Parameter) # default parameters, in log10-space
@@ -181,6 +181,8 @@ subset the simulation results:
 
 ```{r plot-generic, out.width="100%", res=300, fig.width=12, fig.height=18}
 print(class(y))
+oldpar <- par()      # remember graphics values
+on.exit(par(oldpar)) # restore original values
 par(mfrow=c(3,2))
 plot(ex[seq(6)],y[seq(6)],ylim=c(90,140))
 ```
@@ -189,4 +191,10 @@ This is an overview of the simulation:
 
 ```{r, label="print-y"}
 print(y)
+```
+
+Reset options:
+
+```
+options(opt) # restores original values
 ```

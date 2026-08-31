@@ -35,12 +35,13 @@
 #' @param parAcceptable is a rejection-shortcut function; if
 #'     `parAcceptable(p)` returns `FALSE` for a specific value of `p`,
 #'     it means that simulations shouldn't even be attempted.
-#' @param messages a logical value indicating whether log messages should be printed
+#' @param verbose a logical value indicating whether log messages should be printed
 #' @return a list containing a sample matrix and a vector of scores
 #'     (values of delta for each sample)
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   library(parallel)
+#'   opt <- options(mc.cores=2) # use [detectCores()]
 #'   f <- uqsa_example("AKAR4")
 #'   m <- model_from_tsv(f)
 #'   ex <- experiments(m,as_ode(m,cla=FALSE))
@@ -54,11 +55,16 @@
 #'   dprior <- dNormalPrior(log(muX^2/(muX^2+sdX^2)),sqrt(log(1+sdX^2/muX^2)))
 #'   s <- simstoch(ex,G,logParMap)
 #'   O <- makeObjective(ex,s)
-#'   X <- rprior(1000)
+#'   X <- rprior(100)
 #'   colnames(X) <- rownames(m$Parameter)
-#'   posterior <- ABCSMC(O,t(X),Sigma=cov(X),dprior=dprior,delta=c(0.5,1.5))
+#'   if (interactive()) {
+#'      posterior <- ABCSMC(O,t(X),Sigma=cov(X),dprior=dprior,delta=c(0.5,1.5))
+#'   } else {
+#'      posterior <- ABCSMC(O,t(head(X)),Sigma=cov(X),dprior=dprior,delta=c(0.5,1.5))
+#'   }
+#'   options(opt) # restore original options
 #' }
-ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(startPar), dprior, delta=c(2,0.5),  parAcceptable=\(p){all(is.finite(p))}, messages=FALSE){
+ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(startPar), dprior, delta=c(2,0.5),  parAcceptable=\(p){all(is.finite(p))}, verbose=interactive()){
 	delta <- sort(delta,decreasing=TRUE) # in case someone enters a range for delta, e.g. c(0.1,0.9) rather than c(initial,final)
 	initialDelta <- delta[1]
 	if (length(delta)>1){
@@ -67,7 +73,7 @@ ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(startPar), dprior, d
 		finalDelta <- 0 # automatic lower bound
 	}
 	deltaLowerBound <- finalDelta
-	if (messages) message(sprintf("allowed range for delta: [%g,%g]",deltaLowerBound,initialDelta))
+	if (verbose) message(sprintf("allowed range for delta: [%g,%g]",deltaLowerBound,initialDelta))
 	## initial delta, subject to change:
 	delta <- initialDelta
 	## prepare starting values
@@ -77,12 +83,12 @@ ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(startPar), dprior, d
 	curPar  <- startPar
 	curDistance <- colMeans(objectiveFunction(curPar))
 	#stopifnot(all(is.finite(curDistance)))
-	curPrior <- dprior(curPar)
+	curPrior <- dprior(t(curPar))
 	curWeight <- 1.0/curDistance # init
 	curWeight <- curWeight/sum(curWeight)
 	acceptanceRate <- 1.0                 # startPar has 100% acceptance, we don't reject any of them
 	while (delta > deltaLowerBound && acceptanceRate > 0.03) {
-		if (messages) message(sprintf("delta: %g",delta))
+		if (verbose) message(sprintf("delta: %g",delta))
 		newPar <- matrix(NA,NROW(startPar),0)
 		newPrior <- numeric(0)
 		newDistance <- numeric(0)
@@ -92,7 +98,7 @@ ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(startPar), dprior, d
 		while (NCOL(newPar) < batchSize) {
 			n <- max(100,batchSize - NCOL(newPar)) # don't bother suggesting anything too small
 			proposed <- proposed + n
-			if (messages) message(sprintf("proposing %i new points.",n))
+			if (verbose) message(sprintf("proposing %i new points.",n))
 			## resample from previous batch:
 			k <- sample(seq_along(curWeight),n,replace=TRUE,prob=curWeight)
 			canPar <- curPar[,k]
@@ -101,7 +107,7 @@ ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(startPar), dprior, d
 			l <- apply(canPar,2,parAcceptable) # hard-rejection
 			if (!any(l)) next
 			canPar <- canPar[,l,drop=FALSE]
-			canPrior <- apply(canPar,2,dprior) # prior values
+			canPrior <- dprior(t(canPar)) # prior values
 			l <- (canPrior>0.0)
 			if (!any(l)) next
 			canPar <- canPar[,l,drop=FALSE]
@@ -115,11 +121,12 @@ ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(startPar), dprior, d
 				accepted <- accepted + sum(l)
 			}
 		}
-		if (messages) message(sprintf("accepted: %i",accepted))
-		if (messages) message(sprintf("proposed: %i",proposed))
+		if (verbose) message(sprintf("accepted: %i",accepted))
+		if (verbose) message(sprintf("proposed: %i",proposed))
 		## newPar is now an aggregate new batch, possibly bigger than batchSize
 		## we now calculate weights for newPar:
 		t_curPar <- t(curPar)
+		if (prod(dim(newPar))==0) stop("newPar is broken.")
 		sum_W_K <- apply(newPar,2,\(z) {sum(curWeight*mvtnorm::dmvnorm(t_curPar,z,Sigma))})
 		newWeight <- newPrior/sum_W_K
 		newWeight <- newWeight/sum(newWeight)
@@ -134,7 +141,7 @@ ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(startPar), dprior, d
 		k <- sample(seq_along(curWeight),batchSize,prob=curWeight,replace=TRUE)
 		delta <- median(curDistance[k])
 		acceptanceRate <- accepted/proposed
-		if (messages) message(sprintf("acceptance rate: %i %%",round(acceptanceRate*100)))
+		if (verbose) message(sprintf("acceptance rate: %i %%",round(acceptanceRate*100)))
 	}
 	draws <- t(curPar[,k])
 	colnames(draws) <- rownames(startPar)

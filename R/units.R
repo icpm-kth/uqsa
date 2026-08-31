@@ -169,6 +169,7 @@ unit.id <- function(unit.str,prnt=FALSE){
 	uid <- gsub("\\^2","_square",uid)
 	uid <- gsub("\\^3","_cube",uid)
 	uid <- gsub("\\^([0-9]+)","_to_the_power_of_\\1",uid)
+	uid <- gsub("\\^-([0-9]+)","_to_the_power_of_\\1_inverted",uid)
 	uid <- make.names(uid,unique=FALSE)
 	if (prnt){
 		message("units in \u00ab!Unit\u00bb column:")
@@ -291,6 +292,7 @@ unit.from.string <- function(unit.str){
 	}
 	comment(unit) <- unit.str
 	attr(unit,'id') <- unit.id(unit.str)
+	class(unit) <- unique(c("unit_of_measurement", class(unit)))
 	return(unit)
 }
 
@@ -299,7 +301,6 @@ unit.from.string <- function(unit.str){
 #' This is a crude function to make a printable representation of a
 #' unit data.frame, with very explicit parentheses and exponents.
 #'
-#' This function is similar to unit.info.
 #' @export
 #' @param unit a data.frame created by unit.from.string()
 #' @return a string representation of that data.frame purely for printing
@@ -307,7 +308,6 @@ unit.from.string <- function(unit.str){
 #' u <- unit.from.string("s^-1")
 #' str <- unit_as_character(u)
 #' print(str)
-#' unit.info("s^-1")
 unit_as_character <- function(unit){
 	if (any(unit$multiplier!=1.0)){
 		return(
@@ -350,29 +350,43 @@ unit_as_character <- function(unit){
 
 #' Prints an interpretation string of a unit
 #'
-#' given a string describing a unit of measurement, this function
-#' prints the interpretation on screen, rather than returning it as a
-#' data.frame
+#' The unit object is a tagged data frame, with these columns:
+#' - multiplier
+#' - kind
+#' - scale
+#' - exponent
+#'
+#' The interpretation is the same as in SBML units. This function also
+#' prints an inferred unit id: a string that has no special characters
+#' in it and can be used in places where such characters are not
+#' allowed (e.g. SBML unit `id` attribute).
+#'
+#' The original string that a unit was derived from is attached to the
+#' unit object as a [comment].
 #'
 #' @param unit.str unit string
 #' @param unit optionally, the data.frame that describes the unit
+#' @param ... required by the generic print function.
 #' @export
+#' @return called for the side-effect; no value.
 #' @examples
-#' print(unit.info("km/h",unit.from.string("km/h")))
-unit.info <- function(unit.str,unit=unit.from.string(unit.str)){
-	Info <- sprintf(
-		"(%g \u00D7 %s \u00D7 10^(%i))^(%i)",
-		unit$multiplier,
-		unit$kind,
-		unit$scale,
-		unit$exponent
-	)
+#' lapply(lapply(c("km/h","s^-2","1/s"),unit.from.string),print)
+print.unit_of_measurement <- function(unit,...){
 	cat(
-		sprintf("\u00ab%s\u00bb has been interpreted as the product of: ",unit.str),
-		Info,
+		sprintf("\u00ab%s\u00bb has been interpreted as",comment(unit)),
+		"the product of: ",
+		sprintf("%30s",attr(unit,"id")),
+		"==============================",
+		sprintf(
+			"(%g \u00D7 %s \u00D7 10^(%i))^(%i)",
+			unit$multiplier,
+			unit$kind,
+			unit$scale,
+			unit$exponent
+		),
 		sep='\n'
 	)
-	return(Info)
+	invisible(unit)
 }
 
 #' %as% is a binary operator on strings with units in them
@@ -390,7 +404,7 @@ unit.info <- function(unit.str,unit=unit.from.string(unit.str)){
 #' @return a numeric value y: val*originalUnit = y*targetUnit, the
 #'     target unit is attached to the returned value, as a comment.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   ## needs `unit` utility (system utility)
 #'   y <- "21 cm" %as% "inches"
 #'   y <- "12 nmol/L" %as% "mol/L"

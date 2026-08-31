@@ -13,7 +13,7 @@ ABCSMC(
   parAcceptable = function(p) {
      all(is.finite(p))
  },
-  messages = FALSE
+  verbose = interactive()
 )
 }
 \arguments{
@@ -40,7 +40,7 @@ starting value and the final value of delta:
 \code{parAcceptable(p)} returns \code{FALSE} for a specific value of \code{p},
 it means that simulations shouldn't even be attempted.}
 
-\item{messages}{a logical value indicating whether log messages should be printed}
+\item{verbose}{a logical value indicating whether log messages should be printed}
 }
 \value{
 a list containing a sample matrix and a vector of scores
@@ -66,8 +66,9 @@ with \code{n} rows, where \code{n} is the number of simulation experiments
 parameterizations \code{NCOL(P)}.
 }
 \examples{
-\dontrun{
+\donttest{
   library(parallel)
+  opt <- options(mc.cores=2) # use [detectCores()]
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
   ex <- experiments(m,as_ode(m,cla=FALSE))
@@ -81,8 +82,13 @@ parameterizations \code{NCOL(P)}.
   dprior <- dNormalPrior(log(muX^2/(muX^2+sdX^2)),sqrt(log(1+sdX^2/muX^2)))
   s <- simstoch(ex,G,logParMap)
   O <- makeObjective(ex,s)
-  X <- rprior(1000)
+  X <- rprior(100)
   colnames(X) <- rownames(m$Parameter)
-  posterior <- ABCSMC(O,t(X),Sigma=cov(X),dprior=dprior,delta=c(0.5,1.5))
+  if (interactive()) {
+     posterior <- ABCSMC(O,t(X),Sigma=cov(X),dprior=dprior,delta=c(0.5,1.5))
+  } else {
+     posterior <- ABCSMC(O,t(head(X)),Sigma=cov(X),dprior=dprior,delta=c(0.5,1.5))
+  }
+  options(opt) # restore original options
 }
 }

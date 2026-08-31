@@ -24,7 +24,8 @@ Imports:
     mvtnorm,
     digest,
     colorspace,
-    pracma
+    pracma,
+    cli
 Suggests:
     ks,
     remotes,

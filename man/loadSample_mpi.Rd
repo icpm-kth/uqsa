@@ -4,10 +4,12 @@
 \alias{loadSample_mpi}
 \title{This function merges mpi-samples into one}
 \usage{
-loadSample_mpi(files)
+loadSample_mpi(files, verbose = interactive())
 }
 \arguments{
 \item{files}{the rds files where the individual samples are stored}
+
+\item{verbose}{logical, when FALSE nothing will be printed on screen}
 }
 \value{
 a list of named items, with \verb{$Sample} representing one

@@ -15,6 +15,10 @@ columns of output vectors}
 \item{dataERR}{a matrix of measurement errors, if available,
 defaults to the maximum data value.}
 }
+\value{
+a numeric scalar, the distance between data \code{dataVAL} and
+simulation \code{funcSim}.
+}
 \description{
 if each experiment corresponds to one simulation and is fully
 quanitified by itself, then calculating the overall distance
