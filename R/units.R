@@ -370,7 +370,8 @@ unit_as_character <- function(unit){
 #' @return called for the side-effect; no value.
 #' @examples
 #' lapply(lapply(c("km/h","s^-2","1/s"),unit.from.string),print)
-print.unit_of_measurement <- function(unit,...){
+print.unit_of_measurement <- function(x,...){
+	unit <- x
 	cat(
 		sprintf("\u00ab%s\u00bb has been interpreted as",comment(unit)),
 		"the product of: ",
@@ -385,7 +386,7 @@ print.unit_of_measurement <- function(unit,...){
 		),
 		sep='\n'
 	)
-	invisible(unit)
+	invisible(x)
 }
 
 #' %as% is a binary operator on strings with units in them
