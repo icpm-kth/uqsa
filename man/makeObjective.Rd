@@ -30,7 +30,6 @@ and M is th enumber of measurement time-points (length of the
 time-series).
 }
 \examples{
-\donttest{
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
   o <- as_ode(m)
@@ -41,5 +40,4 @@ time-series).
   s <- simulator.c(ex,o)
   objFunc <- makeObjective(ex,s)
   print(objFunc(values(m$Parameter)))
-}
 }

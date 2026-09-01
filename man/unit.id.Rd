@@ -4,12 +4,12 @@
 \alias{unit.id}
 \title{Converts a unit to a string that works as an identifier}
 \usage{
-unit.id(unit.str, prnt = FALSE)
+unit.id(unit.str, verbose = FALSE)
 }
 \arguments{
 \item{unit.str}{the original string representastion of that unit}
 
-\item{prnt}{logical switch: if TRUE, the name will be printed.}
+\item{verbose}{logical switch: if TRUE, the name will be printed.}
 }
 \value{
 unit.id string

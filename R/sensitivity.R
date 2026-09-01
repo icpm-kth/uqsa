@@ -150,7 +150,6 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 	axis(2)
 	z <- c(S[,1]*0,rev(S[,1]))
 	polygon(x,z,col=color[1],lty=0)
-	print(n)
 	for (i in 1:n){
 		y <- c(C[,i],rev(C[,i+1]))
 		polygon(x,y,col=color[i+1],lty=0)

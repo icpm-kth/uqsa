@@ -75,7 +75,6 @@ so_path(odeModel) <- "/tmp/path/AKAR4.so"
 The shared library needs to be created first. Either with \verb{R CMD SHLIB}, \link{shlib}, or manually on the system's command line (bash, zsh, etc.).
 }
 \examples{
-\donttest{
   requireNamespace("errors")
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
@@ -103,6 +102,5 @@ The shared library needs to be created first. Either with \verb{R CMD SHLIB}, \l
      }
      par(oldpar)
   }
-}
 }
 \keyword{ODE}

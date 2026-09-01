@@ -17,3 +17,4 @@
 ^LICENSE\.md$
 ^index\.md$
 ^index\.Rmd$
+^cran-comments\.md$

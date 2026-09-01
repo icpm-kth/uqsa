@@ -509,8 +509,8 @@ conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
 			)
 		}
 		if (as.logical(verbose)){
-			cat("d/dt(",sprintf("%+i*%s",round(C[i,l]),nm[l]),") == 0\n")
-			cat(Text,"\n")
+			cat("d/dt(",sprintf("%+i*%s",round(C[i,l]),nm[l]),") == 0\n") # guarded by verbose
+			cat(Text,"\n") # guarded by verbose
 		}
 		allText[i] <- Text
 	}
@@ -655,7 +655,7 @@ dose_response_experiments <- function(m,E,iv,input,out=rownames(m$Output)){
 	tr <- m$Transformation
 	eventSchedule <- character(NROW(E))
 	if (!is.null(E$event) && any(nzchar(E$event))){
-		print(E[,c("type","event")])
+		print(E[,c("type","event")]) # part of warning
 		warning("Dose response experiments are not (yet) fully compatible with events, this script will try its best.")
 		eventSchedule <- E$event
 	}
@@ -755,7 +755,7 @@ experiments <- function(m,o=NULL){
 	if (all(is.finite(pmatch('Experiment',names(m))))){
 		E <- m$Experiment
 	} else {
-		cat(names(m),"\n",sep=", ")
+		message(paste(names(m),collapse=", ")) # part of error message
 		stop("argument must contain an item named 'Experiment(s)'.")
 	}
 	# If there isn't an output table, then all state variables must be measurable

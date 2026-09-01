@@ -4,7 +4,7 @@ Title: Uncertainty Quantification and Global Sensitivity Analysis
 Version: 0.7.7
 Authors@R: c(
     person("Alexandra","Jauhiainen",email="Alexandra.Jauhiainen@astrazeneca.com",role=c("aut")),
-    person("Olivia","Eriksson",email="olivia@kth.se",role=c("aut","ctb")),
+    person("Olivia","Eriksson",email="olivia@kth.se",role=c("aut","ctb","cph")),
     person("Federica","Milinanni",email="fedmil@kth.se",role="aut"),
     person("Andrei","Kramer",email="andreikr@kth.se",role=c("cre")))
 Description: In the field of systems biology, chemical reaction networks are modeled in various ways, two of those are: (i) stochastic simulations (e.g. Gillespie algorithm) and (ii) ordinary differential equations. In this package we use a simple tabular model description of reaction systems and automatically generate C code for either solver type. We use the ordinary differential equation solvers from the GNU Scientific Library and provide an interface that deals with lists of simulation experiments. Each simulation experiment contains both the data, and instructions for the model to replicate the data. We use approximate bayesian computation methods (combined with Markov chain Monte Carlo and sequqntial Monte Carlo, particle filters) as well as classic methods such as Random Walk Metropolis (Gaussian transition kernel) and Simplified Manifold Metropolis adjusted Langevin algorithm for a Bayesian investigation of the model´s parameter space. Experiments can be evaluated in a sequence; intermediate probability densities are modeled using the 'VineCopula' package. The package is also intended to be useful in an HPC environment, with some functions that use 'pbdMPI' capabilities.

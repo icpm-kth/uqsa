@@ -79,7 +79,6 @@ location)
 Some return values are optional and omiting them saves time.
 }
 \examples{
-\donttest{
   requireNamespace("errors")
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
@@ -90,5 +89,4 @@ Some return values are optional and omiting them saves time.
   so_path(o) <- shlib(o)
   s <- simulator.c(ex,o)
   y <- s(values(m$Parameter))
-}
 }

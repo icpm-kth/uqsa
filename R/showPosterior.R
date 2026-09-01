@@ -51,17 +51,15 @@ highCor <- function(C){
 #' @return pairs plot object
 #' @export
 #' @examples
-#' \donttest{
 #'   rprior <- rNormalPrior(c(-1,0,1),c(1,2,3))
 #'   A <- matrix(rnorm(9),3,3)
 #'   A <- (A + t(A))^2/norm(A)^2
-#'   X <- rprior(1000)
+#'   X <- rprior(30)
 #'   Z <- X %*% A
 #'   colnames(Z) <- letters[seq(3)]
 #'   colnames(X) <- letters[seq(3)]
 #'   ## make a plot:
 #'   if (interactive()) showPosterior(Z,X) # this can take a while
-#' }
 showPosterior <- function(posterior, prior,...){
 # upper and lower panel defaults
 	n_posterior <- NROW(posterior)

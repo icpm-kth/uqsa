@@ -153,13 +153,13 @@ unit.scale <- function(prefix){
 #'
 #' @export
 #' @param unit.str the original string representastion of that unit
-#' @param prnt logical switch: if TRUE, the name will be printed.
+#' @param verbose logical switch: if TRUE, the name will be printed.
 #' @return unit.id string
 #' @examples
 #' print(unit.id("s^9"))
 #' print(unit.id("cm^2"))
 #' print(unit.id("1/s"))
-unit.id <- function(unit.str,prnt=FALSE){
+unit.id <- function(unit.str,verbose=FALSE){
 	uid <- unit.str
 	uid <- sub("^1$","dimensionless",uid)
 	uid <- gsub("1/","one_over_",uid)
@@ -171,11 +171,11 @@ unit.id <- function(unit.str,prnt=FALSE){
 	uid <- gsub("\\^([0-9]+)","_to_the_power_of_\\1",uid)
 	uid <- gsub("\\^-([0-9]+)","_to_the_power_of_\\1_inverted",uid)
 	uid <- make.names(uid,unique=FALSE)
-	if (prnt){
+	if (verbose){
 		message("units in \u00ab!Unit\u00bb column:")
-		print(unit.str)
+		print(unit.str) # guarded by verbose
 		message("automatically created sbml unit ids:")
-		print(uid)
+		print(uid) # guarded by verbose
 	}
 	return(uid)
 }
@@ -270,7 +270,7 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 #' print(unit.from.string("µM"))
 unit.from.string <- function(unit.str){
 	if (!is.character(unit.str)){
-		print(unit.str)
+		print(unit.str) # part of error messaging, and stop()
 		stop("unit.str has to be a charcter vector of length 1.")
 	}
 	stopifnot(length(unit.str)==1)
@@ -363,15 +363,17 @@ unit_as_character <- function(unit){
 #' @return a numeric value y: val*originalUnit = y*targetUnit, the
 #'     target unit is attached to the returned value, as a comment.
 #' @examples
-#' \donttest{
-#'   ## needs `unit` utility (system utility)
-#'   y <- "21 cm" %as% "inches"
-#'   y <- "12 nmol/L" %as% "mol/L"
-#'   print(comment(y))
-#'   y <- "12 mol/m^3" %as% "mmol/L"
-#' }
+#'   ## needs `unit` utility (a system utility)
+#'   if (nzchar(Sys.which("units"))){
+#'     y <- "21 cm" %as% "inches"
+#'     y <- "12 nmol/L" %as% "mol/L"
+#'     print(comment(y))
+#'     y <- "12 mol/m^3" %as% "mmol/L"
+#'   } else {
+#'     message("The system utility 'units' is not installed, skipping example.")
+#'   }
 `%as%` <- function(txtUnit,target){
-	if (system2("command",args=c("-v","units"),stderr=FALSE,stdout=FALSE)){
+	if (nzchar(Sys.which("units"))){
 		warning("The 'units' utility must be installed (system program, not R).")
 		return(NA)
 	}

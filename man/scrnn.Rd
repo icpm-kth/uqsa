@@ -57,7 +57,6 @@ performed. The stoichiometry and modifiers remain unchanged
 throughout.
 }
 \examples{
-\donttest{
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
   ex <- experiments(m)
@@ -83,5 +82,4 @@ throughout.
   if (interactive()){
      plot(ex,y)
   }
-}
 }

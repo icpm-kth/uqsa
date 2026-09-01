@@ -4,10 +4,12 @@
 \alias{mcmc}
 \title{Markov Chain Monte Carlo}
 \usage{
-mcmc(update)
+mcmc(update, verbose = interactive())
 }
 \arguments{
 \item{update}{and update function}
+
+\item{verbose}{prints a progress bar when TRUE}
 }
 \value{
 M(initiPar,N), a function of initial starting values and
@@ -28,11 +30,13 @@ the given parameters, all other dependencies have to be either
 implicit (as a closure) or attributes of parGiven.
 }
 \examples{
-\donttest{
-  m <- model_from_tsv(uqsa_example("AKAP79"))
-  rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
-  p <- rwm \%@\% "init"             # a valid starting point
-  smallSample <- rwm(rwm \%@\% "init",100,1e-4)
-  if (interactive()) pairs(smallSample[,seq(6)])
-}
+ m <- model_from_tsv(uqsa_example("AKAP79"))
+ rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
+ p <- rwm \%@\% "init"             # a valid starting point
+ if (interactive()){
+   smallSample <- rwm(rwm \%@\% "init",500,1e-4)
+   pairs(smallSample[,seq(6)])
+ } else {
+   smallSample <- rwm(rwm \%@\% "init",10,1e-4)
+ }
 }

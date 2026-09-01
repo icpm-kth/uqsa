@@ -41,7 +41,6 @@ variable, \code{parMCMC} (a numeric vector), with all necessary
 attributes for smmala to work (e.g. through initialization).
 }
 \examples{
-\donttest{
 m <- model_from_tsv(uqsa_example("AKAR4"))
 o <- as_ode(m)
 c_path(o) <- write_c_code(generate_code(o))
@@ -53,8 +52,9 @@ attr(p,"simulations") <- s(p)
 ### without parameter transformations
 gll <- gllf()
 FI <- fi()
-print(ll(p))
-print(gll(p))
-print(FI(p))
+if (interactive()){
+  print(ll(p))
+  print(gll(p))
+  print(FI(p))
 }
 }

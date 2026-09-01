@@ -9,7 +9,9 @@ tune_step_size(
   parMCMC = attr(MCMC, "init"),
   target_acceptance = 0.25,
   iter.max = 6,
-  h = 1e-04
+  h = 1e-04,
+  N = 100,
+  verbose = interactive()
 )
 }
 \arguments{
@@ -26,6 +28,12 @@ acceptance, some work well with a very high acceptance.}
 to return.}
 
 \item{h}{initial guess for the MCMC step size}
+
+\item{N}{size of test-samples for acceptance rate estimate}
+
+\item{verbose}{when TRUE, this function prints a progress bar, 'a:'
+reports current acceptance rate, and 'h:' reports the current
+step-size.}
 }
 \value{
 optimal step size
@@ -41,23 +49,28 @@ It will take 100 sample points repeatedly, until an acceptance of
 decreased if acceptance is very low and increased when it is too
 high.
 
+When verbos
 This function will do at most
 }
 \examples{
-\donttest{
+  opt <- options(mc.cores=2)
   m <- model_from_tsv(uqsa_example("AKAP79"))
   rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
   p <- rwm \%@\% "init"             # a valid starting point
-  h <- tune_step_size(rwm,p)
   N <- 100
-  smallSample <- rwm(rwm \%@\% "init",N,h)
-  print(h)
-  plot(
-    smallSample \%@\% "logLikelihood",
-    type="l",
-    main=sprintf("step size: \%g",h),
-    xlab="iterations",
-    ylab="log-likelihood"
-  )
-}
+  if (interactive()){
+    h <- tune_step_size(rwm,p)
+    smallSample <- rwm(rwm \%@\% "init",N,h)
+    print(h)
+    plot(
+      smallSample \%@\% "logLikelihood",
+      type="l",
+      main=sprintf("step size: \%g",h),
+      xlab="iterations",
+      ylab="log-likelihood"
+    )
+  } else {
+    h <- tune_step_size(rwm,p,N=20,iter.max=1)
+  }
+  options(opt)
 }

@@ -82,7 +82,7 @@ shlib <- function(file){
 		libs   <- tryCatch(system2("gsl-config", "--libs", stdout = TRUE), error = function(e) sprintf("failure in 'gsl-config --cflags': %s",e))
 	} else if (Sys.info()[["sysname"]] == "Windows"){
 		## perhaps pkg-config is available internally to R CMD SHLIB
-		cat(
+		cat( # writes to a file
 			c(
 				"PKG_CPPFLAGS = $(shell pkg-config --cflags gsl) -O3",
 				"PKG_LIBS = $(shell pkg-config --libs gsl)"
@@ -101,7 +101,8 @@ shlib <- function(file){
 		)
 		cflags <- Sys.getenv("GSL_CFLAGS", unset = "")
 		libs <- Sys.getenv("GSL_LIBS", unset = "-lgsl -lgslcblas")
-		cat(cflags,libs,sep="\n")
+		message(cflags) # additional warning information
+		message(libs)   # additional warning information
 	}
 	## Environment variables
 	### 1. get current values to restor later
@@ -130,8 +131,7 @@ shlib <- function(file){
 		wait = TRUE
 	)
 	if (!file.exists(so)) {
-		cat(status)
-		warning(sprintf("Building %s failed.",so))
+		warning(sprintf("Building %s failed.",so),status)
 	}
 	return(so)
 }
@@ -180,11 +180,10 @@ write_c_code <- function(C, model.name=comment(C), file=NULL){
 		model.name <- cme$name
 		C <- generate_code(cme)
 	}
-	# cat(sprintf("Writing file: %s\n",file))
 	if (!dir.exists(dirname(file))){
 		dir.create(dirname(file),recursive=TRUE)
 	}
-	cat(C,sep="\n",file=file)
+	cat(C,sep="\n",file=file) # writes to file
 	return(file)
 }
 
@@ -209,7 +208,7 @@ write_c_code <- function(C, model.name=comment(C), file=NULL){
 write_and_compile <- function(M){
 	C <- generate_code(M)
 	f <- tempfile(pattern=sprintf("%s_",M$name), fileext=".c")
-	cat(C,sep="\n",file=f)
+	cat(C,sep="\n",file=f) # writes to file
 	c_path(M) <- f
 	so_path(M) <- shlib(f)
 	return(M)

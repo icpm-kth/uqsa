@@ -127,7 +127,7 @@ mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rn
 #'
 #' This function makes a Boolean choice about chnages in temperature,
 #' based on the log(liklihood) values of two Markov chains in a
-#' parallel tempering setting.
+#' parallel tempering setting. The outcome is stochastic.
 #'
 #' This function is useful if `mpi.send()` and `mpi.recv()` are used.
 #'
@@ -165,31 +165,44 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #' implicit (as a closure) or attributes of parGiven.
 #'
 #' @param update and update function
+#' @param verbose prints a progress bar when TRUE
 #' @return M(initiPar,N), a function of initial starting values and
 #'     number of Markov chain steps
 #' @export
 #' @examples
-#' \donttest{
-#'   m <- model_from_tsv(uqsa_example("AKAP79"))
-#'   rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
-#'   p <- rwm %@% "init"             # a valid starting point
-#'   smallSample <- rwm(rwm %@% "init",100,1e-4)
-#'   if (interactive()) pairs(smallSample[,seq(6)])
-#' }
-mcmc <- function(update){
+#'  m <- model_from_tsv(uqsa_example("AKAP79"))
+#'  rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
+#'  p <- rwm %@% "init"             # a valid starting point
+#'  if (interactive()){
+#'    smallSample <- rwm(rwm %@% "init",500,1e-4)
+#'    pairs(smallSample[,seq(6)])
+#'  } else {
+#'    smallSample <- rwm(rwm %@% "init",10,1e-4)
+#'  }
+mcmc <- function(update, verbose=interactive()){
 	M <- function(parMCMC,N=1000,eps=1e-4){
 		sample <- matrix(NA,nrow=N,ncol=length(parMCMC))
 		colnames(sample) <- names(parMCMC)
 		ll <- numeric(N)
 		b <- numeric(N)
 		a <- logical(N)
+		A <- 0
+		if (verbose) {
+			cli::cli_progress_bar("mcmc",total=N)
+		}
 		for (i in seq(N)){
 			parMCMC <- update(parMCMC,eps)
 			ll[[i]] <- attr(parMCMC,"logLikelihood")
 			sample[i,] <- as.numeric(parMCMC)
 			b[i] <- attr(parMCMC,"beta")
 			a[i] <- attr(parMCMC,"accepted")
+			A <- A + a[i]
+			if (verbose && i %% 10) {
+				cli::cli_progress_bar(inc=10, status=sprintf("a: %i %%",A*10))
+				A <- 0
+			}
 		}
+		if (verbose) cli::cli_progress_done()
 		attr(sample,"acceptanceRate") <- mean(a)
 		attr(sample,"acceptance") <- a
 		attr(sample,"logLikelihood") <- ll
@@ -250,7 +263,6 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 	xr <- pbdMPI::allreduce(msg,op="max",comm=comm) # now everyone knows which two will swap
 	ret <- list(B=B,LL=LL,H=H)
 	if (xr>=0 && xr < cs){ # do the swap
-		##message(sprintf("On iteration %i rank %i and rank %i are swapping temperatures.",i,root,xr))
 		if (r == root){
 			xrB  <- pbdMPI::recv(rank.source = xr, tag = 1, comm = comm)
 			xrLL <- pbdMPI::recv(rank.source = xr, tag = 2, comm = comm)
@@ -414,7 +426,7 @@ loadSample_mpi <- function(files,verbose=interactive()){
 	ll <- Reduce(function(a,b) c(a,attr(b,"logLikelihood")),s,init=NULL)
 	if (verbose){
 		cat("loading sample files with acceptances:\n")
-		print(acc)
+		print(acc) # guarded by verbose
 	}
 	Sample <- Reduce(rbind,s)
 	return(list(Sample=Sample,beta=betaTrace,acceptanceRate=acc,swapRate=sR,logLikelihood=ll,betaSelection=bSelection,uB=uB))
@@ -788,8 +800,6 @@ metropolis_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm
 			llProposal <- logLikelihood(parProposal)
 			if (!is.numeric(llProposal) || length(llProposal)!=1){
 				warning(sprintf("metropolis_update encountered an invalid likelihood value: %f\n",llProposal[1]))
-				message(llProposal)
-				message(as.numeric(parGiven))
 			}
 			attr(parProposal,"logLikelihood") <- llProposal
 			class(parProposal) <- class(parGiven)
@@ -824,8 +834,6 @@ metropolis_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm
 			llProposal <- logLikelihood(parProposal)
 			if (!is.numeric(llProposal) || length(llProposal)!=1){
 				warning(sprintf("metropolis update encountered an invalid likelihood value: %f\n",llProposal[1]))
-				message(llProposal)
-				message(as.numeric(parGiven))
 			}
 			attr(parProposal,"logLikelihood") <- llProposal
 			L <- exp(beta*(llProposal - llGiven))
@@ -964,7 +972,6 @@ gllf <- function(parMapJac=\(x) diag(1,length(x),length(x))) {
 #' @return a scalar value: log(likelihood(data|parMCMC))
 #' @export
 #' @examples
-#' \donttest{
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' o <- as_ode(m)
 #' c_path(o) <- write_c_code(generate_code(o))
@@ -976,9 +983,10 @@ gllf <- function(parMapJac=\(x) diag(1,length(x),length(x))) {
 #' ### without parameter transformations
 #' gll <- gllf()
 #' FI <- fi()
-#' print(ll(p))
-#' print(gll(p))
-#' print(FI(p))
+#' if (interactive()){
+#'   print(ll(p))
+#'   print(gll(p))
+#'   print(FI(p))
 #' }
 fi <- function(parMapJac=\(x) diag(1,length(x),length(x))){
 	return(
@@ -1084,8 +1092,6 @@ smmala_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(x))
 		llProposal <- logLikelihood(parProposal)
 		if (!is.numeric(llProposal) || length(llProposal)!=1){
 			warning(sprintf("smmala update encountered an invalid likelihood value: %f\n",llProposal[1]))
-			message(llProposal)
-			message(as.numeric(parGiven))
 		}
 		attr(parProposal,"beta") <- beta
 		attr(parProposal,"logLikelihood") <- llProposal
@@ -1231,7 +1237,6 @@ automatic_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(
 logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 	N <- length(experiments)
 	n.out <- sum(unlist(lapply(experiments,\(e) sum(!is.na(e$data))))) # total number of valid values
-	message(sprintf("experiments contain %i non-missing values",n.out))
 	if (!is.null(simpleUserLLF)){
 		llf <- function(parMCMC){
 			if (!("simulations" %in% names(attributes(parMCMC)))) {
@@ -1308,6 +1313,7 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 			return(L)
 		}
 	}
+	comment(llf) <- sprintf("The experiments contain %i non-missing values in total.",n.out)
 	return(llf)
 }
 
@@ -1434,18 +1440,18 @@ logParMapJac <- function(parMCMC){
 #' @param ex experiments of `m`, with simulation instructions for `o`.
 #' @param x initial point of the markov chain, pre in itialized to
 #'     have the right attributes.
+#' @param verbose prints extra messages when TRUE
 #' @return `smmala` a function of three arguments: p0, N, eps; where
 #'     p0 is the starting point, N is the desired sample-size, and eps
 #'     is the step size. This function has an attribute called "init",
 #'     with a pre-initialized starting point.
 #' @examples
-#' \donttest{
 #'   m <- model_from_tsv(uqsa_example("AKAP79"))
 #'   rwm <- high_level_smmala(m) # "random walk", metropolis algorithm
-#'   p <- rwm %@% "init"             # a valid starting point
+#'   p <- rwm %@% "init"          # a valid starting point
 #'   N <- 100
-#'   smallSample <- rwm(rwm %@% "init",N,1e-4)
 #'   if (interactive()){
+#'     smallSample <- rwm(rwm %@% "init",N,1e-4)
 #'     plot(
 #'       smallSample %@% "logLikelihood",
 #'       type='l',
@@ -1453,34 +1459,33 @@ logParMapJac <- function(parMCMC){
 #'       xlab="iterations",
 #'       ylab="log-likelihood"
 #'     )
+#'   } else {
+#'     smallSample <- rwm(rwm %@% "init",1,1e-4)
 #'   }
-#' }
-high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=values(m$Parameter)){
+high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=values(m$Parameter), verbose=interactive()){
 	if (is.null(o$c_path) || is.null(o$so_path) || !file.exists(o$so_path)){
 		C <- generate_code(o)
 		c_path(o) <- write_c_code(C)
 		so_path(o) <- shlib(o)
 	}
 	if (all(m$Parameter$scale == "log10")){
-		message("The parameters are given in log10-scale, so the simulator will do the reverse transformation: 10^p.")
+		if (verbose) message("The parameters are given in log10-scale, so the simulator will do the reverse transformation: 10^p.")
 		parMap <- log10ParMap
 		parMapJac <- log10ParMapJac
 	} else if (all(m$Parameter$scale == "log2") || all(m$Parameter$scale == "ld")) {
-		message("The parameters are given in log2-scale, so the simulator will do the reverse transformation: 2^p.")
+		if (verbose) message("The parameters are given in log2-scale, so the simulator will do the reverse transformation: 2^p.")
 		parMap <- log2ParMap
 		parMapJac <- log2ParMapJac
 	} else if (all(m$Parameter$scale == "log") || all(m$Parameter$scale == "ln")){
-		message("The parameters are given in log-scale, so the simulator will do the reverse transformation: exp(p).")
+		if (verbose) message("The parameters are given in log-scale, so the simulator will do the reverse transformation: exp(p).")
 		parMap <- logParMap
 		parMapJac <- logParMapJac
 	} else {
-		message("The parameters are given in linear scale, they will be used as is.")
+		if (verbose) message("The parameters are given in linear scale, they will be used as is.")
 		parMap <- identity
 		parMapJac <- diag(rep(1.0,length(x)))
 	}
-
 	s <- simfi(ex,o,parMap=parMap,omit=0)
-
 	dprior <- dNormalPrior(
 		mean=m$Parameter$median %otherwise% values(m$Parameter),
 		sd=m$Parameter$stdv %otherwise% m$Parameter$sd
@@ -1530,42 +1535,45 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 #'     have the right attributes.
 #' @param beta for parallel tempering, the log-likelihood will have a
 #'     factor of `beta` applied to it
+#' @param verbose prints extra messages when TRUE
 #' @return `smmala` a function of three arguments: p0, N, eps; where
 #'     p0 is the starting point, N is the desired sample-size, and eps
 #'     is the step size. This function has an attribute called "init",
 #'     with a pre-initialized starting point.
 #' @examples
-#' \donttest{
 #'   m <- model_from_tsv(uqsa_example("AKAP79"))
 #'   rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
 #'   p <- rwm %@% "init"             # a valid starting point
 #'   N <- 100
-#'   smallSample <- rwm(rwm %@% "init",N,1e-6)
-#'   plot(
-#'     smallSample %@% "logLikelihood",
-#'     type="l",
-#'     main=sprintf("%i iterations",N),
-#'     xlab="iterations",
-#'     ylab="log-likelihood"
-#'   )
-#' }
-high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x=values(m$Parameter), beta=1.0){
+#'   if (interactive()){
+#'     smallSample <- rwm(rwm %@% "init",N,1e-6)
+#'     plot(
+#'       smallSample %@% "logLikelihood",
+#'       type="l",
+#'       main=sprintf("%i iterations",N),
+#'       xlab="iterations",
+#'       ylab="log-likelihood"
+#'     )
+#'   } else {
+#'     smallSample <- rwm(rwm %@% "init",N/4,1e-6)
+#'   }
+high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x=values(m$Parameter), beta=1.0, verbose=interactive()){
 	if (is.null(so_path(o)) || !file.exists(so_path(o))){
 		C <- generate_code(o)
 		c_path(o) <- write_c_code(C)
 		so_path(o) <- shlib(o)
 	}
 	if (all(m$Parameter$scale == "log10")){
-		message("The parameters are given in log10-scale, so the simulator will do the reverse transformation: 10^p.")
+		if (verbose) message("The parameters are given in log10-scale, so the simulator will do the reverse transformation: 10^p.")
 		parMap <- log10ParMap
 	} else if (all(m$Parameter$scale == "log2") || all(m$Parameter$scale == "ld")) {
-		message("The parameters are given in log2-scale, so the simulator will do the reverse transformation: 2^p.")
+		if (verbose) message("The parameters are given in log2-scale, so the simulator will do the reverse transformation: 2^p.")
 		parMap <- log2ParMap
 	} else if (all(m$Parameter$scale == "log") || all(m$Parameter$scale == "ln")){
-		message("The parameters are given in log-scale, so the simulator will do the reverse transformation: exp(p).")
+		if (verbose) message("The parameters are given in log-scale, so the simulator will do the reverse transformation: exp(p).")
 		parMap <- logParMap
 	} else {
-		message("The parameters are given in linear scale, they will be used as is.")
+		if (verbose) message("The parameters are given in linear scale, they will be used as is.")
 		parMap <- identity
 	}
 	s <- simfi(ex,o,parMap=parMap,omit=2)
@@ -1608,6 +1616,7 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 #' decreased if acceptance is very low and increased when it is too
 #' high.
 #'
+#' When verbos
 #' This function will do at most
 #'
 #' @param MCMC a Markov chain Monte Carlo closure (function)
@@ -1619,36 +1628,48 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 #' @param iter.max maximum number of iterations until the function has
 #'     to return.
 #' @param h initial guess for the MCMC step size
+#' @param N size of test-samples for acceptance rate estimate
+#' @param verbose when TRUE, this function prints a progress bar, 'a:'
+#'     reports current acceptance rate, and 'h:' reports the current
+#'     step-size.
 #' @return optimal step size
 #' @export
 #' @examples
-#' \donttest{
+#'   opt <- options(mc.cores=2)
 #'   m <- model_from_tsv(uqsa_example("AKAP79"))
 #'   rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
 #'   p <- rwm %@% "init"             # a valid starting point
-#'   h <- tune_step_size(rwm,p)
 #'   N <- 100
-#'   smallSample <- rwm(rwm %@% "init",N,h)
-#'   print(h)
-#'   plot(
-#'     smallSample %@% "logLikelihood",
-#'     type="l",
-#'     main=sprintf("step size: %g",h),
-#'     xlab="iterations",
-#'     ylab="log-likelihood"
-#'   )
-#' }
-tune_step_size <- function(MCMC,parMCMC=attr(MCMC,"init"),target_acceptance=0.25, iter.max=6, h=1e-4){
+#'   if (interactive()){
+#'     h <- tune_step_size(rwm,p)
+#'     smallSample <- rwm(rwm %@% "init",N,h)
+#'     print(h)
+#'     plot(
+#'       smallSample %@% "logLikelihood",
+#'       type="l",
+#'       main=sprintf("step size: %g",h),
+#'       xlab="iterations",
+#'       ylab="log-likelihood"
+#'     )
+#'   } else {
+#'     h <- tune_step_size(rwm,p,N=20,iter.max=1)
+#'   }
+#'   options(opt)
+tune_step_size <- function(MCMC,parMCMC=attr(MCMC,"init"),target_acceptance=0.25, iter.max=6, h=1e-4, N=100, verbose=interactive()){
 	A <- target_acceptance
+	if (verbose) cli::cli_progress_bar("tuning",total=iter.max)
 	for (i in seq(iter.max)){
-		X <- MCMC(parMCMC,100,h)
+		X <- MCMC(parMCMC,N,h)
 		a <- X %@% "acceptanceRate"
-		message(sprintf("acceptance rate: %g, step-size: %g;",a,h))
+		if (verbose){
+			cli::cli_progress_update(1,status=sprintf("a: %g, h %g;",a,h))
+		}
 		if (abs(a-A) < 3e-2) {
 			break
 		} else {
 			h <- h*max(2*a^2/(A^2 + a^2),0.001)
 		}
 	}
+	if (verbose) cli::cli_progress_done()
 	return(h)
 }

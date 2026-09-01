@@ -65,7 +65,6 @@
 #' @export
 #' @keywords ODE
 #' @examples
-#' \donttest{
 #'   requireNamespace("errors")
 #'   f <- uqsa_example("AKAR4")
 #'   m <- model_from_tsv(f)
@@ -93,7 +92,6 @@
 #'      }
 #'      par(oldpar)
 #'   }
-#' }
 gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3, method=0, omit=0, time.out = 1, num.steps = 0){
 	if (is(odeModel,"ode")){
 		so <- so_path(odeModel)
@@ -172,7 +170,6 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #' @export
 #' @keywords ODE
 #' @examples
-#' \donttest{
 #'   f <- uqsa_example("AKAR4")
 #'   m <- model_from_tsv(f)
 #'   ex <- experiments(m,as_ode(m,cla=FALSE))
@@ -183,7 +180,6 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #'   cat(C,file=c.file,sep='\n')
 #'   so.file <- shlib(c.file)
 #'   y <- gsl_odeiv2_CRNN(so.file,ex,l,nu,nu*0)
-#' }
 gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0, time.out = 1, nstep=0){
 	if (is.character(name) && endsWith(name,".so")){
 		so <- name
@@ -260,7 +256,6 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 #' @return closure that maps one argument (p) to simulation results (y).
 #' @export
 #' @examples
-#' \donttest{
 #'   f <- uqsa_example("AKAR4")
 #'   m <- model_from_tsv(f)
 #'   ex <- experiments(m)
@@ -286,7 +281,6 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 #'   if (interactive()){
 #'      plot(ex,y)
 #'   }
-#' }
 scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$nu, modifiers=\(p) p$m, method = 0, time.out = 1){
 	N <- length(experiments)
 	sim <- function(parMCMC){
@@ -362,7 +356,6 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'     each state variable, function, time-point, and parameter
 #'     vector.
 #' @examples
-#' \donttest{
 #'   f <- uqsa_example("AKAR4")
 #'   m <- model_from_tsv(f)
 #'   o <- as_ode(m)
@@ -373,7 +366,6 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'   s <- simfi(ex,o)
 #'   y <- s(values(m$Parameter)) # simulates
 #'   print(y)
-#' }
 simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, time.out = 1, num.steps = 0){
 	N <- length(experiments)
 	if (is(odeModel,"ode")){
@@ -474,7 +466,6 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #' @return a closure that returns the model's output for a given
 #'     parameter vector
 #' @examples
-#' \donttest{
 #'   requireNamespace("errors")
 #'   f <- uqsa_example("AKAR4")
 #'   m <- model_from_tsv(f)
@@ -485,7 +476,6 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #'   so_path(o) <- shlib(o)
 #'   s <- simulator.c(ex,o)
 #'   y <- s(values(m$Parameter))
-#' }
 simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, omit=3, method = 0, time.out=1, num.steps=0){
 	if (is.na(pmatch("data",names(experiments[[1]]))) && omit < 3){
 		warning(
@@ -721,7 +711,6 @@ defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 #' @param distance a function that calculates ABC scores (distance between data and simulations)
 #' @return an objective function
 #' @examples
-#' \donttest{
 #'   f <- uqsa_example("AKAR4")
 #'   m <- model_from_tsv(f)
 #'   o <- as_ode(m)
@@ -732,7 +721,6 @@ defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 #'   s <- simulator.c(ex,o)
 #'   objFunc <- makeObjective(ex,s)
 #'   print(objFunc(values(m$Parameter)))
-#' }
 makeObjective <- function(experiments,simulate,distance=defaultDistance){
 	Objective <- function(parABC){
 		out <- simulate(parABC)

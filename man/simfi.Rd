@@ -81,7 +81,6 @@ The limit on the number of steps, on the other hand, is a feature
 of the GSL ODE solvers and can trigger precisely.
 }
 \examples{
-\donttest{
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
   o <- as_ode(m)
@@ -92,5 +91,4 @@ of the GSL ODE solvers and can trigger precisely.
   s <- simfi(ex,o)
   y <- s(values(m$Parameter)) # simulates
   print(y)
-}
 }

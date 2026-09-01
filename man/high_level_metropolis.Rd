@@ -9,7 +9,8 @@ high_level_metropolis(
   o = as_ode(m, cla = FALSE),
   ex = experiments(m, o),
   x = values(m$Parameter),
-  beta = 1
+  beta = 1,
+  verbose = interactive()
 )
 }
 \arguments{
@@ -24,6 +25,8 @@ have the right attributes.}
 
 \item{beta}{for parallel tempering, the log-likelihood will have a
 factor of \code{beta} applied to it}
+
+\item{verbose}{prints extra messages when TRUE}
 }
 \value{
 \code{smmala} a function of three arguments: p0, N, eps; where
@@ -40,18 +43,20 @@ necessary functions to move in parameter space (gradients of
 likelihood and prior), as well as Fisher Information functions.
 }
 \examples{
-\donttest{
   m <- model_from_tsv(uqsa_example("AKAP79"))
   rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
   p <- rwm \%@\% "init"             # a valid starting point
   N <- 100
-  smallSample <- rwm(rwm \%@\% "init",N,1e-6)
-  plot(
-    smallSample \%@\% "logLikelihood",
-    type="l",
-    main=sprintf("\%i iterations",N),
-    xlab="iterations",
-    ylab="log-likelihood"
-  )
-}
+  if (interactive()){
+    smallSample <- rwm(rwm \%@\% "init",N,1e-6)
+    plot(
+      smallSample \%@\% "logLikelihood",
+      type="l",
+      main=sprintf("\%i iterations",N),
+      xlab="iterations",
+      ylab="log-likelihood"
+    )
+  } else {
+    smallSample <- rwm(rwm \%@\% "init",N/4,1e-6)
+  }
 }

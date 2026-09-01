@@ -8,7 +8,8 @@ high_level_smmala(
   m,
   o = as_ode(m, cla = TRUE),
   ex = experiments(m, o),
-  x = values(m$Parameter)
+  x = values(m$Parameter),
+  verbose = interactive()
 )
 }
 \arguments{
@@ -20,6 +21,8 @@ high_level_smmala(
 
 \item{x}{initial point of the markov chain, pre in itialized to
 have the right attributes.}
+
+\item{verbose}{prints extra messages when TRUE}
 }
 \value{
 \code{smmala} a function of three arguments: p0, N, eps; where
@@ -36,13 +39,12 @@ necessary functions to move in parameter space (gradients of
 likelihood and prior), as well as Fisher Information functions.
 }
 \examples{
-\donttest{
   m <- model_from_tsv(uqsa_example("AKAP79"))
   rwm <- high_level_smmala(m) # "random walk", metropolis algorithm
-  p <- rwm \%@\% "init"             # a valid starting point
+  p <- rwm \%@\% "init"          # a valid starting point
   N <- 100
-  smallSample <- rwm(rwm \%@\% "init",N,1e-4)
   if (interactive()){
+    smallSample <- rwm(rwm \%@\% "init",N,1e-4)
     plot(
       smallSample \%@\% "logLikelihood",
       type='l',
@@ -50,6 +52,7 @@ likelihood and prior), as well as Fisher Information functions.
       xlab="iterations",
       ylab="log-likelihood"
     )
+  } else {
+    smallSample <- rwm(rwm \%@\% "init",1,1e-4)
   }
-}
 }

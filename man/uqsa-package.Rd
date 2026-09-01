@@ -21,7 +21,7 @@ Useful links:
 Authors:
 \itemize{
   \item Alexandra Jauhiainen \email{Alexandra.Jauhiainen@astrazeneca.com}
-  \item Olivia Eriksson \email{olivia@kth.se} [contributor]
+  \item Olivia Eriksson \email{olivia@kth.se} [contributor, copyright holder]
   \item Federica Milinanni \email{fedmil@kth.se}
 }
 

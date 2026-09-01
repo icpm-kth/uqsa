@@ -21,7 +21,7 @@ TRUE is the chains should swap their temperatures
 \description{
 This function makes a Boolean choice about chnages in temperature,
 based on the log(liklihood) values of two Markov chains in a
-parallel tempering setting.
+parallel tempering setting. The outcome is stochastic.
 }
 \details{
 This function is useful if \code{mpi.send()} and \code{mpi.recv()} are used.
