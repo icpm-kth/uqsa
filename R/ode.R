@@ -92,40 +92,6 @@ as_ode <- function(m,cla=requireNamespace("pracma")){
 	return(ode)
 }
 
-#' Print a summary about the ode
-#'
-#' An ODE model was crteated by `as_ode` can be summarized here,
-#' including information about the compiled version of the model.
-#'
-#' The ode model is for the most part a list of named vectors and
-#' matrices which together encode the mathematical structure of the
-#' ode.
-#'
-#' @param x the ode
-#' @param ... requirement of print generic, not used.
-#' @return NULL
-#' @export
-#' @return called for side-effect (printout); no value.
-#' @examples
-#' f <- uqsa_example("AKAR4")
-#' m <- model_from_tsv(f)
-#' o <- as_ode(m)
-#' print(o)
-print.ode <- function(x,...){
-	o <- x
-	cat(
-		sprintf("%26s : %s","Model name",o$name),
-		sprintf("%26s : %s [%s]","C file",o$c_path,o$c.date),
-		sprintf("%26s : %s [%s]","shared library",o$so_path,o$c.date),
-		sprintf("%26s : %i","Number of state variables",length(o$var)),
-		sprintf("%26s : %i","Number of parameters",length(o$par)),
-		sprintf("%26s : %i","Number of outputs",length(o$func)),
-		sprintf("%26s : %i","Conservation laws",NROW(o$conservationLaws)),
-		sprintf("%26s : %s","Transformations",ifelse(is.null(o$tf),"no","yes")),
-		sep="\n"
-	)
-}
-
 #' Add information about compiled code
 #'
 #' Adds the path of the shared library (.so file) to the ODE model.

@@ -348,49 +348,6 @@ unit_as_character <- function(unit){
 	}
 }
 
-#' Prints an interpretation string of a unit
-#'
-#' The unit object is a tagged data frame, with these columns:
-#' - multiplier
-#' - kind
-#' - scale
-#' - exponent
-#'
-#' The interpretation is the same as in SBML units. This function also
-#' prints an inferred unit id: a string that has no special characters
-#' in it and can be used in places where such characters are not
-#' allowed (e.g. SBML unit `id` attribute).
-#'
-#' The original string that a unit was derived from is attached to the
-#' unit object as a [comment].
-#'
-#' Units are produced by the function [unit.from.string].
-#'
-#' @param x an object of type 'unit_of_measurement'
-#' @param ... required by the generic print function.
-#' @export
-#' @return called for the side-effect; no value.
-#' @examples
-#' lapply(lapply(c("km/h","s^-2","1/s"),unit.from.string),print)
-print.unit_of_measurement <- function(x,...){
-	unit <- x
-	cat(
-		sprintf("\u00ab%s\u00bb has been interpreted as",comment(unit)),
-		"the product of: ",
-		sprintf("%30s",attr(unit,"id")),
-		"==============================",
-		sprintf(
-			"(%g \u00D7 %s \u00D7 10^(%i))^(%i)",
-			unit$multiplier,
-			unit$kind,
-			unit$scale,
-			unit$exponent
-		),
-		sep='\n'
-	)
-	invisible(x)
-}
-
 #' %as% is a binary operator on strings with units in them
 #'
 #' The function calls the units utility and converts the string on the

@@ -17,52 +17,6 @@
   return(out)
 }
 
-#' prints the simulation results
-#'
-#' The results, if accidentally printed, are difficult to read.  This
-#' function prevents these accidental prints. It summarizes the
-#' results instead.
-#' @param x simulation results
-#' @param ... requirement of print generic, not used.
-#' @export
-#' @return called for side-effect (printout); no value.
-#' @examples
-#' m <- model_from_tsv(uqsa_example("AKAR4"))
-#' o <- as_ode(m)
-#' ex <- experiments(m,o)
-#' c_path(o) <- write_c_code(generate_code(o))
-#' so_path(o) <- shlib(o)
-#' s <- simfi(ex,o)
-#' y <- s(values(m$Parameter))
-#' print(y)
-print.simulation <- function(x,...){
-	y <- x
-	cat(sprintf("number of simulation experiments: %i\n",length(y)))
-	for (i in seq_along(y)){
-		cat(sprintf("%42s",names(y)[i]),"\n")
-		cat(paste0(rep("-",42),collapse=""),"\n")
-		for (j in seq_along(y[[i]])){
-			x <- y[[i]][[j]]
-			if (is.array(x)){
-				cat(sprintf("%24s: %s (dim)\n",names(y[[i]])[j],paste(dim(x),collapse=", ")))
-			} else if (is.numeric(x) && length(x)==1) {
-				cat(sprintf("%24s: %g\n",names(y[[i]])[j],x))
-			} else {
-				cat(
-					sprintf(
-						"%24s: %s (class), %s (type)\n",
-						names(y[[i]])[j],
-						paste(class(x),collapse=", "),
-						typeof(x)
-					)
-				)
-			}
-		}
-		cat("\n")
-	}
-	cat("experiments: ",paste(names(y),collapse=", "),"\n")
-}
-
 #' simulates an ode model with extra work
 #'
 #' This function calls a C function which solves an initial value

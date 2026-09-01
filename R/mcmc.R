@@ -123,54 +123,6 @@ mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rn
 	return(parMCMC)
 }
 
-#' print information about the mcmc variable
-#'
-#' Some mcmc variables have many attributes, which clutter the screen
-#' when accidentally printed. This function prevents these long
-#' printouts.
-#'
-#' @param x the variable
-#' @param ... requirement of print generic, not used.
-#' @export
-#' @return called for side-effect (printout); no value.
-#' @examples
-#' m <- model_from_tsv(uqsa_example("AKAR4"))
-#' o <- as_ode(m)
-#' c_path(o) <- write_c_code(generate_code(o))
-#' so_path(o) <- shlib(o)
-#' ex <- experiments(m,o)
-#' dprior <- dNormalPrior(values(m$Parameter),m$Parameter$stdv)
-#' s <- simfi(ex,o)
-#' p <- mcmc_init(1.0,values(m$Parameter),s,dprior=dprior)
-#' print(p)
-print.mcmcVariable <- function(x,...){
-	v <- x
-	print(v[seq_along(v)])
-	A <- c("simulations", "logLikelihood", "prior", "gradLogLikelihood","gradLogPrior","fisherInformation")
-	for (a in A){
-		if (v %has% a){
-			if (is.list(attr(v,a))){
-				cat(sprintf("%24s: %i (length)\n",a,length(attr(v,a))))
-			} else if (is.numeric(attr(v,a)) && length(attr(v,a))==1){
-				cat(sprintf("%24s: %g\n",a,attr(v,a)))
-			} else if (is.numeric(attr(v,a)) && length(attr(v,a))>1){
-				cat(sprintf("%24s: %i (length)\n",a,length(attr(v,a))))
-			} else if (is.matrix(attr(v,a))) {
-				cat(sprintf("%24s: %s (dim)\n",a,paste(dim(attr(v,a)),collapse="x")))
-			} else {
-				cat(
-					sprintf(
-						"%24s: %s (class) %s (type)\n",
-						a,
-							paste(class(attr(v,a)),collapse=", "),
-							typeof(attr(v,a))
-					)
-				)
-			}
-		}
-	}
-}
-
 #' Should 2 Markov chains exchange their temperatures
 #'
 #' This function makes a Boolean choice about chnages in temperature,
@@ -197,7 +149,6 @@ change_temperature <- function(b1,ll1,b2,ll2){
 	r <- runif(1)
 	return(r<a)
 }
-
 
 #' Markov Chain Monte Carlo
 #'

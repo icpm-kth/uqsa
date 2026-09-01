@@ -336,35 +336,6 @@ as_cme <- function(m){
 	return(CME)
 }
 
-#' Print a Summary about the CME model
-#'
-#' This information printed on screen omits the deatls about the
-#' interactions, only the lengths of the vectors included in the data
-#' structure `CME`.
-#'
-#' @param x a model created by [as_cme]
-#' @param ... requirement of print generic, not used.
-#' @return Nil
-#' @export
-#' @examples
-#' f <- uqsa_example("AKAR4")
-#' m <- model_from_tsv(f)
-#' cmeModel <- as_cme(m)
-#' print(cmeModel)
-print.cme <- function(x,...){
-	cmeModel <- x
-	cat(
-		sprintf("%26s : %s","Name",cmeModel$name),
-		sprintf("%26s : %s [%s]","C file",cmeModel$c_path,cmeModel$c.date),
-		sprintf("%26s : %s [%s]","shared library",cmeModel$so_path,cmeModel$so.date),
-		sprintf("%26s : %i","Number of state variables",length(cmeModel$initialCount)),
-		sprintf("%26s : %i","Number of parameters",length(cmeModel$par)),
-		sprintf("%26s : %i","Number of outputs",length(cmeModel$output)),
-		sprintf("%26s : %i","Number of constants",length(cmeModel$const)),
-		sep="\n"
-	)
-}
-
 reactionEffect <- function(sm){
 	all_reactants <- rep(
 		mapply(
@@ -377,10 +348,8 @@ reactionEffect <- function(sm){
 		),
 		2
 	)
-
 	rNames <- c(names(sm$left),names(sm$right))
-  names(all_reactants) <- rNames
-
+	names(all_reactants) <- rNames
 	ar <- lapply( # affected reaction propensities
 		all_reactants,
 		\(reactants){

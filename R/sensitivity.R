@@ -242,7 +242,7 @@ subtract_col_mean <- function(X){
 #' s <- simulator.c(ex[1],o)
 #' p0 <- values(m$Parameter)
 #' rprior <- rUniformPrior(p0/2,p0*2)
-#' SP <- saltelli_prior(800,rprior)
+#' SP <- saltelli_prior(700,rprior)
 #' fM1 <- t(s(t(SP$M1))[[1]]$func[1,,])
 #' fM2 <- t(s(t(SP$M2))[[1]]$func[1,,])
 #' fN <- lapply(asplit(SP$N,3),\(N) t(s(t(N))[[1]]$func[1,,]))
