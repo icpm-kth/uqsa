@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 library(uqsa)
 ```
 
-Baysian uncertainty quantification aims to establish the amount of knowledge we have (or indeed lack) about the possible values of model parameters. Sometimes this is described as our belief in different parameter values. The knowledge or belief is expressed in the
+Bayesian uncertainty quantification aims to establish the amount of knowledge we have (or indeed lack) about the possible values of model parameters. Sometimes this is described as our belief in different parameter values. The knowledge or belief is expressed in the
 form of a probability distribution[^footnote1] over the parameters: the *posterior distribution* in the Bayesian setting. The posterior distribution is obtained by updating prior information we have on the parameters (described by the *prior distribution*), using information from the observed data and the model structure (specified through the *likelihood function*). The posterior distribution can be calculated with Bayes formula as:
 
 
@@ -66,7 +66,7 @@ If it is not possible to write an explicit function for the likelihood we can us
 There are three major steps when running ABC:
 
 **1. Define a prior distribution**
-This is done in the same way as for the likelihood based approch described above.
+This is done in the same way as for the likelihood based approach described above.
 
 
 **2. Define an objective function**

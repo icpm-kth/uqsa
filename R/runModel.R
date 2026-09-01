@@ -21,7 +21,7 @@
 #'
 #' This function calls a C function which solves an initial value
 #' problem, calculates the sensitivity of the solution, log-likelihood
-#' value `ll`, gradient of `ll` amd Fisher-Information.
+#' value `ll`, gradient of `ll` and Fisher-Information.
 #'
 #' The model is always simulated using a shared library. The path to
 #' the shared library can be passed in three different ways:
@@ -319,7 +319,7 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'
 #' A hopeless simulation can be stopped early using the settings
 #' `num.steps` and `time.out`. The value of `num.steps` applies to
-#' every continuous simulation stretch (e.g. betwee two events), teh
+#' every continuous simulation stretch (e.g. between two events), teh
 #' count of steps is reset whenever an event occurs or one simulation
 #' ends (between different parameters and different experiments).
 #'
@@ -453,7 +453,7 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #'     simulator, `omit=1` will not calculate the fisher information
 #'     (and thus not return it), `omit=2` will omit the gradient of
 #'     the log-likelihood, and `omit=3` will omit the likelihood
-#'     calculations alltogether. Omission is cumulative: `omit=3`
+#'     calculations altogether. Omission is cumulative: `omit=3`
 #'     omits all the previously mentioned optional quantities.
 #' @param method an integer offset, integration method (for ODE models), see
 #'     [method] and [name_method]
@@ -702,7 +702,7 @@ defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 #' output (simulation), DATA is the measured data, while STDV
 #' represents the standard error of that measurement. All three have
 #' the same size: N×M, where N is the number of observables (outputs),
-#' and M is th enumber of measurement time-points (length of the
+#' and M is the number of measurement time-points (length of the
 #' time-series).
 #'
 #' @export

@@ -14,6 +14,6 @@ Bayesian (UQ) and variance decomposition methods (GSA). It is primarily designed
 * **Cite:** https://icpm-kth.github.io/uqsa/articles/cite.html
 
 
-## Acknowledgements
+## Acknowledgments
 
 This open source software code was developed with support from the Swedish e-Science Research Centre (SeRC) as well as within the Human Brain Project, funded from the European Union’s Horizon 2020 Framework Programme for Research and Innovation (945539) (Human Brain Project SGA1, SGA2 and SGA3).

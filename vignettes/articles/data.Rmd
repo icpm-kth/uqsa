@@ -220,7 +220,7 @@ measurement uncertainty very close to the values.
 In the [SBtabVGEN](https://github.com/icpm-kth/SBtabVFGEN) we actually
 have a custom rule for this: data is marked with `>` and uncertainty
 is marked with `~`, e.g.: `>AKAR4p` and `~AKAR4p`. The official SBtab
-documentation doesn't commetn on this issue.
+documentation doesn't comment on this issue.
 
 SBtab is an alternative format that we can use. The SBtabVFGEN package
 provides the translation layer to import from that model type.

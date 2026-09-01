@@ -1,7 +1,7 @@
-#' dCopulaPrior creates a prior probability density function
+#' Creates a prior probability density function
 #'
-#' This function accepts the return list of fitCopula() or
-#' makeIndepCopula() and creates a density function from it.
+#' This function accepts the return list of [fitCopula] or
+#' [makeIndepCopula] and creates a density function from it.
 #'
 #' @export
 #' @importFrom VineCopula RVinePDF
@@ -88,7 +88,7 @@ rCopulaPrior <- function(Copula){
 
 #' dUniformPrior creates a uniform density function
 #'
-#' The returned denisty function takes vectors of the same size as ll
+#' The returned density function takes vectors of the same size as ll
 #' and ul. It returns the product of the component's one-dimensional
 #' uniform distribtions.
 #'

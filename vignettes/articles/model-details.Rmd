@@ -15,7 +15,7 @@ laws, parameters, and possibly inputs and outputs.
 In this R package, we use plain TSV files to describe these
 quantities. These TSV files have very few rules. One universal rule is
 that the first column is always reserved for row-names. Row-names must
-work as variable names in R and C. Certan names would conflict with
+work as variable names in R and C. Certain names would conflict with
 builtin commands (`if`, `while`, `do`, `continue`, `break`). Obviously
 such names cannot be used for reacting compounds or parameters.  In
 our examples, we label the first column with `id` (but it can have any
@@ -57,7 +57,7 @@ The model tables follow these guidelines:
   + formula
   + unit
 - Any quantity that is defined using a row in some table can get
-  updated values in another table, or values to comapre against
+  updated values in another table, or values to compare against
 - Data tables need to specifiy values using a notation that keeps
   values and their uncertainties together, e.g.:
   + `1.234(21)`

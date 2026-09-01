@@ -8,7 +8,7 @@
 #' @export
 #' @param X sample that characterizes the traget distribution (rows)
 #' @return as list: vineCop, U, Z, and Y where U are marginal
-#'     probability samples, Z are cummulative density values for U,
+#'     probability samples, Z are cumulative density values for U,
 #'     and Y are the probability density values of U.
 #' @examples
 #' rprior <- rNormalPrior(c(1,2,3),c(4,5,6))

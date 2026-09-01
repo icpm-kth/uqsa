@@ -11,7 +11,7 @@
 #'
 #' The distance of the ABC setting is compared to a threshold value
 #' \eqn{\\delta}{delta}. The threshold doesn't need to be explicitly
-#' provided. You can however provide a span of acceptabel values in
+#' provided. You can however provide a span of acceptable values in
 #' any order, the smaller value will be used as a lower bound, the
 #' larger value will be used initially.
 #'

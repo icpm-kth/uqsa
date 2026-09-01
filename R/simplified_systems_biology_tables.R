@@ -180,7 +180,7 @@ uncertainty <- function(df){
 #'
 #' Given a data.frame that should contain a column that assigns a math
 #' expression to a name (in row names), this function returns a named
-#' character vector with the expressions. The formula column shoul dbe
+#' character vector with the expressions. The formula column should be
 #' named "formula" (if it exists, only this column will be used). But
 #' some other spellings will also work as fallback. As a fallback
 #' "value" is acceptable as well, because it makes sense to say
@@ -227,7 +227,7 @@ formulae <- function(df){
 #' @param j column-indices of `x` to be modified
 #' @param sgn modification
 #' @param value a numeric value of appropriate size, depending on `i` and `j`
-#' @return The value of x is modified additively ihn place: `x <- x + sgn*value`
+#' @return The value of x is modified in place: `x <- x + sgn*value` (value is additive)
 #' @export
 #' @examples
 #'  x <- matrix(seq(12),3,4)
@@ -245,7 +245,7 @@ formulae <- function(df){
 #' Convert to linear space
 #'
 #' A number given in some logarithmic space can be transformed back to linear space
-#' A call like `base(x) <- 10` means that x was provided in decadic logarithm form.
+#' A call like `base(x) <- 10` means that x was provided in base-10 logarithm form.
 #' This will adjust `x` so that it is now in linear space.
 #'
 #' If `x` was provided in logarithmic space, then it is an exponent to

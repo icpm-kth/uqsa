@@ -16,7 +16,7 @@
 #' @param sfactor scales Sigma up or down (Sigma is the covariance matrix for the moves proposed in the ABCMCMC algorithm).
 #' @param delta ABC threshold.
 #' @param num number of different starting parameter vectors (initial states of the chains) to generate. Usually, num is equal to the number of chain that will be run in the sampling procedure.
-#' @return list with entries prePar (sampled parameters),  preDelta (distances between experimental data and trajectories produced with each of the parameters in prePar), Sigma (covariance matrix for the moves proposed in the ABCMCMC algortihm) and startPar (starting parameters for the ABCMCMC chains)
+#' @return list with entries prePar (sampled parameters),  preDelta (distances between experimental data and trajectories produced with each of the parameters in prePar), Sigma (covariance matrix for the moves proposed in the ABCMCMC algorithm) and startPar (starting parameters for the ABCMCMC chains)
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' cme <- as_cme(m)

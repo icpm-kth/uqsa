@@ -266,7 +266,7 @@ flux_matrix <- function(Reaction){
 #' sa data structure that can be used to generate code for the
 #' Gillespie solver in this package.
 #'
-#' This function interprets the contionuous model `m` as a discrete
+#' This function interprets the continuous model `m` as a discrete
 #' state model with molecule counts and propensities. For this reason,
 #' we need to specify a volume for the simulations to take place in.
 #'

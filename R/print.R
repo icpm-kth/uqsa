@@ -145,7 +145,7 @@ print.simulation <- function(x,...){
 
 #' Print a summary about the ode
 #'
-#' An ODE model was crteated by `as_ode` can be summarized here,
+#' An ODE model was created by `as_ode` can be summarized here,
 #' including information about the compiled version of the model.
 #'
 #' The ode model is for the most part a list of named vectors and
@@ -227,7 +227,7 @@ print.mcmcVariable <- function(x,...){
 
 #' Print a Summary about the CME model
 #'
-#' This information printed on screen omits the deatls about the
+#' This information printed on screen omits the details about the
 #' interactions, only the lengths of the vectors included in the data
 #' structure `CME`.
 #'

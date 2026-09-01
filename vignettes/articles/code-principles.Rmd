@@ -105,7 +105,7 @@ enclose the solver as well.
 
 The model's solution doesn't have to be derived from an ODE using one
 of our solvers, it may be a stochastic solver, or an external solver
-such as deSolve.
+such as `deSolve`.
 
 Crucially, the solver may return a value that the MCMC update function
 may require to work properly. We don't want to call the solver twice,

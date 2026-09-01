@@ -60,7 +60,7 @@ solvers there are big differences in consumed cpu-time.
 
 # Dose Sequence Approach
 
-For this model one of th epossible approaches is to create an event
+For this model one of the possible approaches is to create an event
 schedule that applies a certain dose of base calcium or calmodulin
 (depending on the experiment) in a sequence. Here is an example dose
 sequence of base Ca levels (dose column):
@@ -99,8 +99,8 @@ table).
 
 We represent each experiment as a time series, even though the data
 sets were originally represented as dose response curves (a map
-between an input [e.g. Ca] and an output [e.g. ActivePP2B]). We
-arbitrarily set a time betwen input doses and simulate all points in
+between an input, e.g. 'Ca', and an output, e.g. 'ActivePP2B'). We
+arbitrarily set a time between input doses and simulate all points in
 one series, with just enough time in-between to reach the next higher
 steady state from the current steady state (the steady state level
 changes with each dose of base-level Ca).
@@ -188,7 +188,7 @@ par(oldpar)
 
 Here we notice that in Experiment 1, the trajectory fails to reach
 steady state (i.e. a flat line), for any dose. So, it doesn't look
-like a staircase at all. This may or may not be desireable (depends on
+like a staircase at all. This may or may not be desirable (depends on
 whether the original experiment was in steady state).
 
 Because most data-structures are just plain R data types, it is easy
@@ -201,7 +201,7 @@ ex[[1]]$outputTimes <- ex[[1]]$outputTimes*60
 ex[[1]]$measurementTimes <- ex[[1]]$measurementTimes*60
 ```
 
-Becasue we changed the experimental setup, we recreate the solver function:
+Because we changed the experimental setup, we recreate the solver function:
 ```{r solver-2}
 s <- simulator.c(ex, o, parMap=logParMap)
 y <- s(p) # new solution

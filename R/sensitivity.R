@@ -48,7 +48,7 @@ sum_of_bin_variance  <- function(hst,binMeans,totalMean){
 #'
 #' This function performs a binning based estimation of the global
 #' sensitivity of a model's output with respect to the model's
-#' parameters. The output can be a prediction of the model's behaviour
+#' parameters. The output can be a prediction of the model's behavior
 #' in a scenario of interest (parameters, input, intial values,
 #' boundary conditions, scheduled events etc.). The output models a
 #' potentially measurable value (the "observable"). The sample-rows

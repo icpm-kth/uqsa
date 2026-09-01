@@ -113,13 +113,13 @@ showPosterior <- function(posterior, prior,...){
 #'
 #' This function makes a plot that is quite similar to parallel
 #' coordinates. It includes information about the prior as error-bars,
-#' centered around th eprior's median.
+#' centered around the prior's median.
 #'
 #' @param posterior a matrix, with N rows (sample-members), and M columns
 #'     (different model parameters). The columns must be named.
 #' @param prior a data.frame with at least $median, and $stdv
-#'     columns. This data.frame may also include the fields: color,
-#'     and colorOutline to change the prior error-bars.
+#'     columns. This data.frame may also include the fields: `color`,
+#'     and `colorOutline` to change the prior error-bars.
 #' @param color the color of the sample lines, should have some
 #'     transparency.
 #' @param ... parameters are passed to matplot.

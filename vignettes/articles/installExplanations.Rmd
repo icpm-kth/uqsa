@@ -274,5 +274,5 @@ This is highly optional, if you have a different method of model creation
 or want to write the model source files by hand (which is hard for large models).
 
 It is an alternative for the TSV model format in this package. Use
-SBtabVFGEN if your model alfready is in SBtab form.
+SBtabVFGEN if your model already is in SBtab form.
 

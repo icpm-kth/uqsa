@@ -125,7 +125,7 @@ mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rn
 
 #' Should 2 Markov chains exchange their temperatures
 #'
-#' This function makes a Boolean choice about chnages in temperature,
+#' This function makes a Boolean choice about changes in temperature,
 #' based on the log(liklihood) values of two Markov chains in a
 #' parallel tempering setting. The outcome is stochastic.
 #'
@@ -282,7 +282,7 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 #' The MPI version of the mcmc function
 #'
 #' this version of the MCMC function returns a Markov chain closure
-#' that assumes that it is bein run in an MPI context: R was launched
+#' that assumes that it is being run in an MPI context: R was launched
 #' in an MPI context, e.g. using
 #' ```
 #' mpirun -H localhost:8 -N 8 Rscript ...
@@ -517,14 +517,14 @@ gatherSample <- function(files,beta=1.0,size=NA){
 #' quicker than `gatherSample`.  The temperature `beta` is
 #' disregarded, assuming that no parallel tempering was used.  To
 #' facilitate the loading of a very big sample, this function will
-#' analyse the auto-correltation within each file and returned a
+#' analyze the auto-correlation within each file and returned a
 #' thinned sub-sample of size `N/(2*tau_int)` (returning the effective
 #' sample size). The value of tau_int is calculated on the likelihood
 #' values, either with the hadron package, or the bultin `acf`
 #' function. There is no need to further reduce the result.
 #'
 #' For small samples, it is better to load the entire sample and
-#' analyse it in full. This function is intended for samples that are
+#' analyze it in full. This function is intended for samples that are
 #' so big that they challenge the memory of the machine.
 #'
 #' This function is quicker if you have used trivial parallelism,
@@ -748,7 +748,7 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 #' @param simulate a function that simulates the model
 #' @param logLikelihood a function that returns the log-likelihood
 #'     value given the paramegter value, with simulations attached to
-#'     the parameter as an attreibute (probably a closure)
+#'     the parameter as an attribute (probably a closure)
 #' @param dprior a function that returns the prior density of the
 #'     given parameter vector
 #' @param Sigma the transition kernel's covariance matrix.
@@ -859,7 +859,7 @@ metropolis_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm
 #' - parMCMC has simulations attribute
 #' - simulations list includes logLikelihood values (omit<3)
 #'
-#' This function will take the log-likelihood-values claculated by the
+#' This function will take the log-likelihood-values calculated by the
 #' ode solver in this package, and return the sum of those values over
 #' all experiments. The value the simulator returns is calculated
 #' with the assumption of a normal distribution on measurement errors.
@@ -893,7 +893,7 @@ ll <- function(parMCMC){
 #' - simulations list includes gradient values (omit <2)
 #'
 #' This function will take the log-likelihood gradient values
-#' claculated by the ode solver in this package, and return the sum of
+#' calculated by the ode solver in this package, and return the sum of
 #' those vectors over all experiments. The gll-value the simulator
 #' returns is calculated with the assumption of a normal distribution
 #' on measurement errors, and uses the "identity" map between MCMC
@@ -949,7 +949,7 @@ gllf <- function(parMapJac=\(x) diag(1,length(x),length(x))) {
 #' - parMCMC has simulations attribute
 #' - simulations list includes Fisher Information values (omit=0)
 #'
-#' This function will take the Fisher-Information-matrices claculated
+#' This function will take the Fisher-Information-matrices calculated
 #' by the ode solver in this package, and return the sum of those
 #' values over all experiments. The gll-value the simulator returns is
 #' calculated with the assumption of a normal distribution on
@@ -1336,7 +1336,7 @@ log10ParMap <- function(parMCMC){
 #'
 #' This map is used by the simulator to transform sampling variables
 #' into ODE-model porameters. As we often calculate sensitivites, we
-#' alos need the Jacobian of the map, due to the chain rule of
+#' also need the Jacobian of the map, due to the chain rule of
 #' differentiation.
 #'
 #' @param parMCMC the sampling variables (numeric vector)
@@ -1372,7 +1372,7 @@ log2ParMap <- function(parMCMC){
 #'
 #' This map is used by the simulator to transform sampling variables
 #' into ODE-model porameters. As we often calculate sensitivites, we
-#' alos need the jacobian of the map, due to the chain rule of
+#' also need the jacobian of the map, due to the chain rule of
 #' differentiation.
 #'
 #' @param parMCMC the sampling variables (numeric vector)
@@ -1409,7 +1409,7 @@ logParMap <- function(parMCMC){
 #'
 #' This map is used by the simulator to transform sampling variables
 #' into ODE-model porameters. As we often calculate sensitivites, we
-#' alos need the jacobian of the map, due to the chain rule of
+#' also need the jacobian of the map, due to the chain rule of
 #' differentiation.
 #'
 #' @param parMCMC the sampling variables (numeric vector)

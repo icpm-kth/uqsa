@@ -141,7 +141,7 @@ int Spike_event(double t, double *y_, double *p_, int EventLabel, double dose){
 }
 ```
 
-The C cource defines enums for the event labels to make the code more
+The C source defines enums for the event labels to make the code more
 readable and identify the transformations (`case` labels) by name.
 
 The transformation expression `A*(k2-k1)*dose` has access to all constants, parameters

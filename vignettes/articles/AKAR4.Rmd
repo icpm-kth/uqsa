@@ -41,7 +41,7 @@ GSL library itself, ot has to be installed in the OS (system).
 
 The functions in `.R` can be used more freely in R, and are
 functionally identical (they describe the same model), but are
-intended for use with deSolve, rather than our GSL interface
+intended for use with `deSolve`, rather than our GSL interface
 functions.
 
 The C code needs to be written to a file and compiled to a shared

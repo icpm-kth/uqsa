@@ -26,7 +26,7 @@ form: the model is a collection of TSV files
 compared to commas or semi-colon separated files), because it _can_ be
 entered with a text editor into the file, by hand, but is quite hard
 to enter as the content of a field in a spreadsheet program. So, TABs
-usually don't appear coincidntally in the files, but can be typed on
+usually don't appear coincidentally in the files, but can be typed on
 purpose. Furthermore:
 
 - TSV files render nicely on sites such as GitHub

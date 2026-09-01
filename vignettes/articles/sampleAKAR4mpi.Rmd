@@ -25,7 +25,7 @@ communicate on `MPI_COMM_WORLD`, this requires very minimal MPI code in R.
 
 First we load the model in its SBtab form and create all derived
 files. We do this step only once and have the MPI part of the process
-load the coimpleted results of this:
+load the completed results of this:
 
 ```{r model}
 f <- uqsa_example("AKAR4")

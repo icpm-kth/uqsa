@@ -16,7 +16,7 @@ library(parallel)
 opt <- options(mc.cores=detectCores())
 ```
 
-AKAP79 is a comparativelyh big model (for a demonstartive example). To
+AKAP79 is a comparatively big model (for a demonstrative example). To
 even attempt to take a somewhat sufficiently large sample of AKAP79,
 we shall use MPI and parallel tempering. There are several ways to
 launch MPI processes (e.g. spawn processes).  We will use the simplest

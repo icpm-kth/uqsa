@@ -44,7 +44,7 @@ package. Just make sure to package the simulation results in teh same
 way as our solvers do.
 
 Typically a simulation result `y` has this structure: `y[[i]]` is the
-simulation of `ex[[i]]` (where `ex` is th elist of simulation
+simulation of `ex[[i]]` (where `ex` is the list of simulation
 experiments, with data from the real experiments). Each `y[[i]]` has
 the fields: `state`, `func`, `status`, `cpuSeconds`, `numSteps`. Only
 `state` and `func` have scientific relevance. The `func` array
