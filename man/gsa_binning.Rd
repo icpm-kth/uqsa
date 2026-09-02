@@ -19,8 +19,8 @@ sensitivity \code{S[i,j]} of \code{output[i]} with respect to \code{parameter[j]
 \description{
 This function performs a binning based estimation of the global
 sensitivity of a model's output with respect to the model's
-parameters. The output can be a prediction of the model's behaviour
-in a scenario of interest (parameters, input, intial values,
+parameters. The output can be a prediction of the model's behavior
+in a scenario of interest (parameters, input, initial values,
 boundary conditions, scheduled events etc.). The output models a
 potentially measurable value (the "observable"). The sample-rows
 and the output rows must correspond (they must be from the same

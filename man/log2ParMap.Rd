@@ -14,7 +14,7 @@ a numeric vector intended for the simulator.
 }
 \description{
 This map is used by the simulator to transform sampling variables
-into ODE-model porameters.
+into ODE-model parameters.
 }
 \examples{
 p <- c(-1,0,1)

@@ -21,7 +21,7 @@ attribute doesn't exist.
 }
 \details{
 This function tries to find a similarly named attribute
-disregarding capitalization and using partila matching.
+disregarding capitalization and using partial matching.
 
 The only way from this function to return NULL is when \code{x} is null
 (the object that supposedly has the attribute). For the purposes of

@@ -7,11 +7,11 @@
 fitCopula(X)
 }
 \arguments{
-\item{X}{sample that characterizes the traget distribution (rows)}
+\item{X}{sample that characterizes the target distribution (rows)}
 }
 \value{
-as list: vineCop, U, Z, and Y where U are marginal
-probability samples, Z are cummulative density values for U,
+as list: copula, U, Z, and Y where U are marginal
+probability samples, Z are cumulative density values for U,
 and Y are the probability density values of U.
 }
 \description{

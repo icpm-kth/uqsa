@@ -50,7 +50,7 @@ kinetic_law_matrix <- function(r){
 #' when the numbers end. as.character() returns NA if the input
 #' contains any dirt.
 #'
-#' The reaction formula is as tring like this: "A + 2 B <=> C", when
+#' The reaction formula is as string like this: "A + 2 B <=> C", when
 #' split at `<=>` and then later at `+`, we get the strings that must
 #' be parsed: "A" and "2 B" for the left side and "C" for the right
 #' side. The numbers are the stoichiometric constants, or coefficients.

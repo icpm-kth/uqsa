@@ -2,19 +2,19 @@
 % Please edit documentation in R/prior.R
 \name{dCopulaPrior}
 \alias{dCopulaPrior}
-\title{dCopulaPrior creates a prior probability density function}
+\title{Creates a prior probability density function}
 \usage{
 dCopulaPrior(Copula)
 }
 \arguments{
-\item{Copula}{a list, as returned by fitCopula() or makeIndepCopula}
+\item{Copula}{a list, as returned by \link{fitCopula}}
 }
 \value{
 a function that maps parameters (a vector) to probability density values (scalar)
 }
 \description{
-This function accepts the return list of fitCopula() or
-makeIndepCopula() and creates a density function from it.
+This function accepts the return list of \link{fitCopula} and
+creates a density function from it.
 }
 \examples{
 x<-rnorm(300,mean=1,sd=2)

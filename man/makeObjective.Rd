@@ -26,7 +26,7 @@ distance(SIM, DATA, STDV), all three matrices.  SIM is the model
 output (simulation), DATA is the measured data, while STDV
 represents the standard error of that measurement. All three have
 the same size: N×M, where N is the number of observables (outputs),
-and M is th enumber of measurement time-points (length of the
+and M is the number of measurement time-points (length of the
 time-series).
 }
 \examples{

@@ -96,7 +96,7 @@ print(D)
 # Run ABCSMC
 
 We launch the particle filter from the prior (cold start), and pick
-resonable values for `delta` (the ABC distance threshold).
+reasonable values for `delta` (the ABC distance threshold).
 
 The data has measurement errors (standard error). The distance
 function takes the standard error into account, so the distances
@@ -149,7 +149,7 @@ if (requireNamespace("rgl")){
 }
 ```
 
-## Marhinals
+## Marginals
 
 The marginal distributions of each parameter in the parameter vector
 can be visualized via histograms as follows.

@@ -4,7 +4,7 @@
 #' Standard Error Matrix from an errors object
 #'
 #' If a matrix has an `errors` attribute, it is usually a vector.
-#' THis function returns the values of this attribute as a matrix (it
+#' This function returns the values of this attribute as a matrix (it
 #' preserves the dimensions of the host matrix).
 #'
 #' @param M a matrix with errors (uncertainties)
@@ -37,7 +37,7 @@ standard_error_matrix <- function(M){
 #'
 #' The argument can be either a series of tsv file-names, or a
 #' directory with tsv files. If it is a directory, all tsv files
-#' therein wil be used.
+#' therein will be used.
 #'
 #' @export
 #' @return a list of data.frames, one per file, named like the files.
@@ -122,7 +122,7 @@ values <- function(df){
 #' uncertainty found will be attached as a comment to the returned
 #' value: "sd" standard deviation for normal distribution, "se"
 #' standard error (for a normal prior), and "range" for a uniform
-#' prior. Other priors are not recognised yet.
+#' prior. Other priors are not recognized yet.
 #'
 #' The distinction between standard-error and standard-deviation
 #' doesn't matter much here: either the value is some kind of mean and
@@ -295,7 +295,7 @@ formulae <- function(df){
 #'     and the 'Compound' table
 #' @param compound.names all names of the reacting compounds
 #' @export
-#' @return the stoichimetric matrix, with some additional attributes.
+#' @return the stoichiometric matrix, with some additional attributes.
 #' @examples
 #' the_reaction <- "A + B <=> C"
 #' m <- list(
@@ -323,7 +323,7 @@ stoichiometric_matrix <- function(m,compound.names=rownames(m$Compound)) {
 #' attribute doesn't exist.
 #'
 #' This function tries to find a similarly named attribute
-#' disregarding capitalization and using partila matching.
+#' disregarding capitalization and using partial matching.
 #'
 #' The only way from this function to return NULL is when `x` is null
 #' (the object that supposedly has the attribute). For the purposes of
@@ -719,14 +719,14 @@ dose_response_experiments <- function(m,E,iv,input,out=rownames(m$Output)){
 #' with something that the model does. In such cases, don't use this function.
 #'
 #' The simulation experiments returned here, include model input
-#' parameters. Whenever conservation law analysis is perfomed, the
+#' parameters. Whenever conservation law analysis is performed, the
 #' conserved constants are set as input parameters, because the
 #' conserved amount can differ between experiments. For this reason
 #' the Experiment table is interpreted differently in the presence of
 #' conservation laws. Otherwise (no conservation laws), the `o`
 #' parameter can be omitted.
 #'
-#' The instructions must be organised in a table called Experiment(s).
+#' The instructions must be organized in a table called Experiment(s).
 #' @param m the model (with data), as obtained via `model_from_tsv()`,
 #'     or similar.
 #' @param o the ode derived from `m`, only necessary if the

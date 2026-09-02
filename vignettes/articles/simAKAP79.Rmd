@@ -51,7 +51,7 @@ we can determine that
 
 $$c = A_0 + B_0\,.$$
 
-And thus we can replac either of the two species:
+And thus we can replace either of the two species:
 
 $$A(t) = A_0 + B_0 - B(t)$$
 

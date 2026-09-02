@@ -12,7 +12,7 @@ knitr::opts_chunk$set( eval=FALSE,
 
 Everything in this article should be already known to all users and
 cover basic interactions with an operating system in the context of
-modelling, scientific computing, and simulations. Read this only for
+modeling, scientific computing, and simulations. Read this only for
 _troubleshooting_ purposes.
 
 In this guide we explain these things in much more detail than will be
@@ -190,7 +190,7 @@ can have harsh quotas on *file sizes* and *file numbers*.
 
 R packages can also be installed from within R (for individual
 users), but only to a location that is writable to you, typically in
-your `$HOME` diectory. Please ensure that `.libPaths()` returns at
+your `$HOME` directory. Please ensure that `.libPaths()` returns at
 least one location that you have write access to (this -- again -- is
 true for everyone, has nothing to do with us).
 
@@ -232,11 +232,11 @@ We have developed two companion packages:
 
 - [rgsl](icpm-kth/rgsl)
     - only simulates a model, no uncertainty quantification
-    - solves ODEs with an interface organised around *simulation experiments*
+    - solves ODEs with an interface organized around *simulation experiments*
     - uses solvers from the GNU Scientific Library
     - can be used in most of our examples, instead of `uqsa::simulator.c`
 - [SBtabVFGEN](icpm-kth/SBtabVFGEN)
-    - organises the storage and loading of models in SBtab form
+    - organizes the storage and loading of models in SBtab form
     - loads SBtab content from tsv, ods, and excel files
     - creates vfgen, MOD, sbml, and format free ODE files
     - also loads biological data contained in the SBtab files into

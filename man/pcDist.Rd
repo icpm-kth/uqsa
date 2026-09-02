@@ -11,8 +11,8 @@ pcDist(posterior, prior, color = rgb(0.5, 0.5, 0.5, 0.05), ...)
 (different model parameters). The columns must be named.}
 
 \item{prior}{a data.frame with at least $median, and $stdv
-columns. This data.frame may also include the fields: color,
-and colorOutline to change the prior error-bars.}
+columns. This data.frame may also include the fields: \code{color},
+and \code{colorOutline} to change the prior error-bars.}
 
 \item{color}{the color of the sample lines, should have some
 transparency.}
@@ -25,7 +25,7 @@ produces a plot
 \description{
 This function makes a plot that is quite similar to parallel
 coordinates. It includes information about the prior as error-bars,
-centered around th eprior's median.
+centered around the prior's median.
 }
 \examples{
 rprior <- rNormalPrior(c(-1,0,1),c(1,2,3))

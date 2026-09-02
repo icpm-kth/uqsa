@@ -13,7 +13,7 @@ and the 'Compound' table}
 \item{compound.names}{all names of the reacting compounds}
 }
 \value{
-the stoichimetric matrix, with some additional attributes.
+the stoichiometric matrix, with some additional attributes.
 }
 \description{
 Given a model, described in tabular form (\code{m} is a list of

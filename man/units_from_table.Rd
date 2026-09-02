@@ -15,7 +15,7 @@ units_from_table(df, default = "1")
 a character vector of units with names
 }
 \description{
-Given a data.frame this funciton retrieves the strings in the unit
+Given a data.frame this function retrieves the strings in the unit
 column named: unit, Unit, units (partial matching disregarding
 capitalization).
 }

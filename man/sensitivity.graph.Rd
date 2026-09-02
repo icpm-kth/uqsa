@@ -46,7 +46,7 @@ matrix. This function is intended for use with many observables,
 e.g. the state of the model at several given times. The x-axis of
 the plot is meant to be continuous. This will not produce a
 bar-chart, but a graph that shows how sensitivities change between
-farily similar observables.
+fairly similar observables.
 }
 \examples{
   rprior <- rNormalPrior(c(-1,0,1),c(1,2,3))

@@ -15,5 +15,5 @@ a list of data.frames, one per file, named like the files.
 \description{
 The argument can be either a series of tsv file-names, or a
 directory with tsv files. If it is a directory, all tsv files
-therein wil be used.
+therein will be used.
 }

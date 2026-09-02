@@ -18,7 +18,7 @@ modify(x, i = seq(NROW(x)), j = seq(NCOL(x)), sgn = +1) <- value
 \item{value}{a numeric value of appropriate size, depending on \code{i} and \code{j}}
 }
 \value{
-The value of x is modified additively ihn place: \code{x <- x + sgn*value}
+The value of x is modified in place: \code{x <- x + sgn*value} (value is additive)
 }
 \description{
 This function does the same as \code{x <- x + sign*value}, but without

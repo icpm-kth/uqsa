@@ -66,7 +66,7 @@ rprior <- rNormalPrior(
 Next, the MCMC method via `metropolis_update`, which determines the
 sampling algorithm we are going to use. Finally, we construct the
 sampler (`MH` below), which actually performs the MCMC run, this
-function takes the inital values, number of steps and the stepsize as
+function takes the initial values, number of steps and the stepsize as
 arguments.
 
 ```{r Metropolis-Hastings}

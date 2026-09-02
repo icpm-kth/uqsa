@@ -6,8 +6,8 @@
 #'
 #' @importFrom VineCopula RVineStructureSelect
 #' @export
-#' @param X sample that characterizes the traget distribution (rows)
-#' @return as list: vineCop, U, Z, and Y where U are marginal
+#' @param X sample that characterizes the target distribution (rows)
+#' @return as list: copula, U, Z, and Y where U are marginal
 #'     probability samples, Z are cumulative density values for U,
 #'     and Y are the probability density values of U.
 #' @examples
@@ -55,31 +55,6 @@ fitCopula <- function(X){
 	## fit copula
 	vineCop <- RVineStructureSelect(Z,indeptest = T)
 	return(list(copula=vineCop, U=U, Z=Z, Y=Y))
-}
-
-#' Copula Formulation for Uniform Prior Distributions
-#'
-#' Covers the (simpler) special case where the `prior(x)` is iid uniform.
-#' The return value has the same structure as the value of `fitCopula()`.
-#'
-#' @noRd
-#' @importFrom VineCopula RVineStructureSelect
-#' @param ll `ll[i]` is the lower limit of random variable `x[i]`
-#' @param ul upper limit, analogous to ll.
-#' @return list with: copula, U, Z, and Y entries.
-makeIndepCopula <- function(ll, ul){
-  npoints <- 5000
-  np <- length(ll)
-  Z <- U <- Y <- matrix(NA, npoints, np)
-  for(i in 1:np){
-     minx <- ll[i]
-     maxx <- ul[i]
-     U[,i] <- seq(minx, maxx, length.out = npoints)
-     Z[,i] <- seq(0,1, length.out=npoints)
-     Y[,i] <- rep(1/(maxx-minx), npoints)
-  }
-  vineCop <- RVineStructureSelect(Z, familyset=0)
-  return(list(copula=vineCop, U=U, Z=Z, Y=Y))
 }
 
 #' (for testing) A non-Copula sampling function as fallback

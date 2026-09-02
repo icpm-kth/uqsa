@@ -20,7 +20,7 @@ high_level_metropolis(
 
 \item{ex}{experiments of \code{m}, with simulation instructions for \code{o}.}
 
-\item{x}{initial point of the markov chain, pre in itialized to
+\item{x}{initial point of the Markov chain, pre in initialized to
 have the right attributes.}
 
 \item{beta}{for parallel tempering, the log-likelihood will have a
@@ -36,7 +36,7 @@ with a pre-initialized starting point.
 }
 \description{
 This function uses default assumption everywhere and returns a
-function that will sample from the given model. This funciton will
+function that will sample from the given model. This function will
 generate code, compile the code, create an ODE solver for it, infer
 the sampling space from the scale of the parameters, create all
 necessary functions to move in parameter space (gradients of

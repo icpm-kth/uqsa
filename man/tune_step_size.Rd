@@ -49,7 +49,7 @@ It will take 100 sample points repeatedly, until an acceptance of
 decreased if acceptance is very low and increased when it is too
 high.
 
-When verbos
+When verbose
 This function will do at most
 }
 \examples{

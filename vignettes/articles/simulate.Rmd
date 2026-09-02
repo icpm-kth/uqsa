@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
 
 Reaction network models can be simulated as deterministic models or
 stochastic models. In this article we show the deterministic
-approach. An example of how to simualte from the stochastic model is
+approach. An example of how to simulate from the stochastic model is
 available in [this article](simAKAR4stochastic.html).
 
 Given a reaction network model, we can use the law of mass action to

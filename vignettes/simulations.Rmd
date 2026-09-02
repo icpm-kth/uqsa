@@ -40,7 +40,7 @@ This closure approach allows you to hijack the procedure at any point
 by constructing your own simulation closure that uses your solver of
 convenience and/or necessity. You can write a function that accepts a
 `parMCMC` vector and calls the solvers from the `deSolve`
-package. Just make sure to package the simulation results in teh same
+package. Just make sure to package the simulation results in the same
 way as our solvers do.
 
 Typically a simulation result `y` has this structure: `y[[i]]` is the
@@ -104,19 +104,19 @@ ex <- experiments(m,o)
 ```
 
 We supply both `m` and `o` because `o` contains information about
-whether or not conservation law analysis has occured. With
+whether or not conservation law analysis has occurred. With
 conservation law analysis, we must adjust the input vector for the
 simulation experiment and reduce the initial state for each simulation
 to the dynamic variables rather (without the ones determined
 algebraically). Currently, there is no way to influence which
 variables are replaced by algebraic constraints. This can be
-inconvenient if you are relying very heavilty on the state component
+inconvenient if you are relying very heavily on the state component
 of the result `y[[i]]$state` (where some variables are now missing,
 due to conservation laws). This is why you should rely on the `func`
 component of the return value. This directly corresponds to the
-`m$Output` table: the observable/measureable quantities for this
+`m$Output` table: the observable/measurable quantities for this
 model. If you need to compare substance `A` to the data (in some way),
-then add an outout function for it (e.g. `A_out` or `A_obs` with a
+then add an output function for it (e.g. `A_out` or `A_obs` with a
 vlaue of `A`). Then it doesn't matter whether the conservation law
 analysis removes `A` from the state space; it remains part of the
 `func` component.
@@ -138,7 +138,7 @@ space, then the model accepts `10^p`. This package has a set of
 functions that perform this reverse transformation from sampling space
 to model-parameter space, based on which transformation the user
 performed in the model files: log10ParMap belongs to a log10 sampling
-space and performs `10^p` (to get back to the model-paramerts):
+space and performs `10^p` (to get back to the model-parameters):
 
 ```{r sim}
 stopifnot(all(m$Parameter$scale=="log10")) # just to make sure

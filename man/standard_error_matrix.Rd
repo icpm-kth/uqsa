@@ -14,7 +14,7 @@ A matrix similar to E, with standard error values
 }
 \description{
 If a matrix has an \code{errors} attribute, it is usually a vector.
-THis function returns the values of this attribute as a matrix (it
+This function returns the values of this attribute as a matrix (it
 preserves the dimensions of the host matrix).
 }
 \examples{

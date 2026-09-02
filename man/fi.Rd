@@ -22,7 +22,7 @@ of the parMCMC argument, requires:
 }
 }
 \details{
-This function will take the Fisher-Information-matrices claculated
+This function will take the Fisher-Information-matrices calculated
 by the ode solver in this package, and return the sum of those
 values over all experiments. The gll-value the simulator returns is
 calculated with the assumption of a normal distribution on

@@ -15,7 +15,7 @@
 called for side-effect (printout); no value.
 }
 \description{
-An ODE model was crteated by \code{as_ode} can be summarized here,
+An ODE model was created by \code{as_ode} can be summarized here,
 including information about the compiled version of the model.
 }
 \details{

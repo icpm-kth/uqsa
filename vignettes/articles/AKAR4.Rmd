@@ -58,7 +58,7 @@ print(o)
 
 The `o` variable (a list of ODE specific vectors), stores the path to
 the different files. The C file can be inspected and modified before
-making th eshared library. The code can also be written with
+making th shared library. The code can also be written with
 `cat(C,sep="\n",...)` to any file.
 
 We want to sample in logarithmic space, so we set up a mapping
@@ -85,7 +85,7 @@ parMap <- function (parABC=0) {
 ```
 
 The ODE model receives a parameter vector `parMap(parABC)` for each
-experiment, this way we can sample in logarithmic sapce. It consists
+experiment, this way we can sample in logarithmic space. It consists
 of the biological model parameters (which are the same for all
 experiments), and input parameters (which together with initial
 conditions distinguish the experimental setups). This model doesn't
@@ -197,7 +197,7 @@ dim(y[[1]]$func)
 
 where `y[[1]]` refers to the simulation corresponding to the first
 experiment: `experiment[[1]]`, and `$func` refers to the output
-function values (rather than state variables). The outout functions
+function values (rather than state variables). The output functions
 are defined in the table `SBtab$Output`.
 
 

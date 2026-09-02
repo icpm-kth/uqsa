@@ -34,14 +34,14 @@ specialized likelihood function to relate the raw data in the files
 with something that the model does. In such cases, don't use this function.
 
 The simulation experiments returned here, include model input
-parameters. Whenever conservation law analysis is perfomed, the
+parameters. Whenever conservation law analysis is performed, the
 conserved constants are set as input parameters, because the
 conserved amount can differ between experiments. For this reason
 the Experiment table is interpreted differently in the presence of
 conservation laws. Otherwise (no conservation laws), the \code{o}
 parameter can be omitted.
 
-The instructions must be organised in a table called Experiment(s).
+The instructions must be organized in a table called Experiment(s).
 }
 \examples{
 f <- uqsa_example("AKAR4")

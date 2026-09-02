@@ -17,6 +17,6 @@ This function takes a simple, human readable unit (without '*' or '/'), from a s
 and returns a data.frame with the unit's meaning.
 }
 \details{
-In this context, a simple unit is just a prefix, a unit kind, and an exponent, e.g. cm^2
-A not-simple unit is: m/s, kg\emph{m/s^2, kg}h
+In this context, a simple unit is just a prefix, a unit kind, and an exponent, e.g. \code{cm^2}
+A not-simple unit is: \code{m/s}, \code{kg*m/s^2}, \code{kg*h}
 }

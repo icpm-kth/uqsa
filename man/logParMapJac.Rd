@@ -14,8 +14,8 @@ a numeric matrix (dim: \code{c(length(parMCMC),length(parMCMC))}).
 }
 \description{
 This map is used by the simulator to transform sampling variables
-into ODE-model porameters. As we often calculate sensitivites, we
-alos need the jacobian of the map, due to the chain rule of
+into ODE-model parameters. As we often calculate sensitivities, we
+also need the jacobian of the map, due to the chain rule of
 differentiation.
 }
 \examples{

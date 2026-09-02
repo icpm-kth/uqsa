@@ -21,7 +21,7 @@
 #' @export
 #' @param v a character vector of numbers in concise error notation
 #' @param use.errors if TRUE, the errors package will be used to
-#'     retrun an object of type "errors" (from that
+#'     return an object of type "errors" (from that
 #'     package). Otherwise, the errors will be attached as an
 #'     attribute (also called "errors" to be consistent with the
 #'     errors package)

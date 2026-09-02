@@ -16,12 +16,12 @@ simulator.c(
 )
 }
 \arguments{
-\item{experiments}{a list of experiments to simulate: inital
+\item{experiments}{a list of experiments to simulate: initial
 values, inputs, time vectors, initial times}
 
 \item{modelName}{a string (with optional comment indicating an .so
 file) which points out the model to simulate if modelName is a
-cme object, the simulation will be done stochasitcally}
+cme object, the simulation will be done stochastically}
 
 \item{parMap}{the model will be called with parMap(parABC); so any
 parameter transformation can happen there.}
@@ -37,7 +37,7 @@ exclusive.}
 simulator, \code{omit=1} will not calculate the fisher information
 (and thus not return it), \code{omit=2} will omit the gradient of
 the log-likelihood, and \code{omit=3} will omit the likelihood
-calculations alltogether. Omission is cumulative: \code{omit=3}
+calculations altogether. Omission is cumulative: \code{omit=3}
 omits all the previously mentioned optional quantities.}
 
 \item{method}{an integer offset, integration method (for ODE models), see
@@ -67,7 +67,7 @@ It returns a closure around:
 
 The returned function depends only on the parameter vector (or
 matrix if more than one simulation per experiment is desired). The
-parameter vector this simnulator accepts is probably derived from
+parameter vector this simulator accepts is probably derived from
 the sampling space of a Bayesian method \eqn{\theta}{θ}, so in the list of
 arguments, it is called \code{parABC} or (parMCMC would also have been a
 valid choice). These sampling parameters can be mapped to values
@@ -76,7 +76,7 @@ where the ODE model is expected to work with \code{parModel}.  The model
 can be specified by name (with a comment indicating a file
 location)
 
-Some return values are optional and omiting them saves time.
+Some return values are optional and omitting them saves time.
 }
 \examples{
   requireNamespace("errors")

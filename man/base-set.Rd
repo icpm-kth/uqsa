@@ -18,7 +18,7 @@ x will be changed to be in linear space
 }
 \description{
 A number given in some logarithmic space can be transformed back to linear space
-A call like \code{base(x) <- 10} means that x was provided in decadic logarithm form.
+A call like \code{base(x) <- 10} means that x was provided in base-10 logarithm form.
 This will adjust \code{x} so that it is now in linear space.
 }
 \details{

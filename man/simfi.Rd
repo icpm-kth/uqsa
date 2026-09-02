@@ -15,7 +15,7 @@ simfi(
 )
 }
 \arguments{
-\item{experiments}{a list of experiments to simulate: inital
+\item{experiments}{a list of experiments to simulate: initial
 values, inputs, time vectors, initial times}
 
 \item{odeModel}{Either the ode object created by \link{as_ode} (with a
@@ -68,7 +68,7 @@ all and cannot add noise to the simulations (unlike simulator.c).
 
 A hopeless simulation can be stopped early using the settings
 \code{num.steps} and \code{time.out}. The value of \code{num.steps} applies to
-every continuous simulation stretch (e.g. betwee two events), teh
+every continuous simulation stretch (e.g. between two events), the
 count of steps is reset whenever an event occurs or one simulation
 ends (between different parameters and different experiments).
 

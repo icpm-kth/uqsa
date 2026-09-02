@@ -7,7 +7,7 @@
 unit.id(unit.str, verbose = FALSE)
 }
 \arguments{
-\item{unit.str}{the original string representastion of that unit}
+\item{unit.str}{the original string representation of that unit}
 
 \item{verbose}{logical switch: if TRUE, the name will be printed.}
 }

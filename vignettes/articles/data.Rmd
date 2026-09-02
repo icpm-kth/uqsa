@@ -138,7 +138,7 @@ print(as.data.frame(z))
 ```
 
 These are all equivalent, but only the last entry uses concise
-parenthesised error notation that this function was written
+parenthesized error notation that this function was written
 for. Parsing a delimited entry with `;`, `±`, or `,` is much easier,
 and happens a as a fall-back). *Note*: `+-` cannot be used instead of
 `±`.

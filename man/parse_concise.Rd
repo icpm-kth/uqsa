@@ -10,7 +10,7 @@ parse_concise(v, use.errors = requireNamespace("errors"), na = c(NA, NA))
 \item{v}{a character vector of numbers in concise error notation}
 
 \item{use.errors}{if TRUE, the errors package will be used to
-retrun an object of type "errors" (from that
+return an object of type "errors" (from that
 package). Otherwise, the errors will be attached as an
 attribute (also called "errors" to be consistent with the
 errors package)}

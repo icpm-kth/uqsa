@@ -19,8 +19,8 @@ change_temperature(b1, ll1, b2, ll2)
 TRUE is the chains should swap their temperatures
 }
 \description{
-This function makes a Boolean choice about chnages in temperature,
-based on the log(liklihood) values of two Markov chains in a
+This function makes a Boolean choice about changes in temperature,
+based on the log(likelihood) values of two Markov chains in a
 parallel tempering setting. The outcome is stochastic.
 }
 \details{

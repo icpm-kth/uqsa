@@ -49,7 +49,7 @@ sum_of_bin_variance  <- function(hst,binMeans,totalMean){
 #' This function performs a binning based estimation of the global
 #' sensitivity of a model's output with respect to the model's
 #' parameters. The output can be a prediction of the model's behavior
-#' in a scenario of interest (parameters, input, intial values,
+#' in a scenario of interest (parameters, input, initial values,
 #' boundary conditions, scheduled events etc.). The output models a
 #' potentially measurable value (the "observable"). The sample-rows
 #' and the output rows must correspond (they must be from the same
@@ -101,7 +101,7 @@ gsa_binning <- function(parSample,outputSample,nBins="Sturges"){
 #' e.g. the state of the model at several given times. The x-axis of
 #' the plot is meant to be continuous. This will not produce a
 #' bar-chart, but a graph that shows how sensitivities change between
-#' farily similar observables.
+#' fairly similar observables.
 #'
 #' @export
 #' @param u the values of the x-axis for the plot, if named, the names

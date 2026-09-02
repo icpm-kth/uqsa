@@ -10,7 +10,7 @@ gatherSample(files, beta = 1, size = NA)
 \arguments{
 \item{files}{a list of file names}
 
-\item{beta}{the inverse temperture to extract sample for}
+\item{beta}{the inverse temperature to extract sample for}
 
 \item{size}{a size the is smaller than the actual sample size, if
 left unchanged, all sampled points are returned}
@@ -29,7 +29,7 @@ the same (given) temperature.
 
 This function should be used if you need to inspect only one of the
 temperatures, not all of them. This function is similar to
-\link{loadSample_mpi}, which returns all temperatures. But, whearas
+\link{loadSample_mpi}, which returns all temperatures. But, whereas
 \link{loadSample_mpi} returns a list, this function returns the
 sample-matrix itself (because the result of this function is conceptually
 similar to sampling on one node, with one temperature).

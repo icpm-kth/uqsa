@@ -15,7 +15,7 @@ character vector with names taken from the row names of df
 \description{
 Given a data.frame that should contain a column that assigns a math
 expression to a name (in row names), this function returns a named
-character vector with the expressions. The formula column shoul dbe
+character vector with the expressions. The formula column should be
 named "formula" (if it exists, only this column will be used). But
 some other spellings will also work as fallback. As a fallback
 "value" is acceptable as well, because it makes sense to say

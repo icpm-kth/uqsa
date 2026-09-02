@@ -1,11 +1,11 @@
 #' Creates a prior probability density function
 #'
-#' This function accepts the return list of [fitCopula] or
-#' [makeIndepCopula] and creates a density function from it.
+#' This function accepts the return list of [fitCopula] and
+#' creates a density function from it.
 #'
 #' @export
 #' @importFrom VineCopula RVinePDF
-#' @param Copula a list, as returned by fitCopula() or makeIndepCopula
+#' @param Copula a list, as returned by [fitCopula]
 #' @return a function that maps parameters (a vector) to probability density values (scalar)
 #' @examples
 #' x<-rnorm(300,mean=1,sd=2)
@@ -90,12 +90,12 @@ rCopulaPrior <- function(Copula){
 #'
 #' The returned density function takes vectors of the same size as ll
 #' and ul. It returns the product of the component's one-dimensional
-#' uniform distribtions.
+#' uniform distributions.
 #'
 #' @export
 #' @param ll lower limit of the random variables (a vector)
 #' @param ul upper limit of the random variables (same size vector as ll)
-#' @return a probability density function on vectors withthe same length as ll and ul.
+#' @return a probability density function on vectors with the same length as ll and ul.
 #' @examples
 #' dup<-dUniformPrior(ll=c(0,1,2),ul=c(1,2,3))
 #' dup(c(0.5,1.5,2.5))
@@ -194,7 +194,7 @@ gNormalPrior <- function(mean,sd){
 #' @param mean mean of the random variables (a vector)
 #' @param sd standard deviation of the random variables (same size vector as
 #'     mean)
-#' @return an independentent multivariate normal random vector generating function: rprior(n),
+#' @return an independent multivariate normal random vector generating function: rprior(n),
 #'     where n is the requested number of vectors (rows)
 #' @examples
 #' rnp<-rNormalPrior(mean=c(0,1,2),sd=c(1,2,3))

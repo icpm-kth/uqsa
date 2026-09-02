@@ -23,7 +23,7 @@ of the parMCMC argument, requires:
 }
 \details{
 This function will take the log-likelihood gradient values
-claculated by the ode solver in this package, and return the sum of
+calculated by the ode solver in this package, and return the sum of
 those vectors over all experiments. The gll-value the simulator
 returns is calculated with the assumption of a normal distribution
 on measurement errors, and uses the "identity" map between MCMC

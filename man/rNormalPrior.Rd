@@ -13,7 +13,7 @@ rNormalPrior(mean, sd)
 mean)}
 }
 \value{
-an independentent multivariate normal random vector generating function: rprior(n),
+an independent multivariate normal random vector generating function: rprior(n),
 where n is the requested number of vectors (rows)
 }
 \description{

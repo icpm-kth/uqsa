@@ -68,7 +68,7 @@ it in the `cmeModel` object.
 
 To generate the code, we decide on a value for `LV`: Avogadro's number
 multiplied by the system's volume. Higher numbers mean more particles
-(more reactions per time-span). This mumber can be changed directly in
+(more reactions per time-span). This number can be changed directly in
 the source code of the model (the C file), afterwards, because it is
 used as a global constant in the C file.
 

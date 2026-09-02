@@ -1,6 +1,6 @@
 #' Get units from a data.frame column
 #'
-#' Given a data.frame this funciton retrieves the strings in the unit
+#' Given a data.frame this function retrieves the strings in the unit
 #' column named: unit, Unit, units (partial matching disregarding
 #' capitalization).
 #'
@@ -152,7 +152,7 @@ unit.scale <- function(prefix){
 #' returned value should work as an SBML unit id.
 #'
 #' @export
-#' @param unit.str the original string representastion of that unit
+#' @param unit.str the original string representation of that unit
 #' @param verbose logical switch: if TRUE, the name will be printed.
 #' @return unit.id string
 #' @examples
@@ -192,8 +192,8 @@ unit.id <- function(unit.str,verbose=FALSE){
 #' This function takes a simple, human readable unit (without '*' or '/'), from a string
 #' and returns a data.frame with the unit's meaning.
 #'
-#' In this context, a simple unit is just a prefix, a unit kind, and an exponent, e.g. cm^2
-#' A not-simple unit is: m/s, kg*m/s^2, kg*h
+#' In this context, a simple unit is just a prefix, a unit kind, and an exponent, e.g. `cm^2`
+#' A not-simple unit is: `m/s`, `kg*m/s^2`, `kg*h`
 #' @param u a unit with no fractions or products
 #' @return a data.frame with the unit's properties
 simple.unit <- function(u=NULL){
@@ -251,10 +251,10 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 #'        3. prefixes and units can be words or single letters
 #'        4. everything after a slash is the denominator
 #'        5. u is an accepted replacement for \eqn{\\mu}{μ}
-#'           (unicode greek mu or unicode micro symbol)
+#'           (unicode Greek mu or unicode micro symbol)
 #'        6. no parentheses (ignored): "(m/s)*kg" will be misinterpreted
 #'
-#' this retruns a data.frame with components as in the sbml standard:
+#' this returns a data.frame with components as in the sbml standard:
 #' kind, multiplier, scale and exponent since there is only one
 #' slash,parentheses do nothing everything after a slash is the
 #' denominator, so: l/mol s is the same as (l)/(mol s) Remark: not all

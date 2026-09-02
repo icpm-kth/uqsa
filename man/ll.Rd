@@ -21,7 +21,7 @@ of the parMCMC argument, requires:
 }
 }
 \details{
-This function will take the log-likelihood-values claculated by the
+This function will take the log-likelihood-values calculated by the
 ode solver in this package, and return the sum of those values over
 all experiments. The value the simulator returns is calculated
 with the assumption of a normal distribution on measurement errors.

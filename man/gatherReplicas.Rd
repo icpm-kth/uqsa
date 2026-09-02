@@ -15,7 +15,7 @@ a Sample matrix, with effective sample size
 }
 \description{
 \code{gatherReplicas} collects all sample-points, from all files, which
-are assumed to be exact replicas. Replicas hav different random
+are assumed to be exact replicas. Replicas have different random
 number seeds (and possibly sample sizes).
 }
 \details{
@@ -23,14 +23,14 @@ This function uses mclapply to process the files, which may be
 quicker than \code{gatherSample}.  The temperature \code{beta} is
 disregarded, assuming that no parallel tempering was used.  To
 facilitate the loading of a very big sample, this function will
-analyse the auto-correltation within each file and returned a
+analyze the auto-correlation within each file and returned a
 thinned sub-sample of size \code{N/(2*tau_int)} (returning the effective
 sample size). The value of tau_int is calculated on the likelihood
 values, either with the hadron package, or the bultin \code{acf}
 function. There is no need to further reduce the result.
 
 For small samples, it is better to load the entire sample and
-analyse it in full. This function is intended for samples that are
+analyze it in full. This function is intended for samples that are
 so big that they challenge the memory of the machine.
 
 This function is quicker if you have used trivial parallelism,

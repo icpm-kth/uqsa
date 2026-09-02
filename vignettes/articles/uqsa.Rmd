@@ -8,13 +8,13 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-UQSA is an R-package for modelling and calibration of biochemical (and other) reaction networks. 
+UQSA is an R-package for modeling and calibration of biochemical (and other) reaction networks. 
 
 ![**Example of a Chemical Reaction Network**](CRN.png){width=100%}
 
 
 <br>
-An important part of modelling is to estimate parameters (calibration), and to account for the uncertainty in the parameter estimates and predictions. UQSA allows you to perform Bayesian *uncertainty quantification* while calibrating your model. With UQSA you can also do a global *sensitivity analysis* to guide further experiments.
+An important part of modeling is to estimate parameters (calibration), and to account for the uncertainty in the parameter estimates and predictions. UQSA allows you to perform Bayesian *uncertainty quantification* while calibrating your model. With UQSA you can also do a global *sensitivity analysis* to guide further experiments.
 
 For a quick hands-on introduction to UQSA, you can try our example on [UQ and SA on the AKAR4 model](uqsaAKAR4.html).
 

@@ -57,7 +57,7 @@ functions
 \description{
 This function calls a C function which solves an initial value
 problem, calculates the sensitivity of the solution, log-likelihood
-value \code{ll}, gradient of \code{ll} amd Fisher-Information.
+value \code{ll}, gradient of \code{ll} and Fisher-Information.
 }
 \details{
 The model is always simulated using a shared library. The path to

@@ -77,7 +77,7 @@ return(paste(
 #' Initialize the Markov chain
 #'
 #' This function must append all required attributes to the MCMC
-#' varible, for the Markov chain to update correctly.
+#' variable, for the Markov chain to update correctly.
 #'
 #' @param beta inverse temperature for the Markov chain (parallel
 #'     tempering)
@@ -126,7 +126,7 @@ mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rn
 #' Should 2 Markov chains exchange their temperatures
 #'
 #' This function makes a Boolean choice about changes in temperature,
-#' based on the log(liklihood) values of two Markov chains in a
+#' based on the log(likelihood) values of two Markov chains in a
 #' parallel tempering setting. The outcome is stochastic.
 #'
 #' This function is useful if `mpi.send()` and `mpi.recv()` are used.
@@ -166,7 +166,7 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #'
 #' @param update and update function
 #' @param verbose prints a progress bar when TRUE
-#' @return M(initiPar,N), a function of initial starting values and
+#' @return M(initPar,N), a function of initial starting values and
 #'     number of Markov chain steps
 #' @export
 #' @examples
@@ -301,7 +301,7 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 #' where `i` is the current iteration (for round robin rank choices),
 #' `B` is the current beta value, `LL` the current log-likelihood (scalar)
 #' and `H` the current step-size (scalar); `r`, `comm`, and `cs` are
-#' the MPI rank, comm, and comm-size. The swap function returnsa list:
+#' the MPI rank, comm, and comm-size. The swap function returns a list:
 #' `list(B=,LL=,H=)` with the updated values (after swapping) or the
 #' old values if the swap was rejected.
 #'
@@ -444,14 +444,14 @@ loadSample_mpi <- function(files,verbose=interactive()){
 #'
 #' This function should be used if you need to inspect only one of the
 #' temperatures, not all of them. This function is similar to
-#' [loadSample_mpi], which returns all temperatures. But, whearas
+#' [loadSample_mpi], which returns all temperatures. But, whereas
 #' [loadSample_mpi] returns a list, this function returns the
 #' sample-matrix itself (because the result of this function is conceptually
 #' similar to sampling on one node, with one temperature).
 #'
 #' @export
 #' @param files a list of file names
-#' @param beta the inverse temperture to extract sample for
+#' @param beta the inverse temperature to extract sample for
 #' @param size a size the is smaller than the actual sample size, if
 #'     left unchanged, all sampled points are returned
 #' @return a matrix of sampled points, all with the same temperature
@@ -510,7 +510,7 @@ gatherSample <- function(files,beta=1.0,size=NA){
 #' Collect statistical Replicas
 #'
 #' `gatherReplicas` collects all sample-points, from all files, which
-#' are assumed to be exact replicas. Replicas hav different random
+#' are assumed to be exact replicas. Replicas have different random
 #' number seeds (and possibly sample sizes).
 #'
 #' This function uses mclapply to process the files, which may be
@@ -747,7 +747,7 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 #' @export
 #' @param simulate a function that simulates the model
 #' @param logLikelihood a function that returns the log-likelihood
-#'     value given the paramegter value, with simulations attached to
+#'     value given the parameter value, with simulations attached to
 #'     the parameter as an attribute (probably a closure)
 #' @param dprior a function that returns the prior density of the
 #'     given parameter vector
@@ -1019,7 +1019,7 @@ fi <- function(parMapJac=\(x) diag(1,length(x),length(x))){
 #' An optional argument to this function is `parAcceptable`, during
 #' sampling, when `metropolis` is called as the update function, and
 #' `parAcceptable(parProposal)` returns `FALSE`, then metropolis
-#' shortcuts to `retrun(parGiven)` without performing simulations.
+#' shortcuts to `return(parGiven)` without performing simulations.
 #'
 #' This function can be used to weed out parameter combinations that
 #' would result in obviously nonsensical simulations without wasting
@@ -1033,8 +1033,8 @@ fi <- function(parMapJac=\(x) diag(1,length(x),length(x))){
 #' @export
 #' @param simulate a function that simulates the model
 #' @param logLikelihood a function that returns the log-likelihood
-#'     value given the paramegter value, with simulations attached to
-#'     the parameter as an attreibute (probably a closure)
+#'     value given the parameter value, with simulations attached to
+#'     the parameter as an attribute (probably a closure)
 #' @param dprior a function that returns the prior density of the
 #'     given parameter vector
 #' @param gradLogLikelihood any function that calculates or estimates
@@ -1320,9 +1320,9 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 #' LOG10 parameter mapping used by the MCMC module
 #'
 #' This map is used by the simulator to transform sampling variables
-#' into ODE-model porameters. This function is an example for the
+#' into ODE-model parameters. This function is an example for the
 #' `parMap` slot in sampling functions. A `parMap` function, like this
-#' one, must tranform an MCMC variable (vector) to a parameter vector
+#' one, must transform an MCMC variable (vector) to a parameter vector
 #' that the scientific model we simulate can work with.
 #'
 #' @param parMCMC the sampling variables (numeric vector)
@@ -1335,7 +1335,7 @@ log10ParMap <- function(parMCMC){
 #' LOG10 parameter mapping, jacobian
 #'
 #' This map is used by the simulator to transform sampling variables
-#' into ODE-model porameters. As we often calculate sensitivites, we
+#' into ODE-model parameters. As we often calculate sensitivities, we
 #' also need the Jacobian of the map, due to the chain rule of
 #' differentiation.
 #'
@@ -1355,7 +1355,7 @@ log10ParMapJac <- function(parMCMC){
 #' LOG2 parameter mapping used by the MCMC module
 #'
 #' This map is used by the simulator to transform sampling variables
-#' into ODE-model porameters.
+#' into ODE-model parameters.
 #'
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
@@ -1371,7 +1371,7 @@ log2ParMap <- function(parMCMC){
 #' LOG2 parameter mapping, jacobian
 #'
 #' This map is used by the simulator to transform sampling variables
-#' into ODE-model porameters. As we often calculate sensitivites, we
+#' into ODE-model parameters. As we often calculate sensitivities, we
 #' also need the jacobian of the map, due to the chain rule of
 #' differentiation.
 #'
@@ -1392,7 +1392,7 @@ log2ParMapJac <- function(parMCMC){
 #' NATURAL LOG parameter mapping used by the MCMC module
 #'
 #' This map is used by the simulator to transform sampling variables
-#' into ODE-model porameters.
+#' into ODE-model parameters.
 #'
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
@@ -1408,7 +1408,7 @@ logParMap <- function(parMCMC){
 #' NATURAL LOG parameter mapping, jacobian
 #'
 #' This map is used by the simulator to transform sampling variables
-#' into ODE-model porameters. As we often calculate sensitivites, we
+#' into ODE-model parameters. As we often calculate sensitivities, we
 #' also need the jacobian of the map, due to the chain rule of
 #' differentiation.
 #'
@@ -1428,7 +1428,7 @@ logParMapJac <- function(parMCMC){
 #' High Level SMMALA function
 #'
 #' This function uses default assumption everywhere and returns a
-#' function that will sample from the given model. This funciton will
+#' function that will sample from the given model. This function will
 #' generate code, compile the code, create an ODE solver for it, infer
 #' the sampling space from the scale of the parameters, create all
 #' necessary functions to move in parameter space (gradients of
@@ -1438,7 +1438,7 @@ logParMapJac <- function(parMCMC){
 #' @param m the model's TSV representation read via `model_from_tsv`
 #' @param o (optional) ode representation of `m`
 #' @param ex experiments of `m`, with simulation instructions for `o`.
-#' @param x initial point of the markov chain, pre in itialized to
+#' @param x initial point of the Markov chain, pre in initialized to
 #'     have the right attributes.
 #' @param verbose prints extra messages when TRUE
 #' @return `smmala` a function of three arguments: p0, N, eps; where
@@ -1521,7 +1521,7 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 #' High Level Metropolis function
 #'
 #' This function uses default assumption everywhere and returns a
-#' function that will sample from the given model. This funciton will
+#' function that will sample from the given model. This function will
 #' generate code, compile the code, create an ODE solver for it, infer
 #' the sampling space from the scale of the parameters, create all
 #' necessary functions to move in parameter space (gradients of
@@ -1531,7 +1531,7 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 #' @param m the model's TSV representation read via `model_from_tsv`
 #' @param o (optional) ode representation of `m`
 #' @param ex experiments of `m`, with simulation instructions for `o`.
-#' @param x initial point of the markov chain, pre in itialized to
+#' @param x initial point of the Markov chain, pre in initialized to
 #'     have the right attributes.
 #' @param beta for parallel tempering, the log-likelihood will have a
 #'     factor of `beta` applied to it
@@ -1616,7 +1616,7 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 #' decreased if acceptance is very low and increased when it is too
 #' high.
 #'
-#' When verbos
+#' When verbose
 #' This function will do at most
 #'
 #' @param MCMC a Markov chain Monte Carlo closure (function)

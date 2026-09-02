@@ -14,7 +14,7 @@ writeComment <- function(x) {
 #' funcValues: f <- c("A+B","log(A)")
 #'
 #' The above definition would create a CRNN inspired ODE, where A+B
-#' and log(A) are treated as observable (measureable) values
+#' and log(A) are treated as observable (measurable) values
 #' (functions of the state variables).
 #'
 #' Note: In addition to the state variables, the function values can
@@ -25,7 +25,7 @@ writeComment <- function(x) {
 #' @param numReactions the number of reversible mass action law
 #'     reactions
 #' @param initialValues named vector of initial values, names will be
-#'     used as the neames of the reacting compounds.
+#'     used as the names of the reacting compounds.
 #' @param funcValues named character vector, can be any valid C
 #'     expression (one line) of the available state variables (the
 #'     names can be used literally).

@@ -12,12 +12,12 @@ dUniformPrior(ll, ul)
 \item{ul}{upper limit of the random variables (same size vector as ll)}
 }
 \value{
-a probability density function on vectors withthe same length as ll and ul.
+a probability density function on vectors with the same length as ll and ul.
 }
 \description{
-The returned denisty function takes vectors of the same size as ll
+The returned density function takes vectors of the same size as ll
 and ul. It returns the product of the component's one-dimensional
-uniform distribtions.
+uniform distributions.
 }
 \examples{
 dup<-dUniformPrior(ll=c(0,1,2),ul=c(1,2,3))

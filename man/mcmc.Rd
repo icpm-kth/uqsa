@@ -12,7 +12,7 @@ mcmc(update, verbose = interactive())
 \item{verbose}{prints a progress bar when TRUE}
 }
 \value{
-M(initiPar,N), a function of initial starting values and
+M(initPar,N), a function of initial starting values and
 number of Markov chain steps
 }
 \description{

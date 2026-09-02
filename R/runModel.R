@@ -319,7 +319,7 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #'
 #' A hopeless simulation can be stopped early using the settings
 #' `num.steps` and `time.out`. The value of `num.steps` applies to
-#' every continuous simulation stretch (e.g. between two events), teh
+#' every continuous simulation stretch (e.g. between two events), the
 #' count of steps is reset whenever an event occurs or one simulation
 #' ends (between different parameters and different experiments).
 #'
@@ -331,7 +331,7 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #' The limit on the number of steps, on the other hand, is a feature
 #' of the GSL ODE solvers and can trigger precisely.
 #'
-#' @param experiments a list of experiments to simulate: inital
+#' @param experiments a list of experiments to simulate: initial
 #'     values, inputs, time vectors, initial times
 #' @param odeModel Either the ode object created by [as_ode] (with a
 #'     shared library field inserted), or a string (with a comment
@@ -425,7 +425,7 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #'
 #' The returned function depends only on the parameter vector (or
 #' matrix if more than one simulation per experiment is desired). The
-#' parameter vector this simnulator accepts is probably derived from
+#' parameter vector this simulator accepts is probably derived from
 #' the sampling space of a Bayesian method \eqn{\theta}{θ}, so in the list of
 #' arguments, it is called `parABC` or (parMCMC would also have been a
 #' valid choice). These sampling parameters can be mapped to values
@@ -434,13 +434,13 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 #' can be specified by name (with a comment indicating a file
 #' location)
 #'
-#' Some return values are optional and omiting them saves time.
+#' Some return values are optional and omitting them saves time.
 #'
-#' @param experiments a list of experiments to simulate: inital
+#' @param experiments a list of experiments to simulate: initial
 #'     values, inputs, time vectors, initial times
 #' @param modelName a string (with optional comment indicating an .so
 #'     file) which points out the model to simulate if modelName is a
-#'     cme object, the simulation will be done stochasitcally
+#'     cme object, the simulation will be done stochastically
 #' @param parMap the model will be called with parMap(parABC); so any
 #'     parameter transformation can happen there.
 #' @param noise boolean variable. If `noise=TRUE`, Gaussian noise is
@@ -602,7 +602,7 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 #' compatible C source file into a shared object if `modelFile` ends
 #' with `.c` and stop if that doesn't work. The compiler is called
 #' using a system call, which may be incorrect for your system -- if
-#' this funciton fails, you'll have to make the shared library of the
+#' this function fails, you'll have to make the shared library of the
 #' model using the correct compiler and options for your system.
 #'
 #' In contrast to [shlib], this function bypasses `R CMD SHLIB`
@@ -656,7 +656,7 @@ check_model <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.
 #' default distance function for one experiment
 #'
 #' if each experiment corresponds to one simulation and is fully
-#' quanitified by itself, then calculating the overall distance
+#' quantified by itself, then calculating the overall distance
 #' between data and experiment can be done one by one. This function
 #' describes the default way a simulation is compared to data.
 #'

@@ -57,7 +57,7 @@ input (`Input` table).
 Because events can change Input values, we can also define an input
 that becomes a sort of storage unit that can remember the value of a
 variable at a given time. So, we could define an output function that
-uses this time-spcificity of events to define more intricate return
+uses this time-specificity of events to define more intricate return
 values.
 
 Events can change state variables, but also the

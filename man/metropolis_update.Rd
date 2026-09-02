@@ -18,8 +18,8 @@ metropolis_update(
 \item{simulate}{a function that simulates the model}
 
 \item{logLikelihood}{a function that returns the log-likelihood
-value given the paramegter value, with simulations attached to
-the parameter as an attreibute (probably a closure)}
+value given the parameter value, with simulations attached to
+the parameter as an attribute (probably a closure)}
 
 \item{dprior}{a function that returns the prior density of the
 given parameter vector}

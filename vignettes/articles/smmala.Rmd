@@ -16,7 +16,7 @@ library(uqsa)
 
 # Simplified Manifold Metropolis Adjusted Langevin Algorithm
 
-The included example model called _CaMKII_ illustartes an insteresting case:
+The included example model called _CaMKII_ illustrates an interesting case:
 - simulations are very different in consumed cpu time (by an order of magnitude)
 - simulation time heavily depends on the used solver
 - the data type is _Dose Response_ rather than _Time Series_
@@ -51,7 +51,7 @@ The default parameters are not optimized to fit the data. We don't
 expect a good fit in the initial simulation.
 
 Below we describe two different approaches for this model. Ultimately,
-the frist approach makes better use of compute-resources.
+the first approach makes better use of compute-resources.
 
 The model is very sensitive to integrator choices, some perform better
 some worse. It is very likely that the sundials solvers would perform
@@ -231,7 +231,7 @@ Giving this experiment more time shifts the simulated model response,
 but doesn't produce a steady state (yet).
 
 It is possible that the default parameter set will not allow the
-system to go into steady state quickliy enough, even if we increase
+system to go into steady state quickly enough, even if we increase
 the time between the transformation events more. On the other hand,
 the original data was measured with $600\,\text{s}$ equilibration time, not in
 verified steady state.
@@ -239,7 +239,7 @@ verified steady state.
 ## Asymmetry
 
 The experiments for this model are different in complexity. How many
-seconds the solver needs to claculate a simulated trajectory depends
+seconds the solver needs to calculate a simulated trajectory depends
 on the chosen integration method.
 
 ![Solver timings for CaMKIIs, with indicated Success and Failure.](./CaMKIIs-integrators-normal.png)
@@ -251,7 +251,7 @@ MCMC. The remaining methods perform very differently. Some of these
 methods may fail for parameter-vectors proposed during MCMC.
 
 This al means that the posterior distribution depends on the used
-solver: no solution from the chosen solver means that the liklelihood
+solver: no solution from the chosen solver means that the likelihood
 is 0. So, it may be a good idea to use the most robust solver if it
 means that more solutions are found.
 
@@ -280,7 +280,7 @@ sequence.
 
 Stretching the time line allows the ODE system more time to converge, but also increases the simulation time:
 
-![Stretched time line for Experiment 1 (event-shedule and measurement times).](./CaMKIIs-integrators-stretched-time-1.png)
+![Stretched time line for Experiment 1 (event-schedule and measurement times).](./CaMKIIs-integrators-stretched-time-1.png)
 
 
 And again, just the portion where all experiments returned a result:

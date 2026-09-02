@@ -29,7 +29,7 @@ supplied update function
 }
 \description{
 this version of the MCMC function returns a Markov chain closure
-that assumes that it is bein run in an MPI context: R was launched
+that assumes that it is being run in an MPI context: R was launched
 in an MPI context, e.g. using
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{mpirun -H localhost:8 -N 8 Rscript ...
@@ -51,7 +51,7 @@ It is possible to supply a custom swap function, with the interface:
 where \code{i} is the current iteration (for round robin rank choices),
 \code{B} is the current beta value, \code{LL} the current log-likelihood (scalar)
 and \code{H} the current step-size (scalar); \code{r}, \code{comm}, and \code{cs} are
-the MPI rank, comm, and comm-size. The swap function returnsa list:
+the MPI rank, comm, and comm-size. The swap function returns a list:
 \code{list(B=,LL=,H=)} with the updated values (after swapping) or the
 old values if the swap was rejected.
 }

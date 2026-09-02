@@ -36,7 +36,7 @@ distributed according to the prior.}
 \item{num}{number of different starting parameter vectors (initial states of the chains) to generate. Usually, num is equal to the number of chain that will be run in the sampling procedure.}
 }
 \value{
-list with entries prePar (sampled parameters),  preDelta (distances between experimental data and trajectories produced with each of the parameters in prePar), Sigma (covariance matrix for the moves proposed in the ABCMCMC algortihm) and startPar (starting parameters for the ABCMCMC chains)
+list with entries prePar (sampled parameters),  preDelta (distances between experimental data and trajectories produced with each of the parameters in prePar), Sigma (covariance matrix for the moves proposed in the ABCMCMC algorithm) and startPar (starting parameters for the ABCMCMC chains)
 }
 \description{
 In ABC settings a model solution is compared to data with an

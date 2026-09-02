@@ -21,7 +21,7 @@ simulation \code{funcSim}.
 }
 \description{
 if each experiment corresponds to one simulation and is fully
-quanitified by itself, then calculating the overall distance
+quantified by itself, then calculating the overall distance
 between data and experiment can be done one by one. This function
 describes the default way a simulation is compared to data.
 }

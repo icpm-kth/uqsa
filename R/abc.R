@@ -6,7 +6,7 @@
 #' function but lacks a statistical justification. Nevertheless, this
 #' distance function, like the likelihood function of a deterministic
 #' model, performs a simulation of the scientific model, be it fully
-#' stochastic or a stochasically embedded, but deterministic in its
+#' stochastic or a stochastically embedded, but deterministic in its
 #' core.
 #'
 #' The distance of the ABC setting is compared to a threshold value
@@ -27,8 +27,8 @@
 #' burn-in is complete.
 #'
 #' ABC methods (distance function, threshold delta) can be combined
-#' with several other methds (like particle filters). Here we use
-#' several parallle Markov chains to sample from the approximate
+#' with several other methods (like particle filters). Here we use
+#' several parallel Markov chains to sample from the approximate
 #' posterior.
 #'
 #' @export
