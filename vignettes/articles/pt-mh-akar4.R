@@ -49,6 +49,8 @@ x <- mcmc_init(
 	dprior=dprior
 )
 
+start_time <- Sys.time()
+
 h <- tune_step_size(rwm,x,1e-3)
 gc()
 Z <- ptMetropolis(x,N,h) # the main amount of work is done here

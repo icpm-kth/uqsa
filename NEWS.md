@@ -1,3 +1,15 @@
+# uqsa 0.7.8
+
+- A new function `abc_mcmc` was introduced, it is a rewrite of the
+  older `ABCMCMC` function, with different arguments.
+- New Kullback-Leibler divergence function: `KLD` which can serve as
+  fallback if other packages are unavailable for KLD calculations.
+- made some examples smaller, and tests smaller so that they run faster.
+- fixed several small bugs.
+- removed most printing of messages, unless they are part of a warning
+- interactive calls to functions that do heavy work now print a progress bar.
+- examples, vignettes, and articles all restore `par` and `option` settings on completion.
+
 # uqsa 0.7.1
 
 Windows compatibility: all checks pass.
