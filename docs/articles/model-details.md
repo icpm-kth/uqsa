@@ -6,7 +6,7 @@ laws, parameters, and possibly inputs and outputs.
 In this R package, we use plain TSV files to describe these quantities.
 These TSV files have very few rules. One universal rule is that the
 first column is always reserved for row-names. Row-names must work as
-variable names in R and C. Certan names would conflict with builtin
+variable names in R and C. Certain names would conflict with builtin
 commands (`if`, `while`, `do`, `continue`,
 [`break`](https://rdrr.io/r/base/Control.html)). Obviously such names
 cannot be used for reacting compounds or parameters. In our examples, we
@@ -50,8 +50,8 @@ The model tables follow these guidelines:
   - formula
   - unit
 - Any quantity that is defined using a row in some table can get updated
-  values in another table, or values to comapre against
-- Data tables need to specifiy values using a notation that keeps values
+  values in another table, or values to compare against
+- Data tables need to specify values using a notation that keeps values
   and their uncertainties together, e.g.:
   - `1.234(21)`
   - `1.5(1)e+4`
@@ -223,7 +223,7 @@ Known parameters should go into a different table.
 ## Input
 
 These are known parameter values. Parameters that are set by us in
-exactly the same way the experimentalost controls the conditions of the
+exactly the same way the experimentalist controls the conditions of the
 experiment.
 
 |        |           |          |
@@ -250,7 +250,7 @@ re-used quantities that perhaps appear in several kinetic laws.
 ## Experiment
 
 This is the table of experiments. Each column can name an input or
-compound, these value smodify the initial conditions (and inputs) for
+compound, these value modify the initial conditions (and inputs) for
 that experiment.
 
 |                                   |          |         |            |        |               |               |                                                   |
@@ -320,7 +320,7 @@ transformation.
 This is an example data-set. Each measured value is given with the
 uncertainty in the same cell. The value `9.994(45)E1` means `99.94` with
 standard error of `0.45`. Sometimes this is written as `99.94±0.45`
-(whichthe package also accepts). But it’s the inferior syntax for this
+(which the package also accepts). But it’s the inferior syntax for this
 as it collides with specifying two solutions of some sort, e.g.:
 `1 ± sqrt(2)`.
 
@@ -464,7 +464,7 @@ experiments, each with its own, very \_similar\_ conditions, and exactly
 one measurement per time-course (a series of micro experiments). Such a
 table will be split up by our import script, and one additional
 simulation experiment per line will be created. The newly created
-simulation-experiments will have very similar names and vcan be found
+simulation-experiments will have very similar names and can be found
 this way.
 
 |           |          |          |               |
@@ -484,7 +484,7 @@ events and transformations. See below.
 ### An Event Schedule Experiment
 
 This is one time series experiment that replicates the same data-set as
-the dose reponse curve in the previous section. But, in this sequence,
+the dose response curve in the previous section. But, in this sequence,
 we also have sudden events that change the `cAMP` value in the system,
 and then we allow the model to find a new equilibrium (in 200 seconds).
 

@@ -34,13 +34,12 @@ The user supplied distance function should accept three arguments:
 distance(SIM, DATA, STDV), all three matrices. SIM is the model output
 (simulation), DATA is the measured data, while STDV represents the
 standard error of that measurement. All three have the same size: N×M,
-where N is the number of observables (outputs), and M is th enumber of
+where N is the number of observables (outputs), and M is the number of
 measurement time-points (length of the time-series).
 
 ## Examples
 
 ``` r
-# \donttest{
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
   o <- as_ode(m)
@@ -55,5 +54,4 @@ measurement time-points (length of the time-series).
 #> 400nM 0.16439580
 #> 100nM 0.13721115
 #> 25nM  0.09171478
-# }
 ```

@@ -19,10 +19,6 @@ unit_as_character(unit)
 
 a string representation of that data.frame purely for printing
 
-## Details
-
-This function is similar to unit.info.
-
 ## Examples
 
 ``` r
@@ -30,8 +26,4 @@ u <- unit.from.string("s^-1")
 str <- unit_as_character(u)
 print(str)
 #> [1] "(second*10^(0))^(-1)"
-unit.info("s^-1")
-#> «s^-1» has been interpreted as the product of: 
-#> (1 × second × 10^(0))^(-1)
-#> [1] "(1 × second × 10^(0))^(-1)"
 ```

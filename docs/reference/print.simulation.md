@@ -21,6 +21,10 @@ print(x, ...)
 
   requirement of print generic, not used.
 
+## Value
+
+called for side-effect (printout); no value.
+
 ## Examples
 
 ``` r
@@ -35,7 +39,7 @@ print(y)
 #> number of simulation experiments: 3
 #>                                      400nM 
 #> ------------------------------------------ 
-#>               cpuSeconds: 0.000311
+#>               cpuSeconds: 0.000389
 #>                 numSteps: 269
 #>                   status: 0
 #>                    state: 2, 225, 1 (dim)
@@ -46,7 +50,7 @@ print(y)
 #> 
 #>                                      100nM 
 #> ------------------------------------------ 
-#>               cpuSeconds: 0.000321
+#>               cpuSeconds: 0.000337
 #>                 numSteps: 248
 #>                   status: 0
 #>                    state: 2, 225, 1 (dim)
@@ -57,7 +61,7 @@ print(y)
 #> 
 #>                                       25nM 
 #> ------------------------------------------ 
-#>               cpuSeconds: 0.0003
+#>               cpuSeconds: 0.000283
 #>                 numSteps: 237
 #>                   status: 0
 #>                    state: 2, 225, 1 (dim)

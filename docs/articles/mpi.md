@@ -13,7 +13,7 @@ easier.
 UQSA includes a special ODE solver, which calculates a crude estimate of
 the Fisher information \\G\\ and the gradient of the log-likelihood
 \\\nabla\_\theta l(\theta;D)\\. Both are required in SMMALA. We cannot
-calculate the exact \\G\\ an dgradient. This lowers the algorithms
+calculate the exact \\G\\ an gradient. This lowers the algorithms
 performance compared to the ideal case. But the algorithm remains exact.
 
 This special solver is called
@@ -35,9 +35,9 @@ replace all `NA` values with values that have the same effect as
 `na.rm=TRUE`. missing data values can be replaced by any number, missing
 standard errors are replaced with infinities (a missing value has
 infinite error). The infinite values are disregarded when the
-normalising factors a re computed (i.e.: `1/sqrt(2*pi*sigma^2)`).
+normalizing factors a re computed (i.e.: `1/sqrt(2*pi*sigma^2)`).
 
-If the liklihood function is not derived from a Gaussian, then the user
+If the likelihood function is not derived from a Gaussian, then the user
 has to provide a different set of functions to approximate gradient and
 Fisher information, or use a different solver.
 
@@ -49,14 +49,14 @@ information is lost that way.
 The standard errors of the (real) data-sets are very uneven. To make the
 job easier for the sampler, we replace the real standard errors with
 even 5% errors (bigger than the real ones). If we were to try for a very
-big sample (millions of sampled points), we coudl use the real errors
+big sample (millions of sampled points), we could use the real errors
 instead. For a small sample, even errors work better.
 
 ## Motivation
 
 Markov chain Monte Carlo scales exponentially with the problem size. For
-models with ~50 parameters it already becomes hard to intialize a Markov
-chain with good values:
+models with ~50 parameters it already becomes hard to initialize a
+Markov chain with good values:
 
 - starting parameters
 - step size
@@ -74,7 +74,7 @@ to the original problem; the lower \\\beta\\ gets, the more does the
 target distribution resemble the prior distribution.
 
 The different chains are then allowed to exchange their positions if it
-is benefitial (according to the specific rules of parallel tempering).
+is beneficial (according to the specific rules of parallel tempering).
 This exchange of information makes the chain with \\\beta = 1\\ explore
 the sampling space much faster than the Markov chain algorithm by itself
 would allow.
@@ -82,16 +82,16 @@ would allow.
 Even though the implementation of Parallel Tempering is possible without
 MPI, we now have several experiments to simulate on many parallel
 chains, for AKAP79 this is 20 experiments and e.g. 32 chains. At this
-point, it becomes benefitial to do the simulations on more than one
+point, it becomes beneficial to do the simulations on more than one
 machine (mine has 16 cores, which isn’t much for a problem of this
 size). The *high performance computing* cluster at KTH (Parallel Dator
 Center, Dardel cluster) has 128 cores per node. This means that we can
 simulate 6 chains per node and still process all experiments at the same
 time (using `parLapply` or `mclapply`), but also start 24 chains
-distributed accross 3 nodes.
+distributed across 3 nodes.
 
 The distribution requires message passing between nodes, for this
-prupose we use [pbdMPI](https://cran.r-project.org/package=pbdMPI)
+purpose we use [pbdMPI](https://cran.r-project.org/package=pbdMPI)
 
 MPI code is difficult to understand, write, test, and debug. So, the
 below instructions may not work for everyone.

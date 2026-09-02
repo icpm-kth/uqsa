@@ -1,25 +1,21 @@
 # Uncertainty Quantification (UQ) and Sensitivity Analysis (SA)
 
 This is an R package that performs *parameter estimation*, *uncertainty
-quantification*, and *global sensitivity analysis* using Bayesian (UQ)
-and variance decomposition methods (GSA). It is primarily designed for
-**biochemical reaction networks** describing intracellular cellular
-pathways and similar. All information about the model as well as the
-experimental data used for parameter estimation and uncertainty
-quantification is stored in the
-[SBtab](https://github.com/tlubitz/SBtab) table format for Systems
-Biology projects.
+quantification*, and *global sensitivity analysis* using Bayesian
+methods, MCMC sampling and variance based decomposition methods.
 
 - **Source code:** <https://github.com/icpm-kth/uqsa/>
-- **Documentation** <https://icpm-kth.github.io/uqsa/>
-- **Examples:**
-  <https://icpm-kth.github.io/uqsa/articles/examples_overview.html>
-- **Cite:** <https://icpm-kth.github.io/uqsa/articles/cite.html>
 
-## Acknowledgements
+The Articles on this page are a user guide to this package. As always,
+the function reference is also accessible within R (`?uqsa::ABCMCMC`),
+after installation. See *Get Started* for detailed installation
+instructions.
 
-This open source software code was developed with support from the
-Swedish e-Science Research Centre (SeRC) as well as within the Human
-Brain Project, funded from the European Union’s Horizon 2020 Framework
-Programme for Research and Innovation (945539) (Human Brain Project
-SGA1, SGA2 and SGA3).
+``` r
+if (!require(remotes)) install.packages("remotes")
+remotes::install_github("icpm-kth/uqsa",dependencies=TRUE)
+```
+
+We have built a toolset for *model building*, *automated code
+generation* and *simulation* around this package. The functinality of
+the entire toolset is covered on this page, not only this R package.

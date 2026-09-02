@@ -4,7 +4,7 @@ Produce a cumulative shaded area plot for the sensitivity matrix. This
 function is intended for use with many observables, e.g. the state of
 the model at several given times. The x-axis of the plot is meant to be
 continuous. This will not produce a bar-chart, but a graph that shows
-how sensitivities change between farily similar observables.
+how sensitivities change between fairly similar observables.
 
 ## Usage
 
@@ -76,10 +76,8 @@ nothing
   GSA <- gsa_binning(X,Z)
   print(GSA)
 #>                A            B            C
-#> sum  0.006097961 0.0598899549 0.2220945969
-#> mean 0.036604794 0.1671163827 0.4721423288
-#> exp1 0.278339823 0.0008484528 0.0001841361
+#> sum  0.003866168 0.1098467776 0.1439837720
+#> mean 0.036469024 0.1845890990 0.4362508131
+#> exp1 0.492792736 0.0008455134 0.0002992867
   sensitivity.graph(c(sum=1,mean=2,exp1=3),GSA)
-
-#> [1] 2
 ```

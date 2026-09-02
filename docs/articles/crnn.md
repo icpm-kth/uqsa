@@ -215,7 +215,7 @@ we want to be able to switch between different integration methods, so
 we use the solver more explicitly:
 
 ``` r
-par(mfrow=c(4,2))
+oldpar <- par(mfrow=c(4,2))
 for (M in seq(0,7)){
     y <- gsl_odeiv2_CRNN(
         so.file,
@@ -240,6 +240,10 @@ for (M in seq(0,7)){
 ```
 
 ![](crnn_files/figure-html/solve-1.png)
+
+``` r
+par(oldpar)
+```
 
 #### MCMC and repeated Calls to the solver
 
@@ -299,7 +303,7 @@ new code:
 
 y_ABCD_ <- s(par)          # A,B,C,&D all interact now
 
-par(mfrow=c(2,1), family="Fira Code")
+oldpar <- par(mfrow=c(2,1), family="Fira Code")
 matplot(
     ex[[1]]$outputTimes,
     t(y_ABCD_[[1]]$state[,,1]),
@@ -338,5 +342,9 @@ legend(
 ```
 
 ![](crnn_files/figure-html/changed-par-1.png)
+
+``` r
+par(oldpar)
+```
 
 The dynamics changed correctly.

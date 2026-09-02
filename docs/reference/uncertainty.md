@@ -28,7 +28,7 @@ This function is for the case that the table specifies a distribution
 with a mean and an range (of some sort). The type of uncertainty found
 will be attached as a comment to the returned value: "sd" standard
 deviation for normal distribution, "se" standard error (for a normal
-prior), and "range" for a uniform prior. Other priors are not recognised
+prior), and "range" for a uniform prior. Other priors are not recognized
 yet.
 
 The distinction between standard-error and standard-deviation doesn't

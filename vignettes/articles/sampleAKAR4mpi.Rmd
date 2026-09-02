@@ -49,7 +49,7 @@ Here we run a prepared R script from the command line (any POSIX shell
 will do: bash/zsh/fish/dash). This way, the entire R program is
 wrapped in an mpirun call.
 
-```{sh MPI, eval=TRUE}
+```{bash, label="MPI", eval=TRUE}
 N=4 # by default
 [ -e '/proc/cpuinfo' ] && N=$((`grep -c processor /proc/cpuinfo`)) && nm="`grep -m1 'model name' /proc/cpuinfo`"
 echo "We will use $N cores with $nm"

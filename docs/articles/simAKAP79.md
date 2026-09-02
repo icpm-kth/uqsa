@@ -25,8 +25,8 @@ c_path(o) <- write_c_code(generate_code(o))
 so_path(o) <- shlib(o)
 print(o)
 #>                 Model name : AKAP79
-#>                     C file : /tmp/RtmpiY0iWI/RtmpQMQrCy/RtmpWsZ5fX/b316367e5f817645/AKAP79.c [2026-06-26 14:39:00.87736]
-#>             shared library : /tmp/RtmpiY0iWI/RtmpQMQrCy/RtmpWsZ5fX/b316367e5f817645/AKAP79.so [2026-06-26 14:39:00.87736]
+#>                     C file : /tmp/RtmpFdwl1n/RtmpesODen/RtmpCArSGo/b316367e5f817645/AKAP79.c [2026-09-02 16:48:53.068838]
+#>             shared library : /tmp/RtmpFdwl1n/RtmpesODen/RtmpCArSGo/b316367e5f817645/AKAP79.so [2026-09-02 16:48:53.068838]
 #>  Number of state variables : 11
 #>       Number of parameters : 33
 #>          Number of outputs : 1
@@ -63,7 +63,7 @@ we can determine that
 
 \\c = A_0 + B_0\\.\\
 
-And thus we can replac either of the two species:
+And thus we can replace either of the two species:
 
 \\A(t) = A_0 + B_0 - B(t)\\
 
@@ -2602,8 +2602,7 @@ y <- s(p)
 
 e.g. <- 10 # which experiment to plot
 tm <- ex[[e.g.]]$outputTime
-
-par(bty='n',xaxp=c(80,120,4))
+oldpar <- par(bty='n',xaxp=c(80,120,4))
 plot(
     as.errors(tm),
     ex[[e.g.]]$data[1,],
@@ -2616,3 +2615,7 @@ lines(tm,y[[e.g.]]$func[1,,1],lwd=1.5,col="purple")
 ```
 
 ![](simAKAP79_files/figure-html/plotting-1.png)
+
+``` r
+par(oldpar)
+```

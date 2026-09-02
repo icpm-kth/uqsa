@@ -35,7 +35,8 @@ modify(x, i = seq(NROW(x)), j = seq(NCOL(x)), sgn = +1) <- value
 
 ## Value
 
-The value of x is modified additively ihn place: `x <- x + sgn*value`
+The value of x is modified in place: `x <- x + sgn*value` (value is
+additive)
 
 ## Details
 

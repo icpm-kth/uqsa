@@ -12,8 +12,8 @@ variance](https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis).
 
 UQSA computes *first order* and *total order* [Sobol sensitivity
 index](https://doi.org/10.1016/S0378-4754(00)00270-6) \\S_i\\ and
-\\S\_{iT}\\ for **independent** parameter distributions using the method
-developed by [Saltelli,
+\\S\_{i,T}\\ for **independent** parameter distributions using the
+method developed by [Saltelli,
 2002](https://doi.org/10.1016/S0010-4655(02)00280-1) with help from
 [Halnes et al, 2009](https://doi.org/10.1007/s10827-009-0162-6) .
 

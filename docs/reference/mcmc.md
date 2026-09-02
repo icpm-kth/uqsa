@@ -7,7 +7,7 @@ created using this mechanism.
 ## Usage
 
 ``` r
-mcmc(update)
+mcmc(update, verbose = interactive())
 ```
 
 ## Arguments
@@ -16,10 +16,14 @@ mcmc(update)
 
   and update function
 
+- verbose:
+
+  prints a progress bar when TRUE
+
 ## Value
 
-M(initiPar,N), a function of initial starting values and number of
-Markov chain steps
+M(initPar,N), a function of initial starting values and number of Markov
+chain steps
 
 ## Details
 
@@ -34,11 +38,13 @@ a closure) or attributes of parGiven.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-m <- model_from_tsv(uqsa_example("AKAP79"))
-rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
-p <- rwm %@% "init"             # a valid starting point
-smallSample <- rwm(rwm %@% "init",600,1e-4)
-pairs(smallSample[,seq(6)])
-} # }
+ m <- model_from_tsv(uqsa_example("AKAP79"))
+ rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
+ p <- rwm %@% "init"             # a valid starting point
+ if (interactive()){
+   smallSample <- rwm(rwm %@% "init",500,1e-4)
+   pairs(smallSample[,seq(6)])
+ } else {
+   smallSample <- rwm(rwm %@% "init",10,1e-4)
+ }
 ```

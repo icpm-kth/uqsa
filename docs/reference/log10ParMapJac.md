@@ -1,8 +1,8 @@
 # LOG10 parameter mapping, jacobian
 
 This map is used by the simulator to transform sampling variables into
-ODE-model porameters. As we often calculate sensitivites, we alos need
-the jacobian of the map, due to the chain rule of differentiation.
+ODE-model parameters. As we often calculate sensitivities, we also need
+the Jacobian of the map, due to the chain rule of differentiation.
 
 ## Usage
 
@@ -15,6 +15,10 @@ log10ParMapJac(parMCMC)
 - parMCMC:
 
   the sampling variables (numeric vector)
+
+## Value
+
+a numeric matrix (dim: `c(length(parMCMC),length(parMCMC))`)
 
 ## Examples
 

@@ -31,11 +31,17 @@ attached to the returned value, as a comment.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-  ## needs `unit` utility (system utility)
-  y <- "21 cm" %as% "inches"
-  y <- "12 nmol/L" %as% "mol/L"
-  print(comment(y))
-  y <- "12 mol/m^3" %as% "mmol/L"
-} # }
+  ## needs `unit` utility (a system utility)
+  if (nzchar(Sys.which("units"))){
+    y <- "21 cm" %as% "inches"
+    y <- "12 nmol/L" %as% "mol/L"
+    print(comment(y))
+    y <- "12 mol/m^3" %as% "mmol/L"
+  } else {
+    message("The system utility 'units' is not installed, skipping example.")
+  }
+#> Warning: The 'units' utility must be installed (system program, not R).
+#> Warning: The 'units' utility must be installed (system program, not R).
+#> NULL
+#> Warning: The 'units' utility must be installed (system program, not R).
 ```

@@ -1,7 +1,8 @@
 # model_from_tsv loads the content from a series of tsv files
 
 The argument can be either a series of tsv file-names, or a directory
-with tsv files. If it is a directory, all tsv files therein wil be used.
+with tsv files. If it is a directory, all tsv files therein will be
+used.
 
 ## Usage
 

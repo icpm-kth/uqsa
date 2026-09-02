@@ -1,8 +1,8 @@
 # Should 2 Markov chains exchange their temperatures
 
-This function makes a Boolean choice about chnages in temperature, based
-on the log(liklihood) values of two Markov chains in a parallel
-tempering setting.
+This function makes a Boolean choice about changes in temperature, based
+on the log(likelihood) values of two Markov chains in a parallel
+tempering setting. The outcome is stochastic.
 
 ## Usage
 

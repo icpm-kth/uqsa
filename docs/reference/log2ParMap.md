@@ -1,7 +1,7 @@
 # LOG2 parameter mapping used by the MCMC module
 
 This map is used by the simulator to transform sampling variables into
-ODE-model porameters.
+ODE-model parameters.
 
 ## Usage
 
@@ -14,6 +14,10 @@ log2ParMap(parMCMC)
 - parMCMC:
 
   the sampling variables (numeric vector)
+
+## Value
+
+a numeric vector intended for the simulator.
 
 ## Examples
 

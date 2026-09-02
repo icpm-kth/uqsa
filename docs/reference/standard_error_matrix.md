@@ -1,6 +1,6 @@
 # Standard Error Matrix from an errors object
 
-If a matrix has an `errors` attribute, it is usually a vector. THis
+If a matrix has an `errors` attribute, it is usually a vector. This
 function returns the values of this attribute as a matrix (it preserves
 the dimensions of the host matrix).
 

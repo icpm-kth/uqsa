@@ -2,7 +2,7 @@
 
 A number given in some logarithmic space can be transformed back to
 linear space A call like `base(x) <- 10` means that x was provided in
-decadic logarithm form. This will adjust `x` so that it is now in linear
+base-10 logarithm form. This will adjust `x` so that it is now in linear
 space.
 
 ## Usage

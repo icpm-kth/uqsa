@@ -6,7 +6,7 @@ library(uqsa)
 
 ## Simplified Manifold Metropolis Adjusted Langevin Algorithm
 
-The included example model called *CaMKII* illustartes an insteresting
+The included example model called *CaMKII* illustrates an interesting
 case: - simulations are very different in consumed cpu time (by an order
 of magnitude) - simulation time heavily depends on the used solver - the
 data type is *Dose Response* rather than *Time Series* - simulations are
@@ -40,7 +40,7 @@ The default parameters are not optimized to fit the data. We don’t
 expect a good fit in the initial simulation.
 
 Below we describe two different approaches for this model. Ultimately,
-the frist approach makes better use of compute-resources.
+the first approach makes better use of compute-resources.
 
 The model is very sensitive to integrator choices, some perform better
 some worse. It is very likely that the sundials solvers would perform
@@ -49,7 +49,7 @@ there are big differences in consumed cpu-time.
 
 ## Dose Sequence Approach
 
-For this model one of th epossible approaches is to create an event
+For this model one of the possible approaches is to create an event
 schedule that applies a certain dose of base calcium or calmodulin
 (depending on the experiment) in a sequence. Here is an example dose
 sequence of base Ca levels (dose column):
@@ -84,8 +84,8 @@ scalar that can be set for each event in the schedule (previous table).
 
 We represent each experiment as a time series, even though the data sets
 were originally represented as dose response curves (a map between an
-input \[e.g. Ca\] and an output \[e.g. ActivePP2B\]). We arbitrarily set
-a time betwen input doses and simulate all points in one series, with
+input, e.g. ‘Ca’, and an output, e.g. ‘ActivePP2B’). We arbitrarily set
+a time between input doses and simulate all points in one series, with
 just enough time in-between to reach the next higher steady state from
 the current steady state (the steady state level changes with each dose
 of base-level Ca).
@@ -119,8 +119,8 @@ so_path(o) <- shlib(o)
 
 print(length(ex))
 #> [1] 6
-options(mc.cores = length(ex))
 
+opt <- options(mc.cores = length(ex)) # remember original options
 p <- values(m$Parameter) # in log-space
 stopifnot(all(m$Parameter$scale=="ln"))
 ```
@@ -150,15 +150,15 @@ names(cpuSeconds) <- names(ex)
 
 print(cpuSeconds)
 #>  Bradshaw2003Fig2E Shifman2006Fig1Bsq  ODonnel2010Fig3Co  Stemmer1993Fig1tr 
-#>           0.020054           0.016073           0.013778           0.007205 
+#>           0.020554           0.018681           0.009943           0.005795 
 #>  Stemmer1993Fig1fc Stemmer1993Fig2Afc 
-#>           0.008001           0.023983
+#>           0.008336           0.028326
 ```
 
 Next, we plot the results of that dense simulation:
 
 ``` r
-par(mfrow=c(3,2), bty="n")
+oldpar <- par(mfrow=c(3,2), bty="n")
 for (i in seq_along(ex)){
     j  <- rownames(m$Output) %in% colnames(ex[[i]]$measurements)
     t_siml <-ex[[i]]$outputTimes
@@ -177,10 +177,14 @@ for (i in seq_along(ex)){
 
 ![](smmala_files/figure-html/plot-dense-time-series-1.png)
 
+``` r
+par(oldpar)
+```
+
 Here we notice that in Experiment 1, the trajectory fails to reach
 steady state (i.e. a flat line), for any dose. So, it doesn’t look like
-a staircase at all. This may or may not be desireable (depends on
-whether the original experiment was in steady state).
+a staircase at all. This may or may not be desirable (depends on whether
+the original experiment was in steady state).
 
 Because most data-structures are just plain R data types, it is easy to
 modify experiments and experiment with the simulations. Here we make the
@@ -192,7 +196,7 @@ ex[[1]]$outputTimes <- ex[[1]]$outputTimes*60
 ex[[1]]$measurementTimes <- ex[[1]]$measurementTimes*60
 ```
 
-Becasue we changed the experimental setup, we recreate the solver
+Because we changed the experimental setup, we recreate the solver
 function:
 
 ``` r
@@ -207,7 +211,7 @@ Giving this experiment more time shifts the simulated model response,
 but doesn’t produce a steady state (yet).
 
 It is possible that the default parameter set will not allow the system
-to go into steady state quickliy enough, even if we increase the time
+to go into steady state quickly enough, even if we increase the time
 between the transformation events more. On the other hand, the original
 data was measured with \\600\\\text{s}\\ equilibration time, not in
 verified steady state.
@@ -215,11 +219,11 @@ verified steady state.
 ### Asymmetry
 
 The experiments for this model are different in complexity. How many
-seconds the solver needs to claculate a simulated trajectory depends on
+seconds the solver needs to calculate a simulated trajectory depends on
 the chosen integration method.
 
 ![Solver timings for CaMKIIs, with indicated Success and
-Failure.](./CaMKIIs-integrators-normal.png)
+Failure.](CaMKIIs-integrators-normal.png)
 
 Solver timings for CaMKIIs, with indicated Success and Failure.
 
@@ -230,7 +234,7 @@ remaining methods perform very differently. Some of these methods may
 fail for parameter-vectors proposed during MCMC.
 
 This al means that the posterior distribution depends on the used
-solver: no solution from the chosen solver means that the liklelihood is
+solver: no solution from the chosen solver means that the likelihood is
 0. So, it may be a good idea to use the most robust solver if it means
 that more solutions are found.
 
@@ -260,10 +264,10 @@ and the most problematic experiment in this dose sequence.
 Stretching the time line allows the ODE system more time to converge,
 but also increases the simulation time:
 
-![Stretched time line for Experiment 1 (event-shedule and measurement
-times).](./CaMKIIs-integrators-stretched-time-1.png)
+![Stretched time line for Experiment 1 (event-schedule and measurement
+times).](CaMKIIs-integrators-stretched-time-1.png)
 
-Stretched time line for Experiment 1 (event-shedule and measurement
+Stretched time line for Experiment 1 (event-schedule and measurement
 times).
 
 And again, just the portion where all experiments returned a result:
@@ -363,7 +367,7 @@ y <- s(p)
 
 cpuSeconds <- Reduce(\(a,b) a+b$cpuSeconds,y,init=0.0)
 print(cpuSeconds)
-#> [1] 0.038427
+#> [1] 0.052218
 ```
 
 The simulation time is very slightly longer than before, because each
@@ -376,7 +380,7 @@ Ca <- unlist(lapply(ex[i],\(x) x$input['Ca_set']))
 f_ <- unlist(lapply(y,\(y) y$func[j,1,1]))
 v_ <- unlist(lapply(ex[i],\(x) x$data[j,1]))
 
-par(bty="n")
+oldpar <- par(bty="n")
 plot(
     Ca,
     v_,
@@ -389,6 +393,10 @@ points(Ca,f_,pch=2,col="red4")
 ```
 
 ![](smmala_files/figure-html/plots-1.png)
+
+``` r
+par(oldpar)
+```
 
 Here the triangles represent the independent simulation results.
 
@@ -403,3 +411,5 @@ Therefore, it may be much better to simulate all experiments
 sequentially (see previous section), and instead start more parallel
 Markov chains (and merge them in the end). This way, fewer
 MPI-workers/threads/cores idle.
+
+    options(opt)

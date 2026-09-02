@@ -21,6 +21,10 @@ print(x, ...)
 
   ignored.
 
+## Value
+
+called for side-effect (printout); no value.
+
 ## Examples
 
 ``` r

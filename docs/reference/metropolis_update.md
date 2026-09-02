@@ -25,8 +25,8 @@ metropolis_update(
 
 - logLikelihood:
 
-  a function that returns the log-likelihood value given the paramegter
-  value, with simulations attached to the parameter as an attreibute
+  a function that returns the log-likelihood value given the parameter
+  value, with simulations attached to the parameter as an attribute
   (probably a closure)
 
 - dprior:
@@ -43,6 +43,12 @@ metropolis_update(
   a function that can be used to reject a proposal based on the values
   of the parameters alone (shortcut to rejection, sans simulation)
 
+## Value
+
+a closure with the arguments: (parGiven, eps=1e-4), where `parGiven` is
+the current position of the Markov chain (a numeric vector, with
+attributes), and `eps` the current step size.
+
 ## Details
 
 Using the simulations, and an acceptance rule, the proposed update is
@@ -54,10 +60,15 @@ it's sole argument: `parProposal <- metropolis(parGiven)`
 An optional argument to this function is `parAcceptable`, during
 sampling, when `metropolis` is called as the update function, and
 `parAcceptable(parProposal)` returns `FALSE`, then metropolis shortcuts
-to `retrun(parGiven)` without performing simulations.
+to `return(parGiven)` without performing simulations.
 
 This function can be used to weed out parameter combinations that would
 result in obviously nonsensical simulations without wasting CPU-time.
+
+The return value is a function (closure) that operates on mcmc
+variables, these variables are numeric vectors with some necessary
+attributes. The attributes record this vector's simulation results, and
+other derived quantities.
 
 ## Examples
 
@@ -78,7 +89,7 @@ print(p2)
 #>      0.018      0.106     10.200 
 #>              simulations: 3 (length)
 #>            logLikelihood: -2491.25
-#>                    prior: 10.5823
+#>                    prior: 0.819699
 print(sum(abs(p2-p)))
 #> [1] 0
 ```

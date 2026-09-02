@@ -18,7 +18,7 @@ gatherSample(files, beta = 1, size = NA)
 
 - beta:
 
-  the inverse temperture to extract sample for
+  the inverse temperature to extract sample for
 
 - size:
 
@@ -37,7 +37,7 @@ same (given) temperature.
 This function should be used if you need to inspect only one of the
 temperatures, not all of them. This function is similar to
 [loadSample_mpi](https://icpm-kth.github.io/uqsa/reference/loadSample_mpi.md),
-which returns all temperatures. But, whearas
+which returns all temperatures. But, whereas
 [loadSample_mpi](https://icpm-kth.github.io/uqsa/reference/loadSample_mpi.md)
 returns a list, this function returns the sample-matrix itself (because
 the result of this function is conceptually similar to sampling on one
@@ -70,7 +70,7 @@ Z <- gatherSample(f,beta=1)
 print(N)
 #> [1] 100
 print(dim(Z)) ## should be c(2*N,3)
-#> [1] 101   3
+#> [1] 94  3
 print(names(attributes(Z)))
 #> [1] "dim"           "beta"          "logLikelihood" "stepSize"     
 ```

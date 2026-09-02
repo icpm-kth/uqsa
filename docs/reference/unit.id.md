@@ -7,16 +7,16 @@ returned value should work as an SBML unit id.
 ## Usage
 
 ``` r
-unit.id(unit.str, prnt = FALSE)
+unit.id(unit.str, verbose = FALSE)
 ```
 
 ## Arguments
 
 - unit.str:
 
-  the original string representastion of that unit
+  the original string representation of that unit
 
-- prnt:
+- verbose:
 
   logical switch: if TRUE, the name will be printed.
 

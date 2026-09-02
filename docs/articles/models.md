@@ -10,8 +10,8 @@ form: the model is a collection of TSV files (tab-separated-values).
 Tabs are the best separator in our opinion (as compared to commas or
 semi-colon separated files), because it *can* be entered with a text
 editor into the file, by hand, but is quite hard to enter as the content
-of a field in a spreadsheet program. So, TABs usually don’t appear
-coincidntally in the files, but can be typed on purpose. Furthermore:
+of a field in a spreadsheet program. So, Tabs usually don’t appear
+coincidentally in the files, but can be typed on purpose. Furthermore:
 
 - TSV files render nicely on sites such as GitHub
 - TSV files are text files and thus work well with git
@@ -23,7 +23,7 @@ We interpret the files partially using functions such as `grep` (in R),
 various different spellings are acceptable, e.g. “stdv”, “sd”, or
 “standard deviation” when describing a distribution.
 
-When reporting data values, we use parenthesised (concise) error
+When reporting data values, we use parenthesized (concise) error
 notation, e.g.: `1.23(1)` which is intrepreted as `1.23` with an
 uncertainty of `0.01`, more examples:
 
@@ -35,8 +35,8 @@ uncertainty of `0.01`, more examples:
 |    `1.23;0.01` |      1.23 | 0.01           |
 |    `1.23±0.01` |      1.23 | 0.01           |
 
-The last two rows represent a fall-back notation with redundand zeros,
-which you can use if you really don’t like parenthesised location, the
+The last two rows represent a fall-back notation with redundant zeros,
+which you can use if you really don’t like parenthesized location, the
 parser automatically tries to find some separator if there are no
 parentheses in the string:
 
@@ -69,7 +69,7 @@ concentrations.
 
 The role of each file is determined from the file’s name:
 
-- **Constant.tsv**, list of constants that are not subjetc to
+- **Constant.tsv**, list of constants that are not subject to
   optimization, calibration, or any other investigation
 - **Input.tsv**, known parameters that can change between different
   simulations
@@ -78,8 +78,8 @@ The role of each file is determined from the file’s name:
 - **Expression.tsv**
 - **Compound.tsv**, list of reacting compounds, e.g. `Ca`
 - **Reaction.tsv**, list of reactions
-- **Output.tsv**, algebraic functions that express a measureable value
-  (or very close to measureable),
+- **Output.tsv**, algebraic functions that express a measurable value
+  (or very close to measurable),
   - e.g. the total amount of something: `A + AB + AC`, the total amount
     of bound and free `A`
 - **Experiment.tsv**, list of experiments
@@ -103,7 +103,7 @@ fungi and plants are distinct:
 1.  Experimental data that corresponds fairly well to an output function
     - there is an output function that can be compared to the data,
       perhaps up to some scaling constant
-    - the data column is labelled exactly like the output function is
+    - the data column is labeled exactly like the output function is
       named, e.g.: `AMPA_OUTPUT`
 2.  Experimental data that has a very complex relationship to the model
     - raw data, where several columns together can be used to make a
@@ -233,7 +233,7 @@ print(head(x[[18]]$measurement,12)) # (a 12 row subset)
 ```
 
 The only difference is that all numbers were parsed by `parse_concise`
-to resolve all parenthesised standard-errors (in `x`), in `m` the values
+to resolve all parenthesized standard-errors (in `x`), in `m` the values
 are raw (either stings if they contain parentheses, or numbers if R
 could successfully coerce them.
 

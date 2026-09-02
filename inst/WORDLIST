@@ -124,6 +124,8 @@ frac
 gNormalPrior
 gatherReplicas
 gatherSample
+ggplot
+ggplot2
 gllf
 gnu
 gnumeric
@@ -177,6 +179,8 @@ pCaMKII_CaM_Ca2
 pCaMKII_CaM_Ca3
 pCaMKII_CaM_Ca4
 pCaMKIIa
+parallelization
+parallelize
 pbdMPI
 pcDist
 plot.experiments
@@ -212,6 +216,7 @@ simfi
 simple.unit
 simstoch
 simulator.c
+slurm
 smc
 smmala
 stdv

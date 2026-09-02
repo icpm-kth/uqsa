@@ -25,11 +25,11 @@ By default `generate_code` creates C code, it has a `language` option.
 The C file contains functions used for simulations with GSL solvers –
 odeiv2 module in the GNU Scientific Library. The uqsa package has
 interface functions that call GSL functions, but we don’t include the
-GSL library itself, ot has to be installed in the OS (system).
+GSL library itself, it has to be installed in the OS (system).
 
 The functions in `.R` can be used more freely in R, and are functionally
 identical (they describe the same model), but are intended for use with
-deSolve, rather than our GSL interface functions.
+`deSolve`, rather than our GSL interface functions.
 
 The C code needs to be written to a file and compiled to a shared
 library. On a fairly normal system, you can make the shared library
@@ -42,8 +42,8 @@ c_path(o) <- write_c_code(C) # or cat
 so_path(o) <- shlib(o)       # R CMD SHLIB
 print(o)
 #>                 Model name : AKAR4
-#>                     C file : /tmp/RtmpiY0iWI/RtmpRARFUB/adf9204aaf2748b8/AKAR4.c [2026-06-26 13:35:51.824122]
-#>             shared library : /tmp/RtmpiY0iWI/RtmpRARFUB/adf9204aaf2748b8/AKAR4.so [2026-06-26 13:35:51.824122]
+#>                     C file : /tmp/RtmpFdwl1n/RtmpQwNLH9/adf9204aaf2748b8/AKAR4.c [2026-09-02 16:22:43.446501]
+#>             shared library : /tmp/RtmpFdwl1n/RtmpQwNLH9/adf9204aaf2748b8/AKAR4.so [2026-09-02 16:22:43.446501]
 #>  Number of state variables : 2
 #>       Number of parameters : 5
 #>          Number of outputs : 1
@@ -53,7 +53,7 @@ print(o)
 
 The `o` variable (a list of ODE specific vectors), stores the path to
 the different files. The C file can be inspected and modified before
-making th eshared library. The code can also be written with
+making th shared library. The code can also be written with
 `cat(C,sep="\n",...)` to any file.
 
 We want to sample in logarithmic space, so we set up a mapping function
@@ -78,7 +78,7 @@ parMap <- function (parABC=0) {
 ```
 
 The ODE model receives a parameter vector `parMap(parABC)` for each
-experiment, this way we can sample in logarithmic sapce. It consists of
+experiment, this way we can sample in logarithmic space. It consists of
 the biological model parameters (which are the same for all
 experiments), and input parameters (which together with initial
 conditions distinguish the experimental setups). This model doesn’t have
@@ -144,7 +144,7 @@ chunks <- list(
 dprior <- dUniformPrior(ll, ul)
 rprior <- rUniformPrior(ll, ul)
 
-options(mc.cores=detectCores())
+opt <- options(mc.cores=detectCores())
 
 start_time = Sys.time()
 for (i in seq(length(chunks))){
@@ -169,7 +169,7 @@ time_ = end_time - start_time
 print(time_)
 ```
 
-    #> Time difference of 32.00647 mins
+    #> Time difference of 9.493282 mins
 
 We plot the sample as a two dimensional histogram plot-matrix using the
 hexbin package:
@@ -178,10 +178,11 @@ hexbin package:
 colnames(posterior$draws)<-names(parVal)
 #
 if (require(hadron)){
-    par(mfrow=c(3,1))
+    oldpar <- par(mfrow=c(3,1))
     ac <- hadron::uwerr(data=posterior$scores,pl=TRUE)
     tau <- ceiling(ac$tauint+ac$dtauint)
     i <- seq(1,NROW(posterior$draws),by=tau)
+    par(oldpar)
 } else {
     A <- acf(posterior$scores,lag.max=100)
     l <- which(A$acf>0.2)
@@ -220,7 +221,7 @@ dim(y[[1]]$func)
 
 where `y[[1]]` refers to the simulation corresponding to the first
 experiment: `experiment[[1]]`, and `$func` refers to the output function
-values (rather than state variables). The outout functions are defined
+values (rather than state variables). The output functions are defined
 in the table `SBtab$Output`.
 
 ``` r
@@ -238,3 +239,9 @@ for (si in dim(S)[2]:1){
 ```
 
 ![](AKAR4_files/figure-html/plot-1.png)
+
+Restore original options:
+
+``` r
+options(opt)
+```

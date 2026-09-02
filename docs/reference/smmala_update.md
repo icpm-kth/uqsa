@@ -26,8 +26,8 @@ smmala_update(
 
 - logLikelihood:
 
-  a function that returns the log-likelihood value given the paramegter
-  value, with simulations attached to the parameter as an attreibute
+  a function that returns the log-likelihood value given the parameter
+  value, with simulations attached to the parameter as an attribute
   (probably a closure)
 
 - dprior:
@@ -60,6 +60,12 @@ smmala_update(
   a function that can be used to reject a proposal based on the values
   of the parameters alone (shortcut to rejection, sans simulation)
 
+## Value
+
+a closure with the arguments: (parGiven, eps=1e-4), where `parGiven` is
+the current position of the Markov chain (a numeric vector, with
+attributes), and `eps` the current step size.
+
 ## Details
 
 Using the simulations, and an acceptance rule, the proposed update is
@@ -71,7 +77,7 @@ sole argument: `parProposal <- smmala(parGiven)`
 An optional argument to this function is `parAcceptable`, during
 sampling, when `metropolis` is called as the update function, and
 `parAcceptable(parProposal)` returns `FALSE`, then metropolis shortcuts
-to `retrun(parGiven)` without performing simulations.
+to `return(parGiven)` without performing simulations.
 
 This function can be used to weed out parameter combinations that would
 result in obviously nonsensical simulations without wasting CPU-time.
@@ -100,13 +106,13 @@ UP <- smmala_update(s,ll,dprior=dprior,gll,gprior=gprior,FI,solve(diag(m$Paramet
 p2 <- UP(p)
 ## updated value:
 print(p2)
-#> [1]  0.01801046  0.10893704 10.21378666
+#> [1]  0.01800555  0.10420700 10.19601152
 #>              simulations: 3 (length)
-#>            logLikelihood: -2491.24
-#>                    prior: 10.5776
+#>            logLikelihood: -2491.23
+#>                    prior: 0.819684
 #>        gradLogLikelihood: 3 (length)
-#>             gradLogPrior: 10.5776
+#>             gradLogPrior: 0.819684
 #>        fisherInformation: 9 (length)
 print(sum(abs(p2-p)))
-#> [1] 0.01673416
+#> [1] 0.005787029
 ```

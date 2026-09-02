@@ -1,9 +1,9 @@
 # default distance function for one experiment
 
-if each experiment corresponds to one simulation and is fully
-quanitified by itself, then calculating the overall distance between
-data and experiment can be done one by one. This function describes the
-default way a simulation is compared to data.
+if each experiment corresponds to one simulation and is fully quantified
+by itself, then calculating the overall distance between data and
+experiment can be done one by one. This function describes the default
+way a simulation is compared to data.
 
 ## Usage
 
@@ -26,6 +26,11 @@ defaultDistance(funcSim, dataVAL, dataERR = max(dataVAL))
 
   a matrix of measurement errors, if available, defaults to the maximum
   data value.
+
+## Value
+
+a numeric scalar, the distance between data `dataVAL` and simulation
+`funcSim`.
 
 ## Details
 

@@ -7,7 +7,7 @@ calls to `Reduce`, it collects all of these smaller samples into one.
 ## Usage
 
 ``` r
-loadSample_mpi(files)
+loadSample_mpi(files, verbose = interactive())
 ```
 
 ## Arguments
@@ -15,6 +15,10 @@ loadSample_mpi(files)
 - files:
 
   the rds files where the individual samples are stored
+
+- verbose:
+
+  logical, when FALSE nothing will be printed on screen
 
 ## Value
 
@@ -59,8 +63,6 @@ attr(X,"logLikelihood") <- rnorm(N,-100,30)
 saveRDS(X,file=f[2])
 
 Z <- loadSample_mpi(f)
-#> loading sample files with acceptances:
-#> [1] 0.23 0.23
 print(dim(Z$Sample))
 #> [1] 200   3
 print(names(Z))

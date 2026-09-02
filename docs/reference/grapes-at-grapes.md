@@ -26,7 +26,7 @@ the value of the attribute: `attr(x,a)`
 ## Details
 
 This function tries to find a similarly named attribute disregarding
-capitalization and using partila matching.
+capitalization and using partial matching.
 
 The only way from this function to return NULL is when `x` is null (the
 object that supposedly has the attribute). For the purposes of this

@@ -1,7 +1,7 @@
 # High Level Metropolis function
 
 This function uses default assumption everywhere and returns a function
-that will sample from the given model. This funciton will generate code,
+that will sample from the given model. This function will generate code,
 compile the code, create an ODE solver for it, infer the sampling space
 from the scale of the parameters, create all necessary functions to move
 in parameter space (gradients of likelihood and prior), as well as
@@ -15,7 +15,8 @@ high_level_metropolis(
   o = as_ode(m, cla = FALSE),
   ex = experiments(m, o),
   x = values(m$Parameter),
-  beta = 1
+  beta = 1,
+  verbose = interactive()
 )
 ```
 
@@ -35,13 +36,17 @@ high_level_metropolis(
 
 - x:
 
-  initial point of the markov chain, pre in itialized to have the right
-  attributes.
+  initial point of the Markov chain, pre in initialized to have the
+  right attributes.
 
 - beta:
 
   for parallel tempering, the log-likelihood will have a factor of
   `beta` applied to it
+
+- verbose:
+
+  prints extra messages when TRUE
 
 ## Value
 
@@ -53,20 +58,20 @@ starting point.
 ## Examples
 
 ``` r
-# \donttest{
-m <- model_from_tsv(uqsa_example("AKAP79"))
-rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
-#> The parameters are given in log10-scale, so the simulator will do the reverse transformation: 10^p.
-p <- rwm %@% "init"             # a valid starting point
-N <- 200
-smallSample <- rwm(rwm %@% "init",N,1e-6)
-plot(
-  smallSample %@% "logLikelihood",
-  type="l",
-  main=sprintf("%i iterations",N),
-  xlab="iterations",
-  ylab="log-likelihood"
-)
-
-# }
+  m <- model_from_tsv(uqsa_example("AKAP79"))
+  rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
+  p <- rwm %@% "init"             # a valid starting point
+  N <- 100
+  if (interactive()){
+    smallSample <- rwm(rwm %@% "init",N,1e-6)
+    plot(
+      smallSample %@% "logLikelihood",
+      type="l",
+      main=sprintf("%i iterations",N),
+      xlab="iterations",
+      ylab="log-likelihood"
+    )
+  } else {
+    smallSample <- rwm(rwm %@% "init",N/4,1e-6)
+  }
 ```

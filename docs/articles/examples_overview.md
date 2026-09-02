@@ -1,6 +1,6 @@
 # Examples Overview
 
-We here provide some examples to simulate, calibrate or analyse
+We here provide some examples to simulate, calibrate or analyze
 different models. The calibration (parameter estimation) process
 includes uncertainty quantification (UQ) and it can be followed by
 global sensitivity analysis (SA). You find more details about the

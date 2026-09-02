@@ -21,7 +21,7 @@ parse_concise(v, use.errors = requireNamespace("errors"), na = c(NA, NA))
 
 - use.errors:
 
-  if TRUE, the errors package will be used to retrun an object of type
+  if TRUE, the errors package will be used to return an object of type
   "errors" (from that package). Otherwise, the errors will be attached
   as an attribute (also called "errors" to be consistent with the errors
   package)

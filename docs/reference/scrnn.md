@@ -71,7 +71,6 @@ stoichiometry and modifiers remain unchanged throughout.
 ## Examples
 
 ``` r
-# \donttest{
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
   ex <- experiments(m)
@@ -94,10 +93,7 @@ stoichiometry and modifiers remain unchanged throughout.
   s <- scrnn(ex, modelName)
   p <- list(l=l,nu=nu,m=nu*0)
   y <- s(p)
-  plot(ex,y)
-
-
-
-#> NULL
-# }
+  if (interactive()){
+     plot(ex,y)
+  }
 ```

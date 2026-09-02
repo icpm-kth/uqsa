@@ -3,10 +3,10 @@
 ``` r
 library(uqsa)
 library(parallel)
-options(mc.cores=detectCores())
+opt <- options(mc.cores=detectCores())
 ```
 
-AKAP79 is a comparativelyh big model (for a demonstartive example). To
+AKAP79 is a comparatively big model (for a demonstrative example). To
 even attempt to take a somewhat sufficiently large sample of AKAP79, we
 shall use MPI and parallel tempering. There are several ways to launch
 MPI processes (e.g. spawn processes). We will use the simplest form:
@@ -78,18 +78,12 @@ automatically:
 ``` r
 p <- values(m$Parameter)
 smmala <- high_level_smmala(m,o,ex,p)
-#> The parameters are given in log10-scale, so the simulator will do the reverse transformation: 10^p.
 ```
 
 ## Plain Sample
 
 ``` r
 h <- tune_step_size(smmala)
-#> acceptance rate: 0, step-size: 0.0001;
-#> acceptance rate: 0.15, step-size: 1e-07;
-#> acceptance rate: 0.14, step-size: 5.29412e-08;
-#> acceptance rate: 0.11, step-size: 2.52776e-08;
-#> acceptance rate: 0.25, step-size: 8.19998e-09;
 X <- smmala(smmala %@% "init",1000,h)
 plot(
   X %@% "logLikelihood",
@@ -132,9 +126,9 @@ mpirun -H localhost:$N ./pt-smmala-akap79.R 1000 > /dev/null 2>&1
 date
 end_time=$(date +%s)
 echo "Time spent sampling: $((end_time - start_time)) seconds ($(( (end_time - start_time)/60 )) minutes)."
-#> We will use 8 cores with model name  : Intel(R) Core(TM) i7-4700MQ CPU @ 2.40GHz
-#> Fri Jun 26 02:15:02 PM CEST 2026
-#> Fri Jun 26 02:15:02 PM CEST 2026
+#> We will use 16 cores with model name : Intel(R) Xeon(R) CPU E5-2630 v3 @ 2.40GHz
+#> Wed 02 Sep 2026 04:37:57 PM CEST
+#> Wed 02 Sep 2026 04:37:57 PM CEST
 #> Time spent sampling: 0 seconds (0 minutes).
 ```
 
@@ -213,3 +207,9 @@ echo "Time spent sampling: $((end_time - start_time)) seconds ($(( (end_time - s
 ```
 
 This results in a much less spotty posterior plot:
+
+Restore original options:
+
+``` r
+options(opt)
+```

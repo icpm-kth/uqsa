@@ -113,7 +113,7 @@ Here we run a prepared R script from the command line (any POSIX shell
 will do: bash/zsh/fish/dash). We make the same number of iterations as
 before, to keep the execution time short.
 
-```{bash MPI, eval=TRUE}
+```{bash, label="MPI", eval=TRUE}
 N=4 #  default number of MPI workers
 [ -e '/proc/cpuinfo' ] && N=$((`grep -c processor /proc/cpuinfo`)) && nm="`grep -m1 'model name' /proc/cpuinfo`"
 echo "We will use $N cores with $nm"

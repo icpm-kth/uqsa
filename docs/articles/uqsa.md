@@ -1,6 +1,6 @@
 # Introduction
 
-UQSA is an R-package for modelling and calibration of biochemical (and
+UQSA is an R-package for modeling and calibration of biochemical (and
 other) reaction networks.
 
 ![Example of a Chemical Reaction Network](CRN.png)
@@ -8,7 +8,7 @@ other) reaction networks.
 **Example of a Chemical Reaction Network**
 
   
-An important part of modelling is to estimate parameters (calibration),
+An important part of modeling is to estimate parameters (calibration),
 and to account for the uncertainty in the parameter estimates and
 predictions. UQSA allows you to perform Bayesian *uncertainty
 quantification* while calibrating your model. With UQSA you can also do

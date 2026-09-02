@@ -16,7 +16,7 @@ ABCSMC(
   parAcceptable = function(p) {
      all(is.finite(p))
  },
-  messages = FALSE
+  verbose = interactive()
 )
 ```
 
@@ -53,7 +53,7 @@ ABCSMC(
   `FALSE` for a specific value of `p`, it means that simulations
   shouldn't even be attempted.
 
-- messages:
+- verbose:
 
   a logical value indicating whether log messages should be printed
 
@@ -80,8 +80,8 @@ parameterizations `NCOL(P)`.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
   library(parallel)
+  opt <- options(mc.cores=2) # use [detectCores()] here
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
   ex <- experiments(m,as_ode(m,cla=FALSE))
@@ -95,8 +95,10 @@ if (FALSE) { # \dontrun{
   dprior <- dNormalPrior(log(muX^2/(muX^2+sdX^2)),sqrt(log(1+sdX^2/muX^2)))
   s <- simstoch(ex,G,logParMap)
   O <- makeObjective(ex,s)
-  X <- rprior(1000)
+  X <- rprior(100)
   colnames(X) <- rownames(m$Parameter)
-  posterior <- ABCSMC(O,t(X),Sigma=cov(X),dprior=dprior,delta=c(0.5,1.5))
-} # }
+  if (interactive()) {
+     posterior <- ABCSMC(O,t(X),Sigma=cov(X),dprior=dprior,delta=c(0.4,1.5))
+  }
+  options(opt) # restore original options
 ```

@@ -1,8 +1,8 @@
 # dUniformPrior creates a uniform density function
 
-The returned denisty function takes vectors of the same size as ll and
+The returned density function takes vectors of the same size as ll and
 ul. It returns the product of the component's one-dimensional uniform
-distribtions.
+distributions.
 
 ## Usage
 
@@ -22,7 +22,7 @@ dUniformPrior(ll, ul)
 
 ## Value
 
-a probability density function on vectors withthe same length as ll and
+a probability density function on vectors with the same length as ll and
 ul.
 
 ## Examples

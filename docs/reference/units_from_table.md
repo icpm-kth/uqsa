@@ -1,6 +1,6 @@
 # Get units from a data.frame column
 
-Given a data.frame this funciton retrieves the strings in the unit
+Given a data.frame this function retrieves the strings in the unit
 column named: unit, Unit, units (partial matching disregarding
 capitalization).
 

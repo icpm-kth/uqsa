@@ -61,11 +61,11 @@ rprior <- rNormalPrior(
 Next, the MCMC method via `metropolis_update`, which determines the
 sampling algorithm we are going to use. Finally, we construct the
 sampler (`MH` below), which actually performs the MCMC run, this
-function takes the inital values, number of steps and the stepsize as
+function takes the initial values, number of steps and the stepsize as
 arguments.
 
 ``` r
-options(mc.cores=length(ex))
+opt <- options(mc.cores=length(ex))
 s <- simulator.c(
     ex,
     o,
@@ -92,19 +92,13 @@ x <- mcmc_init(
 )
 
 h <- tune_step_size(MH,x,h=1e-3)
-#> acceptance rate: 0.96, step-size: 0.001;
-#> acceptance rate: 1, step-size: 0.00187298;
-#> acceptance rate: 0.94, step-size: 0.00352561;
-#> acceptance rate: 0.93, step-size: 0.00658541;
-#> acceptance rate: 0.86, step-size: 0.0122832;
-#> acceptance rate: 0.71, step-size: 0.0226522;
 N <- 5e4
 
 # sampling:
 X <- MH(x,N,eps=h)
 
 print(attr(X,"acceptanceRate"))
-#> [1] 0.59664
+#> [1] 0.63536
 ```
 
 ``` r
@@ -127,3 +121,9 @@ We can try to obtain a higher quality sample, through simple means:
 3.  Remove burn-in phase from each chain
 4.  Adjust the step size at least once to get close to 25% acceptance
     rate
+
+Restore original options:
+
+``` r
+options(opt)
+```

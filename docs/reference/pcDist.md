@@ -2,7 +2,7 @@
 
 This function makes a plot that is quite similar to parallel
 coordinates. It includes information about the prior as error-bars,
-centered around th eprior's median.
+centered around the prior's median.
 
 ## Usage
 
@@ -20,7 +20,7 @@ pcDist(posterior, prior, color = rgb(0.5, 0.5, 0.5, 0.05), ...)
 - prior:
 
   a data.frame with at least \$median, and \$stdv columns. This
-  data.frame may also include the fields: color, and colorOutline to
+  data.frame may also include the fields: `color`, and `colorOutline` to
   change the prior error-bars.
 
 - color:

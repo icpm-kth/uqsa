@@ -24,14 +24,14 @@ simulator.c(
 
 - experiments:
 
-  a list of experiments to simulate: inital values, inputs, time
+  a list of experiments to simulate: initial values, inputs, time
   vectors, initial times
 
 - modelName:
 
   a string (with optional comment indicating an .so file) which points
   out the model to simulate if modelName is a cme object, the simulation
-  will be done stochasitcally
+  will be done stochastically
 
 - parMap:
 
@@ -51,8 +51,8 @@ simulator.c(
   `omit=0` returns all optional return values form the simulator,
   `omit=1` will not calculate the fisher information (and thus not
   return it), `omit=2` will omit the gradient of the log-likelihood, and
-  `omit=3` will omit the likelihood calculations alltogether. Omission
-  is cumulative: `omit=3` omits all the previously mentioned optional
+  `omit=3` will omit the likelihood calculations altogether. Omission is
+  cumulative: `omit=3` omits all the previously mentioned optional
   quantities.
 
 - method:
@@ -82,7 +82,7 @@ mapping
 
 The returned function depends only on the parameter vector (or matrix if
 more than one simulation per experiment is desired). The parameter
-vector this simnulator accepts is probably derived from the sampling
+vector this simulator accepts is probably derived from the sampling
 space of a Bayesian method \\\theta\\, so in the list of arguments, it
 is called `parABC` or (parMCMC would also have been a valid choice).
 These sampling parameters can be mapped to values the simulator can use
@@ -90,12 +90,11 @@ via `parMap`. `parModel <- parMap(parABC)`, where the ODE model is
 expected to work with `parModel`. The model can be specified by name
 (with a comment indicating a file location)
 
-Some return values are optional and omiting them saves time.
+Some return values are optional and omitting them saves time.
 
 ## Examples
 
 ``` r
-# \donttest{
   requireNamespace("errors")
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
@@ -106,5 +105,4 @@ Some return values are optional and omiting them saves time.
   so_path(o) <- shlib(o)
   s <- simulator.c(ex,o)
   y <- s(values(m$Parameter))
-# }
 ```

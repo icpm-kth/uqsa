@@ -2,7 +2,7 @@
 
 Everything in this article should be already known to all users and
 cover basic interactions with an operating system in the context of
-modelling, scientific computing, and simulations. Read this only for
+modeling, scientific computing, and simulations. Read this only for
 *troubleshooting* purposes.
 
 In this guide we explain these things in much more detail than will be
@@ -178,7 +178,7 @@ quotas on *file sizes* and *file numbers*.
 
 R packages can also be installed from within R (for individual users),
 but only to a location that is writable to you, typically in your
-`$HOME` diectory. Please ensure that
+`$HOME` directory. Please ensure that
 [`.libPaths()`](https://rdrr.io/r/base/libPaths.html) returns at least
 one location that you have write access to (this – again – is true for
 everyone, has nothing to do with us).
@@ -222,13 +222,13 @@ We have developed two companion packages:
 
 - [rgsl](https://icpm-kth.github.io/uqsa/articles/icpm-kth/rgsl)
   - only simulates a model, no uncertainty quantification
-  - solves ODEs with an interface organised around *simulation
+  - solves ODEs with an interface organized around *simulation
     experiments*
   - uses solvers from the GNU Scientific Library
   - can be used in most of our examples, instead of
     [`uqsa::simulator.c`](https://icpm-kth.github.io/uqsa/reference/simulator.c.md)
 - [SBtabVFGEN](https://icpm-kth.github.io/uqsa/articles/icpm-kth/SBtabVFGEN)
-  - organises the storage and loading of models in SBtab form
+  - organizes the storage and loading of models in SBtab form
   - loads SBtab content from tsv, ods, and excel files
   - creates vfgen, MOD, sbml, and format free ODE files
   - also loads biological data contained in the SBtab files into R
@@ -267,4 +267,4 @@ creation or want to write the model source files by hand (which is hard
 for large models).
 
 It is an alternative for the TSV model format in this package. Use
-SBtabVFGEN if your model alfready is in SBtab form.
+SBtabVFGEN if your model already is in SBtab form.

@@ -57,7 +57,6 @@ model.
 f <- uqsa_example("AKAR4")
 m <- model_from_tsv(f)
 o <- as_ode(m)
-#> Loading required namespace: pracma
 print(names(o))
 #>  [1] "vf"                    "const"                 "par"                  
 #>  [4] "var"                   "exp"                   "func"                 

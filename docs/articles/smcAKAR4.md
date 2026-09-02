@@ -57,7 +57,7 @@ rprior <- rUniformPrior(ll, ul) # rprior generates random samples from the prior
 
 The objective function simulates the model, to do this it needs a
 simulator, it also needs direct access to the data, so `ex` is also an
-explicit arument for `makeObjective`:
+explicit argument for `makeObjective`:
 
 ``` r
 s <- simstoch(
@@ -96,7 +96,7 @@ print(D)
 ## Run ABCSMC
 
 We launch the particle filter from the prior (cold start), and pick
-resonable values for `delta` (the ABC distance threshold).
+reasonable values for `delta` (the ABC distance threshold).
 
 The data has measurement errors (standard error). The distance function
 takes the standard error into account, so the distances returned are
@@ -106,7 +106,7 @@ final value that triggers the SMC algorithm to terminate.
 
 ``` r
 t_initial <- Sys.time()
-options(mc.cores = parallel::detectCores())
+opt <-options(mc.cores = parallel::detectCores())
 X <- rprior(5000)    # this determines the sample size
 colnames(X) <- names(par_val)
 posterior <- ABCSMC(
@@ -119,7 +119,7 @@ posterior <- ABCSMC(
 t_final <- Sys.time()
 
 cat(difftime(t_final,t_initial,units="min")," minutes")
-#> 11.44907  minutes
+#> 6.124675  minutes
 ```
 
 ## Visualize the sampled parameters
@@ -150,7 +150,7 @@ if (requireNamespace("rgl")){
 #> Loading required namespace: rgl
 ```
 
-### Marhinals
+### Marginals
 
 The marginal distributions of each parameter in the parameter vector can
 be visualized via histograms as follows.
@@ -176,9 +176,8 @@ y <- s(t(Z)) # using the stochastic simulator one final time
 t_final <- Sys.time()
 
 cat(difftime(t_final,t_initial,units="min")," minutes")
-#> 0.6144153  minutes
-
-par(mfrow=c(3,1))
+#> 0.7592529  minutes
+oldpar <- par(mfrow=c(3,1))
 for (i in seq_along(ex)){
     tm <- ex[[i]]$outputTimes
     plot(     # the data (errorbars)
@@ -201,3 +200,11 @@ for (i in seq_along(ex)){
 ```
 
 ![](smcAKAR4_files/figure-html/trajectories-1.png)
+
+``` r
+par(oldpar)
+```
+
+``` r
+options(opt)
+```

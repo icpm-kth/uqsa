@@ -25,7 +25,7 @@ a list containing the interpreted model.
 
 ## Details
 
-This function interprets the contionuous model `m` as a discrete state
+This function interprets the continuous model `m` as a discrete state
 model with molecule counts and propensities. For this reason, we need to
 specify a volume for the simulations to take place in.
 

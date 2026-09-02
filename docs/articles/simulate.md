@@ -2,7 +2,7 @@
 
 Reaction network models can be simulated as deterministic models or
 stochastic models. In this article we show the deterministic approach.
-An example of how to simualte from the stochastic model is available in
+An example of how to simulate from the stochastic model is available in
 [this
 article](https://icpm-kth.github.io/uqsa/articles/simAKAR4stochastic.md).
 
@@ -111,14 +111,14 @@ print(dim(P))
 All simulations happen here (timed):
 
 ``` r
-options(mc.cores=parallel::detectCores())
+opt <- options(mc.cores=parallel::detectCores())
 
 ti <- Sys.time()
 y <- simulate(t(P))
 tf <- Sys.time()
 
 print(difftime(tf,ti))
-#> Time difference of 0.08038044 secs
+#> Time difference of 0.08073282 secs
 ```
 
 The matrix `P` has columns of model parameters that are log-normally
@@ -126,7 +126,7 @@ distributed around OK-ish values (taken from the TSV file
 `AKAR4/Parameter.tsv`):
 
 ``` r
-par(mfrow=c(3,1))
+oldpar <- par(mfrow=c(3,1))
 for (i in seq(ex)){
     tm <- ex[[i]]$outputTimes
     plot(               # data
@@ -146,3 +146,11 @@ for (i in seq(ex)){
 ```
 
 ![](simulate_files/figure-html/log-normal-sample-1.png)
+
+``` r
+par(oldpar)
+```
+
+``` r
+options(opt)
+```

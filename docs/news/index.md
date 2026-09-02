@@ -19,7 +19,7 @@ more common case that we frequently change the model TSV files and then
 update the C code.
 
 The model, once converted to an ODE or CME (for chemical master equation
-mtype odels) now has a field for the C file storage location and the
+type models) now has a field for the C file storage location and the
 `shlib` function uses this field to compile the model to a shared
 library (same directory). The path to the `so` file is also stored in
 the ODE or CME object.

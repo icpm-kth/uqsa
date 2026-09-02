@@ -66,7 +66,7 @@ preCalibration(
 list with entries prePar (sampled parameters), preDelta (distances
 between experimental data and trajectories produced with each of the
 parameters in prePar), Sigma (covariance matrix for the moves proposed
-in the ABCMCMC algortihm) and startPar (starting parameters for the
+in the ABCMCMC algorithm) and startPar (starting parameters for the
 ABCMCMC chains)
 
 ## Examples
@@ -83,12 +83,11 @@ s <- simstoch(ex,cme,parMap=log10ParMap)
 Obj <- makeObjective(ex,s)
 rprior <- rNormalPrior(p0,0.5)
 PC <- preCalibration(Obj,50,rprior,delta=1) # should be more than 50
-#> Warning: distances between experiment and simulation are too big; selecting the best (50) parameter vectors.
 print(names(PC))
 #> [1] "prePar"   "preDelta" "Sigma"    "startPar"
 print(PC$Sigma)
-#>             [,1]        [,2]        [,3]
-#> [1,] 0.004496082 0.001051894 0.003292040
-#> [2,] 0.001051894 0.024296263 0.005356373
-#> [3,] 0.003292040 0.005356373 0.029494625
+#>               [,1]          [,2]          [,3]
+#> [1,]  0.0028258991 -0.0003605099 -0.0003655104
+#> [2,] -0.0003605099  0.0223679489  0.0024142213
+#> [3,] -0.0003655104  0.0024142213  0.0234467975
 ```

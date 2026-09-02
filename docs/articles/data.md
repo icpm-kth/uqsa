@@ -4,7 +4,7 @@ In the previous article [Importing
 Models](https://icpm-kth.github.io/uqsa/articles/models.md) we have seen
 the command `experiments(m,o)`. This commands reads the data from `m`,
 but not only this, it also attempts to find simulation instructions for
-`o`, to reproduce the sam effect using the model:
+`o`, to reproduce the same effect using the model:
 
 ``` r
 library(uqsa)
@@ -91,7 +91,7 @@ If the situation is very special, and the data-sets have a different
 dimensionality to the output, then a different treatment is required,
 and `experiments` shouldn’t be used probably.
 
-Perhaps th eraw data can be processed enough so that it begins to
+Perhaps the raw data can be processed enough so that it begins to
 reflect some output function. But, if the user insists on having data
 like: `Channel1_Y` and `Channel1_B`, but output functions like `PKA`,
 then there is no way we can automatically find out which values in the
@@ -144,7 +144,7 @@ print(as.data.frame(z))
 ```
 
 These are all equivalent, but only the last entry uses concise
-parenthesised error notation that this function was written for. Parsing
+parenthesized error notation that this function was written for. Parsing
 a delimited entry with `;`, `±`, or `,` is much easier, and happens a as
 a fall-back). *Note*: `+-` cannot be used instead of `±`.
 
@@ -219,10 +219,10 @@ uncertainty very close to the values.
 
 ### SBtab
 
-In the [SBtabVGEN](https://github.com/icpm-kth/SBtabVFGEN) we actually
+In the [SBtabVFGEN](https://github.com/icpm-kth/SBtabVFGEN) we actually
 have a custom rule for this: data is marked with `>` and uncertainty is
 marked with `~`, e.g.: `>AKAR4p` and `~AKAR4p`. The official SBtab
-documentation doesn’t commetn on this issue.
+documentation doesn’t comment on this issue.
 
 SBtab is an alternative format that we can use. The SBtabVFGEN package
 provides the translation layer to import from that model type.

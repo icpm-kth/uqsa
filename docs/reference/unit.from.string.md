@@ -5,8 +5,8 @@ ms)" rules: 1. only one slash is allowed 2. M can be mega or mol/l:
 writing M for molarity will treat molarity as it's own unit kind;
 writing "molarity" will be translated into two SI units (mol and litre)
 3. prefixes and units can be words or single letters 4. everything after
-a slash is the denominator 5. u is an accepted replacement for \\\mu\\
-(unicode greek mu or unicode micro symbol) 6. no parentheses (ignored):
+a slash is the denominator 5. u is an accepted replacement for \\\\mu\\
+(unicode Greek mu or unicode micro symbol) 6. no parentheses (ignored):
 "(m/s)\*kg" will be misinterpreted
 
 ## Usage
@@ -29,7 +29,7 @@ here, but may be used later to deal with units such as hours
 
 ## Details
 
-this retruns a data.frame with components as in the sbml standard: kind,
+this returns a data.frame with components as in the sbml standard: kind,
 multiplier, scale and exponent since there is only one slash,parentheses
 do nothing everything after a slash is the denominator, so: l/mol s is
 the same as (l)/(mol s) Remark: not all units are understood.
@@ -38,15 +38,24 @@ the same as (l)/(mol s) Remark: not all units are understood.
 
 ``` r
 print(unit.from.string("m/s"))
-#>   scale multiplier exponent   kind
-#> 1     0          1        1  metre
-#> 2     0          1       -1 second
+#> «m/s» has been interpreted as
+#> the product of: 
+#>                        m_per_s
+#> ==============================
+#> (1 × metre × 10^(0))^(1)
+#> (1 × second × 10^(0))^(-1)
 print(unit.from.string("micromolarity"))
-#>   scale multiplier exponent  kind
-#> 1    -6          1        1  mole
-#> 2     0          1       -1 litre
+#> «micromolarity» has been interpreted as
+#> the product of: 
+#>                  micromolarity
+#> ==============================
+#> (1 × mole × 10^(-6))^(1)
+#> (1 × litre × 10^(0))^(-1)
 print(unit.from.string("µM"))
-#>   scale multiplier exponent  kind
-#> 1    -6          1        1  mole
-#> 2     0          1       -1 litre
+#> «µM» has been interpreted as
+#> the product of: 
+#>                            µM
+#> ==============================
+#> (1 × mole × 10^(-6))^(1)
+#> (1 × litre × 10^(0))^(-1)
 ```

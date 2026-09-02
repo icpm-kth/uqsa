@@ -26,7 +26,7 @@ a scalar value: log(likelihood(data\|parMCMC))
 
 ## Details
 
-This function will take the Fisher-Information-matrices claculated by
+This function will take the Fisher-Information-matrices calculated by
 the ode solver in this package, and return the sum of those values over
 all experiments. The gll-value the simulator returns is calculated with
 the assumption of a normal distribution on measurement errors, and uses
@@ -47,7 +47,6 @@ to work (e.g. through initialization).
 ## Examples
 
 ``` r
-# \donttest{
 m <- model_from_tsv(uqsa_example("AKAR4"))
 o <- as_ode(m)
 c_path(o) <- write_c_code(generate_code(o))
@@ -59,14 +58,9 @@ attr(p,"simulations") <- s(p)
 ### without parameter transformations
 gll <- gllf()
 FI <- fi()
-print(ll(p))
-#> [1] -2491.245
-print(gll(p))
-#> [1] 1643.53085001   -2.87257643    0.03029852
-print(FI(p))
-#>               [,1]          [,2]          [,3]
-#> [1,] 2628400.11438 -4.591588e+03 50.1228420741
-#> [2,]   -4591.58828  8.021109e+00 -0.0875605903
-#> [3,]      50.12284 -8.756059e-02  0.0009571775
-# }
+if (interactive()){
+  print(ll(p))
+  print(gll(p))
+  print(FI(p))
+}
 ```

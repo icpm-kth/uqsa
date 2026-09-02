@@ -29,7 +29,7 @@ Functions for loading model and data and construct a mathematical model
 - [`kinetic_law_matrix()`](https://icpm-kth.github.io/uqsa/reference/kinetic_law_matrix.md)
   : Split Kinetic Law
 - [`replace_powers()`](https://icpm-kth.github.io/uqsa/reference/replace_powers.md)
-  : replace_powers
+  : replace_powers does string manipulation
 - [`stoichiometry()`](https://icpm-kth.github.io/uqsa/reference/stoichiometry.md)
   : This function returns a list of named stoichiometric vectors
 - [`stoichiometric_matrix()`](https://icpm-kth.github.io/uqsa/reference/stoichiometric_matrix.md)
@@ -38,8 +38,6 @@ Functions for loading model and data and construct a mathematical model
   : Unit Interpreter
 - [`unit.id()`](https://icpm-kth.github.io/uqsa/reference/unit.id.md) :
   Converts a unit to a string that works as an identifier
-- [`unit.info()`](https://icpm-kth.github.io/uqsa/reference/unit.info.md)
-  : Prints an interpretation string of a unit
 - [`unit_as_character()`](https://icpm-kth.github.io/uqsa/reference/unit_as_character.md)
   : converts a unit data.frame into a printable string
 - [`units_from_table()`](https://icpm-kth.github.io/uqsa/reference/units_from_table.md)
@@ -101,7 +99,7 @@ Functions for constructing priors
 - [`dUniformPrior()`](https://icpm-kth.github.io/uqsa/reference/dUniformPrior.md)
   : dUniformPrior creates a uniform density function
 - [`dCopulaPrior()`](https://icpm-kth.github.io/uqsa/reference/dCopulaPrior.md)
-  : dCopulaPrior creates a prior probability density function
+  : Creates a prior probability density function
 - [`gNormalPrior()`](https://icpm-kth.github.io/uqsa/reference/gNormalPrior.md)
   : gNormalPrior creates the gradient function of a multivariate normal
   distribution with independent components, in log-space
@@ -154,13 +152,11 @@ Approximate Bayesian Computation (ABC) MCMC for parameter inference
   : creates Objective functions from ingredients
 - [`preCalibration()`](https://icpm-kth.github.io/uqsa/reference/preCalibration.md)
   : Determine a starting value for ABC's delta
-- [`ABCMCMC()`](https://icpm-kth.github.io/uqsa/reference/ABCMCMC.md) :
-  Performs and Approximate Bayesian Computation Sampling of Model
+- [`abc_mcmc()`](https://icpm-kth.github.io/uqsa/reference/abc_mcmc.md)
+  : Performs and Approximate Bayesian Computation Sampling of Model
   Parameters
 - [`ABCSMC()`](https://icpm-kth.github.io/uqsa/reference/ABCSMC.md) :
   Performs and Approximate Bayesian Computation as a Particle Filter
-- [`checkFitWithPreviousExperiments()`](https://icpm-kth.github.io/uqsa/reference/checkFitWithPreviousExperiments.md)
-  : ABC acceptance of currently sampled values given old data (Prior)
 
 ## Global Sensitivity Analysis
 
@@ -171,6 +167,10 @@ Approximate Bayesian Computation (ABC) MCMC for parameter inference
   Sobol-Homma-Saltelli method
 - [`saltelli_prior()`](https://icpm-kth.github.io/uqsa/reference/saltelli_prior.md)
   : Sample for the Sobol-Homma-Saltelli Global Sensitivity Analysis
+- [`KLD()`](https://icpm-kth.github.io/uqsa/reference/KLD.md) : Kullback
+  Leibler Divergence
+- [`exact_normal_kld()`](https://icpm-kth.github.io/uqsa/reference/exact_normal_kld.md)
+  : Multivariate Normal Distribution KLD
 
 ## Parameter mappings
 
@@ -213,6 +213,8 @@ Parameter transformations from sampling space back to model space
   : print information about the mcmc variable
 - [`print(`*`<simulation>`*`)`](https://icpm-kth.github.io/uqsa/reference/print.simulation.md)
   : prints the simulation results
+- [`print(`*`<unit_of_measurement>`*`)`](https://icpm-kth.github.io/uqsa/reference/print.unit_of_measurement.md)
+  : Prints an interpretation string of a unit
 
 ## Plotting functions
 
@@ -229,49 +231,28 @@ Parameter transformations from sampling space back to model space
 
 - [`onlyCoefficients()`](https://icpm-kth.github.io/uqsa/reference/onlyCoefficients.md)
   : Returns a list of reaction coefficients
-
 - [`onlyNames()`](https://icpm-kth.github.io/uqsa/reference/onlyNames.md)
   : Returns only the names in a reaction formula
-
 - [`CRNN()`](https://icpm-kth.github.io/uqsa/reference/CRNN.md) : CRNN
   creates C code for a chemical reaction neural network
-
 - [`clear_yacas_environment()`](https://icpm-kth.github.io/uqsa/reference/clear_yacas_environment.md)
   : Clear Yacas variables
-
 - [`defaultDistance()`](https://icpm-kth.github.io/uqsa/reference/defaultDistance.md)
   : default distance function for one experiment
-
 - [`formulae()`](https://icpm-kth.github.io/uqsa/reference/formulae.md)
   : Find a column that contains some kind of mathematic expression in a
   data.frame
-
 - [`linear_scale()`](https://icpm-kth.github.io/uqsa/reference/linear_scale.md)
   : Interprets a character vector as names of logarithms
-
 - [`parse_concise()`](https://icpm-kth.github.io/uqsa/reference/parse_concise.md)
   : Read Concise Error Notation
-
-- [`` `reaction<-`() ``](https://icpm-kth.github.io/uqsa/reference/reaction-set.md)
-  : Add a Reaction to an ODE
-
-- [`update_values()`](https://icpm-kth.github.io/uqsa/reference/update_values.md)
-  :
-
-  Updates the named values of vector `v` with values mentioned in
-  data.frame d
-
 - [`simple.unit()`](https://icpm-kth.github.io/uqsa/reference/simple.unit.md)
   : Simple unit from string
-
 - [`method()`](https://icpm-kth.github.io/uqsa/reference/method.md) :
   Find Integer
-
 - [`plot(`*`<experiments>`*`)`](https://icpm-kth.github.io/uqsa/reference/plot.experiments.md)
   : plot function for experiments
-
 - [`` `[`( ``*`<experiments>`*`)`](https://icpm-kth.github.io/uqsa/reference/sub-.experiments.md)
   : Subset experiments with preserved class
-
 - [`` `[`( ``*`<simulation>`*`)`](https://icpm-kth.github.io/uqsa/reference/sub-.simulation.md)
   : Subset simulations with preserved class

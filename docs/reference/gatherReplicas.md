@@ -1,8 +1,8 @@
 # Collect statistical Replicas
 
 `gatherReplicas` collects all sample-points, from all files, which are
-assumed to be exact replicas. Replicas hav different random number seeds
-(and possibly sample sizes).
+assumed to be exact replicas. Replicas have different random number
+seeds (and possibly sample sizes).
 
 ## Usage
 
@@ -25,14 +25,14 @@ a Sample matrix, with effective sample size (auto-correlation thinned)
 This function uses mclapply to process the files, which may be quicker
 than `gatherSample`. The temperature `beta` is disregarded, assuming
 that no parallel tempering was used. To facilitate the loading of a very
-big sample, this function will analyse the auto-correltation within each
+big sample, this function will analyze the auto-correlation within each
 file and returned a thinned sub-sample of size `N/(2*tau_int)`
 (returning the effective sample size). The value of tau_int is
 calculated on the likelihood values, either with the hadron package, or
 the bultin `acf` function. There is no need to further reduce the
 result.
 
-For small samples, it is better to load the entire sample and analyse it
+For small samples, it is better to load the entire sample and analyze it
 in full. This function is intended for samples that are so big that they
 challenge the memory of the machine.
 
@@ -74,7 +74,7 @@ Z <- gatherReplicas(f)
 print(N)
 #> [1] 100
 print(dim(Z))
-#> [1] 49  3
+#> [1] 67  3
 print(names(attributes(Z)))
 #> [1] "dim"           "logLikelihood" "stepSize"      "tau"          
 ```

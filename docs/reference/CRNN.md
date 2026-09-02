@@ -17,8 +17,8 @@ CRNN(numReactions, initialValues, funcValues, model.name = "CRNN")
 
 - initialValues:
 
-  named vector of initial values, names will be used as the neames of
-  the reacting compounds.
+  named vector of initial values, names will be used as the names of the
+  reacting compounds.
 
 - funcValues:
 
@@ -39,7 +39,7 @@ Example: A + B \<=\> C numReactions: n \<- 1 initialValues: x \<-
 c(A=2,B=3,C=0) funcValues: f \<- c("A+B","log(A)")
 
 The above definition would create a CRNN inspired ODE, where A+B and
-log(A) are treated as observable (measureable) values (functions of the
+log(A) are treated as observable (measurable) values (functions of the
 state variables).
 
 Note: In addition to the state variables, the function values can also

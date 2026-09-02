@@ -17,7 +17,7 @@ R.
 
 First we load the model in its SBtab form and create all derived files.
 We do this step only once and have the MPI part of the process load the
-coimpleted results of this:
+completed results of this:
 
 ``` r
 f <- uqsa_example("AKAR4")
@@ -42,7 +42,7 @@ Here we run a prepared R script from the command line (any POSIX shell
 will do: bash/zsh/fish/dash). This way, the entire R program is wrapped
 in an mpirun call.
 
-``` sh
+``` bash
 N=4 # by default
 [ -e '/proc/cpuinfo' ] && N=$((`grep -c processor /proc/cpuinfo`)) && nm="`grep -m1 'model name' /proc/cpuinfo`"
 echo "We will use $N cores with $nm"
@@ -54,9 +54,9 @@ mpirun -H localhost:$N -N $N ./pt-mh-akar4.R $sample_size > /dev/shm/log.txt 2>&
 date
 end_time=$((`date +%s`))
 echo "Time spent sampling: $((end_time - start_time)) seconds (for $sample_size points)."
-#> We will use 8 cores with model name  : Intel(R) Core(TM) i7-4700MQ CPU @ 2.40GHz
-#> Fri Jun 26 02:38:53 PM CEST 2026
-#> Fri Jun 26 02:38:53 PM CEST 2026
+#> We will use 16 cores with model name : Intel(R) Xeon(R) CPU E5-2630 v3 @ 2.40GHz
+#> Wed 02 Sep 2026 04:48:46 PM CEST
+#> Wed 02 Sep 2026 04:48:46 PM CEST
 #> Time spent sampling: 0 seconds (for 30000 points).
 ```
 
@@ -71,11 +71,11 @@ Here we check the integrated auto-correlation length (Markov chain time)
 Sample <- readRDS(file="/dev/shm/AKAR4-parameter-sample-for-rank-0.RDS")
 n <- NROW(Sample)
 l <- attr(Sample,"logLikelihood")
-
 if (requireNamespace("hadron")){
-    par(mfrow=c(3,1))
+    oldpar <- par(mfrow=c(3,1))
     res <- hadron::uwerr(data=l,pl=TRUE)
     tau <- ceiling(res$tauint+res$dtauint)
+    par(oldpar)
 } else {
     A <- acf(l)
     tau <- sum(A$acf[A$acf>0.2])

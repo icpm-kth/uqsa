@@ -2,7 +2,7 @@
 
 Given a model, described in tabular form (`m` is a list of data-frames).
 The stoichiometric matrix is the linear map between the model's flux
-vector and the ODE's right-gand-side vector field. If the flux vector is
+vector and the ODE's right-hand-side vector field. If the flux vector is
 `rr <- flux(t,x,p)`, which maps the state variables `x` and parameters
 `p` to the reaction rate `rr` of each reaction. The stoichiometric
 matrix `nu` (\\\nu\\), will map the reaction rates to the rate of change
@@ -27,7 +27,7 @@ stoichiometric_matrix(m, compound.names = rownames(m$Compound))
 
 ## Value
 
-the stoichimetric matrix, with some additional attributes.
+the stoichiometric matrix, with some additional attributes.
 
 ## Details
 

@@ -23,7 +23,8 @@ Ryacas::yac_str("restart")
 print(Ryacas::yac_str("D(x) y^2"))
 #> [1] "8*x"
 clear_yacas_environment()
-#> [1] "y"
+#> [1] "y"                   "reactionUNDERSCORE1" "reactionUNDERSCORE2"
+#> [4] "AKAR4UNDERSCOREC"    "AKAR4"              
 print(Ryacas::yac_str("D(x) y^2"))
 #> [1] "0"
 ```

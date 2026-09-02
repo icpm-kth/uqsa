@@ -53,7 +53,7 @@ ex <- experiments(m,o)
 s <- simulator.c(ex[1],o)
 p0 <- values(m$Parameter)
 rprior <- rUniformPrior(p0/2,p0*2)
-SP <- saltelli_prior(1000,rprior)
+SP <- saltelli_prior(700,rprior)
 fM1 <- t(s(t(SP$M1))[[1]]$func[1,,])
 fM2 <- t(s(t(SP$M2))[[1]]$func[1,,])
 fN <- lapply(asplit(SP$N,3),\(N) t(s(t(N))[[1]]$func[1,,]))
@@ -65,5 +65,5 @@ cat(
   "average relative senitivity S(p1) / S(p2): ",
   mean(abs(GSA$SI[,1]/GSA$SI[,2]),na.rm=TRUE)
 )
-#> average relative senitivity S(p1) / S(p2):  14864.47
+#> average relative senitivity S(p1) / S(p2):  759.8771
 ```

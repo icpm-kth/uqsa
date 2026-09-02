@@ -60,12 +60,6 @@ will take a minute or so on a laptop.
 set.seed(137)
 x <- mcmc_init(beta=1.0,p,s,ll,dprior)
 h <- tune_step_size(mh,x)
-#> acceptance rate: 0.99, step-size: 0.0001;
-#> acceptance rate: 1, step-size: 0.000188011;
-#> acceptance rate: 1, step-size: 0.000353903;
-#> acceptance rate: 0.98, step-size: 0.00066617;
-#> acceptance rate: 0.98, step-size: 0.00125093;
-#> acceptance rate: 1, step-size: 0.002349;
 N <- 3e4
 
 nCores <- parallel::detectCores()
@@ -103,7 +97,7 @@ if (require(hadron)){
 #>     kappa
 
 print(tau)
-#> [1] 69
+#> [1] 50
 
 if (1 < tau && tau < length(L_)){
     N <- length(L_)
@@ -154,7 +148,7 @@ and plot the result:
 
 ``` r
 cols=rainbow(3)
-par(mfrow = c(1, 1))
+oldpar <- par(mfrow = c(1, 1))
 fM <- y[[E]]$state[,T,]
 barplot(
     t(SIappr),
@@ -168,13 +162,17 @@ barplot(
 
 ![](uqsaAKAR4_files/figure-html/barplot-1-1.png)
 
+``` r
+par(oldpar)
+```
+
 Here for compute the first order sensitivity indexes for all three
 experiments, looking at the different compounds in the system (on the x
 axis):
 
 ``` r
-T <- 200                    #Time idx
-par(mfrow = c(1,3))
+T <- 200                    # Time idx
+oldpar <- par(mfrow = c(1,3))
 for (E in seq(3,1,-1)){
 fM <- y[[E]]$state[,T,]
 SIappr <- gsa_binning(S_, t(fM))
@@ -194,6 +192,10 @@ barplot(
 
 ![](uqsaAKAR4_files/figure-html/barplot-2-1.png)
 
+``` r
+par(oldpar)
+```
+
 Now we investigate the first order sensitivity indexes at different time
 points (time is on the x axis) for each of the compounds and one
 experiment.
@@ -203,7 +205,7 @@ E <- 3
 timePts <- seq(2,40,by=4)  #Avoid first time point
 nStates=dim(y[[E]]$state)[1]
 cols=rainbow(3)
-par(mfrow = c(1, nStates))
+oldpar <- par(mfrow = c(1, nStates))
 lgd <- rep(list(NULL),nStates)
 lgd[[nStates-1]] <- names(p)
 for (Cm in seq(nStates)) {
@@ -227,3 +229,7 @@ mtext(names(ex[E]), side=3, line = - 1.5, outer=TRUE)
 ```
 
 ![](uqsaAKAR4_files/figure-html/barplot-3-1.png)
+
+``` r
+par(oldpar)
+```

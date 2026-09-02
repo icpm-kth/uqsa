@@ -24,7 +24,7 @@ linear_scale(x, str_scale = attr(x, "scale"))
 
 ## Value
 
-a copy of `x`, transformed in to linear space
+a copy of `x`, transformed into linear space
 
 ## Details
 
@@ -40,9 +40,10 @@ understood scales:
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-x <- c(1,2,3)
-attr(x,"scale") <- c("log10","log2","log")
+x <- c(1,2,3,1,1,1)
+attr(x,"scale") <- c("log10","log2","log","ln","ld","log5")
 print(linear_scale(x))
-} # }
+#> [1] 10.000000  4.000000 20.085537  2.718282  2.000000  5.000000
+#> attr(,"scale")
+#> [1] "log10" "log2"  "log"   "ln"    "ld"    "log5" 
 ```

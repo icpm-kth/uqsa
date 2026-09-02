@@ -38,7 +38,7 @@ h_i(x(t_j;\theta,M))}{\sigma}\right)^2\right)\\,\\ L(\theta;y,M) &=
 p(y\|\theta,M)\\, \end{align} \\
 
 where \\L\\ is the likelihood function (its main argument is \\\theta\\,
-separated by `;`). The Likelihood’s argument list omits several implict
+separated by `;`). The Likelihood’s argument list omits several implicit
 items:
 
 - given
@@ -53,7 +53,7 @@ items:
     vector space of \\y\\
   - the measurement time vector \\t\\
 
-These itmes are omitted because it would be very tedious to write them
+These items are omitted because it would be very tedious to write them
 every time. In a manuscript, we would mention these implicit
 dependencies once and then omit for the ease of notation.
 
@@ -102,12 +102,12 @@ enclose the solver as well.
 
 The model’s solution doesn’t have to be derived from an ODE using one of
 our solvers, it may be a stochastic solver, or an external solver such
-as deSolve.
+as `deSolve`.
 
 Crucially, the solver may return a value that the MCMC update function
 may require to work properly. We don’t want to call the solver twice,
-and the simulatiuon results `z` are of course not implicit as they
-depend on the main argument `theta`. We may need `z` in:
+and the simulation results `z` are of course not implicit as they depend
+on the main argument `theta`. We may need `z` in:
 
 1.  the update function
 2.  the likelihood function
@@ -128,8 +128,8 @@ Attributes can be attached to any variable, using the `attr` function. A
 function can work on theta without even knowing about the existence of
 the attributes.
 
-If the likeihood function needs *any* implicit values, they are attached
-to theta as attributes: fisher information, gradient of the
+If the likelihood function needs *any* implicit values, they are
+attached to theta as attributes: fisher information, gradient of the
 log-likelihood, prior probability of theta are all attached as
 attributes.
 
@@ -139,7 +139,7 @@ Here is an example of a user-defined likelihood function that references
 the attributes. The `mcmcUpdate(theta)` function will call the solver
 and attach the results to the returned value (as attributes). To see
 which attributes are attached by a specific update function, the user
-can call the update funciton and inspect the result.
+can call the update function and inspect the result.
 
 ``` r
 ex <- experiments(m,o)

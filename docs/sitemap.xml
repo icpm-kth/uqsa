@@ -68,7 +68,9 @@
 <url><loc>https://icpm-kth.github.io/uqsa/reference/ABCSMC.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/CRNN.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/GillespieModelList.html</loc></url>
+<url><loc>https://icpm-kth.github.io/uqsa/reference/KLD.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/Rmpi_swap_temperatures.html</loc></url>
+<url><loc>https://icpm-kth.github.io/uqsa/reference/abc_mcmc.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/as_cme.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/as_ode.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/automatic_update.html</loc></url>
@@ -89,6 +91,7 @@
 <url><loc>https://icpm-kth.github.io/uqsa/reference/defaultAcceptance.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/defaultDistance.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/determinePrefix.html</loc></url>
+<url><loc>https://icpm-kth.github.io/uqsa/reference/exact_normal_kld.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/experiments.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/fi.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/find_parameter_reaction.html</loc></url>
@@ -194,6 +197,7 @@
 <url><loc>https://icpm-kth.github.io/uqsa/reference/print.mcmcVariable.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/print.ode.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/print.simulation.html</loc></url>
+<url><loc>https://icpm-kth.github.io/uqsa/reference/print.unit_of_measurement.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/propensity.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/rCopulaPrior.html</loc></url>
 <url><loc>https://icpm-kth.github.io/uqsa/reference/rNormalPrior.html</loc></url>

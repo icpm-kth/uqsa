@@ -57,7 +57,7 @@ input (`Input` table).
 Because events can change Input values, we can also define an input that
 becomes a sort of storage unit that can remember the value of a variable
 at a given time. So, we could define an output function that uses this
-time-spcificity of events to define more intricate return values.
+time-specificity of events to define more intricate return values.
 
 Events can change state variables, but also the inputs. They can also
 depend on the time `t`.
@@ -149,7 +149,7 @@ int Spike_event(double t, double *y_, double *p_, int EventLabel, double dose){
 }
 ```
 
-The C cource defines enums for the event labels to make the code more
+The C source defines enums for the event labels to make the code more
 readable and identify the transformations (`case` labels) by name.
 
 The transformation expression `A*(k2-k1)*dose` has access to all

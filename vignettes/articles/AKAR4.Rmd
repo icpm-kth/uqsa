@@ -37,7 +37,7 @@ By default `generate_code` creates C code, it has a `language` option.
 The C file contains functions used for simulations with GSL solvers --
 odeiv2 module in the GNU Scientific Library.  The uqsa package has
 interface functions that call GSL functions, but we don't include the
-GSL library itself, ot has to be installed in the OS (system).
+GSL library itself, it has to be installed in the OS (system).
 
 The functions in `.R` can be used more freely in R, and are
 functionally identical (they describe the same model), but are

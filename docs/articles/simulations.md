@@ -26,11 +26,11 @@ This closure approach allows you to hijack the procedure at any point by
 constructing your own simulation closure that uses your solver of
 convenience and/or necessity. You can write a function that accepts a
 `parMCMC` vector and calls the solvers from the `deSolve` package. Just
-make sure to package the simulation results in teh same way as our
+make sure to package the simulation results in the same way as our
 solvers do.
 
 Typically a simulation result `y` has this structure: `y[[i]]` is the
-simulation of `ex[[i]]` (where `ex` is th elist of simulation
+simulation of `ex[[i]]` (where `ex` is the list of simulation
 experiments, with data from the real experiments). Each `y[[i]]` has the
 fields: `state`, `func`, `status`, `cpuSeconds`, `numSteps`. Only
 `state` and `func` have scientific relevance. The `func` array
@@ -57,8 +57,8 @@ c_path(o) <- write_c_code(generate_code(o))
 so_path(o) <- shlib(o)
 print(o)
 #>                 Model name : AKAP79
-#>                     C file : /tmp/RtmpiY0iWI/RtmpQMQrCy/RtmpcrMJNH/b316367e5f817645/AKAP79.c [2026-06-26 14:39:36.392262]
-#>             shared library : /tmp/RtmpiY0iWI/RtmpQMQrCy/RtmpcrMJNH/b316367e5f817645/AKAP79.so [2026-06-26 14:39:36.392262]
+#>                     C file : /tmp/RtmpFdwl1n/RtmpesODen/RtmpppoVob/b316367e5f817645/AKAP79.c [2026-09-02 16:49:28.148553]
+#>             shared library : /tmp/RtmpFdwl1n/RtmpesODen/RtmpppoVob/b316367e5f817645/AKAP79.so [2026-09-02 16:49:28.148553]
 #>  Number of state variables : 11
 #>       Number of parameters : 33
 #>          Number of outputs : 1
@@ -102,18 +102,18 @@ ex <- experiments(m,o)
 ```
 
 We supply both `m` and `o` because `o` contains information about
-whether or not conservation law analysis has occured. With conservation
+whether or not conservation law analysis has occurred. With conservation
 law analysis, we must adjust the input vector for the simulation
 experiment and reduce the initial state for each simulation to the
 dynamic variables rather (without the ones determined algebraically).
 Currently, there is no way to influence which variables are replaced by
 algebraic constraints. This can be inconvenient if you are relying very
-heavilty on the state component of the result `y[[i]]$state` (where some
+heavily on the state component of the result `y[[i]]$state` (where some
 variables are now missing, due to conservation laws). This is why you
 should rely on the `func` component of the return value. This directly
-corresponds to the `m$Output` table: the observable/measureable
+corresponds to the `m$Output` table: the observable/measurable
 quantities for this model. If you need to compare substance `A` to the
-data (in some way), then add an outout function for it (e.g. `A_out` or
+data (in some way), then add an output function for it (e.g. `A_out` or
 `A_obs` with a vlaue of `A`). Then it doesn’t matter whether the
 conservation law analysis removes `A` from the state space; it remains
 part of the `func` component.
@@ -135,11 +135,11 @@ This package has a set of functions that perform this reverse
 transformation from sampling space to model-parameter space, based on
 which transformation the user performed in the model files: log10ParMap
 belongs to a log10 sampling space and performs `10^p` (to get back to
-the model-paramerts):
+the model-parameters):
 
 ``` r
 stopifnot(all(m$Parameter$scale=="log10")) # just to make sure
-options(mc.cores = 2) # required by CRAN, set this to a bigger value for yourself
+opt <- options(mc.cores = 2)               # required by CRAN to be 2, set this to a bigger value for yourself
 s <- simulator.c(ex,o,parMap=log10ParMap)
 
 p0 <- values(m$Parameter) # default parameters, in log10-space
@@ -7681,6 +7681,14 @@ the simulation results:
 ``` r
 print(class(y))
 #> [1] "simulation"
+oldpar <- par()      # remember graphics values
+on.exit(par(oldpar)) # restore original values
+#> Warning in par(oldpar): graphical parameter "cin" cannot be set
+#> Warning in par(oldpar): graphical parameter "cra" cannot be set
+#> Warning in par(oldpar): graphical parameter "csi" cannot be set
+#> Warning in par(oldpar): graphical parameter "cxy" cannot be set
+#> Warning in par(oldpar): graphical parameter "din" cannot be set
+#> Warning in par(oldpar): graphical parameter "page" cannot be set
 par(mfrow=c(3,2))
 plot(ex[seq(6)],y[seq(6)],ylim=c(90,140))
 ```
@@ -7971,3 +7979,7 @@ print(y)
 #> 
 #> experiments:  EX11____0nM__TRUE___TRUE, EX12____0nM__TRUE__FALSE, EX13____0nM_FALSE__FALSE, EX21__100nM__TRUE___TRUE, EX22__100nM__TRUE__FALSE, EX23__100nM_FALSE__FALSE, EX31__200nM__TRUE___TRUE, EX32__200nM__TRUE__FALSE, EX33__200nM_FALSE__FALSE, EX41__500nM__TRUE___TRUE, EX42__500nM__TRUE__FALSE, EX43__500nM_FALSE__FALSE, EX51_1000nM__TRUE___TRUE, EX52_1000nM__TRUE__FALSE, EX53_1000nM_FALSE__FALSE, EX61_2000nM__TRUE___TRUE, EX62_2000nM__TRUE__FALSE, EX63_2000nM_FALSE__FALSE, EX72__event__TRUE___TRUE, EX71___dose__TRUE___TRUE_dose_1, EX71___dose__TRUE___TRUE_dose_2, EX71___dose__TRUE___TRUE_dose_3, EX71___dose__TRUE___TRUE_dose_4, EX71___dose__TRUE___TRUE_dose_5, EX71___dose__TRUE___TRUE_dose_6
 ```
+
+Reset options:
+
+    options(opt) # restores original values

@@ -35,8 +35,8 @@ m <- model_from_tsv(uqsa_example("AKAR4"))
 o <- write_and_compile(as_ode(m))
 print(o)
 #>                 Model name : AKAR4
-#>                     C file : /tmp/RtmpiY0iWI/RtmpQMQrCy/AKAR4_cb4825f036ad8.c [2026-06-26 13:35:48.657317]
-#>             shared library : /tmp/RtmpiY0iWI/RtmpQMQrCy/AKAR4_cb4825f036ad8.so [2026-06-26 13:35:48.657317]
+#>                     C file : /tmp/RtmpFdwl1n/RtmpesODen/AKAR4_176e902d428a91.c [2026-09-02 16:22:40.328526]
+#>             shared library : /tmp/RtmpFdwl1n/RtmpesODen/AKAR4_176e902d428a91.so [2026-09-02 16:22:40.328526]
 #>  Number of state variables : 2
 #>       Number of parameters : 5
 #>          Number of outputs : 1

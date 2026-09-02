@@ -6,9 +6,9 @@ require(SBtabVFGEN)
 library(uqsa)
 #> 
 #> Attaching package: 'uqsa'
-#> The following objects are masked from 'package:SBtabVFGEN':
+#> The following object is masked from 'package:SBtabVFGEN':
 #> 
-#>     unit.from.string, unit.info
+#>     unit.from.string
 library(GillespieSSA2)
 ```
 
@@ -379,7 +379,7 @@ And also plot the results:
 
 ``` r
 tm <- ex[[E]]$outputTimes
-par(bty="n")
+oldpar <- par(bty="n")
 plot(
     as.errors(tm),
     ex[[E]]$data,
@@ -394,3 +394,7 @@ lines(tm,as.numeric(yode[[E]]$func["AKAR4pOUT",,1]),lwd=3)
 ```
 
 ![](simAKAP79stochastic_files/figure-html/plot_simstoch-1.png)
+
+``` r
+par(oldpar)
+```

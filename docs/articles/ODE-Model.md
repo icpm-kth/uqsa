@@ -66,7 +66,7 @@ aux energy=-m*g*cos(theta)*L+0.5*v^2*m*L^2
 done
 ```
 
-We put this file into `/dev/shm` as a temporariy document (in a real
+We put this file into `/dev/shm` as a temporarily document (in a real
 case, this is probably a file in a git repository).
 
 We will use this model, and convert it to the text format that `ode.sh`

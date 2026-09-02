@@ -280,7 +280,7 @@ formulae <- function(df){
 #'
 #' Given a model, described in tabular form (`m` is a list of
 #' data-frames). The stoichiometric matrix is the linear map between
-#' the model's flux vector and the ODE's right-gand-side vector field.
+#' the model's flux vector and the ODE's right-hand-side vector field.
 #' If the flux vector is `rr <- flux(t,x,p)`, which maps the state
 #' variables `x` and parameters `p` to the reaction rate `rr` of each
 #' reaction. The stoichiometric matrix `nu` (\eqn{\nu}{ν}), will map the reaction

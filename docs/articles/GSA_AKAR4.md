@@ -28,7 +28,7 @@ We construct a simulator function and and test it on default parameter
 values.
 
 ``` r
-options(mc.cores = length(ex))
+opt <- options(mc.cores = length(ex))
 s <- simulator.c(ex,o,parMap=log10ParMap,omit=3)
 p <- log10(values(m$Parameter))
 y <- s(p)
@@ -99,7 +99,7 @@ sobol-saltelli
 
 ``` r
 cols=rainbow(3)
-par(mfrow = c(1, 2))
+oldpar <- par(mfrow = c(1, 2))
 barplot(
     t(SA$SI[,]),
     col=cols,
@@ -130,11 +130,15 @@ barplot(
 
 ![](GSA_AKAR4_files/figure-html/unnamed-chunk-7-1.png)
 
+``` r
+par(oldpar)
+```
+
 Plot all states and timeponts for the experiment
 
 ``` r
 allTimesSample=s(t(prior$M2))[[E]]$state
-par(mfrow = c(2, 2))
+oldpar <- par(mfrow = c(2, 2))
 for (i in seq_along(ex[[E]]$initialState)) {
     matplot(
         ex[[E]]$outputTime,
@@ -150,6 +154,10 @@ for (i in seq_along(ex[[E]]$initialState)) {
 
 ![](GSA_AKAR4_files/figure-html/unnamed-chunk-8-1.png)
 
+``` r
+par(oldpar)
+```
+
 Calculate first order sensitivity index (SI) based on binning approach
 
 ``` r
@@ -159,7 +167,7 @@ SIappr <- gsa_binning(rbind(prior$M1,prior$M2), rbind(fM1,fM2))
 Plot SI for Sobol-Saltelli versus the binning approach
 
 ``` r
-par(mfrow = c(1, 3))
+oldpar <- par(mfrow = c(1, 3))
 barplot(
     t(SA$SI[,]),
     col=cols,
@@ -188,8 +196,17 @@ barplot(
     font.axis=2,
     legend.text=names(p)
 )
-
 mtext(paste("Comparision GSA methods, sample size=",as.character(2*nSamples)), side = 3, line = -1.2, outer = TRUE)
 ```
 
 ![](GSA_AKAR4_files/figure-html/unnamed-chunk-10-1.png)
+
+``` r
+par(oldpar)
+```
+
+Restore original options:
+
+``` r
+options(opt)
+```

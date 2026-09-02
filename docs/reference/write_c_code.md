@@ -42,7 +42,7 @@ C <- generate_code(o)
 c_path(o) <- write_c_code(C)
 print(o)
 #>                 Model name : AKAR4
-#>                     C file : /tmp/RtmpiY0iWI/RtmpQMQrCy/adf9204aaf2748b8/AKAR4.c [2026-06-26 13:35:49.123137]
+#>                     C file : /tmp/RtmpFdwl1n/RtmpesODen/adf9204aaf2748b8/AKAR4.c [2026-09-02 16:22:40.861521]
 #> 
 #>  Number of state variables : 2
 #>       Number of parameters : 5

@@ -165,7 +165,7 @@ E <- 2 # which experiment to plot
 tm <- ex[[E]]$outputTime
 
 # Plot simulations
-par(bty='n',xaxp=c(80,200,4))
+oldpar <- par(bty='n',xaxp=c(80,200,4))
 plot(
     as.errors(tm),     # time points
     ex[[E]]$data,      # data points (as errorbars)
@@ -185,6 +185,10 @@ lines(
 
 ![](simAKAR4_files/figure-html/plotting-1.png)
 
+``` r
+par(oldpar)
+```
+
 We now run the same code to plot the simulations with noise
 `y_with_noise`.
 
@@ -192,7 +196,7 @@ We now run the same code to plot the simulations with noise
 E <- 2 # which experiment to plot
 
 # Plot simulations
-par(bty='n',xaxp=c(80,200,4))
+oldpar <- par(bty='n',xaxp=c(80,200,4))
 plot(
     as.errors(tm),       # time points
     ex[[E]]$data,        # data
@@ -211,6 +215,10 @@ lines(
 ```
 
 ![](simAKAR4_files/figure-html/unnamed-chunk-7-1.png)
+
+``` r
+par(oldpar)
+```
 
 ### Plots with ggplot2
 

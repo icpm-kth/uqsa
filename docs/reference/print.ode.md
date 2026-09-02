@@ -1,6 +1,6 @@
 # Print a summary about the ode
 
-An ODE model was crteated by `as_ode` can be summarized here, including
+An ODE model was created by `as_ode` can be summarized here, including
 information about the compiled version of the model.
 
 ## Usage
@@ -19,6 +19,10 @@ print(x, ...)
 - ...:
 
   requirement of print generic, not used.
+
+## Value
+
+called for side-effect (printout); no value.
 
 ## Details
 

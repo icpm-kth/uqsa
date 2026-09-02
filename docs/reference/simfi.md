@@ -24,7 +24,7 @@ simfi(
 
 - experiments:
 
-  a list of experiments to simulate: inital values, inputs, time
+  a list of experiments to simulate: initial values, inputs, time
   vectors, initial times
 
 - odeModel:
@@ -79,7 +79,7 @@ and cannot add noise to the simulations (unlike simulator.c).
 
 A hopeless simulation can be stopped early using the settings
 `num.steps` and `time.out`. The value of `num.steps` applies to every
-continuous simulation stretch (e.g. betwee two events), teh count of
+continuous simulation stretch (e.g. between two events), the count of
 steps is reset whenever an event occurs or one simulation ends (between
 different parameters and different experiments).
 
@@ -94,7 +94,6 @@ GSL ODE solvers and can trigger precisely.
 ## Examples
 
 ``` r
-# \donttest{
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
   o <- as_ode(m)
@@ -108,7 +107,7 @@ GSL ODE solvers and can trigger precisely.
 #> number of simulation experiments: 3
 #>                                      400nM 
 #> ------------------------------------------ 
-#>               cpuSeconds: 0.00033
+#>               cpuSeconds: 0.000435
 #>                 numSteps: 269
 #>                   status: 0
 #>                    state: 2, 225, 1 (dim)
@@ -119,7 +118,7 @@ GSL ODE solvers and can trigger precisely.
 #> 
 #>                                      100nM 
 #> ------------------------------------------ 
-#>               cpuSeconds: 0.000335
+#>               cpuSeconds: 0.000295
 #>                 numSteps: 248
 #>                   status: 0
 #>                    state: 2, 225, 1 (dim)
@@ -130,7 +129,7 @@ GSL ODE solvers and can trigger precisely.
 #> 
 #>                                       25nM 
 #> ------------------------------------------ 
-#>               cpuSeconds: 0.000314
+#>               cpuSeconds: 0.000355
 #>                 numSteps: 237
 #>                   status: 0
 #>                    state: 2, 225, 1 (dim)
@@ -140,5 +139,4 @@ GSL ODE solvers and can trigger precisely.
 #>        FisherInformation: 5, 5, 1 (dim)
 #> 
 #> experiments:  400nM, 100nM, 25nM 
-# }
 ```

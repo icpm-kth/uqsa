@@ -58,7 +58,7 @@ in the `cmeModel` object.
 
 To generate the code, we decide on a value for `LV`: Avogadro’s number
 multiplied by the system’s volume. Higher numbers mean more particles
-(more reactions per time-span). This mumber can be changed directly in
+(more reactions per time-span). This number can be changed directly in
 the source code of the model (the C file), afterwards, because it is
 used as a global constant in the C file.
 
@@ -97,35 +97,38 @@ The second argument can also be the path to the shared library. If it is
 
 ``` r
 print(so_path(cmeModel))
-#> [1] "/tmp/RtmpiY0iWI/RtmpQMQrCy/Rtmp5XU7jE/054fd9b45fdf5005/AKAR4.so"
+#> [1] "/tmp/RtmpFdwl1n/RtmpesODen/RtmpT31JpO/054fd9b45fdf5005/AKAR4.so"
 ```
 
 ### Plot the results
 
 ``` r
 tm <- ex[[1]]$outputTimes
-
-par(mfrow=c(3,1),bty="n")
+oldpar <- par(mfrow=c(3,1),bty="n")
 for (i in seq_along(ex)){
-plot(
-    as.errors(tm),
-    ex[[i]]$data,
-    xlab="time",
-    ylab="AKAR4p",
-    main=names(ex)[i],
-    ylim=c(90,210)
-)
-lines(
-    tm,
-    y[[i]]$func,
-    lwd=2,
-    col="red",
-    type='s'
-)
+    plot(
+        as.errors(tm),
+        ex[[i]]$data,
+        xlab="time",
+        ylab="AKAR4p",
+        main=names(ex)[i],
+        ylim=c(90,210)
+    )
+    lines(
+        tm,
+        y[[i]]$func,
+        lwd=2,
+        col="red",
+        type='s'
+    )
 }
 ```
 
 ![](simAKAR4stochastic_files/figure-html/plot-simstoch-1.png)
+
+``` r
+par(oldpar)
+```
 
 ### Benchmark
 
@@ -142,5 +145,5 @@ if (require(rbenchmark)){
 }
 #> Loading required package: rbenchmark
 #>   test replications elapsed relative user.self sys.self user.child sys.child
-#> 1 uqsa         5000   0.881        1     0.722    0.159          0         0
+#> 1 uqsa         5000   0.932        1     0.716    0.214          0         0
 ```

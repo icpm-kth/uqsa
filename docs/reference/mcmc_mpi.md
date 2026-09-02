@@ -1,7 +1,7 @@
 # The MPI version of the mcmc function
 
 this version of the MCMC function returns a Markov chain closure that
-assumes that it is bein run in an MPI context: R was launched in an MPI
+assumes that it is being run in an MPI context: R was launched in an MPI
 context, e.g. using
 
     mpirun -H localhost:8 -N 8 Rscript ...
@@ -58,17 +58,17 @@ It is possible to supply a custom swap function, with the interface:
 where `i` is the current iteration (for round robin rank choices), `B`
 is the current beta value, `LL` the current log-likelihood (scalar) and
 `H` the current step-size (scalar); `r`, `comm`, and `cs` are the MPI
-rank, comm, and comm-size. The swap function returnsa list:
+rank, comm, and comm-size. The swap function returns a list:
 `list(B=,LL=,H=)` with the updated values (after swapping) or the old
 values if the swap was rejected.
 
 ## Examples
 
 ``` r
-## works in an MPI context
+## works only in an MPI context (R session started with `mpirun Rscript ...`)
 ## similar to mcmc without _mpi prefix
 if (FALSE) { # \dontrun{
-  ## prepare the update function
+  ## prepare the update functions
   pt_mcmc <- mcmc_mpi(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures)
 } # }
 ```

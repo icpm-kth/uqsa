@@ -22,4 +22,4 @@ a data.frame with the unit's properties
 ## Details
 
 In this context, a simple unit is just a prefix, a unit kind, and an
-exponent, e.g. cm^2 A not-simple unit is: m/s, kg*m/s^2, kg*h
+exponent, e.g. `cm^2` A not-simple unit is: `m/s`, `kg*m/s^2`, `kg*h`

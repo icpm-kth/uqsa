@@ -4,7 +4,7 @@
 library(uqsa)
 ```
 
-Baysian uncertainty quantification aims to establish the amount of
+Bayesian uncertainty quantification aims to establish the amount of
 knowledge we have (or indeed lack) about the possible values of model
 parameters. Sometimes this is described as our belief in different
 parameter values. The knowledge or belief is expressed in the form of a
@@ -116,7 +116,7 @@ not.
 There are three major steps when running ABC:
 
 **1. Define a prior distribution** This is done in the same way as for
-the likelihood based approch described above.
+the likelihood based approach described above.
 
 **2. Define an objective function** Objective functions for ABC can be
 defined with
@@ -137,8 +137,7 @@ computed, because it depends on the likelihood function. Instead, the
 simulation approach described before is used (data are simulated and
 compared with observed data).
 
-This algorithm can be run in UQSA using function
-[`ABCMCMC()`](https://icpm-kth.github.io/uqsa/reference/ABCMCMC.md).
+This algorithm can be run in UQSA using function `ABCMCMC()`.
 
 ### PreCalibration
 

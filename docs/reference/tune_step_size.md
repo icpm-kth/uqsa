@@ -12,7 +12,9 @@ tune_step_size(
   parMCMC = attr(MCMC, "init"),
   target_acceptance = 0.25,
   iter.max = 6,
-  h = 1e-04
+  h = 1e-04,
+  N = 100,
+  verbose = interactive()
 )
 ```
 
@@ -41,6 +43,15 @@ tune_step_size(
 
   initial guess for the MCMC step size
 
+- N:
+
+  size of test-samples for acceptance rate estimate
+
+- verbose:
+
+  when TRUE, this function prints a progress bar, 'a:' reports current
+  acceptance rate, and 'h:' reports the current step-size.
+
 ## Value
 
 optimal step size
@@ -51,31 +62,29 @@ It will take 100 sample points repeatedly, until an acceptance of
 `target_acceptance` is reached (defaults to 25%). The step-size is
 decreased if acceptance is very low and increased when it is too high.
 
-This function will do at most
+When verbose This function will do at most
 
 ## Examples
 
 ``` r
-# \donttest{
-m <- model_from_tsv(uqsa_example("AKAP79"))
-rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
-#> The parameters are given in log10-scale, so the simulator will do the reverse transformation: 10^p.
-p <- rwm %@% "init"             # a valid starting point
-h <- tune_step_size(rwm,p)
-#> acceptance rate: 0.14, step-size: 0.0001;
-#> acceptance rate: 0.2, step-size: 4.77467e-05;
-#> acceptance rate: 0.25, step-size: 3.72657e-05;
-N <- 200
-smallSample <- rwm(rwm %@% "init",N,h)
-print(h)
-#> [1] 3.726568e-05
-plot(
-  smallSample %@% "logLikelihood",
-  type="l",
-  main=sprintf("step size: %g",h),
-  xlab="iterations",
-  ylab="log-likelihood"
-)
-
-# }
+  opt <- options(mc.cores=2)
+  m <- model_from_tsv(uqsa_example("AKAP79"))
+  rwm <- high_level_metropolis(m) # "random walk", metropolis algorithm
+  p <- rwm %@% "init"             # a valid starting point
+  N <- 100
+  if (interactive()){
+    h <- tune_step_size(rwm,p)
+    smallSample <- rwm(rwm %@% "init",N,h)
+    print(h)
+    plot(
+      smallSample %@% "logLikelihood",
+      type="l",
+      main=sprintf("step size: %g",h),
+      xlab="iterations",
+      ylab="log-likelihood"
+    )
+  } else {
+    h <- tune_step_size(rwm,p,N=20,iter.max=1)
+  }
+  options(opt)
 ```

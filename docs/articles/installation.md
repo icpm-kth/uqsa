@@ -1,6 +1,6 @@
 # Short Installation Instructions
 
-## Prerequisits
+## Prerequisites
 
 The simulators (ODE solvers) we use need the **GNU Scientific library**
 [(GSL)](https://www.gnu.org/software/gsl/) to be installed in your

@@ -60,7 +60,6 @@ p <- values(m$Parameter)
 attr(p,"simulations") <- s(p)
 ## this function is fairly flexible and accepts some user settings
 llf <- logLikelihoodFunc(ex)
-#> experiments contain 675 non-missing values
 print(llf(p))
 #> Warning: In 'Ops' : non-'errors' operand automatically coerced to an 'errors' object with no uncertainty
 #> [1] -2491.245

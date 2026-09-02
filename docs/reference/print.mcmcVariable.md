@@ -20,6 +20,10 @@ print(x, ...)
 
   requirement of print generic, not used.
 
+## Value
+
+called for side-effect (printout); no value.
+
 ## Examples
 
 ``` r
@@ -36,5 +40,5 @@ print(p)
 #>      0.018      0.106     10.200 
 #>              simulations: 3 (length)
 #>            logLikelihood: -2491.25
-#>                    prior: 10.5823
+#>                    prior: 0.819699
 ```

@@ -2,7 +2,7 @@
 
 This function calls a C function which solves an initial value problem,
 calculates the sensitivity of the solution, log-likelihood value `ll`,
-gradient of `ll` amd Fisher-Information.
+gradient of `ll` and Fisher-Information.
 
 ## Usage
 
@@ -101,7 +101,6 @@ on the system's command line (bash, zsh, etc.).
 ## Examples
 
 ``` r
-# \donttest{
   requireNamespace("errors")
   f <- uqsa_example("AKAR4")
   m <- model_from_tsv(f)
@@ -112,32 +111,29 @@ on the system's command line (bash, zsh, etc.).
   so_path(o) <- shlib(o)
   print(o)
 #>                 Model name : AKAR4
-#>                     C file : /tmp/RtmpiY0iWI/RtmpQMQrCy/adf9204aaf2748b8/AKAR4.c [2026-06-26 13:34:58.400742]
-#>             shared library : /tmp/RtmpiY0iWI/RtmpQMQrCy/adf9204aaf2748b8/AKAR4.so [2026-06-26 13:34:58.400742]
+#>                     C file : /tmp/RtmpFdwl1n/RtmpesODen/adf9204aaf2748b8/AKAR4.c [2026-09-02 16:22:11.841752]
+#>             shared library : /tmp/RtmpFdwl1n/RtmpesODen/adf9204aaf2748b8/AKAR4.so [2026-09-02 16:22:11.841752]
 #>  Number of state variables : 2
 #>       Number of parameters : 5
 #>          Number of outputs : 1
 #>          Conservation laws : 2
 #>            Transformations : no
   y <- gsl_odeiv2_fi(o,ex,values(m$Parameter))
-  print(length(y))
-#> [1] 3
-  print(names(y[[1]]))
-#> [1] "cpuSeconds"        "numSteps"          "status"           
-#> [4] "state"             "func"              "logLikelihood"    
-#> [7] "gradLogLikelihood" "FisherInformation"
-  par(mfrow=c(length(ex),1))
-  for (i in seq_along(y)){
-      plot(
-          errors::as.errors(ex[[i]]$outputTimes),
-          ex[[i]]$data,
-          xlab="time",
-          ylab=rownames(y[[i]]$data)[1],
-          main=names(ex)[i],
-          ylim=c(100,200)
-      )
-      lines(ex[[i]]$outputTimes,drop(y[[i]]$func),col='red')
+  if (interactive()){
+     print(length(y))
+     print(names(y[[1]]))
+     oldpar <- par(mfrow=c(length(ex),1))
+     for (i in seq_along(y)){
+         plot(
+             errors::as.errors(ex[[i]]$outputTimes),
+             ex[[i]]$data,
+             xlab="time",
+             ylab=rownames(y[[i]]$data)[1],
+             main=names(ex)[i],
+             ylim=c(100,200)
+         )
+         lines(ex[[i]]$outputTimes,drop(y[[i]]$func),col='red')
+     }
+     par(oldpar)
   }
-
-# }
 ```
