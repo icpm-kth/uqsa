@@ -181,14 +181,14 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 #'   so.file <- shlib(c.file)
 #'   y <- gsl_odeiv2_CRNN(so.file,ex,l,nu,nu*0)
 gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,initial.step.size=1e-3,method=0, time.out = 1, nstep=0){
-	if (is.character(name) && endsWith(name,".so")){
+	if (is.character(name) && endsWith(name,.Platform$dynlib.ext)){
 		so <- name
 		name <- "CRNN"
 		comment(name) <- so
 	} else if (is.character(comment(name))) {
 		so <- comment(name)
 	} else {
-		so <- paste0("./",name,".so")
+		so <- paste0("./",name,.Platform$dynlib.ext)
 		comment(name)<-so
 		message("looking for ", so)
 	}
