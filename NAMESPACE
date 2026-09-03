@@ -102,70 +102,52 @@ export(values)
 export(write_and_compile)
 export(write_c_code)
 export(yJacobian)
-importFrom(VineCopula,
-  RVinePDF,
-  RVineSim,
-  RVineStructureSelect
-)
-importFrom(cli,
-  cli_progress_bar,
-  cli_progress_update
-)
-importFrom(errors,
-  "errors<-",
-  as.errors,
-  errors,
-  set_errors
-)
-importFrom(grDevices,
-  contourLines,
-  hcl.colors,
-  rgb
-)
-importFrom(graphics,
-  arrows,
-  axis,
-  hist,
-  image,
-  legend,
-  lines,
-  matplot,
-  pairs,
-  par,
-  polygon,
-  rect,
-  text
-)
-importFrom(methods,
-  as,
-  is,
-  show
-)
-importFrom(parallel,
-  detectCores,
-  mclapply
-)
-importFrom(stats,
-  IQR,
-  acf,
-  approx,
-  cor,
-  cov,
-  dnorm,
-  dunif,
-  median,
-  na.omit,
-  quantile,
-  rnorm,
-  runif,
-  sd,
-  spline,
-  var
-)
-importFrom(utils,
-  flush.console,
-  head,
-  read.delim,
-  tail
-)
+importFrom(VineCopula,RVinePDF)
+importFrom(VineCopula,RVineSim)
+importFrom(VineCopula,RVineStructureSelect)
+importFrom(cli,cli_progress_bar)
+importFrom(cli,cli_progress_update)
+importFrom(errors,"errors<-")
+importFrom(errors,as.errors)
+importFrom(errors,errors)
+importFrom(errors,set_errors)
+importFrom(grDevices,contourLines)
+importFrom(grDevices,hcl.colors)
+importFrom(grDevices,rgb)
+importFrom(graphics,arrows)
+importFrom(graphics,axis)
+importFrom(graphics,hist)
+importFrom(graphics,image)
+importFrom(graphics,legend)
+importFrom(graphics,lines)
+importFrom(graphics,matplot)
+importFrom(graphics,pairs)
+importFrom(graphics,par)
+importFrom(graphics,polygon)
+importFrom(graphics,rect)
+importFrom(graphics,text)
+importFrom(methods,as)
+importFrom(methods,is)
+importFrom(methods,show)
+importFrom(parallel,detectCores)
+importFrom(parallel,mclapply)
+importFrom(stats,IQR)
+importFrom(stats,acf)
+importFrom(stats,approx)
+importFrom(stats,cor)
+importFrom(stats,cov)
+importFrom(stats,dnorm)
+importFrom(stats,dunif)
+importFrom(stats,median)
+importFrom(stats,na.omit)
+importFrom(stats,quantile)
+importFrom(stats,rnorm)
+importFrom(stats,runif)
+importFrom(stats,sd)
+importFrom(stats,spline)
+importFrom(stats,var)
+importFrom(utils,flush.console)
+importFrom(utils,head)
+importFrom(utils,read.delim)
+importFrom(utils,tail)
 useDynLib(uqsa, .registration = TRUE)

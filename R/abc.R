@@ -93,7 +93,7 @@
 #'       dprior=dprior
 #'     )
 #'   }
-abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Sigma0=cov(t(startPar)), dprior=NULL, deltaSpan=NULL,batchSize=100*NROW(Sigma0), parAcceptable=\(p){all(is.finite(p))}, verbose=TRUE){
+abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Sigma0=cov(t(startPar)), dprior=NULL, deltaSpan=NULL,batchSize=100*NROW(Sigma0), parAcceptable=\(p){all(is.finite(p))}, verbose=getOption("uqsa.verbose", interactive())){
 	show_progress <- verbose && interactive()
 	if (is.null(deltaSpan)){
 		delta <- 2*max(objectiveFunction(startPar))
@@ -272,7 +272,7 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Si
 #'      posterior <- ABCSMC(O,t(X),Sigma=cov(X),dprior=dprior,delta=c(0.4,1.5))
 #'   }
 #'   options(opt) # restore original options
-ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(startPar), dprior, delta=c(2,0.5),  parAcceptable=\(p){all(is.finite(p))}, verbose=interactive()){
+ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(startPar), dprior, delta=c(2,0.5),  parAcceptable=\(p){all(is.finite(p))}, verbose=getOption("uqsa.verbose", interactive())){
 	delta <- sort(delta,decreasing=TRUE) # in case someone enters a range for delta, e.g. c(0.1,0.9) rather than c(initial,final)
 	initialDelta <- delta[1]
 	if (length(delta)>1){

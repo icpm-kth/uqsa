@@ -4,7 +4,11 @@
 \alias{conservation_law_analysis}
 \title{Reduce the size of the system}
 \usage{
-conservation_law_analysis(nu, iv, verbose = FALSE)
+conservation_law_analysis(
+  nu,
+  iv,
+  verbose = getOption("uqsa.verbose", interactive())
+)
 }
 \arguments{
 \item{nu}{stoichiometric matrix}
@@ -18,7 +22,7 @@ a list of conservation laws
 }
 \description{
 Given a stoichiometric matrix, this function performs model
-reduction via linear algebra operations, with \link[pracma:null]{pracma::null}.
+reduction via linear algebra operations, with \link[pracma:nullspace]{pracma::null}.
 }
 \examples{
 f <- uqsa_example("AKAR4")

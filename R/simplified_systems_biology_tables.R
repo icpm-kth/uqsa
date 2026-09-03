@@ -459,7 +459,7 @@ linear_scale <- function(x,str_scale=attr(x,"scale")){
 #' CL <- conservation_law_analysis(nu,values(m$Compound))
 #' print(names(CL))
 #' print(CL[,c('value','Formula')])
-conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
+conservation_law_analysis <- function(nu,iv,verbose=getOption("uqsa.verbose", interactive())) {
 	if (is.matrix(iv)){
 		warning(
 			c(

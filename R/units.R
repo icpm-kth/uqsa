@@ -159,7 +159,7 @@ unit.scale <- function(prefix){
 #' print(unit.id("s^9"))
 #' print(unit.id("cm^2"))
 #' print(unit.id("1/s"))
-unit.id <- function(unit.str,verbose=FALSE){
+unit.id <- function(unit.str,verbose=getOption("uqsa.verbose", interactive())){
 	uid <- unit.str
 	uid <- sub("^1$","dimensionless",uid)
 	uid <- gsub("1/","one_over_",uid)

@@ -16,7 +16,7 @@ abc_mcmc(
   parAcceptable = function(p) {
      all(is.finite(p))
  },
-  verbose = TRUE
+  verbose = getOption("uqsa.verbose", interactive())
 )
 }
 \arguments{
