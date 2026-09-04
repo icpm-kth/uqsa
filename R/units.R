@@ -373,29 +373,30 @@ unit_as_character <- function(unit){
 #'     message("The system utility 'units' is not installed, skipping example.")
 #'   }
 `%as%` <- function(txtUnit,target){
-	if (nzchar(Sys.which("units"))){
-		warning("The 'units' utility must be installed (system program, not R).")
-		return(NA)
-	}
 	if (length(target)!=1) warning("There must be exactly one target unit.")
-	f <- as.numeric(
-		sapply(
-			txtUnit,
-			\(u) return(
-				system2(
-					command="units",
-					args=c(
-						paste0("--",c("strict","compact")),
-						"-1",
-						sprintf("'%s'",as.character(u)),
-						sprintf("'%s'",as.character(paste(target,collapse="")))
-					),
-					stdout=TRUE
+	if (nzchar(Sys.which("units"))){
+		f <- as.numeric(
+			sapply(
+				txtUnit,
+				\(u) return(
+					system2(
+						command="units",
+						args=c(
+							paste0("--",c("strict","compact")),
+							"-1",
+							sprintf("'%s'",as.character(u)),
+							sprintf("'%s'",as.character(paste(target,collapse=""))	)
+						),
+						stdout=TRUE
+					)
 				)
 			)
 		)
-	)
-	attr(f,"unit") <- target
-	names(f) <- txtUnit
+		attr(f,"unit") <- target
+		names(f) <- txtUnit
+	} else {
+		warning("The 'units' utility must be installed (system program, not R).")
+		f <- NA
+	}
 	return(f)
 }
