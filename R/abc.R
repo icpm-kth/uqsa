@@ -281,7 +281,7 @@ ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(t(startPar)), dprior
 		finalDelta <- 0 # automatic lower bound
 	}
 	deltaLowerBound <- finalDelta
-	if (verbose) message(sprintf("allowed range for delta: [%g,%g]",deltaLowerBound,initialDelta))
+	if (verbose) cli::cli_alert_info(sprintf("allowed range for delta: [%g,%g]",deltaLowerBound,initialDelta))
 	## initial delta, subject to change:
 	delta <- initialDelta
 	## prepare starting values
@@ -295,18 +295,27 @@ ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(t(startPar)), dprior
 	curWeight <- 1.0/curDistance # init
 	curWeight <- curWeight/sum(curWeight)
 	acceptanceRate <- 1.0                 # startPar has 100% acceptance, we don't reject any of them
+	cli::cli_progress_bar(name="abc smc")
 	while (delta > deltaLowerBound && acceptanceRate > 0.03) {
-		if (verbose) cli::cli_alert_info(sprintf("delta: %g",delta))
 		newPar <- matrix(NA,NROW(startPar),0)
 		newPrior <- numeric(0)
 		newDistance <- numeric(0)
 		accepted <- 0
 		proposed <- 0
 		# This while loop aggregates a new batch of points, using the current delta
+		if (verbose) {
+			cli::cli_progress_step(
+				paste(
+					"delta: {format(delta,digits=3)},",
+					"accepted {accepted}/{proposed} point{?s}",
+					"({round(100*(accepted/(proposed+1e-16)))}%)."
+				),
+				spinner=TRUE
+			)
+		}
 		while (NCOL(newPar) < batchSize) {
 			n <- max(100,batchSize - NCOL(newPar)) # don't bother suggesting anything too small
 			proposed <- proposed + n
-			if (verbose) cli::cli_alert_info(sprintf("proposing %i new points.",n))
 			## resample from previous batch:
 			k <- sample(seq_along(curWeight),n,replace=TRUE,prob=curWeight)
 			canPar <- curPar[,k]
@@ -328,9 +337,9 @@ ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(t(startPar)), dprior
 				newDistance <- c(newDistance,canDistance[l])
 				accepted <- accepted + sum(l)
 			}
+			if (verbose) cli::cli_progress_update()
 		}
-		if (verbose) cli::cli_alert_info(sprintf("accepted: %i",accepted))
-		if (verbose) cli::cli_alert_info(sprintf("proposed: %i",proposed))
+		if (verbose) cli::cli_progress_done()
 		## newPar is now an aggregate new batch, possibly bigger than batchSize
 		## we now calculate weights for newPar:
 		t_curPar <- t(curPar)
@@ -349,7 +358,6 @@ ABCSMC <- function(objectiveFunction, startPar, Sigma=2*cov(t(startPar)), dprior
 		k <- sample(seq_along(curWeight),batchSize,prob=curWeight,replace=TRUE)
 		delta <- median(curDistance[k])
 		acceptanceRate <- accepted/proposed
-		if (verbose) cli::cli_alert_info(sprintf("acceptance rate: %i %%",round(acceptanceRate*100)))
 	}
 	draws <- t(curPar[,k])
 	colnames(draws) <- rownames(startPar)
