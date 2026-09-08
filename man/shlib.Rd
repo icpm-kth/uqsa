@@ -4,11 +4,13 @@
 \alias{shlib}
 \title{Compile C code to shared library}
 \usage{
-shlib(file)
+shlib(file, verbose = getOption("uqsa.verbose", default = interactive()))
 }
 \arguments{
 \item{file}{the c file that is to be compiled, OR an ODE/CME object
 with a c.file defined and recorded in it.}
+
+\item{verbose}{print decition outcomes about the compiler options}
 }
 \value{
 the path of the created shared library
