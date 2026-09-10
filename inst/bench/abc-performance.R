@@ -28,12 +28,16 @@ Obj <- makeObjective(ex,s)
 p0 <- log10(values(m$Parameter))
 dprior <- dUniformPrior(p0-3,p0+3)
 rprior <- rUniformPrior(p0-3,p0+3)
-batchSize <- 100    # how many points are simulated in one call to the simulator
+batchSize <- 128    # how many points are simulated in one call to the simulator
 P <- p0 + matrix(rnorm(length(p0)*batchSize),length(p0),batchSize)
 
 ## rough estimate
 auto_correlation <- function(x){
-	ACF <- acf(x,lag.max=3*batchSize)$acf
+	if (is.matrix(x)){
+		ACF <- rowMeans(apply(x,1,\(ROW) acf(ROW,plot=FALSE)$acf),na.rm=TRUE)
+	} else {
+		ACF <- acf(x,plot=FALSE)$acf
+	}
 	return(sum(ACF[ACF>0.2]))
 }
 
@@ -66,13 +70,14 @@ SB <- simulation_benchmark |> dplyr::mutate(v_eff=unlist(result)/as.numeric(medi
 print(SB[,c("median","v_eff")])
 
 sampling_benchmark <- bench::mark(
-	"abc mcmc" = { # new algorithm
-		ret <- abc_mcmc(Obj,P,100,burnIn=50,Sigma0=cov(t(P))*0.1,dprior=dprior)
+	"abc smc" = {
+		ret <- ABCSMC(Obj,t(rprior(700)),dprior=dprior)
 		tau <- auto_correlation(ret$distances)
 		n_eff <- effective_size(length(ret$distances),tau) # result
 	},
-	"abc smc" = {
-		ret <- ABCSMC(Obj,t(rprior(700)),dprior=dprior)
+	"abc mcmc" = {
+		ret <- abc_mcmc(Obj,P,100,burnIn=50,Sigma0=cov(t(P))*0.1,dprior=dprior)
+		d <- array(ret$distances,dim=c(batchSize,100))
 		tau <- auto_correlation(ret$distances)
 		n_eff <- effective_size(length(ret$distances),tau) # result
 	},
