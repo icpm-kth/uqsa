@@ -24,12 +24,27 @@
 #' of column vectors). Each column will be used as the initial point
 #' of a Markov chain. The chains will be resampled at each step during
 #' the convergence phase, and decouple from one another once the
-#' burn-in is complete.
+#' burn-in is complete. When `startPar` is a vector, the batchSize
+#' will be set to `100*length(startPar)`, if not provided explicitly.
 #'
 #' ABC methods (distance function, threshold delta) can be combined
 #' with several other methods (like particle filters). Here we use
 #' several parallel Markov chains to sample from the approximate
 #' posterior.
+#'
+#' Since this sampler works in batches, it stores its return value in
+#' batches along a 3rd dimension of an array: `ret$draws[,,1]` is the
+#' first iteration of MCMC, `ret$draws[,,N]` the last iteration. One
+#' sampled model parameter vector is a column vector:
+#' `ret$draws[,1,1]` is something that can be passed to the
+#' simulator. Because the simulator accepts batches of parameters,
+#' this will cause a batch of simulations: `s(ret$draws[,,N])`.  This
+#' structure is useful when determining the auto-correlation length
+#' along the 3rd dimension: `ret$draws[i,j,]` is auto-correlated along
+#' the 3rd dimension for any choice of `i` and `j`. To obtain a
+#' classic sample, you can first flatten the third dimension:
+#' `dim(ret$draws) <- c(np,batchSize*N)`, and then transpose for
+#' functions like `cov`.
 #'
 #' @export
 #' @param objectiveFunction function that, given a parameter matrix as
@@ -46,7 +61,7 @@
 #'     of size `batchSize*N` (batch size is the number of parallel
 #'     Markov chains).
 #' @param burnIn number of batches where the transition kernel will be
-#'     adjusted to achieve an acceptance rate of below 10%. 
+#'     adjusted to achieve an acceptance rate of below 10%.
 #' @param Sigma0 multivariate normal covariance of Markov chain
 #'     transition kernel, defaults to the covariance of the initial
 #'     parameters. If startPar is one vector, this matrix must be
@@ -65,8 +80,11 @@
 #'     difficult to encode in the prior.
 #' @param verbose when TRUE, a progress bar is printed during burn-in
 #'     and actual sampling.
-#' @return a list containing a sample matrix and a vector of scores
-#'     (values of delta for each sample)
+#' @return a list containing a sample matrix and a vector of observed distances
+#'     (values that compare to delta for each sample). The sample (draws) is stored
+#'     as a 3d-array, with these dimensions: \eqn{n_p\\times m\\times
+#'     N}{c(np,m,N)}, where np is the number of model parameters, m
+#'     the batch-size, and N the number of MCMC iterations.
 #' @examples
 #'   f <- uqsa_example("AKAR4")
 #'   m <- model_from_tsv(f)
@@ -93,7 +111,7 @@
 #'       dprior=dprior
 #'     )
 #'   }
-abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Sigma0=cov(t(startPar)), dprior=NULL, deltaSpan=NULL,batchSize=100*NROW(Sigma0), parAcceptable=\(p){all(is.finite(p))}, verbose=getOption("uqsa.verbose", interactive())){
+abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Sigma0=cov(t(startPar)), dprior=NULL, deltaSpan=NULL,batchSize=NCOL(startPar), parAcceptable=\(p){all(is.finite(p))}, verbose=getOption("uqsa.verbose", interactive())){
 	show_progress <- verbose && interactive()
 	if (is.null(deltaSpan)){
 		delta <- 2*max(objectiveFunction(startPar))
@@ -101,6 +119,10 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Si
 	} else {
 		delta <- max(deltaSpan)
 		delta_LB <- min(deltaSpan)
+	}
+	if (missing(batchSize) && is.vector(startPar)) {
+		batchSize <- 100*length(startPar)
+		cli::cli_alert_warning("Starting parameters are not a matrix; picking batch size automatically: {batchSize}.")
 	}
 	np <- nrow(Sigma0)
 	b <- sample.int(NCOL(startPar),size=batchSize,replace=TRUE)
@@ -129,8 +151,6 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Si
 	I <- diag(nrow=nrow(Sigma0))
 	Sigma1 <- diag(diag(Sigma0))
 	batchSample <- matrix(nrow=batchSize,ncol=length(startPar))
-	draws <- NULL
-	distanceRecord <- NULL
 	acceptanceRate <- NULL
 	deltaRecord <- NULL
 	n <- 1
@@ -138,6 +158,8 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Si
 		cli::cli_progress_bar(name="abc", total = N+burnIn+1)
 	}
 	startTime <- Sys.time()
+	draws <- array(NA,dim=c(np,batchSize,N))
+	distanceRecord <- matrix(NA,nrow=batchSize,ncol=N)
 	for (i in seq(-burnIn,N)) {
 		L <- chol(Sigma0)
 		Z <- matrix(rnorm(batchSize*np),np,batchSize) # this shape is expected by the Objective
@@ -190,8 +212,8 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Si
 			if (abs(det(C)) < 1e-6 + 1e-6*norm(C)) C <- I*norm(Sigma1) # reset if in danger
 			Sigma0 <- A*((1-w)*Sigma0 + w*C + 1e-8*Sigma1)
 		} else {
-			draws  <- rbind(draws,t(curPar))
-			distanceRecord <- c(distanceRecord,curDistance)
+			draws[,,i]  <- curPar
+			distanceRecord[,i] <- curDistance
 			acceptanceRate <- c(acceptanceRate,a)
 			deltaRecord <- c(deltaRecord,delta)
 		}

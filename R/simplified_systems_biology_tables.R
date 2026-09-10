@@ -509,8 +509,8 @@ conservation_law_analysis <- function(nu,iv,verbose=getOption("uqsa.verbose", in
 			)
 		}
 		if (as.logical(verbose)){
-			cat("d/dt(",sprintf("%+i*%s",round(C[i,l]),nm[l]),") == 0\n") # guarded by verbose
-			cat(Text,"\n") # guarded by verbose
+			ddt <- paste0("d/dt(",paste(sprintf("%+i*%s",round(C[i,l]),nm[l]),collapse=" "),") == 0")
+			cli::cli_alert_info(sprintf("%40s  \U21D2  %s",ddt,Text))
 		}
 		allText[i] <- Text
 	}

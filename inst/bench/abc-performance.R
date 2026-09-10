@@ -11,10 +11,10 @@ m <- model_from_tsv(f)
 o <- as_ode(m)
 c_path(o) <- write_c_code(generate_code(o))
 so_path(o) <- shlib(o)
-
 ex <- experiments(m,o)
 time_out_seconds <- 2.5
 integrator_step_limit <- 10000
+
 s <- simulator.c(
 	ex,             # experiments
 	o,              # the model
@@ -28,35 +28,60 @@ Obj <- makeObjective(ex,s)
 p0 <- log10(values(m$Parameter))
 dprior <- dUniformPrior(p0-3,p0+3)
 rprior <- rUniformPrior(p0-3,p0+3)
+batchSize <- 100    # how many points are simulated in one call to the simulator
+P <- p0 + matrix(rnorm(length(p0)*batchSize),length(p0),batchSize)
 
-P <- p0 + matrix(rnorm(3*100),3,100)
-
-autocorrelation <- function(D){ # a crude approximation
-	if (any(is.na(D))) warning("some NA values in the argument to 'autocorrelation'")
-	f <- is.finite(D) # just in case there is anything invalid there
-	A <- acf(D[f])$acf
-	tau <- 0.5*A[A>0.2]
-	return(tau)
+## rough estimate
+auto_correlation <- function(x){
+	ACF <- acf(x,lag.max=3*batchSize)$acf
+	return(sum(ACF[ACF>0.2]))
 }
 
-B <- bench::mark(
-	"abc mcmc" = { # new algorithm
-		ret <- abc_mcmc(Obj,P,100,burnIn=15,Sigma0=cov(t(P))*0.1,dprior=dprior)
-		tau <- autocorrelation(ret$distances)
+## based on estimate of tau (auto-correlation length)
+effective_size <- function(N, tau){
+	return(N/(2*tau))
+}
+
+simulation_benchmark <- bench::mark(
+	"simulation p0"={
+		y <- s(p0)
+		n <- 1                                              # result
 	},
-	"ABCMCMC" = { # old algorithm
-		ret <- ABCMCMC(Obj, p0, 100, Sigma0=cov(t(P))*0.1,delta=1,dprior=dprior, allow.reg=TRUE)
-		tau <- autocorrelation(ret$scores)
+	"simulation P/2"={
+		n <- NCOL(P)/2
+		y <- s(P[,seq(n)])
+		n                                                   # result
+	},
+	"simulation P"={
+		y <- s(P)
+		n <- NCOL(P)                                        # result
+	},
+	max_iterations=6,
+	check=\(a,b){TRUE},
+	memory=FALSE
+)
+
+print(simulation_benchmark)
+SB <- simulation_benchmark |> dplyr::mutate(v_eff=unlist(result)/as.numeric(median))
+print(SB[,c("median","v_eff")])
+
+sampling_benchmark <- bench::mark(
+	"abc mcmc" = { # new algorithm
+		ret <- abc_mcmc(Obj,P,100,burnIn=50,Sigma0=cov(t(P))*0.1,dprior=dprior)
+		tau <- auto_correlation(ret$distances)
+		n_eff <- effective_size(length(ret$distances),tau) # result
+	},
+	"abc smc" = {
+		ret <- ABCSMC(Obj,t(rprior(700)),dprior=dprior)
+		tau <- auto_correlation(ret$distances)
+		n_eff <- effective_size(length(ret$distances),tau) # result
 	},
 	max_iterations=1,
+	min_time=Inf,
 	check=\(a,b){TRUE},
 	memory = FALSE
 )
-##hexbin::hexplom(ret$draws)
 
-N <- c(100e2,100e2)
-tau <- Reduce(\(a,b) c(a,b),B$result)
-v <- N/(2*tau)
-
-B <- B |> dplyr::mutate(sample_size=N,effective_speed=v,tau=tau)
-print(B[,c("expression","median","tau","effective_speed")])
+## bench::mark stores all values that a block calculates as a list, no matter what they were:
+AB <- sampling_benchmark |> dplyr::mutate(v_eff=unlist(result)/as.numeric(median))
+print(AB[,c("median","v_eff")])

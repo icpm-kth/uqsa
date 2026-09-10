@@ -12,7 +12,7 @@ abc_mcmc(
   Sigma0 = cov(t(startPar)),
   dprior = NULL,
   deltaSpan = NULL,
-  batchSize = 100 * NROW(Sigma0),
+  batchSize = NCOL(startPar),
   parAcceptable = function(p) {
      all(is.finite(p))
  },
@@ -64,8 +64,11 @@ difficult to encode in the prior.}
 and actual sampling.}
 }
 \value{
-a list containing a sample matrix and a vector of scores
-(values of delta for each sample)
+a list containing a sample matrix and a vector of observed distances
+(values that compare to delta for each sample). The sample (draws) is stored
+as a 3d-array, with these dimensions: \eqn{n_p\\times m\\times
+    N}{c(np,m,N)}, where np is the number of model parameters, m
+the batch-size, and N the number of MCMC iterations.
 }
 \description{
 ABC replaces the need for an exact likelihood function and uses a
@@ -93,12 +96,27 @@ size of this bundle can be determined through \code{startPar} (a matrix
 of column vectors). Each column will be used as the initial point
 of a Markov chain. The chains will be resampled at each step during
 the convergence phase, and decouple from one another once the
-burn-in is complete.
+burn-in is complete. When \code{startPar} is a vector, the batchSize
+will be set to \code{100*length(startPar)}, if not provided explicitly.
 
 ABC methods (distance function, threshold delta) can be combined
 with several other methods (like particle filters). Here we use
 several parallel Markov chains to sample from the approximate
 posterior.
+
+Since this sampler works in batches, it stores its return value in
+batches along a 3rd dimension of an array: \code{ret$draws[,,1]} is the
+first iteration of MCMC, \code{ret$draws[,,N]} the last iteration. One
+sampled model parameter vector is a column vector:
+\code{ret$draws[,1,1]} is something that can be passed to the
+simulator. Because the simulator accepts batches of parameters,
+this will cause a batch of simulations: \code{s(ret$draws[,,N])}.  This
+structure is useful when determining the auto-correlation length
+along the 3rd dimension: \code{ret$draws[i,j,]} is auto-correlated along
+the 3rd dimension for any choice of \code{i} and \code{j}. To obtain a
+classic sample, you can first flatten the third dimension:
+\code{dim(ret$draws) <- c(np,batchSize*N)}, and then transpose for
+functions like \code{cov}.
 }
 \examples{
   f <- uqsa_example("AKAR4")
