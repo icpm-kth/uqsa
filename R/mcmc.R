@@ -1,6 +1,6 @@
-#' This function reduces the sample to a smaller, uncorrelated sample
+#' This function reduces the sample to its effective size
 #'
-#' When plotting we ideally want to show only a few representative
+#' When plotting, we want to show only a few representative
 #' lines or points derived from a sample. This function will determine
 #' the auto-correlation length very roughly and use that number to
 #' thin out the sample to a minimal size that still represents the
@@ -13,7 +13,7 @@
 #' @examples
 #' S <- matrix(rnorm(300),100,3)
 #' ## the next line fakes auto-correlation:
-#' attr(S,"logLikelihood") <- cos(seq(0,1,length.out=100)) + rnorm(100,sd=0.01)
+#' attr(S,"logLikelihood") <- cos(seq(0,1,length.out=100)) + rnorm(100,sd=0.05)
 #' print(dim(S))
 #' print(dim(small(S)))
 #' @export
