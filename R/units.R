@@ -172,10 +172,7 @@ unit.id <- function(unit.str,verbose=getOption("uqsa.verbose", interactive())){
 	uid <- gsub("\\^-([0-9]+)","_to_the_power_of_\\1_inverted",uid)
 	uid <- make.names(uid,unique=FALSE)
 	if (verbose){
-		message("units in \u00ab!Unit\u00bb column:")
-		print(unit.str) # guarded by verbose
-		message("automatically created sbml unit ids:")
-		print(uid) # guarded by verbose
+		cli::cli_alert_info(sprintf("unit: %30s: %s id",unit.str,uid))
 	}
 	return(uid)
 }

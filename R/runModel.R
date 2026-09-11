@@ -731,14 +731,14 @@ makeObjective <- function(experiments,simulate,distance=defaultDistance){
 		for(i in seq_along(experiments)){
 			DATA <- experiments[[i]]$data
 			STDV <- standard_error_matrix(DATA) %otherwise% experiments[[i]]$standardError %otherwise% 1.0
+			if (inherits(DATA,"errors")) DATA <- drop_errors(DATA) # prevents a big performance issue on windows
 			status <- out[[i]]$status
-			S[i,] <- unlist(
-				mclapply(
-					asplit(out[[i]]$func,MARGIN=3),
-					function(FUNC) {
-						distance(FUNC, DATA, STDV)
-					}
-				)
+			S[i,] <- apply(
+				out[[i]]$func,
+				MARGIN=3,
+				function(FUNC) {
+					distance(FUNC, DATA, STDV)
+				}
 			)
 			S[i,as.logical(status)] <- Inf # any non-zero status
 		}
