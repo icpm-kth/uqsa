@@ -1,3 +1,38 @@
+#' This function reduces the sample to a smaller, uncorrelated sample
+#'
+#' When plotting we ideally want to show only a few representative
+#' lines or points derived from a sample. This function will determine
+#' the auto-correlation length very roughly and use that number to
+#' thin out the sample to a minimal size that still represents the
+#' original sample well.
+#'
+#' @param S an MCMC sample
+#' @param L the log-likelihood values of S
+#' @param verbose when TRUE the acf plot option is set to TRUE, and
+#'     teh found auto-correlation length is printed.
+#' @examples
+#' S <- matrix(rnorm(300),100,3)
+#' ## the next line fakes auto-correlation:
+#' attr(S,"logLikelihood") <- cos(seq(0,1,length.out=100)) + rnorm(100,sd=0.01)
+#' print(dim(S))
+#' print(dim(small(S)))
+#' @export
+#' @return a smaller version of S
+small <- function(S,L=attr(S,"logLikelihood"),verbose=getOption("uqsa.verbose",default=interactive())){
+	if (is.numeric(L)){
+		ACF <- acf(L,plot=verbose)$acf
+	} else {
+		ACF <- rowMeans(apply(S,2,\(s) acf(s,plot=FALSE)$acf))
+	}
+	tau <- ceiling(sum(ACF[ACF>exp(-2)]))
+	if (verbose) cli::cli_alert_info("auto-correlation: {tau}")
+	N <- NROW(S)
+	i <- seq(1,N,by=tau)
+	S <- S[i,]
+	if (is.numeric(L)) attr(S,"logLikelihood") <- L[i]
+	return(S)
+}
+
 #' This function can be used to specify default values
 #'
 #' When attributes are missing, the `base::attr()` function returns
