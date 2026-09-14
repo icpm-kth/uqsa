@@ -1,3 +1,9 @@
+# uqsa 0.8.0
+
+- Most output can be suppressed with a global option: `options(uqsa.verbose=FALSE)`.
+- Objects of class `errors` seem to cause _slow downs_ on windows when doing arithmetic, we now more carefully drop errors when a function doesn't need them.
+- Fixed some bugs related to extensions of shared libraries on windows (`dll` rather than `so`).
+
 # uqsa 0.7.8
 
 - A new function `abc_mcmc` was introduced, it is a rewrite of the
