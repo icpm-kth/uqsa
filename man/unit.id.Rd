@@ -4,12 +4,10 @@
 \alias{unit.id}
 \title{Converts a unit to a string that works as an identifier}
 \usage{
-unit.id(unit.str, verbose = getOption("uqsa.verbose", interactive()))
+unit.id(unit.str)
 }
 \arguments{
 \item{unit.str}{the original string representation of that unit}
-
-\item{verbose}{logical switch: if TRUE, the name will be printed.}
 }
 \value{
 unit.id string

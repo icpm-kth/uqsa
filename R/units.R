@@ -153,27 +153,27 @@ unit.scale <- function(prefix){
 #'
 #' @export
 #' @param unit.str the original string representation of that unit
-#' @param verbose logical switch: if TRUE, the name will be printed.
 #' @return unit.id string
 #' @examples
 #' print(unit.id("s^9"))
 #' print(unit.id("cm^2"))
 #' print(unit.id("1/s"))
-unit.id <- function(unit.str,verbose=getOption("uqsa.verbose", interactive())){
+unit.id <- function(unit.str){
 	uid <- unit.str
 	uid <- sub("^1$","dimensionless",uid)
+	uid <- gsub("\U00B5","micro",uid)
+	uid <- gsub("\U03BC","mu",uid)
 	uid <- gsub("1/","one_over_",uid)
 	uid <- gsub("/","_per_",uid)
 	uid <- gsub("[*[:blank:]]","_",uid)
 	uid <- gsub("[()]","",uid)
 	uid <- gsub("\\^2","_square",uid)
 	uid <- gsub("\\^3","_cube",uid)
+	uid <- gsub("\\^-1","_inverse",uid)
+	uid <- gsub("\\^-2","_square_inverse",uid)
 	uid <- gsub("\\^([0-9]+)","_to_the_power_of_\\1",uid)
-	uid <- gsub("\\^-([0-9]+)","_to_the_power_of_\\1_inverted",uid)
+	uid <- gsub("\\^-([0-9]+)","_to_the_power_of_\\1_inverse",uid)
 	uid <- make.names(uid,unique=FALSE)
-	if (verbose){
-		cli::cli_alert_info(sprintf("unit: %30s: %s id",unit.str,uid))
-	}
 	return(uid)
 }
 
@@ -267,7 +267,6 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 #' print(unit.from.string("µM"))
 unit.from.string <- function(unit.str){
 	if (!is.character(unit.str)){
-		print(unit.str) # part of error messaging, and stop()
 		stop("unit.str has to be a charcter vector of length 1.")
 	}
 	stopifnot(length(unit.str)==1)

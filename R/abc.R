@@ -129,6 +129,7 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Si
 	## make startPar _batch shaped_ (with batchSize columns), and add a little noise to it, in case it was exactly one vector
 	curPar <- as.matrix(startPar)[,b] + matrix(rnorm(np*batchSize,0,norm(Sigma0)*0.01),np,batchSize)
 	if (missing(dprior) || is.null(dprior)) { # construct something useful
+		warning("[abc_mcmc] prior probability density not specified; will infer from start values (uniform distribution).")
 		LB <- apply(curPar,1,min)
 		UB <- apply(curPar,1,max)
 		if (any(UB<=LB)){
@@ -137,12 +138,6 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Si
 			UB <- MD + 2
 		}
 		dprior <- dUniformPrior(LB,UB)
-		if (verbose){
-			message("dprior is missing, will use uniform prior, with these bounds: ")
-			print(data.frame(lower.bound=LB,upper.bound=UB)) # guarded by verbose
-		} else {
-			warning("prior probability density not specified; will infer from start values (uniform distribution).")
-		}
 	}
 	curPrior <- dprior(t(curPar))
 	curDistance <- NULL

@@ -510,7 +510,8 @@ conservation_law_analysis <- function(nu,iv,verbose=getOption("uqsa.verbose", in
 		}
 		if (as.logical(verbose)){
 			ddt <- paste0("d/dt(",paste(sprintf("%+i*%s",round(C[i,l]),nm[l]),collapse=" "),") == 0")
-			cli::cli_alert_info(sprintf("%40s  \U21D2  %s",ddt,Text))
+			eq <- sprintf("%10s = %s",nm[k],Text)
+			cli::cli_alert_info(sprintf("%40s  \U21D2  %s",ddt,eq))
 		}
 		allText[i] <- Text
 	}
@@ -655,7 +656,6 @@ dose_response_experiments <- function(m,E,iv,input,out=rownames(m$Output)){
 	tr <- m$Transformation
 	eventSchedule <- character(NROW(E))
 	if (!is.null(E$event) && any(nzchar(E$event))){
-		print(E[,c("type","event")]) # part of warning
 		warning("Dose response experiments are not (yet) fully compatible with events, this script will try its best.")
 		eventSchedule <- E$event
 	}

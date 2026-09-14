@@ -4,9 +4,24 @@
 
 * This is a new release.
 
-### Changes since last manual review
+### Changes since second manual review
 
-Most recent (and first) human review was by Konstanze Lauseker <konstanze.lauseker@wu.ac.at> on the 7th of June 2026. Thank you!
+Second review was by Leonore Hochhauser <leonore.hochhauser@wu.ac.at> on the 12th of September 2026:
+
+> You write information messages to the console that cannot be easily suppressed.
+
+- removed file `R/PreCalibration.R`
+- all diagnostic output is guarded by `verbose` which respects the global option `uqsa.verbose`
+- verbosity defaults to `interactive()`, we could change this to `FALSE` if they shouldn't be on by default.
+- all remaining uses of `cat()` happen in `print.*` functions or write to files.
+
+Thank you!
+
+----
+
+### Old changes since first manual review
+
+First human review was by Konstanze Lauseker <konstanze.lauseker@wu.ac.at> on the 7th of June 2026. Thank you!
 
 Summary of what we did to address the points raised by the review:
 

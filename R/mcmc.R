@@ -27,7 +27,7 @@ small <- function(S,L=attr(S,"logLikelihood"),verbose=getOption("uqsa.verbose",d
 	tau <- ceiling(sum(ACF[ACF>exp(-2)]))
 	if (verbose) cli::cli_alert_info("auto-correlation: {tau}")
 	N <- NROW(S)
-	i <- seq(1,N,by=tau)
+	i <- seq(1,N,by=2*tau)
 	S <- S[i,]
 	if (is.numeric(L)) attr(S,"logLikelihood") <- L[i]
 	return(S)
@@ -459,8 +459,7 @@ loadSample_mpi <- function(files,verbose=getOption("uqsa.verbose", interactive()
 	sR <- Reduce(function(a,b) c(a,attr(b,"swapRate")),s,init=NULL)
 	ll <- Reduce(function(a,b) c(a,attr(b,"logLikelihood")),s,init=NULL)
 	if (verbose){
-		cat("loading sample files with acceptances:\n")
-		print(acc) # guarded by verbose
+		cli::cli_alert_info("loading sample files with acceptances: {acc}")
 	}
 	Sample <- Reduce(rbind,s)
 	return(list(Sample=Sample,beta=betaTrace,acceptanceRate=acc,swapRate=sR,logLikelihood=ll,betaSelection=bSelection,uB=uB))
@@ -1691,19 +1690,25 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 #'   options(opt)
 tune_step_size <- function(MCMC,parMCMC=attr(MCMC,"init"),target_acceptance=0.25, iter.max=6, h=1e-4, N=100, verbose=getOption("uqsa.verbose", interactive())){
 	A <- target_acceptance
-	if (verbose) cli::cli_progress_bar("tuning",total=iter.max)
 	for (i in seq(iter.max)){
+		if (verbose) cli::cli_progress_step("iteration {i}/{iter.max}")
 		X <- MCMC(parMCMC,N,h)
 		a <- X %@% "acceptanceRate"
 		if (verbose){
-			cli::cli_progress_update(1,status=sprintf("a: %g, h %g;",a,h))
+			cli::cli_alert_info(
+				paste(
+					"(a)cceptance: {format(a,digits=2)};",
+					"step size: log2(h)={format(log2(h),digits=3)};"
+				)
+			)
+			cli::cli_progress_update()
 		}
 		if (abs(a-A) < 3e-2) {
 			break
 		} else {
 			h <- h*max(2*a^2/(A^2 + a^2),0.001)
 		}
+		if (verbose) cli::cli_progress_done()
 	}
-	if (verbose) cli::cli_progress_done()
 	return(h)
 }
