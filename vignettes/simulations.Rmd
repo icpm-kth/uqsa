@@ -117,7 +117,7 @@ component of the return value. This directly corresponds to the
 `m$Output` table: the observable/measurable quantities for this
 model. If you need to compare substance `A` to the data (in some way),
 then add an output function for it (e.g. `A_out` or `A_obs` with a
-vlaue of `A`). Then it doesn't matter whether the conservation law
+value of `A`). Then it doesn't matter whether the conservation law
 analysis removes `A` from the state space; it remains part of the
 `func` component.
 

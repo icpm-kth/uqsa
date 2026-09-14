@@ -16,7 +16,7 @@ small(
 \item{L}{the log-likelihood values of S}
 
 \item{verbose}{when TRUE the acf plot option is set to TRUE, and
-teh found auto-correlation length is printed.}
+the found auto-correlation length is printed.}
 }
 \value{
 a smaller version of S

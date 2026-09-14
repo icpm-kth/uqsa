@@ -9,7 +9,7 @@
 #' @param S an MCMC sample
 #' @param L the log-likelihood values of S
 #' @param verbose when TRUE the acf plot option is set to TRUE, and
-#'     teh found auto-correlation length is printed.
+#'     the found auto-correlation length is printed.
 #' @examples
 #' S <- matrix(rnorm(300),100,3)
 #' ## the next line fakes auto-correlation:
