@@ -78,13 +78,23 @@ showPosterior <- function(posterior, prior,...){
 		m <- mean(x)
 		Qx <- quantile(x,probs=c(0.01,0.99))
 		Qy <- quantile(y,probs=c(0.01,0.99))
-		dx <- 0.1*diff(Qx)
-		dy <- 0.1*diff(Qy)
+		dx <- 0.01*diff(Qx)
+		dy <- 0.01*diff(Qy)
 		LIM <- c(min(Qx)-dx,max(Qx)+dx,min(Qy)-dy,max(Qy)+dy)
-		k1 <- MASS::kde2d(head(x,n_posterior),head(y,n_posterior),n=200,lims=LIM)
-		k2 <- MASS::kde2d(tail(x,n_prior),tail(y,n_prior),n=200,lims=LIM)
+		k1 <- MASS::kde2d(
+			head(x,n_posterior),
+			head(y,n_posterior),
+			n=200,
+			lims=LIM
+		)
+		k2 <- MASS::kde2d(
+			tail(x,n_prior),
+			tail(y,n_prior),
+			n=200,
+			lims=LIM
+		)
 		C <- contourLines(k2)
-		colPatch <- c("#FFFFFF",colorspace::sequential_hcl(length(C),rev=TRUE,palette="Blues 3"))
+		colPatch   <- c("#FFFFFF",colorspace::sequential_hcl(length(C),rev=TRUE,palette="Blues 3"))
 		colContour <- c("#FFFFFF",colorspace::sequential_hcl(length(C),rev=TRUE,palette="Blues 3"))
 		image(k1$x,k1$y,k1$z,add=TRUE,col=colPatch)
 		for (i in seq_along(C)){
