@@ -4,7 +4,7 @@
 \alias{experiments}
 \title{Extract Measured Data and Simulation Experiment Instructions}
 \usage{
-experiments(m, o = NULL)
+experiments(m, o = NULL, verbose = getOption("uqsa.verbose", interactive()))
 }
 \arguments{
 \item{m}{the model (with data), as obtained via \code{model_from_tsv()},
@@ -12,6 +12,8 @@ or similar.}
 
 \item{o}{the ode derived from \code{m}, only necessary if the
 experiments need to take conservation laws into account}
+
+\item{verbose}{logical, whether to preint diagnostic messages about the experiments}
 }
 \value{
 a list of simulation instructions

@@ -1340,7 +1340,7 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 					h <- simulations[[i]]$func[,,k]
 					dim(h) <- m
 					stopifnot(all(dim(h)==dim(y)) && all(dim(y)==dim(stdv)))
-					L[k] <- L[k] - 0.5*sum(((y - h)/stdv)^2,na.rm=TRUE) - sum(log(stdv),na.rm=TRUE)
+					L[k] <- L[k] - 0.5*sum(((errors::drop_errors(y) - h)/stdv)^2,na.rm=TRUE) - sum(log(stdv),na.rm=TRUE)
 				}
 			}
 			return(L)

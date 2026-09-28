@@ -360,13 +360,20 @@ unit_as_character <- function(unit){
 #'     target unit is attached to the returned value, as a comment.
 #' @examples
 #'   ## needs `unit` utility (a system utility)
-#'   if (nzchar(Sys.which("units"))){
-#'     y <- "21 cm" %as% "inches"
-#'     y <- "12 nmol/L" %as% "mol/L"
-#'     print(comment(y))
-#'     y <- "12 mol/m^3" %as% "mmol/L"
-#'   } else {
-#'     message("The system utility 'units' is not installed, skipping example.")
+#'   which_units <- Sys.which("units")
+#'   if (nzchar(which_units)){
+#'     ver <- package_version(
+#'       sub(
+#'         '^[^0-9]*([0-9.]+)$',"\\1",
+#'         head(system2(which_units, args = "--version", stdout = TRUE, stderr = FALSE),1)
+#'       )
+#'     )
+#'     if (ver > package_version("2.0")) {
+#'       y <- "21 cm" %as% "inches"
+#'       y <- "12 nmol/L" %as% "mol/L"
+#'       print(comment(y))
+#'       y <- "12 mol/m^3" %as% "mmol/L"
+#'     }
 #'   }
 `%as%` <- function(txtUnit,target){
 	if (length(target)!=1) warning("There must be exactly one target unit.")
