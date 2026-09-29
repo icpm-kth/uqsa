@@ -31,9 +31,11 @@ line arguments: \verb{units --strict --compact -1 "$originalUnit" "$targetUnit"}
         '^[^0-9]*([0-9.]+)$',"\\\\1",
         head(system2(which_units, args = "--version", stdout = TRUE, stderr = FALSE),1)
     )
-    if (grepl("[0-9.]+",ver) && package_version(ver) > package_version("2.0")) {
+    if (grepl("^ *[0-9.]+ *$",ver) && package_version(ver) > package_version("2.0")) {
       y <- "21 cm" \%as\% "inches"
+      print(y)
       y <- "12 nmol/L" \%as\% "mol/L"
+      print(y)
       y <- "12 mol/m^3" \%as\% "mmol/L"
       print(y)
     }
