@@ -41,6 +41,8 @@ struct num read_concise(const char *line){
 	while (ptr_u && *ptr_u && !numeric(*ptr_u)) ptr_u++;
 	if (numeric(*ptr_u)) {
 		u=strtol(ptr_u,&ptr_e,10);
+	} else {
+		ptr_e=ptr_u;
 	}
 	while (ptr_e && *ptr_e && !numeric(*ptr_e)) ptr_e++;
 	if (numeric(*ptr_e)) vscale=strtol(ptr_e,NULL,10);
