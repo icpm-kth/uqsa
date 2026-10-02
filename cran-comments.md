@@ -2,7 +2,15 @@
 
 0 errors | 0 warnings | 1 note
 
-* This is a new release.
+## uqsa 0.8.1
+
+In this release, we addressed all (as far as we know) problematic output as reported by
+Prof Brian Ripley <ripley@stats.ox.ac.uk> on Mon, 28th of September 2026.
+
+- fixed a compiler warning about `src/concise.c` and fixed a bug rekated to this
+- removed warnings when processing user models in cases where a problem could occur (but we do not know for certain), this is an _info_ message now.
+
+-------
 
 ### Changes since second manual review
 
