@@ -37,7 +37,7 @@ struct num read_concise(const char *line){
 	int u=0;
 	//int ulen=2;
 	const char *decimal=strchr(line,'.');
-	int digits=ptr_u-(decimal?decimal:line)-1;
+	int digits=(decimal?(ptr_u-decimal-1):0);
 	while (ptr_u && *ptr_u && !numeric(*ptr_u)) ptr_u++;
 	if (numeric(*ptr_u)) {
 		u=strtol(ptr_u,&ptr_e,10);
