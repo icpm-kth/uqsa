@@ -9,7 +9,7 @@ high_level_smmala(
   o = as_ode(m, cla = TRUE),
   ex = experiments(m, o),
   x = values(m$Parameter),
-  verbose = interactive()
+  verbose = getOption("uqsa.verbose", interactive())
 )
 }
 \arguments{

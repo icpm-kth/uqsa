@@ -1,3 +1,38 @@
+#' This function reduces the sample to its effective size
+#'
+#' When plotting, we want to show only a few representative
+#' lines or points derived from a sample. This function will determine
+#' the auto-correlation length very roughly and use that number to
+#' thin out the sample to a minimal size that still represents the
+#' original sample well.
+#'
+#' @param S an MCMC sample
+#' @param L the log-likelihood values of S
+#' @param verbose when TRUE the acf plot option is set to TRUE, and
+#'     the found auto-correlation length is printed.
+#' @examples
+#' S <- matrix(rnorm(300),100,3)
+#' ## the next line fakes auto-correlation:
+#' attr(S,"logLikelihood") <- cos(seq(0,1,length.out=100)) + rnorm(100,sd=0.05)
+#' print(dim(S))
+#' print(dim(small(S)))
+#' @export
+#' @return a smaller version of S
+small <- function(S,L=attr(S,"logLikelihood"),verbose=getOption("uqsa.verbose",default=interactive())){
+	if (is.numeric(L)){
+		ACF <- acf(L,plot=verbose)$acf
+	} else {
+		ACF <- rowMeans(apply(S,2,\(s) acf(s,plot=FALSE)$acf))
+	}
+	tau <- ceiling(sum(ACF[ACF>exp(-2)]))
+	if (verbose) cli::cli_alert_info("auto-correlation: {tau}")
+	N <- NROW(S)
+	i <- seq(1,N,by=2*tau)
+	S <- S[i,]
+	if (is.numeric(L)) attr(S,"logLikelihood") <- L[i]
+	return(S)
+}
+
 #' This function can be used to specify default values
 #'
 #' When attributes are missing, the `base::attr()` function returns
@@ -179,7 +214,7 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #'  } else {
 #'    smallSample <- rwm(rwm %@% "init",10,1e-4)
 #'  }
-mcmc <- function(update, verbose=interactive()){
+mcmc <- function(update, verbose=getOption("uqsa.verbose", interactive())){
 	M <- function(parMCMC,N=1000,eps=1e-4){
 		sample <- matrix(NA,nrow=N,ncol=length(parMCMC))
 		colnames(sample) <- names(parMCMC)
@@ -196,10 +231,9 @@ mcmc <- function(update, verbose=interactive()){
 			sample[i,] <- as.numeric(parMCMC)
 			b[i] <- attr(parMCMC,"beta")
 			a[i] <- attr(parMCMC,"accepted")
-			A <- A + a[i]
-			if (verbose && i %% 10) {
-				cli::cli_progress_bar(inc=10, status=sprintf("a: %i %%",A*10))
-				A <- 0
+			A <- ((i-1)*A + a[i])/i
+			if (verbose && i%%10==0) {
+				cli::cli_progress_update(inc=10, status=sprintf("a: %i %%",round(A*100)))
 			}
 		}
 		if (verbose) cli::cli_progress_done()
@@ -416,7 +450,7 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 #' Z <- loadSample_mpi(f)
 #' print(dim(Z$Sample))
 #' print(names(Z))
-loadSample_mpi <- function(files,verbose=interactive()){
+loadSample_mpi <- function(files,verbose=getOption("uqsa.verbose", interactive())){
 	s <- lapply(files,readRDS)
 	betaTrace <- Reduce(function(a,b) c(a,attr(b,"beta")),s,init=NULL)
 	uB <- sort(unique(betaTrace),decreasing=TRUE)
@@ -425,8 +459,7 @@ loadSample_mpi <- function(files,verbose=interactive()){
 	sR <- Reduce(function(a,b) c(a,attr(b,"swapRate")),s,init=NULL)
 	ll <- Reduce(function(a,b) c(a,attr(b,"logLikelihood")),s,init=NULL)
 	if (verbose){
-		cat("loading sample files with acceptances:\n")
-		print(acc) # guarded by verbose
+		cli::cli_alert_info("loading sample files with acceptances: {acc}")
 	}
 	Sample <- Reduce(rbind,s)
 	return(list(Sample=Sample,beta=betaTrace,acceptanceRate=acc,swapRate=sR,logLikelihood=ll,betaSelection=bSelection,uB=uB))
@@ -1307,7 +1340,7 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 					h <- simulations[[i]]$func[,,k]
 					dim(h) <- m
 					stopifnot(all(dim(h)==dim(y)) && all(dim(y)==dim(stdv)))
-					L[k] <- L[k] - 0.5*sum(((y - h)/stdv)^2,na.rm=TRUE) - sum(log(stdv),na.rm=TRUE)
+					L[k] <- L[k] - 0.5*sum(((errors::drop_errors(y) - h)/stdv)^2,na.rm=TRUE) - sum(log(stdv),na.rm=TRUE)
 				}
 			}
 			return(L)
@@ -1462,7 +1495,7 @@ logParMapJac <- function(parMCMC){
 #'   } else {
 #'     smallSample <- rwm(rwm %@% "init",1,1e-4)
 #'   }
-high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=values(m$Parameter), verbose=interactive()){
+high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=values(m$Parameter), verbose=getOption("uqsa.verbose", interactive())){
 	if (is.null(o$c_path) || is.null(o$so_path) || !file.exists(o$so_path)){
 		C <- generate_code(o)
 		c_path(o) <- write_c_code(C)
@@ -1557,7 +1590,7 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 #'   } else {
 #'     smallSample <- rwm(rwm %@% "init",N/4,1e-6)
 #'   }
-high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x=values(m$Parameter), beta=1.0, verbose=interactive()){
+high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x=values(m$Parameter), beta=1.0, verbose=getOption("uqsa.verbose", interactive())){
 	if (is.null(so_path(o)) || !file.exists(so_path(o))){
 		C <- generate_code(o)
 		c_path(o) <- write_c_code(C)
@@ -1655,21 +1688,27 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 #'     h <- tune_step_size(rwm,p,N=20,iter.max=1)
 #'   }
 #'   options(opt)
-tune_step_size <- function(MCMC,parMCMC=attr(MCMC,"init"),target_acceptance=0.25, iter.max=6, h=1e-4, N=100, verbose=interactive()){
+tune_step_size <- function(MCMC,parMCMC=attr(MCMC,"init"),target_acceptance=0.25, iter.max=6, h=1e-4, N=100, verbose=getOption("uqsa.verbose", interactive())){
 	A <- target_acceptance
-	if (verbose) cli::cli_progress_bar("tuning",total=iter.max)
 	for (i in seq(iter.max)){
+		if (verbose) cli::cli_progress_step("iteration {i}/{iter.max}")
 		X <- MCMC(parMCMC,N,h)
 		a <- X %@% "acceptanceRate"
 		if (verbose){
-			cli::cli_progress_update(1,status=sprintf("a: %g, h %g;",a,h))
+			cli::cli_alert_info(
+				paste(
+					"(a)cceptance: {format(a,digits=2)};",
+					"step size: log2(h)={format(log2(h),digits=3)};"
+				)
+			)
+			cli::cli_progress_update()
 		}
 		if (abs(a-A) < 3e-2) {
 			break
 		} else {
 			h <- h*max(2*a^2/(A^2 + a^2),0.001)
 		}
+		if (verbose) cli::cli_progress_done()
 	}
-	if (verbose) cli::cli_progress_done()
 	return(h)
 }

@@ -44,6 +44,7 @@ generate_code <- function(Model,language="C", LV=6.02214076e+8){
 #'
 #' @param file the c file that is to be compiled, OR an ODE/CME object
 #'     with a c.file defined and recorded in it.
+#' @param verbose print decition outcomes about the compiler options
 #' @export
 #' @return the path of the created shared library
 #' @examples
@@ -54,7 +55,7 @@ generate_code <- function(Model,language="C", LV=6.02214076e+8){
 #' so_path(o) <- shlib(o)
 #' print(o)
 #' if (file.exists(so_path(o))) cat("shared library exists.\n")
-shlib <- function(file){
+shlib <- function(file,verbose=getOption("uqsa.verbose",default=interactive())){
 	if (is(file,"ode")) {
 		so_name <- file$name
 		file <- c_path(file)
@@ -73,15 +74,19 @@ shlib <- function(file){
 		winslash='/',
 		mustWork=FALSE
 	)
-
+	platform <- Sys.info()[["sysname"]]
+	if (verbose) cli::cli_alert_info("We are on {platform}")
 	if (nzchar(Sys.which("pkg-config")) && system2("pkg-config", c("--exists", "gsl"), stdout = FALSE, stderr = FALSE)==0) {
 		cflags <- tryCatch(system2("pkg-config", c("--cflags", "gsl"), stdout = TRUE), error = function(e) sprintf("failure in 'pkg-config --cflags': %s",e))
 		libs <- tryCatch(system2("pkg-config", c("--libs", "gsl"), stdout = TRUE), error = function(e) sprintf("failure in 'pkg-config --libs': %s",e))
+		if (verbose) cli::cli_alert_info("pkg-config is installed and knows about GSL: {cflags}, {libs},")
 	} else if (nzchar(Sys.which("gsl-config"))){
 		cflags <- tryCatch(system2("gsl-config", "--cflags", stdout = TRUE), error = function(e) sprintf("failure in 'gsl-config --cflags': %s",e))
 		libs   <- tryCatch(system2("gsl-config", "--libs", stdout = TRUE), error = function(e) sprintf("failure in 'gsl-config --cflags': %s",e))
-	} else if (Sys.info()[["sysname"]] == "Windows"){
+		if (verbose) cli::cli_alert_info("gsl-config is installed: {cflags}, {libs},")
+	} else if (platform == "Windows"){
 		## perhaps pkg-config is available internally to R CMD SHLIB
+		if (verbose) cli::cli_alert_info("neither pkg-config, nor gsl-config is available, trying pkg-config anyway and writing results to a temporary Makevars.win file.")
 		cat( # writes to a file
 			c(
 				"PKG_CPPFLAGS = $(shell pkg-config --cflags gsl) -O3",
@@ -95,14 +100,13 @@ shlib <- function(file){
 	} else {
 		warning(
 			"Neither pkg-config (with gsl.pc), nor gsl-config exist on this system (",
-			Sys.info()[["sysname"]],
+			platform,
 			"), perhaps the GNU Scientific Library isn't installed?",
 			"Trying hard-coded values for GSL location."
 		)
 		cflags <- Sys.getenv("GSL_CFLAGS", unset = "")
-		libs <- Sys.getenv("GSL_LIBS", unset = "-lgsl -lgslcblas")
-		message(cflags) # additional warning information
-		message(libs)   # additional warning information
+		libs <- Sys.getenv("GSL_LIBS", unset = "-lgsl -lgslcblas -lm")
+		if (verbose) cli::cli_alert_info("cflags: {cflags}; libs: {libs}") # additional warning information
 	}
 	## Environment variables
 	### 1. get current values to restor later
@@ -116,6 +120,8 @@ shlib <- function(file){
 		add = TRUE
 	)
 	### 2. set new values, determined by pkg-config
+	cflags <- paste(cflags,"-march=native -O3")
+	if (verbose) cli::cli_alert_info("Determined cc template: R CMD SHLIB {cflags} {basename(file)} {libs}.")
 	if (nzchar(cflags)) Sys.setenv(PKG_CPPFLAGS = cflags)
 	if (nzchar(libs)) Sys.setenv(PKG_LIBS = libs)
 	### 3. R CMD SHLIB writes a file called symbols.rds
@@ -135,7 +141,6 @@ shlib <- function(file){
 	}
 	return(so)
 }
-
 
 
 #' Write the C code to a file

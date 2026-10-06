@@ -10,7 +10,7 @@ high_level_metropolis(
   ex = experiments(m, o),
   x = values(m$Parameter),
   beta = 1,
-  verbose = interactive()
+  verbose = getOption("uqsa.verbose", interactive())
 )
 }
 \arguments{

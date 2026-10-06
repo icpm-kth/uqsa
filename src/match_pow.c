@@ -90,9 +90,9 @@ void replace(char *buffer, const char *src){
 	const char *ps;
 	size_t n;
 	enum pow_type t=double_power;
-	char *hat=strchr(src,'^');
+	const char *hat=strchr(src,'^');
 	if (hat){
-		ptr = hat-1;
+		ptr = (char*) hat-1;
 		while (*ptr==' ') ptr--;
 		/* find base: */
 		b_close= ptr;
@@ -100,7 +100,7 @@ void replace(char *buffer, const char *src){
 		/* copy initial part, if any, to output buffer */
 		*(out=(char*) mempcpy(buffer,src,b_open-src))='\0';
 		/* find the exponent */
-		ptr  = hat+1;
+		ptr  = (char*) hat+1;
 		while (*ptr==' ') ptr++;
 		e_open = ptr;
 		e_close= find_boundary(src,ptr,+1);

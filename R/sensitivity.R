@@ -145,9 +145,7 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 	}
 	C <- t(apply(S,1,cumsum))
 	x <- c(u,rev(u))
-	plot(u,C[,1],type='l', axes=FALSE, col=line.color[1],ylim=c(0,max(C,na.rm=TRUE)),...)
-	axis(1,at=u,labels=names(u))
-	axis(2)
+	plot(u,C[,1],type='l', col=line.color[1],ylim=c(0,max(C,na.rm=TRUE)),...)
 	z <- c(S[,1]*0,rev(S[,1]))
 	polygon(x,z,col=color[1],lty=0)
 	for (i in 1:n){

@@ -4,7 +4,7 @@
 \alias{loadSample_mpi}
 \title{This function merges mpi-samples into one}
 \usage{
-loadSample_mpi(files, verbose = interactive())
+loadSample_mpi(files, verbose = getOption("uqsa.verbose", interactive()))
 }
 \arguments{
 \item{files}{the rds files where the individual samples are stored}

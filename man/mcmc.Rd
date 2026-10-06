@@ -4,7 +4,7 @@
 \alias{mcmc}
 \title{Markov Chain Monte Carlo}
 \usage{
-mcmc(update, verbose = interactive())
+mcmc(update, verbose = getOption("uqsa.verbose", interactive()))
 }
 \arguments{
 \item{update}{and update function}

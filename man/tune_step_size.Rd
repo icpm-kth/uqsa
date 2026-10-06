@@ -11,7 +11,7 @@ tune_step_size(
   iter.max = 6,
   h = 1e-04,
   N = 100,
-  verbose = interactive()
+  verbose = getOption("uqsa.verbose", interactive())
 )
 }
 \arguments{

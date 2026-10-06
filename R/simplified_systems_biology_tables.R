@@ -459,12 +459,13 @@ linear_scale <- function(x,str_scale=attr(x,"scale")){
 #' CL <- conservation_law_analysis(nu,values(m$Compound))
 #' print(names(CL))
 #' print(CL[,c('value','Formula')])
-conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
-	if (is.matrix(iv)){
-		warning(
-			c(
-				"[conservation_law_analysis] determines the default inputs (from initial values),\n",
-				"not the experiment specific inputs; that is done by [experiments].\n"
+conservation_law_analysis <- function(nu,iv,verbose=getOption("uqsa.verbose", interactive())) {
+	if (is.matrix(iv) && verbose){
+		cli::cli_alert_info(
+			paste(
+				"[conservation_law_analysis] determines the default inputs (from initial values),",
+				"not the experiment specific inputs; that is done by [experiments].",
+				collapsee='\n'
 			)
 		)
 	}
@@ -477,7 +478,7 @@ conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
 	K <- numeric(NROW(C))
 	allText <- character(NROW(C))
 	if (is.character(iv)) {
-		warning("initial values are not numeric.")
+		cli::cli_alert_info("initial values are not numeric.")
 		iv <- .Call("lstrtod",iv) # guarantees no NA values
 	}
 	for (i in seq(NROW(C))){
@@ -509,8 +510,9 @@ conservation_law_analysis <- function(nu,iv,verbose=FALSE) {
 			)
 		}
 		if (as.logical(verbose)){
-			cat("d/dt(",sprintf("%+i*%s",round(C[i,l]),nm[l]),") == 0\n") # guarded by verbose
-			cat(Text,"\n") # guarded by verbose
+			ddt <- paste0("d/dt(",paste(sprintf("%+i*%s",round(C[i,l]),nm[l]),collapse=" "),") == 0")
+			eq <- sprintf("%10s = %s",nm[k],Text)
+			cli::cli_alert_info(sprintf("%40s  \U21D2  %s",ddt,eq))
 		}
 		allText[i] <- Text
 	}
@@ -599,7 +601,7 @@ empty_error_matrix <- function(n,m,dimnames=NULL){
 	return(M)
 }
 
-time_series_experiments <- function(m,E,iv,input,out=rownames(m$Output)){
+time_series_experiments <- function(m,E,iv,input,out=rownames(m$Output),verbose=getOption("uqsa.verbose", interactive())){
 	if (is.null(E) || NROW(E)==0) return(NULL)
 	D <- vector("list",NROW(E))
 	eventSchedule <- E$event %otherwise% character(NROW(E))
@@ -608,7 +610,7 @@ time_series_experiments <- function(m,E,iv,input,out=rownames(m$Output)){
 		d <- m[[rownames(E)[i]]]
 		ev <- m[[eventSchedule[i]]]
 		if (is.null(d)) {
-			message("no data provided for experiment ",rownames(E)[i])
+			if (verbose) cli::cli_alert_info("no data provided for experiment ",rownames(E)[i])
 			DATA <- NULL
 		} else {
 			DATA <- fill_matrix(
@@ -647,7 +649,7 @@ time_series_experiments <- function(m,E,iv,input,out=rownames(m$Output)){
 	return(D)
 }
 
-dose_response_experiments <- function(m,E,iv,input,out=rownames(m$Output)){
+dose_response_experiments <- function(m,E,iv,input,out=rownames(m$Output), verbose=getOption("uqsa.verbose", interactive())){
 	if (is.null(E) || NROW(E)==0) return(NULL)
 	TS <- list() # list of time series experiments
 	t0 <- E$t0
@@ -655,8 +657,7 @@ dose_response_experiments <- function(m,E,iv,input,out=rownames(m$Output)){
 	tr <- m$Transformation
 	eventSchedule <- character(NROW(E))
 	if (!is.null(E$event) && any(nzchar(E$event))){
-		print(E[,c("type","event")]) # part of warning
-		warning("Dose response experiments are not (yet) fully compatible with events, this script will try its best.")
+		if (verbose) cli::cli_alert_info("Dose response experiments are not (yet) fully compatible with events, this script will try its best.")
 		eventSchedule <- E$event
 	}
 	for (i in seq(NROW(E))){
@@ -731,6 +732,7 @@ dose_response_experiments <- function(m,E,iv,input,out=rownames(m$Output)){
 #'     or similar.
 #' @param o the ode derived from `m`, only necessary if the
 #'     experiments need to take conservation laws into account
+#' @param verbose logical, whether to preint diagnostic messages about the experiments
 #' @return a list of simulation instructions
 #' @export
 #' @examples
@@ -740,14 +742,14 @@ dose_response_experiments <- function(m,E,iv,input,out=rownames(m$Output)){
 #' ex <- experiments(m,o)
 #' print(names(ex))
 #' print(ex[[1]]$input)
-experiments <- function(m,o=NULL){
+experiments <- function(m,o=NULL,verbose=getOption("uqsa.verbose", interactive())){
 	if (!is.list(m)) {
 		stop("the first argument needs to be a list of file contents.")
 	}
-	if (is.finite(pmatch("Transformation",names(m))) && !is.null(o$conservationLaws)){
-		warning(
+	if (is.finite(pmatch("Transformation",names(m))) && !is.null(o$conservationLaws) && verbose){
+		cli::cli_alert_info(
 			"CONFLICT: This model seems to have event based transformations and conservation laws. ",
-			"These two concepts clash with one another if a compound is conserved, ",
+			"These two concepts clash with one another whenever a compound is conserved, ",
 			"but also changed by scheduled events."
 		)
 	}
@@ -755,7 +757,7 @@ experiments <- function(m,o=NULL){
 	if (all(is.finite(pmatch('Experiment',names(m))))){
 		E <- m$Experiment
 	} else {
-		message(paste(names(m),collapse=", ")) # part of error message
+		if (verbose) cli::cli_alert_warning(paste(names(m),collapse=", ")) # part of error message
 		stop("argument must contain an item named 'Experiment(s)'.")
 	}
 	# If there isn't an output table, then all state variables must be measurable

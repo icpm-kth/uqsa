@@ -153,30 +153,27 @@ unit.scale <- function(prefix){
 #'
 #' @export
 #' @param unit.str the original string representation of that unit
-#' @param verbose logical switch: if TRUE, the name will be printed.
 #' @return unit.id string
 #' @examples
 #' print(unit.id("s^9"))
 #' print(unit.id("cm^2"))
 #' print(unit.id("1/s"))
-unit.id <- function(unit.str,verbose=FALSE){
+unit.id <- function(unit.str){
 	uid <- unit.str
 	uid <- sub("^1$","dimensionless",uid)
+	uid <- gsub("\U00B5","micro",uid)
+	uid <- gsub("\U03BC","mu",uid)
 	uid <- gsub("1/","one_over_",uid)
 	uid <- gsub("/","_per_",uid)
 	uid <- gsub("[*[:blank:]]","_",uid)
 	uid <- gsub("[()]","",uid)
 	uid <- gsub("\\^2","_square",uid)
 	uid <- gsub("\\^3","_cube",uid)
+	uid <- gsub("\\^-1","_inverse",uid)
+	uid <- gsub("\\^-2","_square_inverse",uid)
 	uid <- gsub("\\^([0-9]+)","_to_the_power_of_\\1",uid)
-	uid <- gsub("\\^-([0-9]+)","_to_the_power_of_\\1_inverted",uid)
+	uid <- gsub("\\^-([0-9]+)","_to_the_power_of_\\1_inverse",uid)
 	uid <- make.names(uid,unique=FALSE)
-	if (verbose){
-		message("units in \u00ab!Unit\u00bb column:")
-		print(unit.str) # guarded by verbose
-		message("automatically created sbml unit ids:")
-		print(uid) # guarded by verbose
-	}
 	return(uid)
 }
 
@@ -270,7 +267,6 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 #' print(unit.from.string("µM"))
 unit.from.string <- function(unit.str){
 	if (!is.character(unit.str)){
-		print(unit.str) # part of error messaging, and stop()
 		stop("unit.str has to be a charcter vector of length 1.")
 	}
 	stopifnot(length(unit.str)==1)
@@ -364,38 +360,46 @@ unit_as_character <- function(unit){
 #'     target unit is attached to the returned value, as a comment.
 #' @examples
 #'   ## needs `unit` utility (a system utility)
-#'   if (nzchar(Sys.which("units"))){
-#'     y <- "21 cm" %as% "inches"
-#'     y <- "12 nmol/L" %as% "mol/L"
-#'     print(comment(y))
-#'     y <- "12 mol/m^3" %as% "mmol/L"
-#'   } else {
-#'     message("The system utility 'units' is not installed, skipping example.")
+#'   which_units <- Sys.which("units")
+#'   if (nzchar(which_units)){
+#'     ver <- sub(
+#'         '^[^0-9]*([0-9.]+)$',"\\1",
+#'         head(system2(which_units, args = "--version", stdout = TRUE, stderr = FALSE),1)
+#'     )
+#'     if (grepl("^ *[0-9.]+ *$",ver) && package_version(ver) > package_version("2.0")) {
+#'       y <- "21 cm" %as% "inches"
+#'       print(y)
+#'       y <- "12 nmol/L" %as% "mol/L"
+#'       print(y)
+#'       y <- "12 mol/m^3" %as% "mmol/L"
+#'       print(y)
+#'     }
 #'   }
 `%as%` <- function(txtUnit,target){
-	if (nzchar(Sys.which("units"))){
-		warning("The 'units' utility must be installed (system program, not R).")
-		return(NA)
-	}
 	if (length(target)!=1) warning("There must be exactly one target unit.")
-	f <- as.numeric(
-		sapply(
-			txtUnit,
-			\(u) return(
-				system2(
-					command="units",
-					args=c(
-						paste0("--",c("strict","compact")),
-						"-1",
-						sprintf("'%s'",as.character(u)),
-						sprintf("'%s'",as.character(paste(target,collapse="")))
-					),
-					stdout=TRUE
+	if (nzchar(Sys.which("units"))){
+		f <- as.numeric(
+			sapply(
+				txtUnit,
+				\(u) return(
+					system2(
+						command="units",
+						args=c(
+							paste0("--",c("strict","compact")),
+							"-1",
+							sprintf("'%s'",as.character(u)),
+							sprintf("'%s'",as.character(paste(target,collapse=""))	)
+						),
+						stdout=TRUE
+					)
 				)
 			)
 		)
-	)
-	attr(f,"unit") <- target
-	names(f) <- txtUnit
+		attr(f,"unit") <- target
+		names(f) <- txtUnit
+	} else {
+		warning("The 'units' utility must be installed (system program, not R).")
+		f <- NA
+	}
 	return(f)
 }

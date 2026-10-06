@@ -7,13 +7,13 @@
 ABCSMC(
   objectiveFunction,
   startPar,
-  Sigma = 2 * cov(startPar),
+  Sigma = 2 * cov(t(startPar)),
   dprior,
   delta = c(2, 0.5),
   parAcceptable = function(p) {
      all(is.finite(p))
  },
-  verbose = interactive()
+  verbose = getOption("uqsa.verbose", interactive())
 )
 }
 \arguments{
