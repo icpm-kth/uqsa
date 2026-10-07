@@ -1,4 +1,5 @@
 test_that("simfi produces a solution for AKAR4",{
+	opt <- options(uqsa.verbose=FALSE)
 	f <- uqsa_example('AKAR4')
 	expect_vector(f, ptype = character(0))
 	m <- model_from_tsv(f)
@@ -28,9 +29,11 @@ test_that("simfi produces a solution for AKAR4",{
 	expect_false(is.null(y[[1]]$logLikelihood))
 	expect_false(is.null(y[[1]]$func))
 	expect_false(is.null(y[[1]]$state))
+	options(opt)
 })
 
 test_that("simfi produces a solution for AKAR4, without Fisher Information",{
+	opt <- options(uqsa.verbose=FALSE)
 	f <- uqsa_example('AKAR4')
 	expect_vector(f, ptype = character(0))
 	m <- model_from_tsv(f)
@@ -49,7 +52,6 @@ test_that("simfi produces a solution for AKAR4, without Fisher Information",{
 	s <- simfi(ex,o,parMap=log10ParMap,omit=1)
 	p <- log10(values(m$Parameter))
 	expect_true(length(p)==NROW(m$Parameter))
-	#expect_vector(p, ptype = numeric(0), size=NROW(m$Parameter))
 	rprior <- rNormalPrior(mean=p,sd=rep_len(0.1,length(p)))
 	N <- 10
 	X <- rprior(N)
@@ -61,9 +63,11 @@ test_that("simfi produces a solution for AKAR4, without Fisher Information",{
 	expect_false(is.null(y[[1]]$logLikelihood))
 	expect_false(is.null(y[[1]]$func))
 	expect_false(is.null(y[[1]]$state))
+	options(opt)
 })
 
 test_that("simfi produces a solution for AKAR4, without Fisher Information, and gradient of log-likelihood",{
+	opt <- options(uqsa.verbose=FALSE)
 	f <- uqsa_example('AKAR4')
 	expect_vector(f, ptype = character(0))
 	m <- model_from_tsv(f)
@@ -82,7 +86,6 @@ test_that("simfi produces a solution for AKAR4, without Fisher Information, and 
 	s <- simfi(ex,o,parMap=log10ParMap,omit=2)
 	p <- log10(values(m$Parameter))
 	expect_true(length(p)==NROW(m$Parameter))
-#	expect_vector(p, ptype = numeric(0), size=NROW(m$Parameter))
 	rprior <- rNormalPrior(mean=p,sd=rep_len(0.1,length(p)))
 	N <- 10
 	X <- rprior(N)
@@ -94,9 +97,11 @@ test_that("simfi produces a solution for AKAR4, without Fisher Information, and 
 	expect_false(is.null(y[[1]]$logLikelihood))
 	expect_false(is.null(y[[1]]$func))
 	expect_false(is.null(y[[1]]$state))
+	options(opt)
 })
 
 test_that("simfi produces a solution for AKAR4, omit all optionals",{
+	opt <- options(uqsa.verbose=FALSE)
 	f <- uqsa_example('AKAR4')
 	expect_vector(f, ptype = character(0))
 	m <- model_from_tsv(f)
@@ -117,7 +122,6 @@ test_that("simfi produces a solution for AKAR4, omit all optionals",{
 	s <- simfi(ex,o,parMap=log10ParMap,omit=3)
 	p <- log10(values(m$Parameter))
 	expect_true(length(p)==NROW(m$Parameter))
-#	expect_vector(p, ptype = numeric(0), size=NROW(m$Parameter))
 	rprior <- rNormalPrior(mean=p,sd=rep_len(0.1,length(p)))
 	N <- 10
 	X <- rprior(N)
@@ -129,4 +133,5 @@ test_that("simfi produces a solution for AKAR4, omit all optionals",{
 	expect_true(is.null(y[[1]]$logLikelihood))
 	expect_false(is.null(y[[1]]$func))
 	expect_false(is.null(y[[1]]$state))
+	options(opt)
 })
