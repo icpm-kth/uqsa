@@ -350,7 +350,11 @@ unit_as_character <- function(unit){
 #' left into the unit on the right, e.g.: "cm" %as% "inches", both
 #' units can contain numbers. Any input that is accepted by the units
 #' utility is acceptable, as long as it makes sense with the command
-#' line arguments: `units --strict --compact -1 "$originalUnit" "$targetUnit"`
+#' line arguments: `units -t "$originalUnit" "$targetUnit"`
+#'
+#' FreeBSD and MacOS have a buggy `units` command: it fails to signal
+#' failure, so this function does some additional checks to make sure
+#' that the conversion worked.
 #'
 #' @export
 #' @param txtUnit a string with numeric values, including units,
@@ -379,9 +383,12 @@ unit_as_character <- function(unit){
 				sprintf("'%s'",as.character(txtUnit)),
 				sprintf("'%s'",as.character(paste(target,collapse="")))
 			),
-			stdout=TRUE
+			stdout=TRUE,
+			stderr=TRUE
 		)
-		if (f %has% 'status') {
+		## MacOS and FreeBSD have a buggy `units`, which doesn't signal failure
+		FreeBSD.success <- is.character(f) && length(f)==1 && grepl("^[[:blank:]]*[[:digit:][:punct:]]+[eE]?[[:punct:]]?[[:digit:]]*[[:blank:]]*$",f) # a number
+		if (!FreeBSD.success || (f %has% 'status' && attr(f,'status')!=0)) {
 			status <- attr(f,'status')
 			msg <- paste(f,collapse=' ')
 			f <- NA

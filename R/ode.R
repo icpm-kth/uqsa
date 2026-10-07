@@ -31,7 +31,7 @@
 #' o <- as_ode(m)
 #' print(names(o))
 #' print(o$vf)
-as_ode <- function(m,cla=requireNamespace("pracma")){
+as_ode <- function(m,cla=requireNamespace("pracma",quietly=TRUE)){
 	iv <- values(m$Compound)
 	pv <- values(m$Parameter)
 	xp <- c(formulae(m$Expression),formulae(m$Reaction))

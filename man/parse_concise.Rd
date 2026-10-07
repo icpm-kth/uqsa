@@ -4,7 +4,11 @@
 \alias{parse_concise}
 \title{Read Concise Error Notation}
 \usage{
-parse_concise(v, use.errors = requireNamespace("errors"), na = c(NA, NA))
+parse_concise(
+  v,
+  use.errors = requireNamespace("errors", quietly = TRUE),
+  na = c(NA, NA)
+)
 }
 \arguments{
 \item{v}{a character vector of numbers in concise error notation}

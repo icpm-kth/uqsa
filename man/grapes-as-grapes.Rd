@@ -8,7 +8,7 @@ txtUnit \%as\% target
 }
 \arguments{
 \item{txtUnit}{a string with numeric values, including units,
-e.g. "3 cm", can be a character vector}
+e.g. "3 cm"}
 
 \item{target}{string, target unit, e.g. "m", must be scalar}
 }
@@ -21,23 +21,21 @@ The function calls the units utility and converts the string on the
 left into the unit on the right, e.g.: "cm" \%as\% "inches", both
 units can contain numbers. Any input that is accepted by the units
 utility is acceptable, as long as it makes sense with the command
-line arguments: \verb{units --strict --compact -1 "$originalUnit" "$targetUnit"}
+line arguments: \verb{units -t "$originalUnit" "$targetUnit"}
+}
+\details{
+FreeBSD and MacOS have a buggy \code{units} command: it fails to signal
+failure, so this function does some additional checks to make sure
+that the conversion worked.
 }
 \examples{
-  ## needs `unit` utility (a system utility)
-  which_units <- Sys.which("units")
-  if (nzchar(which_units)){
-    ver <- sub(
-        '^[^0-9]*([0-9.]+)$',"\\\\1",
-        head(system2(which_units, args = "--version", stdout = TRUE, stderr = FALSE),1)
-    )
-    if (grepl("^ *[0-9.]+ *$",ver) && package_version(ver) > package_version("2.0")) {
+  ## needs `units` utility (a system utility)
+  if (nzchar(Sys.which("units"))){
       y <- "21 cm" \%as\% "inches"
       print(y)
       y <- "12 nmol/L" \%as\% "mol/L"
       print(y)
       y <- "12 mol/m^3" \%as\% "mmol/L"
       print(y)
-    }
   }
 }

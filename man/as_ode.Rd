@@ -4,7 +4,7 @@
 \alias{as_ode}
 \title{Interpret a model as an ODE}
 \usage{
-as_ode(m, cla = requireNamespace("pracma"))
+as_ode(m, cla = requireNamespace("pracma", quietly = TRUE))
 }
 \arguments{
 \item{m}{a list of data.frames, each corresponding to a TSV file or

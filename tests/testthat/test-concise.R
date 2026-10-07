@@ -1,5 +1,5 @@
 test_that("parenthesized error notation, normal",{
-	require(errors)
+	require(errors,quietly=TRUE)
 	x <- parse_concise(c("12(3)","-12(3)","12.0(3)","-12.0(3)","12(3)e4","12(3)e-4"))
 	expect_equal(as.numeric(x),c(12,-12,12,-12,12e4,12e-4))
 	expect_equal(errors(x),c(3,3,0.3,0.3,3e4,3e-4))

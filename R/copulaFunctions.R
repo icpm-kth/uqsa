@@ -45,7 +45,7 @@ fitCopula <- function(X){
 		ls <- minx-eps
 		us <- maxx+eps
 		U[,i] <- X[I,i]
-		if (requireNamespace("ks")){
+		if (requireNamespace("ks",quietly=TRUE)){
 			Z[,i] = ks::kcde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
 			Y[,i] = ks::kde(X[,i], xmin=ls, xmax=us, eval.points = X[I,i])$estimate
 		} else {

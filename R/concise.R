@@ -33,7 +33,7 @@
 #' @examples
 #' x <- parse_concise(c("1.23(4)","0.51099895069(16)","1.25663706127(20)e-6","1.3±1.6","5;1"))
 #' print(as.data.frame(x))
-parse_concise <- function(v,use.errors=requireNamespace("errors"), na=c(NA,NA)){
+parse_concise <- function(v,use.errors=requireNamespace("errors",quietly=TRUE), na=c(NA,NA)){
 	d <- dim(v)
 	w <- .Call("concise",as.character(v))
 	w[,is.na(v) | grepl("NA",v,ignore.case=TRUE)] <- na
