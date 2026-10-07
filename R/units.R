@@ -354,52 +354,47 @@ unit_as_character <- function(unit){
 #'
 #' @export
 #' @param txtUnit a string with numeric values, including units,
-#'     e.g. "3 cm", can be a character vector
+#'     e.g. "3 cm"
 #' @param target string, target unit, e.g. "m", must be scalar
 #' @return a numeric value y: val*originalUnit = y*targetUnit, the
 #'     target unit is attached to the returned value, as a comment.
 #' @examples
-#'   ## needs `unit` utility (a system utility)
-#'   which_units <- Sys.which("units")
-#'   if (nzchar(which_units)){
-#'     ver <- sub(
-#'         '^[^0-9]*([0-9.]+)$',"\\1",
-#'         head(system2(which_units, args = "--version", stdout = TRUE, stderr = FALSE),1)
-#'     )
-#'     if (grepl("^ *[0-9.]+ *$",ver) && package_version(ver) > package_version("2.0")) {
+#'   ## needs `units` utility (a system utility)
+#'   if (nzchar(Sys.which("units"))){
 #'       y <- "21 cm" %as% "inches"
 #'       print(y)
 #'       y <- "12 nmol/L" %as% "mol/L"
 #'       print(y)
 #'       y <- "12 mol/m^3" %as% "mmol/L"
 #'       print(y)
-#'     }
 #'   }
 `%as%` <- function(txtUnit,target){
 	if (length(target)!=1) warning("There must be exactly one target unit.")
+	if (length(txtUnit)!=1) warning("There must be exactly one unit to convert.")
 	if (nzchar(Sys.which("units"))){
-		f <- as.numeric(
-			sapply(
-				txtUnit,
-				\(u) return(
-					system2(
-						command="units",
-						args=c(
-							paste0("--",c("strict","compact")),
-							"-1",
-							sprintf("'%s'",as.character(u)),
-							sprintf("'%s'",as.character(paste(target,collapse=""))	)
-						),
-						stdout=TRUE
-					)
-				)
-			)
+		f <- system2(
+			command="units",
+			args=c(
+				"-t",
+				sprintf("'%s'",as.character(txtUnit)),
+				sprintf("'%s'",as.character(paste(target,collapse="")))
+			),
+			stdout=TRUE
 		)
-		attr(f,"unit") <- target
-		names(f) <- txtUnit
+		if (f %has% 'status') {
+			status <- attr(f,'status')
+			msg <- paste(f,collapse=' ')
+			f <- NA
+			attr(f,"status") <- status
+			attr(f,"stderr") <- msg
+		} else {
+			attr(f,"unit") <- target
+			names(f) <- txtUnit
+		}
 	} else {
 		warning("The 'units' utility must be installed (system program, not R).")
 		f <- NA
+		attr(f,"status") <- "`units` missing"
 	}
 	return(f)
 }
