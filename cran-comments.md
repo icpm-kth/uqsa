@@ -1,13 +1,20 @@
-## R CMD check results
+## uqsa 0.8.2
 
-0 errors | 0 warnings | 1 note
+We made sure that all instances of `requireNamespace()` use the `quietly` option. Added a test for the correct availability of the `units` utility.
+
+On MacOS and FreeBSD, the `units` program fails to report failure
+correctly, so that incompatible units _appear_ to be converted
+correctly (according to the return code).
+
+We introduced additional checks to verify that the unit conversion
+worked even on MacOS. Windows and Linux are unaffected by this.
 
 ## uqsa 0.8.1
 
 In this release, we addressed all (as far as we know) problematic output as reported by
 Prof Brian Ripley <ripley@stats.ox.ac.uk> on Mon, 28th of September 2026.
 
-- fixed a compiler warning about `src/concise.c` and fixed a bug rekated to this
+- fixed a compiler warning about `src/concise.c` and fixed a bug related to this
 - removed warnings when processing user models in cases where a problem could occur (but we do not know for certain), this is an _info_ message now.
 
 -------
