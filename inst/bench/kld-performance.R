@@ -15,15 +15,16 @@ set.seed(42)
 
 f <- function(method="copula"){
 	N <- 1e3
+	n <- 6 # repetitions
 	E <- exact_normal_kld(muA,SigmaA,muB,SigmaB)
-	D <- replicate(6,
+	D <- replicate(n,
 		KLD(
 			rmvnorm(N,muA,SigmaA),
 			rmvnorm(N,muB,SigmaB),
 			method
 		)-E
 	)
-	ae <- set_errors(mean(abs(D)),sd(abs(D)))
+	ae <- set_errors(mean(abs(D)),sd(abs(D))/sqrt(n))
 	return(ae)
 }
 
@@ -32,7 +33,7 @@ B <- bench::mark(
 	mclust=f("mclust"),
 	ks=f("ks"),
 	mvtnorm=f("mvtnorm"),
-	max_iterations=6,
+	max_iterations=3,
 	min_time=Inf,
 	check=\(a,b){abs(a-b)<1}
 )

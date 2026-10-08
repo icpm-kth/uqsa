@@ -981,13 +981,6 @@ r_gsl_odeiv2_outer_fi(
 					REAL(ll)[k]=logLikelihood(VECTOR_ELT(experiments,i),REAL(func)+(k*nf*nt));
 				}
 			} else {
-				REprintf(
-					"[%s] simulation of provided parameters failed for experiment %i with error %i: %s\n",
-					__func__,
-					i,
-					status,
-					gsl_strerror(status)
-				);
 				switch(OUTPUTS){
 				case output_fisher_information:
 					memset(REAL(FI)+(k*np*np),0,sizeof(double)*np*np);

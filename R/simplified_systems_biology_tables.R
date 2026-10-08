@@ -46,7 +46,7 @@ model_from_tsv <- function(src="."){
 	stopifnot(is.character(src))
 	if (length(src)==1 && dir.exists(src)){
 		modelName <- basename(normalizePath(src))
-		src <- dir(src,pattern="tsv$")
+		src <- dir(src,pattern="tsv$",full.names=TRUE)
 	} else {
 		modelName <- basename(dirname(normalizePath(src[1])))
 	}
