@@ -493,7 +493,6 @@ simulate_timeseries(
 			Yout_row = gsl_matrix_row(Yout,j);
 			gsl_vector_memcpy(&(Yout_row.vector),y);
 		} else {
-			REprintf("[%s] %s\n",__func__,gsl_strerror(status));
 			break;
 		}
 	}
@@ -1031,9 +1030,9 @@ r_gsl_odeiv2_outer_fi(
 		case output_log_likelihood:
 			UNPROTECT(1);
 		}
-		if (status!=GSL_SUCCESS){
-			REprintf("[%s] parameter set lead to solver errors (%s) in experiment %i/%zd\n",__func__,gsl_strerror(status),i,N);
-		}
+		/* if (status!=GSL_SUCCESS){ */
+		/* 	REprintf("[%s] parameter set lead to solver errors (%s) in experiment %i/%zd\n",__func__,gsl_strerror(status),i,N); */
+		/* } */
 	} // experiments: 0 to N-1
 	sensApproxMemFree(saMem); /* frees the memory of temporary matrices of sensitivity approximation */
 	UNPROTECT(1); /* res_list */
