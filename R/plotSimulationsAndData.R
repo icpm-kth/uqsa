@@ -32,6 +32,8 @@ plot.experiments <- function(x, y, ...){
 		} else {
 			n <- c(dim(experiments[[i]]$data),1)
 		}
+		errors(ex[[i]]$data)[!is.finite(errors(ex[[i]]$data))] <- NA
+		ex[[i]]$data[!is.finite(errors(ex[[i]]$data))] <- NA
 		oNames <- rownames(experiments[[i]]$data)
 		for (j in seq(n[1])){
 			a <- ceiling(255*exp(-0.01*n[3]))

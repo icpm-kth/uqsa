@@ -695,11 +695,11 @@ int sensitivityApproximation(double t0, gsl_vector *t, gsl_vector *p, gsl_matrix
 		gsl_vector_add_constant(&(diag.vector),-1e-9); // all eigenvalues should be negative, if some are close to zero, we force them
 		// .. dirty hack
 		status=gsl_linalg_LU_decomp(LU, P, &sign);                                           /* make P*A = L*U */
-		if (status) Rprintf("[%s] %s\n",__func__,gsl_strerror(status));
+		if (status) Rprintf("[gsl_linalg_LU_decomp] %s\n",gsl_strerror(status));
 		for (k=0;k<l;k++){
 			col=gsl_matrix_column(B,k);
 			status=gsl_linalg_LU_svx(LU, P, &(col.vector));                                    /* B <- A\B*/
-			if (status) Rprintf("[%s] %s\n",__func__,gsl_strerror(status));
+			if (status) Rprintf("[gsl_linalg_LU_svx] %s\n",gsl_strerror(status));
 		}
 		gsl_matrix_scale(A,delta_t);                                                  /* A <- (df/dy)*(t-t0)*/
 		gsl_linalg_exponential_ss(A,E,GSL_PREC_SINGLE);                               /* E <- exp(A*(t-t0))*/
@@ -719,10 +719,10 @@ int sensitivityApproximation(double t0, gsl_vector *t, gsl_vector *p, gsl_matrix
 		ODE_funcJacp(tj,y,M.Sf->data,p->data);
 
 		status=gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, FA, M.Sy, 1.0, M.Sf);
-		if (status) Rprintf("[%s] %s\n",__func__,gsl_strerror(status));
+		if (status) Rprintf("[gsl_blas_dgemm] %s\n",gsl_strerror(status));
 		SF=gsl_matrix_view_array(dFdp+f*l*j,l,f);
 		status=gsl_matrix_transpose_memcpy(&(SF.matrix),M.Sf);
-		if (status) Rprintf("[%s] %s\n",__func__,gsl_strerror(status));
+		if (status) Rprintf("[gsl_matrix_transpose_memcpy] %s\n",gsl_strerror(status));
 	}
 	return GSL_SUCCESS;
 }
@@ -777,14 +777,20 @@ int gradLogLikelihood(double *gll, Rdata experiment, double *func, double *funcS
 	gsl_vector_view d,s,g,f;
 	gsl_matrix_view Sf;
 	//gsl_vector *v=gsl_vector_alloc(n);
-	int j;
+	int i,j;
 	int status = GSL_SUCCESS;
 	g = gsl_vector_view_array(gll,m);
 	gsl_vector_set_zero(&(g.vector));
-	//gsl_vector_set_zero(v);
 	for (j=0;j<nt;j++){
 		d = gsl_vector_view_array(REAL(data)+(j*n),n);
 		s = gsl_vector_view_array(REAL(stdv)+(j*n),n);
+		for (i=0;i<n;i++) {
+			// because we divide by s ...
+			if (isnan(gsl_vector_get(&d.vector,i))||isnan(gsl_vector_get(&s.vector,i))||fabs(gsl_vector_get(&s.vector,i))<1e-15){
+				gsl_vector_set(&d.vector,i,0.0);
+				gsl_vector_set(&s.vector,i,INFINITY);
+			}
+		}
 		f = gsl_vector_view_array(func+(j*n),n);
 		Sf = gsl_matrix_view_array(funcSens+(j*n*m),m,n);
 		gsl_vector_memcpy(v,&d.vector);
@@ -824,6 +830,13 @@ int FisherInformation(double *FI, Rdata experiment, double *funcSens, gsl_matrix
 	gsl_matrix_set_zero(&(fi.matrix));
 	for (j=0;j<nt;j++){
 		s = gsl_vector_view_array(REAL(stdv)+(j*n),n);
+		for (i=0;i<n;i++) {
+			// because we divide by s ...
+			if (isnan(gsl_vector_get(&s.vector,i)) || fabs(gsl_vector_get(&s.vector,i))<1e-15){
+				gsl_vector_set(&s.vector,i,INFINITY);
+			}
+		}
+
 		Sf = gsl_matrix_view_array(funcSens+(j*n*m),m,n);
 		if (gsl_matrix_memcpy(Sf_sd,&Sf.matrix) != GSL_SUCCESS){
 			REprintf("[%s] memcpy didn't work for Sf.matrix(%zu,%zu).",__func__,(&Sf.matrix)->size1,(&Sf.matrix)->size2);

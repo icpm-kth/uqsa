@@ -1,3 +1,4 @@
+
 #' This function reduces the sample to its effective size
 #'
 #' When plotting, we want to show only a few representative
