@@ -2,7 +2,7 @@
 % Please edit documentation in R/runModel.R
 \name{defaultDistance}
 \alias{defaultDistance}
-\title{default distance function for one experiment}
+\title{Default distance function for one experiment}
 \usage{
 defaultDistance(funcSim, dataVAL, dataERR = max(dataVAL))
 }

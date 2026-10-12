@@ -2,7 +2,7 @@
 % Please edit documentation in R/simplified_systems_biology_tables.R
 \name{base<-}
 \alias{base<-}
-\title{Convert to linear space}
+\title{Converts values to linear space}
 \usage{
 base(x, i = seq_along(x)) <- value
 }

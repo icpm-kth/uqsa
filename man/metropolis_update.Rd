@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{metropolis_update}
 \alias{metropolis_update}
-\title{Metropolis Update is an MCMC update function}
+\title{Performs an MCMC update using the Metropolis rule}
 \usage{
 metropolis_update(
   simulate,

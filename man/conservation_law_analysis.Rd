@@ -2,7 +2,7 @@
 % Please edit documentation in R/simplified_systems_biology_tables.R
 \name{conservation_law_analysis}
 \alias{conservation_law_analysis}
-\title{Reduce the size of the system}
+\title{Reduces the size of the system}
 \usage{
 conservation_law_analysis(
   nu,

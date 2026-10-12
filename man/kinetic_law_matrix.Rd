@@ -2,7 +2,7 @@
 % Please edit documentation in R/Gillespie.R
 \name{kinetic_law_matrix}
 \alias{kinetic_law_matrix}
-\title{Split Kinetic Law}
+\title{Represents the kinetic laws of the model as a two column matrix}
 \usage{
 kinetic_law_matrix(r)
 }

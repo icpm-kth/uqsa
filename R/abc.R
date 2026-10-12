@@ -1,4 +1,4 @@
-#' Performs and Approximate Bayesian Computation Sampling of Model Parameters
+#' Performs Approximate Bayesian Computation Sampling of Model Parameters via Markov Chain Monte Carlo
 #'
 #' ABC replaces the need for an exact likelihood function and uses a
 #' distance function instead: the distance between data and
@@ -227,7 +227,7 @@ abc_mcmc <- function(objectiveFunction, startPar, N, burnIn=ceiling(sqrt(N)), Si
 	)
 }
 
-#' Performs and Approximate Bayesian Computation as a Particle Filter
+#' Performs Approximate Bayesian Computation as a Particle Filter
 #'
 #' Given a set of simulation experiments (list), a model, parameter
 #' boundaries, this function will draw a sample of parameters from the

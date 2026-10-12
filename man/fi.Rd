@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{fi}
 \alias{fi}
-\title{Default gradient-Log-likelihood Function}
+\title{Default Fisher-information function}
 \usage{
 fi(parMapJac = function(x) diag(1, length(x), length(x)))
 }
@@ -14,7 +14,7 @@ of the parameter transformation.}
 a scalar value: log(likelihood(data|parMCMC))
 }
 \description{
-Extracts the \code{gradLogLikelihood} values from the simulations attribute
+Extracts the \code{FisherInformation} values from the simulations attribute
 of the parMCMC argument, requires:
 \itemize{
 \item parMCMC has simulations attribute

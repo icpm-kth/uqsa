@@ -56,7 +56,7 @@ dCopulaPrior <- function(Copula){
 	return(priorPDF)
 }
 
-#' rCopulaPrior returns a function that generates random values from the copula model
+#' Returns a function that generates random values from the copula model
 #'
 #' The returned function generates n random vectors, as rows of a matrix.
 #'
@@ -86,7 +86,7 @@ rCopulaPrior <- function(Copula){
   return(rprior)
 }
 
-#' dUniformPrior creates a uniform density function
+#' Creates a uniform density function
 #'
 #' The returned density function takes vectors of the same size as ll
 #' and ul. It returns the product of the component's one-dimensional
@@ -107,7 +107,7 @@ dUniformPrior <- function(ll,ul){
 	return(dprior)
 }
 
-#' rUniformPrior returns a random vector generator
+#' Returns a random vector generator
 #'
 #' The return value is a function that generates random vectors of the
 #' same size as ll and ul from a uniform distribution within the
@@ -135,7 +135,7 @@ rUniformPrior <- function(ll,ul){
 
 
 
-#' dNormalPrior creates the density function of a multivariate normal
+#' Creates the density function of a multivariate normal
 #' distribution with independent components
 #'
 #' The returned density function takes vectors of the same size as mean and sd.
@@ -157,7 +157,7 @@ dNormalPrior <- function(mean,sd){
 	return(dprior)
 }
 
-#' gNormalPrior creates the gradient function of a multivariate normal
+#' Creates the gradient function of a multivariate normal
 #' distribution with independent components, in log-space
 #'
 #' The returned density function takes vectors of the same size as mean and sd.
@@ -181,7 +181,7 @@ gNormalPrior <- function(mean,sd){
 }
 
 
-#' rNormalPrior returns a random vector generator
+#' Returns a random vector generator
 #'
 #' The return value is a function that generates random vectors of the
 #' same size as mean and sd from a multivariate normal distribution with 

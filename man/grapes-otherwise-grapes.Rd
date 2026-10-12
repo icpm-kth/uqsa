@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{\%otherwise\%}
 \alias{\%otherwise\%}
-\title{This function can be used to specify default values}
+\title{Specifies default values, as fallback}
 \usage{
 a \%otherwise\% b
 }

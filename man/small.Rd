@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{small}
 \alias{small}
-\title{This function reduces the sample to its effective size}
+\title{Reduces the sample to its effective size}
 \usage{
 small(
   S,

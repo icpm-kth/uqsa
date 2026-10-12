@@ -2,7 +2,7 @@
 % Please edit documentation in R/write.R
 \name{shlib}
 \alias{shlib}
-\title{Compile C code to shared library}
+\title{Compiles C code to shared library}
 \usage{
 shlib(file, verbose = getOption("uqsa.verbose", default = interactive()))
 }

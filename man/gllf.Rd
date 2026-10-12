@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{gllf}
 \alias{gllf}
-\title{Default gradient-log-likelihood Function}
+\title{Default gradient-log-likelihood function}
 \usage{
 gllf(parMapJac = function(x) diag(1, length(x), length(x)))
 }

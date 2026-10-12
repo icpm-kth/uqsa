@@ -2,7 +2,7 @@
 % Please edit documentation in R/print.R
 \name{print.cme}
 \alias{print.cme}
-\title{Print a Summary about the CME model}
+\title{Prints a Summary about the CME model}
 \usage{
 \method{print}{cme}(x, ...)
 }

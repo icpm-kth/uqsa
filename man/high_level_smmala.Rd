@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{high_level_smmala}
 \alias{high_level_smmala}
-\title{High Level SMMALA function}
+\title{Determines a likely SMMALA setup based on the information in the model}
 \usage{
 high_level_smmala(
   m,
@@ -13,7 +13,7 @@ high_level_smmala(
 )
 }
 \arguments{
-\item{m}{the model's TSV representation read via \code{model_from_tsv}}
+\item{m}{the model's TSV representation read via \link{model_from_tsv}}
 
 \item{o}{(optional) ode representation of \code{m}}
 
@@ -32,7 +32,7 @@ with a pre-initialized starting point.
 }
 \description{
 This function uses default assumption everywhere and returns a
-function that will sample from the given model. This function will
+function that will sample from the given model \code{m}. This function will
 generate code, compile the code, create an ODE solver for it, infer
 the sampling space from the scale of the parameters, create all
 necessary functions to move in parameter space (gradients of

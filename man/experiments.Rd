@@ -2,7 +2,7 @@
 % Please edit documentation in R/simplified_systems_biology_tables.R
 \name{experiments}
 \alias{experiments}
-\title{Extract Measured Data and Simulation Experiment Instructions}
+\title{Extracts measured data and simulation experiment instructions}
 \usage{
 experiments(m, o = NULL, verbose = getOption("uqsa.verbose", interactive()))
 }

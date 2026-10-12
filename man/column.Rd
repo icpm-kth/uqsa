@@ -2,7 +2,7 @@
 % Please edit documentation in R/simplified_systems_biology_tables.R
 \name{column}
 \alias{column}
-\title{Get j-th column with names}
+\title{Retrieves j-th column with names}
 \usage{
 column(m, j = 1)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/units.R
 \name{unit_as_character}
 \alias{unit_as_character}
-\title{converts a unit data.frame into a printable string}
+\title{Converts a unit data.frame into a printable string}
 \usage{
 unit_as_character(unit)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/simplified_systems_biology_tables.R
 \name{formulae}
 \alias{formulae}
-\title{Find a column that contains some kind of mathematic expression in a data.frame}
+\title{Finds a column that contains some kind of mathematic expression in a data.frame}
 \usage{
 formulae(df)
 }

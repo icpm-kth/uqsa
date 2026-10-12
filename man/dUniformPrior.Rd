@@ -2,7 +2,7 @@
 % Please edit documentation in R/prior.R
 \name{dUniformPrior}
 \alias{dUniformPrior}
-\title{dUniformPrior creates a uniform density function}
+\title{Creates a uniform density function}
 \usage{
 dUniformPrior(ll, ul)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/showPosterior.R
 \name{highCor}
 \alias{highCor}
-\title{highCor returns ordered index-pairs of high to low correlation}
+\title{Orders index-pairs from high to low correlation}
 \usage{
 highCor(C)
 }

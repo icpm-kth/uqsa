@@ -2,7 +2,7 @@
 % Please edit documentation in R/abc.R
 \name{ABCSMC}
 \alias{ABCSMC}
-\title{Performs and Approximate Bayesian Computation as a Particle Filter}
+\title{Performs Approximate Bayesian Computation as a Particle Filter}
 \usage{
 ABCSMC(
   objectiveFunction,

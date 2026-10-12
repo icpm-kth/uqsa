@@ -18,7 +18,7 @@
   return(out)
 }
 
-#' simulates an ode model with extra work
+#' Simulates an ode model
 #'
 #' This function calls a C function which solves an initial value
 #' problem, calculates the sensitivity of the solution, log-likelihood
@@ -134,7 +134,7 @@ gsl_odeiv2_fi <- function(odeModel,experiments,p,abs.tol=1e-6,rel.tol=1e-5,initi
 	return(y)
 }
 
-#' simulates a CRNN ode model with extra work
+#' Simulates a CRNN ode model
 #'
 #' This function calls a C function which solves an initial value
 #' problem, derived from a CRNN.
@@ -226,7 +226,7 @@ gsl_odeiv2_CRNN <- function(name,experiments,l,nu,m,abs.tol=1e-6,rel.tol=1e-5,in
 	return(y)
 }
 
-#' scrnn returns a closure around gsl_odeiv2_CRNN()
+#' Returns a closure around gsl_odeiv2_CRNN()
 #'
 #' the returned value is a function of a variable p that encodes the
 #' CRNN in some way. Three user supplied functions are used to extract
@@ -299,7 +299,7 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 	return(sim)
 }
 
-#' This creates a closure that simulates the model, similar to simulator.c
+#' Creates a closure that simulates the model, similar to simulator.c
 #'
 #' This is a shorter alternative to simulator.c (C backend). It also
 #' returns the log-likelihood, Fisher Information, and the gradient of
@@ -414,7 +414,7 @@ simfi <- function(experiments, odeModel, parMap=identity, method = 0, omit = 0, 
 	)
 }
 
-#' This creates a closure that simulates the model
+#' Creates a closure that simulates the model
 #'
 #' This function will use the [parallel::mclapply] to do the
 #' simulations simultaneously. Set `options(mc.cores=detectCores())`
@@ -585,7 +585,7 @@ simulator.c <- function(experiments, modelName, parMap=identity, noise = FALSE, 
 	return(sim)
 }
 
-#' Establish the Existence of a simulation file for a given model
+#' Establishes the existence of a simulation file for a given model
 #'
 #' If a shared library doens't exit, this function makes one using
 #' only `cc` and `pkg-config` via `system2` calls. This function
@@ -655,7 +655,7 @@ check_model <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.
 	return(modelName)
 }
 
-#' default distance function for one experiment
+#' Default distance function for one experiment
 #'
 #' if each experiment corresponds to one simulation and is fully
 #' quantified by itself, then calculating the overall distance
@@ -696,7 +696,7 @@ defaultDistance <- function(funcSim,dataVAL,dataERR=max(dataVAL)){
 	return(distance)
 }
 
-#' creates Objective functions from ingredients
+#' Creates objective functions from ingredients
 #'
 #' the returned objective function has only one argument: the ABC
 #' variables that shall be mapped to ODE-model parameters.
@@ -795,7 +795,7 @@ name_method <- function(key=seq(0,10)){
 	}
 }
 
-#' Find Integer
+#' Finds the method id given a named method
 #'
 #' Given a ODE solver name (from the GSL solver module odeiv2), return
 #' an integer offset `{0..10}`. This integer can be passed as the

@@ -1,4 +1,4 @@
-#' Construct Code
+#' Constructs Code
 #'
 #' Interpret the first argument and generate code in the specified
 #' language for the model type.
@@ -32,7 +32,7 @@ generate_code <- function(Model,language="C", LV=6.02214076e+8){
 	return(C)
 }
 
-#' Compile C code to shared library
+#' Compiles C code to shared library
 #'
 #' Calls `R CMD SHLIB` to create the model's shared library.
 #'
@@ -143,7 +143,7 @@ shlib <- function(file,verbose=getOption("uqsa.verbose",default=interactive())){
 }
 
 
-#' Write the C code to a file
+#' Writes C code to a file
 #'
 #' This function does not compile the code, it only writes it to a
 #' file in a temporary location (tempdir). By default, the name of the
@@ -192,7 +192,7 @@ write_c_code <- function(C, model.name=comment(C), file=NULL){
 	return(file)
 }
 
-#' Writes code to file and compiles
+#' Writes code to a file and compiles
 #'
 #' This function accepts an ode model, or cme model, generates code,
 #' compiles it to a shared library, and returns a changed object.

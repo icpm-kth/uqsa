@@ -2,7 +2,7 @@
 % Please edit documentation in R/runModel.R
 \name{makeObjective}
 \alias{makeObjective}
-\title{creates Objective functions from ingredients}
+\title{Creates objective functions from ingredients}
 \usage{
 makeObjective(experiments, simulate, distance = defaultDistance)
 }

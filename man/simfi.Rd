@@ -2,7 +2,7 @@
 % Please edit documentation in R/runModel.R
 \name{simfi}
 \alias{simfi}
-\title{This creates a closure that simulates the model, similar to simulator.c}
+\title{Creates a closure that simulates the model, similar to simulator.c}
 \usage{
 simfi(
   experiments,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/runModel.R
 \name{method}
 \alias{method}
-\title{Find Integer}
+\title{Finds the method id given a named method}
 \usage{
 method(name)
 }

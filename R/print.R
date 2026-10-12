@@ -42,7 +42,7 @@ print.unit_of_measurement <- function(x,...){
 	invisible(x)
 }
 
-#' prints the simulation experiments
+#' Prints the simulation experiments
 #'
 #' The experiments, if accidentally printed, are difficult to read.
 #' This function prevents these accidental prints. It summarizes the
@@ -99,7 +99,7 @@ print.experiments <- function(x,...){
 	cat("experiments: ",paste(names(ex),collapse=", "),"\n")
 }
 
-#' prints the simulation results
+#' Prints the simulation results
 #'
 #' The results, if accidentally printed, are difficult to read.  This
 #' function prevents these accidental prints. It summarizes the
@@ -148,7 +148,7 @@ print.simulation <- function(x,...){
 }
 
 
-#' Print a summary about the ode
+#' Prints a summary about the ode
 #'
 #' An ODE model was created by `as_ode` can be summarized here,
 #' including information about the compiled version of the model.
@@ -183,7 +183,7 @@ print.ode <- function(x,...){
 	)
 }
 
-#' print information about the mcmc variable
+#' Prints information about the mcmc variable
 #'
 #' Some mcmc variables have many attributes, which clutter the screen
 #' when accidentally printed. This function prevents these long
@@ -232,7 +232,7 @@ print.mcmcVariable <- function(x,...){
 	}
 }
 
-#' Print a Summary about the CME model
+#' Prints a Summary about the CME model
 #'
 #' This information printed on screen omits the details about the
 #' interactions, only the lengths of the vectors included in the data

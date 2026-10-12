@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{gatherReplicas}
 \alias{gatherReplicas}
-\title{Collect statistical Replicas}
+\title{Collects statistical Replicas}
 \usage{
 gatherReplicas(files)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/prior.R
 \name{dNormalPrior}
 \alias{dNormalPrior}
-\title{dNormalPrior creates the density function of a multivariate normal
+\title{Creates the density function of a multivariate normal
 distribution with independent components}
 \usage{
 dNormalPrior(mean, sd)

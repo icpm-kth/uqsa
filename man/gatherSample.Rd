@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{gatherSample}
 \alias{gatherSample}
-\title{gatherSample collects all sample points, from all files, with the
+\title{Collects all sample points, from all files, with the
 given temperature}
 \usage{
 gatherSample(files, beta = 1, size = NA)

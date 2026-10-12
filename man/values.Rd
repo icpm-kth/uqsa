@@ -2,7 +2,7 @@
 % Please edit documentation in R/simplified_systems_biology_tables.R
 \name{values}
 \alias{values}
-\title{Find values in a data.frame that is derived from a tsv file or similar}
+\title{Finds the values in a data.frame}
 \usage{
 values(df)
 }

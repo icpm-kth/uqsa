@@ -2,7 +2,7 @@
 % Please edit documentation in R/ode.R
 \name{so_path}
 \alias{so_path}
-\title{Retrieve information about compiled code}
+\title{Retrieves information about compiled code}
 \usage{
 so_path(o)
 }

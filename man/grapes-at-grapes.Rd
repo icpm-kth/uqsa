@@ -3,7 +3,7 @@
 \name{grapes-at-grapes}
 \alias{grapes-at-grapes}
 \alias{\%@\%}
-\title{Fetch an Attribute}
+\title{Fetches an Attribute, with checks}
 \usage{
 x \%@\% a
 }

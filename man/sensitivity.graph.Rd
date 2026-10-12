@@ -2,7 +2,7 @@
 % Please edit documentation in R/sensitivity.R
 \name{sensitivity.graph}
 \alias{sensitivity.graph}
-\title{plot the sensitivity matrix}
+\title{Plot the result of global sensitivity analysis}
 \usage{
 sensitivity.graph(
   u,

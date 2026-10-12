@@ -2,7 +2,7 @@
 % Please edit documentation in R/ode.R
 \name{yJacobian}
 \alias{yJacobian}
-\title{Jacobian of string-math}
+\title{Calculates the Jacobian of string-math}
 \usage{
 yJacobian(f, x)
 }

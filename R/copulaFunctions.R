@@ -1,8 +1,9 @@
-#' Makes a Probability Density Estimate (from a sample)
+#' Makes a Probability Density Estimator from a Sample
 #'
 #' Given a sample (from some probability distribution) this function
 #' makes a Copula fit to the source distribution using the VineCopula
-#' package.
+#' package. This Copula can be used with the prior distribution
+#' functions [rCopulaPrior] and [dCopulaPrior].
 #'
 #' @importFrom VineCopula RVineStructureSelect
 #' @export

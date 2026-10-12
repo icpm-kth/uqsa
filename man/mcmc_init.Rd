@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{mcmc_init}
 \alias{mcmc_init}
-\title{Initialize the Markov chain}
+\title{Initializes the Markov chain}
 \usage{
 mcmc_init(
   beta,

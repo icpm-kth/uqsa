@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{tune_step_size}
 \alias{tune_step_size}
-\title{Find a good Step-Size for a given MCMC Algorithm}
+\title{Finds a good step-size for a given MCMC algorithm}
 \usage{
 tune_step_size(
   MCMC,

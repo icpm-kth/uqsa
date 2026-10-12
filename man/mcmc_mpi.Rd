@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{mcmc_mpi}
 \alias{mcmc_mpi}
-\title{The MPI version of the mcmc function}
+\title{Creates the MPI version of an MCMC sampler}
 \usage{
 mcmc_mpi(
   update,

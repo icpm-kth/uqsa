@@ -1,4 +1,4 @@
-#' Read Concise Error Notation
+#' Reads Concise Error Notation
 #'
 #' Convert a vector of strings of the form: c("1.2(3)E-4","1.2(3)E-2")
 #' to a matrix with two rows:

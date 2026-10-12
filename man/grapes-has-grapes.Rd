@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{\%has\%}
 \alias{\%has\%}
-\title{checks whether a variable has the named attributes}
+\title{Checks whether a variable has the named attributes}
 \usage{
 var \%has\% attrNames
 }
@@ -15,7 +15,7 @@ var \%has\% attrNames
 TRUE if all attributes are present
 }
 \description{
-checks whether a variable has the named attributes
+Checks whether a variable has the named attributes
 }
 \examples{
 m <- model_from_tsv(uqsa_example("AKAP79"))

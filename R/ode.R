@@ -1,4 +1,4 @@
-#' Interpret a model as an ODE
+#' Interprets a model as an ODE
 #'
 #' This function accepts a list generated from a collection of TSV
 #' files (or a similar format) and interprets the contents as an
@@ -92,7 +92,7 @@ as_ode <- function(m,cla=requireNamespace("pracma",quietly=TRUE)){
 	return(ode)
 }
 
-#' Add information about compiled code
+#' Adds information about compiled code
 #'
 #' Adds the path of the shared library (.so file) to the ODE model.
 #'
@@ -114,7 +114,7 @@ as_ode <- function(m,cla=requireNamespace("pracma",quietly=TRUE)){
 	return(o)
 }
 
-#' Add information about the model's C code
+#' Adds information about the model's C code
 #'
 #' Adds the location of the model's C code (a file). The model is
 #' typically a list of named numeric and named character vectors,
@@ -137,7 +137,7 @@ as_ode <- function(m,cla=requireNamespace("pracma",quietly=TRUE)){
 	return(o)
 }
 
-#' Retrieve information about compiled code
+#' Retrieves information about compiled code
 #'
 #' Returns the path of the shared library (.so file).
 #' The model is typically a list of named arrays and matrices.
@@ -157,7 +157,7 @@ so_path <- function(o){
 	return(f)
 }
 
-#' Retrieve information about the model's C code
+#' Retrieves information about the model's C code
 #'
 #' Returns the location of the model's C code (a file).
 #'
@@ -171,7 +171,7 @@ c_path <- function(o){
 	return(f)
 }
 
-#' yacasMath converts math to Ryacas compatible math
+#' Converts math to Ryacas compatible math
 #'
 #' Given a string like `"exp(2*x)"` this function returns a string that
 #' yacas can process: `"Exp(2*x)"`
@@ -197,7 +197,7 @@ yacasMath <- function(v,reverse=FALSE) {
 	return(v)
 }
 
-#' Clear Yacas variables
+#' Clears Yacas variables
 #'
 #' The `reset` operation doesn't work in yacas, so this function wipes
 #' every variable one by one.
@@ -227,7 +227,7 @@ clear_yacas_environment <- function() {
 	return(user_vars)
 }
 
-#' Jacobian of string-math
+#' Calculates the Jacobian of string-math
 #'
 #' Given a named character array of math expressions and a vector of
 #' independent variables, this function calculates the Jacobian matrix
@@ -254,7 +254,7 @@ yJacobian <- function(f,x){
 	return(yacasMath(J,reverse=TRUE))
 }
 
-#' replace_powers does string manipulation
+#' Interprets caret notation of arithmetic powers for C
 #'
 #' This function takes a string argument with human readable math
 #' (e.g. R code), and replaces the power operator `z^n` with
@@ -292,7 +292,7 @@ ch <- \(d) {
 
 cOffset <- \(d) {seq(0,NROW(d)-1)}
 
-#' Write C Function
+#' Writes a C function
 #'
 #' This function writes a C function according to a typical template.
 #'
@@ -410,7 +410,7 @@ eventCode <-function(odeModel){
 	return(evsw)
 }
 
-#' Write C code
+#' Writes C code
 #'
 #' This function expects a list of character vectors, as returned by
 #' `as_ode()`. This list describes an ODE model (initial values,
@@ -573,7 +573,7 @@ writeRFunction <- function(prefix,fName,ret,value,arguments=c('t','state','param
 	)
 }
 
-#' Write R code
+#' Writes R code
 #'
 #' This function expects a list of character vectors, as returned by
 #' `as_ode`. This list describes an ODE model

@@ -1,4 +1,4 @@
-#' plot function for experiments
+#' Plot function for experiments
 #'
 #' This function uses plot.errors and the base plot functions like
 #' [matplot].
@@ -65,4 +65,3 @@ plot.experiments <- function(x, y, ...){
 	}
 	return(p)
 }
-

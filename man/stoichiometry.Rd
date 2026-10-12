@@ -2,7 +2,7 @@
 % Please edit documentation in R/Gillespie.R
 \name{stoichiometry}
 \alias{stoichiometry}
-\title{This function returns a list of named stoichiometric vectors}
+\title{Returns a list of named stoichiometric vectors}
 \usage{
 stoichiometry(formulaList)
 }

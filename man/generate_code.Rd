@@ -2,7 +2,7 @@
 % Please edit documentation in R/write.R
 \name{generate_code}
 \alias{generate_code}
-\title{Construct Code}
+\title{Constructs Code}
 \usage{
 generate_code(Model, language = "C", LV = 602214076)
 }

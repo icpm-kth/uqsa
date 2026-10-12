@@ -2,7 +2,7 @@
 % Please edit documentation in R/units.R
 \name{units_from_table}
 \alias{units_from_table}
-\title{Get units from a data.frame column}
+\title{Finds units column in a data.frame and returns the values}
 \usage{
 units_from_table(df, default = "1")
 }

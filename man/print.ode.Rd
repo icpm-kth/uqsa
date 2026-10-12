@@ -2,7 +2,7 @@
 % Please edit documentation in R/print.R
 \name{print.ode}
 \alias{print.ode}
-\title{Print a summary about the ode}
+\title{Prints a summary about the ode}
 \usage{
 \method{print}{ode}(x, ...)
 }

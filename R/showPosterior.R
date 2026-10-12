@@ -1,5 +1,5 @@
 
-#' highCor returns ordered index-pairs of high to low correlation
+#' Orders index-pairs from high to low correlation
 #'
 #' This function uses the correlation matrix C of a sample X, orders
 #' all values from the upper triangle of C (excluding the diagonal)
@@ -37,7 +37,7 @@ highCor <- function(C){
 	return(data.frame(i=i,j=j))
 }
 
-#' showPosterior makes a pairs plot for a sample
+#' Makes a pairs plot for a sample using density estimation methods
 #'
 #' This function will display the difference between the posterior and
 #' prior by plotting the posterior as shaded density plots and the
@@ -120,7 +120,7 @@ showPosterior <- function(posterior, prior,...){
 }
 
 
-#' plots a sample in parallel coordinates
+#' Plots a sample in parallel coordinates
 #'
 #' This function makes a plot that is quite similar to parallel
 #' coordinates. It includes information about the prior as error-bars,

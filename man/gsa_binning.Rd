@@ -2,7 +2,7 @@
 % Please edit documentation in R/sensitivity.R
 \name{gsa_binning}
 \alias{gsa_binning}
-\title{Global Sensitivity Analysis}
+\title{Performs global sensitivity analysis using the binning method}
 \usage{
 gsa_binning(parSample, outputSample, nBins = "Sturges")
 }

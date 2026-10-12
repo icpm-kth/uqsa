@@ -2,7 +2,7 @@
 % Please edit documentation in R/runModel.R
 \name{scrnn}
 \alias{scrnn}
-\title{scrnn returns a closure around gsl_odeiv2_CRNN()}
+\title{Returns a closure around gsl_odeiv2_CRNN()}
 \usage{
 scrnn(
   experiments,

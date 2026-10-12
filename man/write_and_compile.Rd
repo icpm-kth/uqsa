@@ -2,7 +2,7 @@
 % Please edit documentation in R/write.R
 \name{write_and_compile}
 \alias{write_and_compile}
-\title{Writes code to file and compiles}
+\title{Writes code to a file and compiles}
 \usage{
 write_and_compile(M)
 }

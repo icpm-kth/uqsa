@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{mcmc}
 \alias{mcmc}
-\title{Markov Chain Monte Carlo}
+\title{Creates a Markov Chain Monte Carlo sampler}
 \usage{
 mcmc(update, verbose = getOption("uqsa.verbose", interactive()))
 }

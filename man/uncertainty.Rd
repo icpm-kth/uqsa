@@ -2,7 +2,7 @@
 % Please edit documentation in R/simplified_systems_biology_tables.R
 \name{uncertainty}
 \alias{uncertainty}
-\title{Find the uncertainty of values in a data.frame that is derived from a tsv file or similar}
+\title{Finds the uncertainty of values in a data.frame}
 \usage{
 uncertainty(df)
 }

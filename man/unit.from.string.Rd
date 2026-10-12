@@ -2,7 +2,7 @@
 % Please edit documentation in R/units.R
 \name{unit.from.string}
 \alias{unit.from.string}
-\title{Unit Interpreter}
+\title{Interprets a unit string}
 \usage{
 unit.from.string(unit.str)
 }

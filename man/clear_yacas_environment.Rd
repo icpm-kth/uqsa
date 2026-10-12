@@ -2,7 +2,7 @@
 % Please edit documentation in R/ode.R
 \name{clear_yacas_environment}
 \alias{clear_yacas_environment}
-\title{Clear Yacas variables}
+\title{Clears Yacas variables}
 \usage{
 clear_yacas_environment()
 }

@@ -1,5 +1,4 @@
-
-#' This function reduces the sample to its effective size
+#' Reduces the sample to its effective size
 #'
 #' When plotting, we want to show only a few representative
 #' lines or points derived from a sample. This function will determine
@@ -34,7 +33,7 @@ small <- function(S,L=attr(S,"logLikelihood"),verbose=getOption("uqsa.verbose",d
 	return(S)
 }
 
-#' This function can be used to specify default values
+#' Specifies default values, as fallback
 #'
 #' When attributes are missing, the `base::attr()` function returns
 #' NULL. In those cases this function can be used to find an
@@ -61,7 +60,7 @@ small <- function(S,L=attr(S,"logLikelihood"),verbose=getOption("uqsa.verbose",d
 	}
 }
 
-#' Determine a prefix from a character vector str of similar contents
+#' Determines a prefix from a character vector str of similar contents
 #'
 #' The result is such that `all(startsWith(str,determinePrefix(str)))`
 #' is `TRUE`.
@@ -98,7 +97,7 @@ return(paste(
 	)
 }
 
-#' checks whether a variable has the named attributes
+#' Checks whether a variable has the named attributes
 #'
 #' @keywords internal
 #' @param var a variable to check for attributes
@@ -114,7 +113,7 @@ return(paste(
 	return(all(attrNames %in% names(attributes(var))))
 }
 
-#' Initialize the Markov chain
+#' Initializes the Markov chain
 #'
 #' This function must append all required attributes to the MCMC
 #' variable, for the Markov chain to update correctly.
@@ -171,13 +170,12 @@ mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rn
 #'
 #' This function is useful if `mpi.send()` and `mpi.recv()` are used.
 #'
-#' @keywords internal
 #' @param b1 the inverse temperature of chain 1
 #' @param ll1 the log-likelihood of chain 1
 #' @param b2 the inverse temperature of chain 2
 #' @param ll2 the log-likelihood of chain 2
 #' @return TRUE is the chains should swap their temperatures
-#' @export
+#' @noRd
 #' @examples
 #' b <- c(1.0,0.5)
 #' if (change_temperature(b[1],-850,b[2],-600)){ # with some randomness
@@ -191,7 +189,7 @@ change_temperature <- function(b1,ll1,b2,ll2){
 	return(r<a)
 }
 
-#' Markov Chain Monte Carlo
+#' Creates a Markov Chain Monte Carlo sampler
 #'
 #' This function creates an MCMC function for a given set of
 #' experiments. The Markov chains have no communication between them
@@ -255,7 +253,7 @@ mcmc <- function(update, verbose=getOption("uqsa.verbose", interactive())){
 	return(M)
 }
 
-#' Broadcast to other ranks and swap temperatures with any of them
+#' Broadcasts to other ranks and swap temperatures with any of them
 #'
 #' Using this function, at most two ranks will swap.
 #'
@@ -319,7 +317,7 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 }
 
 
-#' The MPI version of the mcmc function
+#' Creates the MPI version of an MCMC sampler
 #'
 #' this version of the MCMC function returns a Markov chain closure
 #' that assumes that it is being run in an MPI context: R was launched
@@ -408,7 +406,7 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 	return(M)
 }
 
-#' This function merges mpi-samples into one
+#' Merges mpi-samples into one
 #'
 #' When using MPI, we save the sample immediately into a file, each
 #' rank saves to its own file. This function is basically a wrapper
@@ -472,7 +470,7 @@ loadSample_mpi <- function(files,verbose=getOption("uqsa.verbose", interactive()
 	return(list(Sample=Sample,beta=betaTrace,acceptanceRate=acc,swapRate=sR,logLikelihood=ll,betaSelection=bSelection,uB=uB))
 }
 
-#' gatherSample collects all sample points, from all files, with the
+#' Collects all sample points, from all files, with the
 #' given temperature
 #'
 #' This function assumes that each supplied RDS file contains a matrix
@@ -548,7 +546,7 @@ gatherSample <- function(files,beta=1.0,size=NA){
 }
 
 
-#' Collect statistical Replicas
+#' Collects statistical Replicas
 #'
 #' `gatherReplicas` collects all sample-points, from all files, which
 #' are assumed to be exact replicas. Replicas have different random
@@ -691,7 +689,7 @@ rmvnorm <- function(mean,precision){
 	return(x)
 }
 
-#' SMMALA move
+#' Makes an SMMALA move
 #'
 #' The Simiplified Manifold Metropolis Adjusted Langevin Algorithm uses a
 #' move instriction that uses a Gaussian kernel that is shifted away
@@ -760,7 +758,7 @@ smmala_move_density <- function(beta,parProposal,parGiven,fisherInformationPrior
 	)
 }
 
-#' Metropolis Update is an MCMC update function
+#' Performs an MCMC update using the Metropolis rule
 #'
 #' During Markov chain Monte Carlo a given parameter needs to be
 #' updated, the model needs to be simulated at the updated point.
@@ -893,7 +891,7 @@ metropolis_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm
 	return(U)
 }
 
-#' Default Log-likelihood Function
+#' Default log-likelihood function
 #'
 #' Extracts the `logLikelihood` value from the simulations attribute
 #' of the parMCMC argument, requires:
@@ -927,7 +925,7 @@ ll <- function(parMCMC){
 	return(sum(sapply(y,\(sim) sim$logLikelihood)))
 }
 
-#' Default gradient-log-likelihood Function
+#' Default gradient-log-likelihood function
 #'
 #' Extracts the `FisherInformation` values from the simulations attribute
 #' of the parMCMC argument, requires:
@@ -984,9 +982,9 @@ gllf <- function(parMapJac=\(x) diag(1,length(x),length(x))) {
 	)
 }
 
-#' Default gradient-Log-likelihood Function
+#' Default Fisher-information function
 #'
-#' Extracts the `gradLogLikelihood` values from the simulations attribute
+#' Extracts the `FisherInformation` values from the simulations attribute
 #' of the parMCMC argument, requires:
 #' - parMCMC has simulations attribute
 #' - simulations list includes Fisher Information values (omit=0)
@@ -1048,7 +1046,7 @@ fi <- function(parMapJac=\(x) diag(1,length(x),length(x))){
 	)
 }
 
-#' SMMALA Update is an MCMC update function
+#' Performs an SMMALA update
 #'
 #' During Markov chain Monte Carlo a given parameter needs to be
 #' updated, the model needs to be simulated at the updated point.
@@ -1162,11 +1160,7 @@ smmala_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(x))
 }
 
 
-#' This function proposes an MCMC candidate variable, and either
-#' accepts or rejects the candidate
-#'
-#' This function selects the update method based on the provided
-#' ingredients.
+#' Selects the update method based on the provided ingredients
 #'
 #' This function receives a current MCMC variable, then calculates a
 #' possible successor and returns it in the case of acceptance. It
@@ -1229,12 +1223,12 @@ automatic_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm(
 	}
 }
 
-#' Default log-likelihood function
+#' Constructs a custom log-likelihood function
 #'
-#' This returns a function f(simulations), which maps simulation
-#' results to log(likelihood) values. The experiments are used
-#' implicitly; simulations is a list as returned by
-#' rgsl::r_gsl_odeiv2_outer().
+#' This returns a function `f(parMCMC)`, which maps simulation results
+#' to log-likelihood values. The experiments are used implicitly. Here
+#' `parMCMC` is the Markov chain variable (vector), with attached
+#' simulations (i.e. initialized).
 #'
 #' @param experiments will be compared tp the simulation results
 #' @param perExpLLF (optional) a user supplied function with the
@@ -1376,7 +1370,7 @@ log10ParMap <- function(parMCMC){
 	return(10^(parMCMC))
 }
 
-#' LOG10 parameter mapping, jacobian
+#' LOG10 parameter mapping, Jacobian
 #'
 #' This map is used by the simulator to transform sampling variables
 #' into ODE-model parameters. As we often calculate sensitivities, we
@@ -1413,7 +1407,7 @@ log2ParMap <- function(parMCMC){
 	return(2^(parMCMC))
 }
 
-#' LOG2 parameter mapping, jacobian
+#' LOG2 parameter mapping, Jacobian
 #'
 #' This map is used by the simulator to transform sampling variables
 #' into ODE-model parameters. As we often calculate sensitivities, we
@@ -1470,17 +1464,17 @@ logParMapJac <- function(parMCMC){
 	return(diag(exp(parMCMC)))
 }
 
-#' High Level SMMALA function
+#' Determines a likely SMMALA setup based on the information in the model
 #'
 #' This function uses default assumption everywhere and returns a
-#' function that will sample from the given model. This function will
+#' function that will sample from the given model `m`. This function will
 #' generate code, compile the code, create an ODE solver for it, infer
 #' the sampling space from the scale of the parameters, create all
 #' necessary functions to move in parameter space (gradients of
 #' likelihood and prior), as well as Fisher Information functions.
 #'
 #' @export
-#' @param m the model's TSV representation read via `model_from_tsv`
+#' @param m the model's TSV representation read via [model_from_tsv]
 #' @param o (optional) ode representation of `m`
 #' @param ex experiments of `m`, with simulation instructions for `o`.
 #' @param x initial point of the Markov chain, pre in initialized to
@@ -1563,7 +1557,7 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 	return(smmala)
 }
 
-#' High Level Metropolis function
+#' Determines a likely Metropolis setup based on the information in the model
 #'
 #' This function uses default assumption everywhere and returns a
 #' function that will sample from the given model. This function will
@@ -1650,7 +1644,7 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 	return(metropolis)
 }
 
-#' Find a good Step-Size for a given MCMC Algorithm
+#' Finds a good step-size for a given MCMC algorithm
 #'
 #' Given a closure `MCMC(p,N,eps)`, where `p` is the initial
 #' Markov-chain position, `N` a sample-size, and `eps` a step-size,

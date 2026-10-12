@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{ll}
 \alias{ll}
-\title{Default Log-likelihood Function}
+\title{Default log-likelihood function}
 \usage{
 ll(parMCMC)
 }

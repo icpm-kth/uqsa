@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{smmala_update}
 \alias{smmala_update}
-\title{SMMALA Update is an MCMC update function}
+\title{Performs an SMMALA update}
 \usage{
 smmala_update(
   simulate,

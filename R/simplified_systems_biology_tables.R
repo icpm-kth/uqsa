@@ -30,7 +30,7 @@ standard_error_matrix <- function(M){
 	return(E)
 }
 
-#' model_from_tsv loads the content from a series of tsv files
+#' Loads the content from a series of TSV files
 #'
 #' The argument can be either a series of tsv file-names, or a
 #' directory with tsv files. If it is a directory, all tsv files
@@ -57,7 +57,7 @@ model_from_tsv <- function(src="."){
 	return(m)
 }
 
-#' Get j-th column with names
+#' Retrieves j-th column with names
 #'
 #' When indexing a matrix or data.frame, rownames are lost. This function will
 #' return a column of a matrix, as a vector (dropping rank so to
@@ -76,7 +76,7 @@ column <- function(m,j=1){
 	return(v)
 }
 
-#' Find values in a data.frame that is derived from a tsv file or similar
+#' Finds the values in a data.frame
 #'
 #' given a data.frame, this function will look for a column that
 #' contains some kind of value and retrieve it. The returned numeric
@@ -106,7 +106,7 @@ values <- function(df){
 	return(v)
 }
 
-#' Find the uncertainty of values in a data.frame that is derived from a tsv file or similar
+#' Finds the uncertainty of values in a data.frame
 #'
 #' given a data.frame, this function will look for a column that
 #' contains some kind of standard error and retrieve it. The returned
@@ -173,7 +173,7 @@ uncertainty <- function(df){
 	return(NULL)
 }
 
-#' Find a column that contains some kind of mathematic expression in a data.frame
+#' Finds a column that contains some kind of mathematic expression in a data.frame
 #'
 #' Given a data.frame that should contain a column that assigns a math
 #' expression to a name (in row names), this function returns a named
@@ -240,7 +240,7 @@ formulae <- function(df){
 	return(x)
 }
 
-#' Convert to linear space
+#' Converts values to linear space
 #'
 #' A number given in some logarithmic space can be transformed back to linear space
 #' A call like `base(x) <- 10` means that x was provided in base-10 logarithm form.
@@ -275,7 +275,7 @@ formulae <- function(df){
 }
 
 
-#' The stoichiometric matrix of a reaction network
+#' Infers the stoichiometric matrix of a reaction network
 #'
 #' Given a model, described in tabular form (`m` is a list of
 #' data-frames). The stoichiometric matrix is the linear map between
@@ -316,7 +316,7 @@ stoichiometric_matrix <- function(m,compound.names=rownames(m$Compound)) {
 	return(nu)
 }
 
-#' Fetch an Attribute
+#' Fetches an Attribute, with checks
 #'
 #' This function differs from `rlang::%@%` in that it stops if the
 #' attribute doesn't exist.
@@ -445,7 +445,7 @@ linear_scale <- function(x,str_scale=attr(x,"scale")){
 	return(vf)
 }
 
-#' Reduce the size of the system
+#' Reduces the size of the system
 #'
 #' Given a stoichiometric matrix, this function performs model
 #' reduction via linear algebra operations, with [pracma::null].
@@ -570,7 +570,7 @@ update_values <- function(v,d,as_type="numeric"){
 	return(ret)
 }
 
-#' Fill a matrix with values from a smaller matrix
+#' Fills a matrix with values from a smaller matrix
 #'
 #' Given two matrices `M` and `m` we consider `M` to be the full size
 #' of the matrix and `m` the sparse representation. But, the sparsity only
@@ -706,7 +706,7 @@ dose_response_experiments <- function(m,E,iv,input,out=rownames(m$Output), verbo
 	return(TS)
 }
 
-#' Extract Measured Data and Simulation Experiment Instructions
+#' Extracts measured data and simulation experiment instructions
 #'
 #' This function accepts the model obtained via `model_fromt_tsv` or a
 #' similar function. It finds the data tables for this model (if any
@@ -797,7 +797,7 @@ experiments <- function(m,o=NULL,verbose=getOption("uqsa.verbose", interactive()
 	return(D)
 }
 
-#' Subset experiments with preserved class
+#' Subsets experiments with preserved class
 #'
 #' The normal list subset operation would drop the class from the
 #' experiment object (which is fine in theory). With this override,

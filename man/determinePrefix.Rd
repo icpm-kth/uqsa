@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{determinePrefix}
 \alias{determinePrefix}
-\title{Determine a prefix from a character vector str of similar contents}
+\title{Determines a prefix from a character vector str of similar contents}
 \usage{
 determinePrefix(str, split = "-", collapse = "-")
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/showPosterior.R
 \name{showPosterior}
 \alias{showPosterior}
-\title{showPosterior makes a pairs plot for a sample}
+\title{Makes a pairs plot for a sample using density estimation methods}
 \usage{
 showPosterior(posterior, prior, ...)
 }

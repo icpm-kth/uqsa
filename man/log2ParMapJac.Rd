@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{log2ParMapJac}
 \alias{log2ParMapJac}
-\title{LOG2 parameter mapping, jacobian}
+\title{LOG2 parameter mapping, Jacobian}
 \usage{
 log2ParMapJac(parMCMC)
 }

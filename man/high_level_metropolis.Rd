@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{high_level_metropolis}
 \alias{high_level_metropolis}
-\title{High Level Metropolis function}
+\title{Determines a likely Metropolis setup based on the information in the model}
 \usage{
 high_level_metropolis(
   m,

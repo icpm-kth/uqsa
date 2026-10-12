@@ -2,7 +2,7 @@
 % Please edit documentation in R/concise.R
 \name{parse_concise}
 \alias{parse_concise}
-\title{Read Concise Error Notation}
+\title{Reads Concise Error Notation}
 \usage{
 parse_concise(
   v,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotSimulationsAndData.R
 \name{plot.experiments}
 \alias{plot.experiments}
-\title{plot function for experiments}
+\title{Plot function for experiments}
 \usage{
 \method{plot}{experiments}(x, y, ...)
 }

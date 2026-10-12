@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{loadSample_mpi}
 \alias{loadSample_mpi}
-\title{This function merges mpi-samples into one}
+\title{Merges mpi-samples into one}
 \usage{
 loadSample_mpi(files, verbose = getOption("uqsa.verbose", interactive()))
 }

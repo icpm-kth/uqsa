@@ -2,7 +2,7 @@
 % Please edit documentation in R/ode.R
 \name{as_ode}
 \alias{as_ode}
-\title{Interpret a model as an ODE}
+\title{Interprets a model as an ODE}
 \usage{
 as_ode(m, cla = requireNamespace("pracma", quietly = TRUE))
 }

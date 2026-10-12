@@ -2,7 +2,7 @@
 % Please edit documentation in R/runModel.R
 \name{gsl_odeiv2_fi}
 \alias{gsl_odeiv2_fi}
-\title{simulates an ode model with extra work}
+\title{Simulates an ode model}
 \usage{
 gsl_odeiv2_fi(
   odeModel,

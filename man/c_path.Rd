@@ -2,7 +2,7 @@
 % Please edit documentation in R/ode.R
 \name{c_path}
 \alias{c_path}
-\title{Retrieve information about the model's C code}
+\title{Retrieves information about the model's C code}
 \usage{
 c_path(o)
 }

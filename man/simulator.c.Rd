@@ -2,7 +2,7 @@
 % Please edit documentation in R/runModel.R
 \name{simulator.c}
 \alias{simulator.c}
-\title{This creates a closure that simulates the model}
+\title{Creates a closure that simulates the model}
 \usage{
 simulator.c(
   experiments,

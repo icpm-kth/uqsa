@@ -2,7 +2,7 @@
 % Please edit documentation in R/Gillespie.R
 \name{as_cme}
 \alias{as_cme}
-\title{Interprets the provided model as a stochastic model}
+\title{Interprets the provided biological reaction model as stochastic}
 \usage{
 as_cme(m)
 }

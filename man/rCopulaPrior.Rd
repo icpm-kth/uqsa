@@ -2,7 +2,7 @@
 % Please edit documentation in R/prior.R
 \name{rCopulaPrior}
 \alias{rCopulaPrior}
-\title{rCopulaPrior returns a function that generates random values from the copula model}
+\title{Returns a function that generates random values from the copula model}
 \usage{
 rCopulaPrior(Copula)
 }

@@ -1,4 +1,4 @@
-#' Split Kinetic Law
+#' Represents the kinetic laws of the model as a two column matrix
 #'
 #' This function performs a very simplified split of a kinetic law
 #' into a forward part and a backward part, if it isn't pre-split in
@@ -90,7 +90,7 @@ is_empty <- function(b){
 	}
 }
 
-#' Find the stoichiometry for a given parameter name
+#' Finds the stoichiometry for a given parameter name
 #'
 #' Given a list representation of stoichiometry (list of named integer
 #' vectors), and a character vector of kinetic laws, this function
@@ -123,7 +123,7 @@ parameter_stoichiometry <- function(p,reactants,products,kinetic.law){
 	}
 }
 
-#' This function returns a list of named stoichiometric vectors
+#' Returns a list of named stoichiometric vectors
 #'
 #' Given an already split list of entries such as c("3 A","B"), this
 #' function returns a numeric vector c(3,1) with names c("A","B").
@@ -199,8 +199,7 @@ initialCount <- function(m){
 	return(IC)
 }
 
-#' This determines a printable reaction Fomrula from the Stoichiometry
-#' of the Reaction Netowrk.
+#' Determines a printable reaction Formula from the Stoichiometry
 #'
 #' Given a list of reactants and products, this function will print a
 #' reaction fomrula for each list item.
@@ -258,7 +257,7 @@ flux_matrix <- function(Reaction){
 	)
 }
 
-#' Interprets the provided model as a stochastic model
+#' Interprets the provided biological reaction model as stochastic
 #'
 #' The chemical master equation can be simulated as a Markov jump
 #' process (or continuous time Markov chain). One of the stochastic
@@ -365,7 +364,6 @@ reactionEffect <- function(sm){
 			)
 		}
 	)
-
 	m <- c(sm$reactionMultiplicityFWD,sm$reactionMultiplicityBWD)
 	return(
 		unlist(
@@ -436,7 +434,7 @@ spacing <- function(v,max.width=40){
 	else return(max.width - lengths(v))
 }
 
-#' Generate C Code to solve a model stochastically
+#' Generates C Code to solve a model stochastically
 #'
 #' This function tries to generate code for a stochastic solver, but
 #' assumming that the systems biology model is written in terms of
@@ -631,7 +629,7 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 }
 
 
-#' Simulate stochastic model
+#' Simulates a Stochastic Model
 #'
 #' Simulate a stochastic model generated with
 #' `uqsa::generateGillespieModel()`, using the solver in this package.

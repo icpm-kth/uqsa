@@ -2,7 +2,7 @@
 % Please edit documentation in R/sensitivity.R
 \name{saltelli_prior}
 \alias{saltelli_prior}
-\title{Sample for the Sobol-Homma-Saltelli Global Sensitivity Analysis}
+\title{Creates prior samples for the Sobol-Homma-Saltelli global sensitivity analysis}
 \usage{
 saltelli_prior(nSamples, rprior)
 }

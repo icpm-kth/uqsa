@@ -2,7 +2,7 @@
 % Please edit documentation in R/simplified_systems_biology_tables.R
 \name{[.experiments}
 \alias{[.experiments}
-\title{Subset experiments with preserved class}
+\title{Subsets experiments with preserved class}
 \usage{
 \method{[}{experiments}(x, i, ...)
 }

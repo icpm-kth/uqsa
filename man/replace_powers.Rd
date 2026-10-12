@@ -2,7 +2,7 @@
 % Please edit documentation in R/ode.R
 \name{replace_powers}
 \alias{replace_powers}
-\title{replace_powers does string manipulation}
+\title{Interprets caret notation of arithmetic powers for C}
 \usage{
 replace_powers(v)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/print.R
 \name{print.simulation}
 \alias{print.simulation}
-\title{prints the simulation results}
+\title{Prints the simulation results}
 \usage{
 \method{print}{simulation}(x, ...)
 }

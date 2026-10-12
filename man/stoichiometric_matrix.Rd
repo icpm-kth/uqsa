@@ -2,7 +2,7 @@
 % Please edit documentation in R/simplified_systems_biology_tables.R
 \name{stoichiometric_matrix}
 \alias{stoichiometric_matrix}
-\title{The stoichiometric matrix of a reaction network}
+\title{Infers the stoichiometric matrix of a reaction network}
 \usage{
 stoichiometric_matrix(m, compound.names = rownames(m$Compound))
 }

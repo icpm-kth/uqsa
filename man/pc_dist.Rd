@@ -2,7 +2,7 @@
 % Please edit documentation in R/showPosterior.R
 \name{pc_dist}
 \alias{pc_dist}
-\title{plots a sample in parallel coordinates}
+\title{Plots a sample in parallel coordinates}
 \usage{
 pc_dist(posterior, prior, color = rgb(0.5, 0.5, 0.5, 0.05), ...)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/makeCRNN.R
 \name{CRNN}
 \alias{CRNN}
-\title{CRNN creates C code for a chemical reaction neural network}
+\title{Creates C code for a chemical reaction neural network}
 \usage{
 CRNN(numReactions, initialValues, funcValues, model.name = "CRNN")
 }

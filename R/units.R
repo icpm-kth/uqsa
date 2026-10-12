@@ -1,4 +1,4 @@
-#' Get units from a data.frame column
+#' Finds units column in a data.frame and returns the values
 #'
 #' Given a data.frame this function retrieves the strings in the unit
 #' column named: unit, Unit, units (partial matching disregarding
@@ -27,7 +27,7 @@ units_from_table <- function(df,default="1"){
 	return(u)
 }
 
-#' This function calculates the conversion from moles to particle counts
+#' Calculates the conversion from moles to particle counts
 #'
 #' Given some molar quantity with a unit (character vector), this function
 #' calculates a conversion factor based on the SI prefixes used, as
@@ -58,7 +58,7 @@ moleCountConversion <- function(unit) {
 }
 
 
-#' find unit category
+#' Finds unit category
 #'
 #' This function reads a unit, without SI prefix, and returns a string
 #' from a smaller subset of unit kinds, similar to what is defined in
@@ -240,7 +240,7 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 	return(s[l])
 }
 
-#' Unit Interpreter
+#' Interprets a unit string
 #'
 #' This function will try its best to interpret strings like
 #' "liter/(nmol ms)"
@@ -296,11 +296,11 @@ unit.from.string <- function(unit.str){
 	return(unit)
 }
 
-#' converts a unit data.frame into a printable string
+#' Converts a unit data.frame into a printable string
 #'
 #' This is a crude function to make a printable representation of a
 #' unit data.frame, with very explicit parentheses and exponents.
-#' 
+#'
 #' @keywords internal
 #' @export
 #' @param unit a data.frame created by unit.from.string()
@@ -349,7 +349,7 @@ unit_as_character <- function(unit){
 	}
 }
 
-#' %as% is a binary operator on strings with units in them
+#' A binary operator on strings with units in them
 #'
 #' The function calls the units utility and converts the string on the
 #' left into the unit on the right, e.g.: "cm" %as% "inches", both

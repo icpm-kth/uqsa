@@ -2,7 +2,7 @@
 % Please edit documentation in R/copulaFunctions.R
 \name{fitCopula}
 \alias{fitCopula}
-\title{Makes a Probability Density Estimate (from a sample)}
+\title{Makes a Probability Density Estimator from a Sample}
 \usage{
 fitCopula(X)
 }
@@ -17,7 +17,8 @@ and Y are the probability density values of U.
 \description{
 Given a sample (from some probability distribution) this function
 makes a Copula fit to the source distribution using the VineCopula
-package.
+package. This Copula can be used with the prior distribution
+functions \link{rCopulaPrior} and \link{dCopulaPrior}.
 }
 \examples{
 rprior <- rNormalPrior(c(1,2,3),c(4,5,6))

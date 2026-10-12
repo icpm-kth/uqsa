@@ -2,7 +2,7 @@
 % Please edit documentation in R/uqsa_example_data.R
 \name{uqsa_example}
 \alias{uqsa_example}
-\title{Load an example model for this package}
+\title{Loads an example model for this package}
 \usage{
 uqsa_example(
   modelName = NULL,

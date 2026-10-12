@@ -2,7 +2,7 @@
 % Please edit documentation in R/prior.R
 \name{rUniformPrior}
 \alias{rUniformPrior}
-\title{rUniformPrior returns a random vector generator}
+\title{Returns a random vector generator}
 \usage{
 rUniformPrior(ll, ul)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/Gillespie.R
 \name{simstoch}
 \alias{simstoch}
-\title{Simulate stochastic model}
+\title{Simulates a Stochastic Model}
 \usage{
 simstoch(ex, cmeModel, parMap = identity, time.out = 1, nstep = 0)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/units.R
 \name{\%as\%}
 \alias{\%as\%}
-\title{\%as\% is a binary operator on strings with units in them}
+\title{A binary operator on strings with units in them}
 \usage{
 txtUnit \%as\% target
 }

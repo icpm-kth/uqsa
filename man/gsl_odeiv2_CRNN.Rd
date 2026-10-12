@@ -2,7 +2,7 @@
 % Please edit documentation in R/runModel.R
 \name{gsl_odeiv2_CRNN}
 \alias{gsl_odeiv2_CRNN}
-\title{simulates a CRNN ode model with extra work}
+\title{Simulates a CRNN ode model}
 \usage{
 gsl_odeiv2_CRNN(
   name,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcmc.R
 \name{logLikelihoodFunc}
 \alias{logLikelihoodFunc}
-\title{Default log-likelihood function}
+\title{Constructs a custom log-likelihood function}
 \usage{
 logLikelihoodFunc(experiments, perExpLLF = NULL, simpleUserLLF = NULL)
 }
@@ -39,10 +39,10 @@ initial Markov chain state.  The log-likelihood function can
 use these attributes.
 }
 \description{
-This returns a function f(simulations), which maps simulation
-results to log(likelihood) values. The experiments are used
-implicitly; simulations is a list as returned by
-rgsl::r_gsl_odeiv2_outer().
+This returns a function \code{f(parMCMC)}, which maps simulation results
+to log-likelihood values. The experiments are used implicitly. Here
+\code{parMCMC} is the Markov chain variable (vector), with attached
+simulations (i.e. initialized).
 }
 \examples{
 m <- model_from_tsv(uqsa_example("AKAR4"))

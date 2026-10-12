@@ -2,7 +2,7 @@
 % Please edit documentation in R/print.R
 \name{print.mcmcVariable}
 \alias{print.mcmcVariable}
-\title{print information about the mcmc variable}
+\title{Prints information about the mcmc variable}
 \usage{
 \method{print}{mcmcVariable}(x, ...)
 }

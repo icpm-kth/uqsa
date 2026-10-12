@@ -2,7 +2,7 @@
 % Please edit documentation in R/simplified_systems_biology_tables.R
 \name{model_from_tsv}
 \alias{model_from_tsv}
-\title{model_from_tsv loads the content from a series of tsv files}
+\title{Loads the content from a series of TSV files}
 \usage{
 model_from_tsv(src = ".")
 }

@@ -44,7 +44,7 @@ sum_of_bin_variance  <- function(hst,binMeans,totalMean){
 	return(colSums(hst$counts*(t(t(binMeans)-totalMean))^2,na.rm=TRUE)/sum(hst$counts))
 }
 
-#' Global Sensitivity Analysis
+#' Performs global sensitivity analysis using the binning method
 #'
 #' This function performs a binning based estimation of the global
 #' sensitivity of a model's output with respect to the model's
@@ -94,7 +94,7 @@ gsa_binning <- function(parSample,outputSample,nBins="Sturges"){
 	return(S)
 }
 
-#' plot the sensitivity matrix
+#' Plot the result of global sensitivity analysis
 #'
 #' Produce a cumulative shaded area plot for the sensitivity
 #' matrix. This function is intended for use with many observables,
@@ -159,7 +159,7 @@ sensitivity.graph <- function(u,S,color=hcl.colors(dim(S)[2]),line.color=hcl.col
 }
 
 
-#' Sample for the Sobol-Homma-Saltelli Global Sensitivity Analysis
+#' Creates prior samples for the Sobol-Homma-Saltelli global sensitivity analysis
 #'
 #' Each parameter vector has length nPars, The sample consists of two
 #' random (nSamples x nPars) matrices M1, M2 and a third (nSamples x

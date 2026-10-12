@@ -2,7 +2,7 @@
 % Please edit documentation in R/prior.R
 \name{gNormalPrior}
 \alias{gNormalPrior}
-\title{gNormalPrior creates the gradient function of a multivariate normal
+\title{Creates the gradient function of a multivariate normal
 distribution with independent components, in log-space}
 \usage{
 gNormalPrior(mean, sd)

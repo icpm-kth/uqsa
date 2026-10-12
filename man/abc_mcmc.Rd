@@ -2,7 +2,7 @@
 % Please edit documentation in R/abc.R
 \name{abc_mcmc}
 \alias{abc_mcmc}
-\title{Performs and Approximate Bayesian Computation Sampling of Model Parameters}
+\title{Performs Approximate Bayesian Computation Sampling of Model Parameters via Markov Chain Monte Carlo}
 \usage{
 abc_mcmc(
   objectiveFunction,

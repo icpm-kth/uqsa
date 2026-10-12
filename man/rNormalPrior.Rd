@@ -2,7 +2,7 @@
 % Please edit documentation in R/prior.R
 \name{rNormalPrior}
 \alias{rNormalPrior}
-\title{rNormalPrior returns a random vector generator}
+\title{Returns a random vector generator}
 \usage{
 rNormalPrior(mean, sd)
 }
