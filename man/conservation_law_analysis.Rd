@@ -32,3 +32,4 @@ CL <- conservation_law_analysis(nu,values(m$Compound))
 print(names(CL))
 print(CL[,c('value','Formula')])
 }
+\keyword{internal}

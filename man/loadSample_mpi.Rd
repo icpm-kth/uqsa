@@ -59,3 +59,4 @@ Z <- loadSample_mpi(f)
 print(dim(Z$Sample))
 print(names(Z))
 }
+\keyword{internal}

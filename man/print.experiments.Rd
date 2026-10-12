@@ -25,3 +25,4 @@ o <- as_ode(m)
 ex <- experiments(m,o)
 print(ex)
 }
+\keyword{internal}

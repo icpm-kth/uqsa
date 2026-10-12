@@ -30,3 +30,4 @@ side. The numbers are the stoichiometric constants, or coefficients.
 \examples{
 print(onlyCoefficients("12 A"))
 }
+\keyword{internal}

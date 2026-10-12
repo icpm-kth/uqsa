@@ -30,3 +30,4 @@ s <- simfi(ex,o)
 p <- mcmc_init(1.0,values(m$Parameter),s,dprior=dprior)
 print(p)
 }
+\keyword{internal}

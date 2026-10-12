@@ -25,3 +25,4 @@ x <- c("x","y")
 J <- yJacobian(f,x)
 print(J)
 }
+\keyword{internal}

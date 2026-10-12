@@ -92,3 +92,4 @@ of the GSL ODE solvers and can trigger precisely.
   y <- s(values(m$Parameter)) # simulates
   print(y)
 }
+\keyword{internal}

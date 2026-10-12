@@ -34,3 +34,4 @@ if (change_temperature(b[1],-850,b[2],-600)){ # with some randomness
   message(sprintf("no, temperature \%f, and \%f stay unchanged",b[1],b[2]))
 }
 }
+\keyword{internal}

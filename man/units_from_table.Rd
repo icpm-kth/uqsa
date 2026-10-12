@@ -27,3 +27,4 @@ the character vector of units.
 m <- model_from_tsv(uqsa_example("AKAP79"))
 u <- units_from_table(m$Compound)
 }
+\keyword{internal}

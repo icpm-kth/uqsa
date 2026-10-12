@@ -34,3 +34,4 @@ x <- 1
 attr(x,"unit") <- "m"
 print(x \%@\% "unit")
 }
+\keyword{internal}

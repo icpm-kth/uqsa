@@ -33,3 +33,4 @@ A <- matrix(
 )
 print(highCor(A))
 }
+\keyword{internal}

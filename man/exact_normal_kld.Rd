@@ -24,3 +24,4 @@ for the specific case of multivariate normal distributions
 \eqn{\\mathcal{N}_{A}}{N_A} and \eqn{\\mathcal{N}_{B}}{N_B}.  The two distributions are
 specified using \eqn{\\mu}{mu} and \eqn{\\Sigma}{Sigma} values (mean and covariance).
 }
+\keyword{internal}

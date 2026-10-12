@@ -60,3 +60,4 @@ print(N)
 print(dim(Z)) ## should be c(2*N,3)
 print(names(attributes(Z)))
 }
+\keyword{internal}

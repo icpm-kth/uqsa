@@ -70,3 +70,4 @@ print(N)
 print(dim(Z))
 print(names(attributes(Z)))
 }
+\keyword{internal}

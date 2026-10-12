@@ -23,3 +23,4 @@ x <- values(m$Compound)
 x \%has\% "unit"
 print(x \%@\% "unit")
 }
+\keyword{internal}

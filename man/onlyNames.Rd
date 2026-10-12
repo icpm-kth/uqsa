@@ -19,3 +19,4 @@ names of reactants, without the stoichiometry.
 \examples{
 print(onlyNames("12 A"))
 }
+\keyword{internal}

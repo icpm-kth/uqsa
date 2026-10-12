@@ -21,3 +21,4 @@ u <- unit.from.string("s^-1")
 str <- unit_as_character(u)
 print(str)
 }
+\keyword{internal}

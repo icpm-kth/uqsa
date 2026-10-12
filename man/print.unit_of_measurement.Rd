@@ -37,3 +37,4 @@ Units are produced by the function \link{unit.from.string}.
 \examples{
 lapply(lapply(c("km/h","s^-2","1/s"),unit.from.string),print)
 }
+\keyword{internal}

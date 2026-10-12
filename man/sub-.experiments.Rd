@@ -27,3 +27,4 @@ x <- experiments(m)
 class(x)
 class(x[seq(2)])
 }
+\keyword{internal}

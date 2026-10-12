@@ -29,3 +29,4 @@ p0 <- values(m$Parameter)
 y <- s(p0)
 plot(ex,y)
 }
+\keyword{internal}

@@ -35,3 +35,4 @@ files <- sprintf("smmala-sample-\%i-of-3.RDS",seq(1,3))
 pref <- determinePrefix(files)
 print(pref)
 }
+\keyword{internal}

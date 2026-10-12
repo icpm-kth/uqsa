@@ -29,3 +29,4 @@ s <- simfi(ex,o)
 y <- s(values(m$Parameter))
 print(y)
 }
+\keyword{internal}

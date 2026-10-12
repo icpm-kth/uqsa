@@ -54,3 +54,4 @@ trivialJac <- \(x) diag(1,length(x),length(x)) # the default
 gll <- gllf(parMapJac=trivialJac)
 print(gll(p))
 }
+\keyword{internal}

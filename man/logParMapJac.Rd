@@ -25,3 +25,4 @@ parMpJ <- logParMapJac
 print(parMap(p))
 print(parMpJ(p))
 }
+\keyword{internal}

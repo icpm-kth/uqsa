@@ -19,3 +19,4 @@ into ODE-model parameters. This function is an example for the
 one, must transform an MCMC variable (vector) to a parameter vector
 that the scientific model we simulate can work with.
 }
+\keyword{internal}

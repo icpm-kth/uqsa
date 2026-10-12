@@ -144,7 +144,7 @@ showPosterior <- function(posterior, prior,...){
 #' Z <- X %*% A
 #' colnames(Z) <- letters[seq(3)]
 #' pr <- data.frame(median=apply(X,2,median),stdv=apply(X,2,sd))
-#' pcDist(Z,pr)
+#' pc_dist(Z,pr)
 pc_dist <- function(posterior,prior,color=rgb(0.5,0.5,0.5,0.05),...){
 	if (is.matrix(prior)){
 		X <- prior

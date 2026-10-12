@@ -28,3 +28,4 @@ attr(x,"logLikelihood") <- -980
 ## elsewhere:
 logLF <- attr(x,"logLikelihood") \%otherwise\% -Inf
 }
+\keyword{internal}

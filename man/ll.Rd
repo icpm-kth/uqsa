@@ -40,3 +40,4 @@ p <- values(m$Parameter)
 attr(p,"simulations") <- s(p)
 print(ll(p))
 }
+\keyword{internal}

@@ -58,3 +58,4 @@ if (interactive()){
   print(FI(p))
 }
 }
+\keyword{internal}

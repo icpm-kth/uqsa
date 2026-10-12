@@ -30,3 +30,4 @@ the given base (value).
  base(x) <- 10
  print(x)
 }
+\keyword{internal}

@@ -43,3 +43,4 @@ simulation results).
 \examples{
 d <- defaultDistance(seq(7),seq(7)+rnorm(7,0,0.1),rep(0.1,7))
 }
+\keyword{internal}

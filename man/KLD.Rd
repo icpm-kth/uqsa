@@ -37,3 +37,4 @@ density estimation, using the multivariate
 Gaussian density \code{mvtnorm::dmvnorm}
 }
 }
+\keyword{internal}

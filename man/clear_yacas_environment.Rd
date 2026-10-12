@@ -20,3 +20,4 @@ print(Ryacas::yac_str("D(x) y^2"))
 clear_yacas_environment()
 print(Ryacas::yac_str("D(x) y^2"))
 }
+\keyword{internal}

@@ -21,3 +21,4 @@ p <- c(-1,0,1)
 parMap <- logParMap
 print(parMap(p))
 }
+\keyword{internal}

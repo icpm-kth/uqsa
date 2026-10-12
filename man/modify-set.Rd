@@ -39,3 +39,4 @@ e.g. \code{experiments[[1]]$func}.
  modify(x,seq(2),seq(2)) <- 10
  print(x)
 }
+\keyword{internal}
