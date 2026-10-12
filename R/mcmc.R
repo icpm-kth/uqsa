@@ -20,9 +20,9 @@
 #' @return a smaller version of S
 small <- function(S,L=attr(S,"logLikelihood"),verbose=getOption("uqsa.verbose",default=interactive())){
 	if (is.numeric(L)){
-		ACF <- acf(L,plot=verbose)$acf
+		ACF <- acf(L,plot=verbose,lag.max=NROW(S))$acf
 	} else {
-		ACF <- rowMeans(apply(S,2,\(s) acf(s,plot=FALSE)$acf))
+		ACF <- rowMeans(apply(S,2,\(s) acf(s,plot=FALSE,lag.max=NROW(S))$acf))
 	}
 	tau <- ceiling(sum(ACF[ACF>exp(-2)]))
 	if (verbose) cli::cli_alert_info("auto-correlation: {tau}")
