@@ -54,7 +54,7 @@ kinetic_law_matrix <- function(r){
 #' split at `<=>` and then later at `+`, we get the strings that must
 #' be parsed: "A" and "2 B" for the left side and "C" for the right
 #' side. The numbers are the stoichiometric constants, or coefficients.
-#'
+#' @keywords internal
 #' @param formulaList a list of character vectors, derived from the
 #'     left or right side of a reaction formula:
 #' @return a list of numeric coefficient vectors
@@ -70,7 +70,7 @@ onlyCoefficients <- function(formulaList){
 #'
 #' This is the companion function to onlyCoefficients. It returns the
 #' names of reactants, without the stoichiometry.
-#'
+#' @keywords internal
 #' @export
 #' @param formulaList a list of strings like: "2 B" or "45 X"
 #' @return a list of name vectors

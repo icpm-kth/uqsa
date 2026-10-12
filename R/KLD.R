@@ -38,7 +38,7 @@ density_fn <- function(ZETA, h=NULL) {
 #' - `"mvtnorm"`: density is estimated via manual kernel
 #'    density estimation, using the multivariate
 #'    Gaussian density `mvtnorm::dmvnorm`
-#'
+#' @keywords internal
 #' @param X sample from distribution P
 #' @param Y sample from distribution Q
 #' @param de density estimation mechanism (character scalar)
@@ -66,7 +66,7 @@ KLD <- function(X,Y,de=c("copula","ks","mvtnorm")){
 #' for the specific case of multivariate normal distributions
 #' \eqn{\\mathcal{N}_{A}}{N_A} and \eqn{\\mathcal{N}_{B}}{N_B}.  The two distributions are
 #' specified using \eqn{\\mu}{mu} and \eqn{\\Sigma}{Sigma} values (mean and covariance).
-#'
+#' @keywords internal
 #' @param muA mean of distribution A
 #' @param SigmaA Covariance of distribution A
 #' @param muB mean of distribution B

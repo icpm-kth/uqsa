@@ -2,7 +2,7 @@
 #'
 #' This function uses plot.errors and the base plot functions like
 #' [matplot].
-#'
+#' @keywords internal
 #' @param x experiment setup (a list)
 #' @param y simulation results (a list)
 #' @param ... forwarded to the more specific plot function [plot.errors]

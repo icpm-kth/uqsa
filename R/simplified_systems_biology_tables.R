@@ -1,6 +1,3 @@
-## Here we define functions that are meant to replace SBtab, by making
-## it as simple as possible, with no need to remember anything.
-
 #' Standard Error Matrix from an errors object
 #'
 #' If a matrix has an `errors` attribute, it is usually a vector.
@@ -222,6 +219,7 @@ formulae <- function(df){
 #' This function is quite useful if `x` has a very long name,
 #' e.g. `experiments[[1]]$func`.
 #'
+#' @keywords internal
 #' @param x a numeric value to be modified
 #' @param i row-indices of `x` to be modified
 #' @param j column-indices of `x` to be modified
@@ -251,6 +249,7 @@ formulae <- function(df){
 #' If `x` was provided in logarithmic space, then it is an exponent to
 #' the given base (value).
 #'
+#' @keywords internal
 #' @param x a numeric vector
 #' @param i a subset of values in x, defaults to all values of x
 #' @param value the base of the logarithm x was provided in
@@ -331,6 +330,7 @@ stoichiometric_matrix <- function(m,compound.names=rownames(m$Compound)) {
 #' thus their attributes do not matter. Non-NULL objects that should
 #' have an attribute, but don't are considered erroneous.
 #'
+#' @keywords internal
 #' @param x an R object (variable with attributes)
 #' @param a the name of an attribute
 #' @return the value of the attribute: `attr(x,a)`
@@ -401,6 +401,8 @@ linear_scale <- function(x,str_scale=attr(x,"scale")){
 #'
 #' The reactants, e.g.: `c(A=2,B=1)` name which state variables are affected by the flux (negatively, for reactants)
 #' The products, e.g.: `c(C=1)` name which state variables are affected positively by the flux.
+#'
+#' @keywords internal
 #' @param vf a named character vector of the right length (number of state variables)
 #' @param r a named vector of stoichiometric coefficients for the reactants
 #' @param p a named vector of stoichiometric coefficients for the products
@@ -447,6 +449,8 @@ linear_scale <- function(x,str_scale=attr(x,"scale")){
 #'
 #' Given a stoichiometric matrix, this function performs model
 #' reduction via linear algebra operations, with [pracma::null].
+#'
+#' @keywords internal
 #' @param nu stoichiometric matrix
 #' @param iv initial values
 #' @param verbose if `TRUE`, this function will print the conservation laws on screen
@@ -799,6 +803,7 @@ experiments <- function(m,o=NULL,verbose=getOption("uqsa.verbose", interactive()
 #' experiment object (which is fine in theory). With this override,
 #' the class is preserved.
 #'
+#' @keywords internal
 #' @param x an object with class "experiment"
 #' @param i an index-set
 #' @param ... passed on the list-\[ function

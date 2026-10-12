@@ -16,6 +16,7 @@
 #'
 #' Units are produced by the function [unit.from.string].
 #'
+#' @keywords internal
 #' @param x an object of type 'unit_of_measurement'
 #' @param ... required by the generic print function.
 #' @export
@@ -46,6 +47,8 @@ print.unit_of_measurement <- function(x,...){
 #' The experiments, if accidentally printed, are difficult to read.
 #' This function prevents these accidental prints. It summarizes the
 #' data and simulation experiments instead.
+#'
+#' @keywords internal
 #' @param x simulation experiments with data
 #' @param ... ignored.
 #' @export
@@ -101,6 +104,8 @@ print.experiments <- function(x,...){
 #' The results, if accidentally printed, are difficult to read.  This
 #' function prevents these accidental prints. It summarizes the
 #' results instead.
+#'
+#' @keywords internal
 #' @param x simulation results
 #' @param ... requirement of print generic, not used.
 #' @export
@@ -152,6 +157,7 @@ print.simulation <- function(x,...){
 #' matrices which together encode the mathematical structure of the
 #' ode.
 #'
+#' @keywords internal
 #' @param x the ode
 #' @param ... requirement of print generic, not used.
 #' @return NULL
@@ -183,6 +189,7 @@ print.ode <- function(x,...){
 #' when accidentally printed. This function prevents these long
 #' printouts.
 #'
+#' @keywords internal
 #' @param x the variable
 #' @param ... requirement of print generic, not used.
 #' @export
@@ -231,6 +238,7 @@ print.mcmcVariable <- function(x,...){
 #' interactions, only the lengths of the vectors included in the data
 #' structure `CME`.
 #'
+#' @keywords internal
 #' @param x a model created by [as_cme]
 #' @param ... requirement of print generic, not used.
 #' @return Nil

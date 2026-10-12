@@ -6,6 +6,7 @@
 #'
 #' The returned value uses the row names of the data.frame as names of
 #' the character vector of units.
+#' @keywords internal
 #' @param df a data.frame
 #' @param default default value if no unit column exists
 #' @return a character vector of units with names
@@ -151,6 +152,7 @@ unit.scale <- function(prefix){
 #' creates a name from a unit, converting math/symbols to text. The
 #' returned value should work as an SBML unit id.
 #'
+#' @keywords internal
 #' @export
 #' @param unit.str the original string representation of that unit
 #' @return unit.id string
@@ -191,6 +193,7 @@ unit.id <- function(unit.str){
 #'
 #' In this context, a simple unit is just a prefix, a unit kind, and an exponent, e.g. `cm^2`
 #' A not-simple unit is: `m/s`, `kg*m/s^2`, `kg*h`
+#' @noRd
 #' @param u a unit with no fractions or products
 #' @return a data.frame with the unit's properties
 simple.unit <- function(u=NULL){
@@ -256,6 +259,7 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 #' slash,parentheses do nothing everything after a slash is the
 #' denominator, so: l/mol s is the same as (l)/(mol s) Remark: not all
 #' units are understood.
+#'
 #' @param unit.str a string that contains a human readable unit
 #' @return data.frame with an interpretation of the unit (multiplier
 #'     is unused here, but may be used later to deal with units such
@@ -296,7 +300,8 @@ unit.from.string <- function(unit.str){
 #'
 #' This is a crude function to make a printable representation of a
 #' unit data.frame, with very explicit parentheses and exponents.
-#'
+#' 
+#' @keywords internal
 #' @export
 #' @param unit a data.frame created by unit.from.string()
 #' @return a string representation of that data.frame purely for printing
@@ -356,6 +361,7 @@ unit_as_character <- function(unit){
 #' failure, so this function does some additional checks to make sure
 #' that the conversion worked.
 #'
+#' @keywords internal
 #' @export
 #' @param txtUnit a string with numeric values, including units,
 #'     e.g. "3 cm"

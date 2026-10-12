@@ -9,6 +9,7 @@
 #' When truncated, the result can be used to plot only pairs with high
 #' correlation.
 #'
+#' @keywords internal
 #' @param C the correlation matrix of a sample, no attributes need be
 #'     present other than dim.
 #' @return data.frame with columns i and j, representing the rows and columns of high to low correlation pairs.
@@ -144,7 +145,7 @@ showPosterior <- function(posterior, prior,...){
 #' colnames(Z) <- letters[seq(3)]
 #' pr <- data.frame(median=apply(X,2,median),stdv=apply(X,2,sd))
 #' pcDist(Z,pr)
-pcDist <- function(posterior,prior,color=rgb(0.5,0.5,0.5,0.05),...){
+pc_dist <- function(posterior,prior,color=rgb(0.5,0.5,0.5,0.05),...){
 	if (is.matrix(prior)){
 		X <- prior
 		prior <- data.frame(median=apply(X,2,median),stdv=apply(X,2,sd))

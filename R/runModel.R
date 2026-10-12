@@ -4,6 +4,7 @@
 #' simulation object (which is fine in theory). With this override,
 #' the class is preserved.
 #'
+#' @keywords internal
 #' @param x an object with class "simulation"
 #' @param i an index-set
 #' @param ... passed on the list-\[ function
@@ -331,6 +332,7 @@ scrnn <- function(experiments, modelName, parMap=\(p) p$l, stoichiometry=\(p) p$
 #' The limit on the number of steps, on the other hand, is a feature
 #' of the GSL ODE solvers and can trigger precisely.
 #'
+#' @keywords internal
 #' @param experiments a list of experiments to simulate: initial
 #'     values, inputs, time vectors, initial times
 #' @param odeModel Either the ode object created by [as_ode] (with a
@@ -673,6 +675,8 @@ check_model <- function(modelName,modelFile=paste0("./",modelName,c('.so','_gvf.
 #' N the length of the model's output vectors and T the amount of
 #' measurement times (this is how the rgsl package returns the
 #' simulation results).
+#'
+#' @keywords internal
 #' @param funcSim a matrix, contains model solution (output values),
 #'     columns of output vectors
 #' @param dataVAL a matrix of experimental data, shaped like funcSim

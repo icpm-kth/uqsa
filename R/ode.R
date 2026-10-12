@@ -201,6 +201,8 @@ yacasMath <- function(v,reverse=FALSE) {
 #'
 #' The `reset` operation doesn't work in yacas, so this function wipes
 #' every variable one by one.
+#'
+#' @keywords internal
 #' @return list of variables cleared as a character array
 #' @export
 #' @examples
@@ -231,6 +233,7 @@ clear_yacas_environment <- function() {
 #' independent variables, this function calculates the Jacobian matrix
 #' of the math expressions with respect to the variables.
 #'
+#' @keywords internal
 #' @param f a character vector of length n
 #' @param x a character vector of length m
 #' @return a character matrix (n×m) with derivatives `df[i]/dx[j]`

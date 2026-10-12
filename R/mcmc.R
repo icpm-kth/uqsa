@@ -40,6 +40,8 @@ small <- function(S,L=attr(S,"logLikelihood"),verbose=getOption("uqsa.verbose",d
 #' NULL. In those cases this function can be used to find an
 #' alternative value in one expression:
 #' `attr(x,"dim") %otherwise% length(x)`
+#'
+#' @keywords internal
 #' @param a value to check for NULL
 #' @param b value to substitute
 #' @return a, or b if a is NULL
@@ -69,6 +71,7 @@ small <- function(S,L=attr(S,"logLikelihood"),verbose=getOption("uqsa.verbose",d
 #' with that set of words.
 #'
 #' The normal case is c("abc-1","abc-2b","abc-2a") maps to "abc"
+#' @keywords internal
 #' @export
 #' @param str a character vector
 #' @param split the token to use for strsplit instead of '-', this
@@ -97,6 +100,7 @@ return(paste(
 
 #' checks whether a variable has the named attributes
 #'
+#' @keywords internal
 #' @param var a variable to check for attributes
 #' @param attrNames named attributes
 #' @return TRUE if all attributes are present
@@ -167,6 +171,7 @@ mcmc_init <- function(beta,parMCMC,simulate,logLikelihood=ll,dprior=\(x) prod(rn
 #'
 #' This function is useful if `mpi.send()` and `mpi.recv()` are used.
 #'
+#' @keywords internal
 #' @param b1 the inverse temperature of chain 1
 #' @param ll1 the log-likelihood of chain 1
 #' @param b2 the inverse temperature of chain 2
@@ -422,6 +427,7 @@ mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_tem
 #' function will crash. Samples can be quite large, depending on the
 #' problem size.
 #'
+#' @keywords internal
 #' @export
 #' @param files the rds files where the individual samples are stored
 #' @param verbose logical, when FALSE nothing will be printed on screen
@@ -483,6 +489,7 @@ loadSample_mpi <- function(files,verbose=getOption("uqsa.verbose", interactive()
 #' sample-matrix itself (because the result of this function is conceptually
 #' similar to sampling on one node, with one temperature).
 #'
+#' @keywords internal
 #' @export
 #' @param files a list of file names
 #' @param beta the inverse temperature to extract sample for
@@ -573,7 +580,7 @@ gatherSample <- function(files,beta=1.0,size=NA){
 #'
 #' - logLikelihood: log(likelihood(X\[i,\])), one value per row of X
 #' - stepSize: the MCMC step size used in each given file#'
-#'
+#' @keywords internal
 #' @export
 #' @param files a list of file names
 #' @return a Sample matrix, with effective sample size
@@ -901,6 +908,7 @@ metropolis_update <- function(simulate, logLikelihood=ll, dprior=\(x) prod(dnorm
 #' This function does _almost no work_, it merely sums up the values
 #' calculated during simulation.
 #'
+#' @keywords internal
 #' @param parMCMC a numeric vector, with attributes for MCMC, specifically smmala
 #' @return a scalar value: log(likelihood(data|parMCMC))
 #' @export
@@ -943,7 +951,7 @@ ll <- function(parMCMC){
 #' The returned function takes one argument, the MCMC variable
 #' `parMCMC` (a numeric vector). This variable requires all smmala
 #' specific attributes.
-#'
+#' @keywords internal
 #' @param parMapJac a function; maps parameter vectors to the Jacobian
 #'     of the parameter transformation.
 #' @return a numeric vector: grad(log(likelihood(data|parMCMC)))
@@ -1001,6 +1009,7 @@ gllf <- function(parMapJac=\(x) diag(1,length(x),length(x))) {
 #' variable, `parMCMC` (a numeric vector), with all necessary
 #' attributes for smmala to work (e.g. through initialization).
 #'
+#' @keywords internal
 #' @param parMapJac a function; maps parameter vectors to the Jacobian
 #'     of the parameter transformation.
 #' @return a scalar value: log(likelihood(data|parMCMC))
@@ -1359,6 +1368,7 @@ logLikelihoodFunc <- function(experiments,perExpLLF=NULL,simpleUserLLF=NULL){
 #' one, must transform an MCMC variable (vector) to a parameter vector
 #' that the scientific model we simulate can work with.
 #'
+#' @keywords internal
 #' @param parMCMC the sampling variables (numeric vector)
 #' @return a numeric vector intended for the simulator.
 #' @export
@@ -1373,6 +1383,7 @@ log10ParMap <- function(parMCMC){
 #' also need the Jacobian of the map, due to the chain rule of
 #' differentiation.
 #'
+#' @keywords internal
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
 #' @return a numeric matrix (dim: `c(length(parMCMC),length(parMCMC))`)
@@ -1390,7 +1401,7 @@ log10ParMapJac <- function(parMCMC){
 #'
 #' This map is used by the simulator to transform sampling variables
 #' into ODE-model parameters.
-#'
+#' @keywords internal
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
 #' @return a numeric vector intended for the simulator.
@@ -1408,7 +1419,7 @@ log2ParMap <- function(parMCMC){
 #' into ODE-model parameters. As we often calculate sensitivities, we
 #' also need the jacobian of the map, due to the chain rule of
 #' differentiation.
-#'
+#' @keywords internal
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
 #' @return a numeric matrix (dim: `c(length(parMCMC),length(parMCMC))`).
@@ -1427,7 +1438,7 @@ log2ParMapJac <- function(parMCMC){
 #'
 #' This map is used by the simulator to transform sampling variables
 #' into ODE-model parameters.
-#'
+#' @keywords internal
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
 #' @return a numeric vector intended for the simulator.
@@ -1445,7 +1456,7 @@ logParMap <- function(parMCMC){
 #' into ODE-model parameters. As we often calculate sensitivities, we
 #' also need the jacobian of the map, due to the chain rule of
 #' differentiation.
-#'
+#' @keywords internal
 #' @param parMCMC the sampling variables (numeric vector)
 #' @export
 #' @return a numeric matrix (dim: `c(length(parMCMC),length(parMCMC))`).
