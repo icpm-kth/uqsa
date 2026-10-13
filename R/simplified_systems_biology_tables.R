@@ -736,7 +736,7 @@ dose_response_experiments <- function(m,E,iv,input,out=rownames(m$Output), verbo
 #'     or similar.
 #' @param o the ode derived from `m`, only necessary if the
 #'     experiments need to take conservation laws into account
-#' @param verbose logical, whether to preint diagnostic messages about the experiments
+#' @param verbose logical, whether to print diagnostic messages about the experiments
 #' @return a list of simulation instructions
 #' @export
 #' @examples

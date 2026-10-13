@@ -13,7 +13,7 @@ or similar.}
 \item{o}{the ode derived from \code{m}, only necessary if the
 experiments need to take conservation laws into account}
 
-\item{verbose}{logical, whether to preint diagnostic messages about the experiments}
+\item{verbose}{logical, whether to print diagnostic messages about the experiments}
 }
 \value{
 a list of simulation instructions
