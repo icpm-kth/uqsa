@@ -1,4 +1,4 @@
-# Extract Measured Data and Simulation Experiment Instructions
+# Extracts measured data and simulation experiment instructions
 
 This function accepts the model obtained via `model_fromt_tsv` or a
 similar function. It finds the data tables for this model (if any are
@@ -8,7 +8,7 @@ sets using the model.
 ## Usage
 
 ``` r
-experiments(m, o = NULL)
+experiments(m, o = NULL, verbose = getOption("uqsa.verbose", interactive()))
 ```
 
 ## Arguments
@@ -23,6 +23,10 @@ experiments(m, o = NULL)
 
   the ode derived from `m`, only necessary if the experiments need to
   take conservation laws into account
+
+- verbose:
+
+  logical, whether to print diagnostic messages about the experiments
 
 ## Value
 

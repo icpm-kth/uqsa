@@ -1,4 +1,4 @@
-# creates Objective functions from ingredients
+# Creates objective functions from ingredients
 
 the returned objective function has only one argument: the ABC variables
 that shall be mapped to ODE-model parameters.
@@ -50,8 +50,8 @@ measurement time-points (length of the time-series).
   s <- simulator.c(ex,o)
   objFunc <- makeObjective(ex,s)
   print(objFunc(values(m$Parameter)))
-#>             [,1]
-#> 400nM 0.16439580
-#> 100nM 0.13721115
-#> 25nM  0.09171478
+#>            [,1]
+#> 400nM 0.3287916
+#> 100nM 0.2744223
+#> 25nM  0.1834295
 ```

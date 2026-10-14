@@ -1,4 +1,4 @@
-# Metropolis Update is an MCMC update function
+# Performs an MCMC update using the Metropolis rule
 
 During Markov chain Monte Carlo a given parameter needs to be updated,
 the model needs to be simulated at the updated point.
@@ -88,7 +88,7 @@ print(p2)
 #> kf_C_AKAR4 kb_C_AKAR4 kcat_AKARp 
 #>      0.018      0.106     10.200 
 #>              simulations: 3 (length)
-#>            logLikelihood: -2491.25
+#>            logLikelihood: -2051.95
 #>                    prior: 0.819699
 print(sum(abs(p2-p)))
 #> [1] 0

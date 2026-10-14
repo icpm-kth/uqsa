@@ -1,4 +1,4 @@
-# Load an example model for this package
+# Loads an example model for this package
 
 This function finds the path to an example model, given by name. In the
 SBtab format, model and data travel together (in different tables, but

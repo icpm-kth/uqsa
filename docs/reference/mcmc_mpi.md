@@ -1,4 +1,4 @@
-# The MPI version of the mcmc function
+# Creates the MPI version of an MCMC sampler
 
 this version of the MCMC function returns a Markov chain closure that
 assumes that it is being run in an MPI context: R was launched in an MPI

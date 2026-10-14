@@ -1,4 +1,4 @@
-# replace_powers does string manipulation
+# Interprets caret notation of arithmetic powers for C
 
 This function takes a string argument with human readable math (e.g. R
 code), and replaces the power operator `z^n` with C-compatible function

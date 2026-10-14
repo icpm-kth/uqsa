@@ -1,4 +1,4 @@
-# Subset experiments with preserved class
+# Subsets experiments with preserved class
 
 The normal list subset operation would drop the class from the
 experiment object (which is fine in theory). With this override, the

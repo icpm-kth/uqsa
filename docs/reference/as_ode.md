@@ -1,4 +1,4 @@
-# Interpret a model as an ODE
+# Interprets a model as an ODE
 
 This function accepts a list generated from a collection of TSV files
 (or a similar format) and interprets the contents as an ordinary
@@ -7,7 +7,7 @@ differential equation (ODE).
 ## Usage
 
 ``` r
-as_ode(m, cla = requireNamespace("pracma"))
+as_ode(m, cla = requireNamespace("pracma", quietly = TRUE))
 ```
 
 ## Arguments

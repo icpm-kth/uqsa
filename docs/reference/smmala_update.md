@@ -1,4 +1,4 @@
-# SMMALA Update is an MCMC update function
+# Performs an SMMALA update
 
 During Markov chain Monte Carlo a given parameter needs to be updated,
 the model needs to be simulated at the updated point.
@@ -106,13 +106,13 @@ UP <- smmala_update(s,ll,dprior=dprior,gll,gprior=gprior,FI,solve(diag(m$Paramet
 p2 <- UP(p)
 ## updated value:
 print(p2)
-#> [1]  0.01800555  0.10420700 10.19601152
+#> [1]  0.01799935  0.10636254 10.21250516
 #>              simulations: 3 (length)
-#>            logLikelihood: -2491.23
-#>                    prior: 0.819684
+#>            logLikelihood: -2051.96
+#>                    prior: 0.819677
 #>        gradLogLikelihood: 3 (length)
-#>             gradLogPrior: 0.819684
+#>             gradLogPrior: 0.819677
 #>        fisherInformation: 9 (length)
 print(sum(abs(p2-p)))
-#> [1] 0.005787029
+#> [1] 0.01286835
 ```

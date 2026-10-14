@@ -1,4 +1,4 @@
-# Retrieve information about compiled code
+# Retrieves information about compiled code
 
 Returns the path of the shared library (.so file). The model is
 typically a list of named arrays and matrices.

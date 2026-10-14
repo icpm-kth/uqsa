@@ -13,7 +13,6 @@ installation:
 f <- uqsa_example("AKAR4")
 m <- model_from_tsv(f)
 o <- as_ode(m)
-#> Loading required namespace: pracma
 C <- generate_code(o)
 ```
 
@@ -42,8 +41,8 @@ c_path(o) <- write_c_code(C) # or cat
 so_path(o) <- shlib(o)       # R CMD SHLIB
 print(o)
 #>                 Model name : AKAR4
-#>                     C file : /tmp/RtmpFdwl1n/RtmpQwNLH9/adf9204aaf2748b8/AKAR4.c [2026-09-02 16:22:43.446501]
-#>             shared library : /tmp/RtmpFdwl1n/RtmpQwNLH9/adf9204aaf2748b8/AKAR4.so [2026-09-02 16:22:43.446501]
+#>                     C file : /tmp/RtmpBpsANA/adf9204aaf2748b8/AKAR4.c [2026-10-14 13:35:38.639364]
+#>             shared library : /tmp/RtmpBpsANA/adf9204aaf2748b8/AKAR4.so [2026-10-14 13:35:38.639364]
 #>  Number of state variables : 2
 #>       Number of parameters : 5
 #>          Number of outputs : 1
@@ -159,64 +158,36 @@ for (i in seq(length(chunks))){
         dprior <- dCopulaPrior(COP)
     }
 }
-```
-
-    #> Loading required namespace: ks
-
-``` r
 end_time = Sys.time()
 time_ = end_time - start_time
 print(time_)
 ```
 
-    #> Time difference of 9.493282 mins
+    #> Time difference of 2.891208 mins
 
 We plot the sample as a two dimensional histogram plot-matrix using the
 hexbin package:
 
 ``` r
 colnames(posterior$draws)<-names(parVal)
-#
-if (require(hadron)){
-    oldpar <- par(mfrow=c(3,1))
-    ac <- hadron::uwerr(data=posterior$scores,pl=TRUE)
-    tau <- ceiling(ac$tauint+ac$dtauint)
-    i <- seq(1,NROW(posterior$draws),by=tau)
-    par(oldpar)
-} else {
-    A <- acf(posterior$scores,lag.max=100)
-    l <- which(A$acf>0.2)
-    tau <- sum(A$acf[l])
-    i <- seq(1,NROW(posterior$draws),by=tau)
-}
-#> Loading required package: hadron
-#> 
-#> Attaching package: 'hadron'
-#> The following object is masked from 'package:base':
-#> 
-#>     kappa
-```
-
-![](AKAR4_files/figure-html/sample-density-1.png)
-
-``` r
+Z <- small(posterior$draws,posterior$scores)
 
 if (require(hexbin)){
-    hexbin::hexplom(posterior$draws[i,],xbins=10)
+    hexbin::hexplom(Z,xbins=10)
 } else {
-    pairs(posterior$draws[i,])
+    pairs(Z)
 }
 #> Loading required package: hexbin
 ```
 
-![](AKAR4_files/figure-html/sample-density-2.png)
+![](AKAR4_files/figure-html/sample-density-1.png)
 
 A sensitivity plot using the results of the above loop:
 
 ``` r
-y<-simulate(t(posterior$draws))
+y<-simulate(t(Z))
 dim(y[[1]]$func)
-#> [1]     1   225 10000
+#> [1]    1  225 5000
 ```
 
 where `y[[1]]` refers to the simulation corresponding to the first
@@ -226,7 +197,7 @@ in the table `SBtab$Output`.
 
 ``` r
 f<-aperm(y[[1]]$func[1,,]) # aperm makes the sample-index (3rd) the first index of f, default permutation
-S<-gsa_binning(posterior$draws,f)
+S<-gsa_binning(Z,f)
 S[1,]<-0 # the first index of S is time, and initially sensitivity is 0
 cuS<-t(apply(S,1,cumsum))
 plot.new()

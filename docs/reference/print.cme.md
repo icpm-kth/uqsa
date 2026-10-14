@@ -1,4 +1,4 @@
-# Print a Summary about the CME model
+# Prints a Summary about the CME model
 
 This information printed on screen omits the details about the
 interactions, only the lengths of the vectors included in the data

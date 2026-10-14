@@ -1,4 +1,4 @@
-# Find values in a data.frame that is derived from a tsv file or similar
+# Finds the values in a data.frame
 
 given a data.frame, this function will look for a column that contains
 some kind of value and retrieve it. The returned numeric vector will be

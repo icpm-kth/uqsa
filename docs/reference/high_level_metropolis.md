@@ -1,4 +1,4 @@
-# High Level Metropolis function
+# Determines a likely Metropolis setup based on the information in the model
 
 This function uses default assumption everywhere and returns a function
 that will sample from the given model. This function will generate code,
@@ -16,7 +16,7 @@ high_level_metropolis(
   ex = experiments(m, o),
   x = values(m$Parameter),
   beta = 1,
-  verbose = interactive()
+  verbose = getOption("uqsa.verbose", interactive())
 )
 ```
 

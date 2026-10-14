@@ -7,13 +7,17 @@ library(errors)
 
 ## Load Model and Data
 
-The first step is to locate and load the SBtab model files. In this
+The first step is to locate and load the model files (TSVs). In this
 example we use the SBtab files from an already existing example
 (“AKAR4”).
 
+The [Sample AKAR4 with Parallel
+Tempering](https://icpm-kth.github.io/uqsa/articles/sampleAKAR4mpi)
+shows how to use MPI and parallel tempering for this model.
+
 In the article [“Build and simulate your own
 Model](https://icpm-kth.github.io/uqsa/articles/user_model.md) you can
-read about how the set up your own SBtab model. You can list the files
+read about how the set up your own model files. You can list the files
 in a directory with the
 [`dir()`](https://rdrr.io/r/base/list.files.html) command.
 
@@ -21,7 +25,6 @@ in a directory with the
 f <- uqsa_example("AKAR4")
 m <- model_from_tsv(f)
 o <- write_and_compile(as_ode(m))
-#> Loading required namespace: pracma
 ```
 
 The chain of functions that we use to build the model tracks the name of
@@ -98,7 +101,7 @@ N <- 5e4
 X <- MH(x,N,eps=h)
 
 print(attr(X,"acceptanceRate"))
-#> [1] 0.63536
+#> [1] 0.45934
 ```
 
 ``` r

@@ -1,4 +1,4 @@
-# Get j-th column with names
+# Retrieves j-th column with names
 
 When indexing a matrix or data.frame, rownames are lost. This function
 will return a column of a matrix, as a vector (dropping rank so to

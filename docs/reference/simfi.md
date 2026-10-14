@@ -1,4 +1,4 @@
-# This creates a closure that simulates the model, similar to simulator.c
+# Creates a closure that simulates the model, similar to simulator.c
 
 This is a shorter alternative to simulator.c (C backend). It also
 returns the log-likelihood, Fisher Information, and the gradient of the
@@ -107,34 +107,34 @@ GSL ODE solvers and can trigger precisely.
 #> number of simulation experiments: 3
 #>                                      400nM 
 #> ------------------------------------------ 
-#>               cpuSeconds: 0.000435
+#>               cpuSeconds: 0.000317
 #>                 numSteps: 269
 #>                   status: 0
 #>                    state: 2, 225, 1 (dim)
 #>                     func: 1, 225, 1 (dim)
-#>            logLikelihood: -864.384
+#>            logLikelihood: -724.323
 #>        gradLogLikelihood: 5, 1 (dim)
 #>        FisherInformation: 5, 5, 1 (dim)
 #> 
 #>                                      100nM 
 #> ------------------------------------------ 
-#>               cpuSeconds: 0.000295
+#>               cpuSeconds: 0.00031
 #>                 numSteps: 248
 #>                   status: 0
 #>                    state: 2, 225, 1 (dim)
 #>                     func: 1, 225, 1 (dim)
-#>            logLikelihood: -840.397
+#>            logLikelihood: -692.889
 #>        gradLogLikelihood: 5, 1 (dim)
 #>        FisherInformation: 5, 5, 1 (dim)
 #> 
 #>                                       25nM 
 #> ------------------------------------------ 
-#>               cpuSeconds: 0.000355
+#>               cpuSeconds: 0.000311
 #>                 numSteps: 237
 #>                   status: 0
 #>                    state: 2, 225, 1 (dim)
 #>                     func: 1, 225, 1 (dim)
-#>            logLikelihood: -786.464
+#>            logLikelihood: -634.739
 #>        gradLogLikelihood: 5, 1 (dim)
 #>        FisherInformation: 5, 5, 1 (dim)
 #> 

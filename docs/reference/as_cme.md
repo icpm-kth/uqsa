@@ -1,4 +1,4 @@
-# Interprets the provided model as a stochastic model
+# Interprets the provided biological reaction model as stochastic
 
 The chemical master equation can be simulated as a Markov jump process
 (or continuous time Markov chain). One of the stochastic solver

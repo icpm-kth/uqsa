@@ -52,13 +52,12 @@ package, we use
 ``` r
 m <- model_from_tsv(uqsa_example("AKAP79"))
 o <- as_ode(m)
-#> Loading required namespace: pracma
 c_path(o) <- write_c_code(generate_code(o))
 so_path(o) <- shlib(o)
 print(o)
 #>                 Model name : AKAP79
-#>                     C file : /tmp/RtmpFdwl1n/RtmpesODen/RtmpppoVob/b316367e5f817645/AKAP79.c [2026-09-02 16:49:28.148553]
-#>             shared library : /tmp/RtmpFdwl1n/RtmpesODen/RtmpppoVob/b316367e5f817645/AKAP79.so [2026-09-02 16:49:28.148553]
+#>                     C file : /tmp/Rtmpo4qbYO/RtmpAqFaBN/b316367e5f817645/AKAP79.c [2026-10-14 13:55:19.708726]
+#>             shared library : /tmp/Rtmpo4qbYO/RtmpAqFaBN/b316367e5f817645/AKAP79.so [2026-10-14 13:55:19.708726]
 #>  Number of state variables : 11
 #>       Number of parameters : 33
 #>          Number of outputs : 1
@@ -96,9 +95,6 @@ how to simulate the scenario with the model.
 
 ``` r
 ex <- experiments(m,o)
-#> Warning in experiments(m, o): CONFLICT: This model seems to have event based
-#> transformations and conservation laws. These two concepts clash with one
-#> another if a compound is conserved, but also changed by scheduled events.
 ```
 
 We supply both `m` and `o` because `o` contains information about
@@ -114,7 +110,7 @@ should rely on the `func` component of the return value. This directly
 corresponds to the `m$Output` table: the observable/measurable
 quantities for this model. If you need to compare substance `A` to the
 data (in some way), then add an output function for it (e.g. `A_out` or
-`A_obs` with a vlaue of `A`). Then it doesn’t matter whether the
+`A_obs` with a value of `A`). Then it doesn’t matter whether the
 conservation law analysis removes `A` from the state space; it remains
 part of the `func` component.
 

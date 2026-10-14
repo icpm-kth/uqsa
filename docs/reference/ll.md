@@ -1,4 +1,4 @@
-# Default Log-likelihood Function
+# Default log-likelihood function
 
 Extracts the `logLikelihood` value from the simulations attribute of the
 parMCMC argument, requires:
@@ -45,5 +45,5 @@ s <- simulator.c(ex,o,omit=2) # not 3
 p <- values(m$Parameter)
 attr(p,"simulations") <- s(p)
 print(ll(p))
-#> [1] -2491.245
+#> [1] -2051.95
 ```

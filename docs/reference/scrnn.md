@@ -1,4 +1,4 @@
-# scrnn returns a closure around gsl_odeiv2_CRNN()
+# Returns a closure around gsl_odeiv2_CRNN()
 
 the returned value is a function of a variable p that encodes the CRNN
 in some way. Three user supplied functions are used to extract the three

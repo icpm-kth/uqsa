@@ -30,12 +30,12 @@ for Biochemical Reaction Network Models.”
 
 Jauhiainen Alexandra, Eriksson Olivia, Milinanni Federica, Kramer
 Andrei, (2026). uqsa: Uncertainty Quantification and Global Sensitivity
-Analysis. R package version 0.7.7, https://icpm-kth.github.io/uqsa/
+Analysis. R package version 0.8.3, https://icpm-kth.github.io/uqsa/
 
     @Manual{,
       title = {{uqsa}: Uncertainty Quantification and Global Sensitivity Analysis},
       author = {Alexandra Jauhiainen and Olivia Eriksson and Federica Milinanni and Andrei Kramer},
       year = {2026},
-      note = {R package version 0.7.7},
+      note = {R package version 0.8.3},
       url = {https://icpm-kth.github.io/uqsa/},
     }

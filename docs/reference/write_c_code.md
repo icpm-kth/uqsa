@@ -1,4 +1,4 @@
-# Write the C code to a file
+# Writes C code to a file
 
 This function does not compile the code, it only writes it to a file in
 a temporary location (tempdir). By default, the name of the file will
@@ -42,7 +42,7 @@ C <- generate_code(o)
 c_path(o) <- write_c_code(C)
 print(o)
 #>                 Model name : AKAR4
-#>                     C file : /tmp/RtmpFdwl1n/RtmpesODen/adf9204aaf2748b8/AKAR4.c [2026-09-02 16:22:40.861521]
+#>                     C file : /tmp/Rtmpo4qbYO/adf9204aaf2748b8/AKAR4.c [2026-10-14 13:35:35.954386]
 #> 
 #>  Number of state variables : 2
 #>       Number of parameters : 5

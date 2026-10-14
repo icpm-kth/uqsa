@@ -1,4 +1,4 @@
-# CRNN creates C code for a chemical reaction neural network
+# Creates C code for a chemical reaction neural network
 
 This function creates a very general ODE (c source code), that can be
 compiled and simulated using the UQSA package.

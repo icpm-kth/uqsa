@@ -16,12 +16,15 @@ library(errors)
 
 # Load Model and Data
 
-The first step is to locate and load the SBtab model files. In this
+The first step is to locate and load the model files (TSVs). In this
 example we use the SBtab files from an already existing example
 ("AKAR4").
 
+The [Sample AKAR4 with Parallel Tempering](sampleAKAR4mpi) shows how
+to use MPI and parallel tempering for this model.
+
 In the article ["Build and simulate your own Model](user_model.html)
-you can read about how the set up your own SBtab model. You can list
+you can read about how the set up your own model files. You can list
 the files in a directory with the `dir()` command.
 
 
@@ -128,3 +131,30 @@ Restore original options:
 ```{r}
 options(opt)
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

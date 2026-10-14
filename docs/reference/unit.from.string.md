@@ -1,4 +1,4 @@
-# Unit Interpreter
+# Interprets a unit string
 
 This function will try its best to interpret strings like "liter/(nmol
 ms)" rules: 1. only one slash is allowed 2. M can be mega or mol/l:
@@ -54,7 +54,7 @@ print(unit.from.string("micromolarity"))
 print(unit.from.string("µM"))
 #> «µM» has been interpreted as
 #> the product of: 
-#>                            µM
+#>                         microM
 #> ==============================
 #> (1 × mole × 10^(-6))^(1)
 #> (1 × litre × 10^(0))^(-1)

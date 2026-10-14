@@ -41,11 +41,11 @@ nSamples <- 40000
 ```
 
 nSamples corresponds to the number of samples in M1 (or M2) of the
-Soboll-Saltelli approach. The number of simulations of the
-Sobol-Saltelli approach consists of 2\*nSampels+nPars\*nSamples number
-of simulations. In the binning approach below we use 2\*nSamples number
-of samples (corresponding to 2\*nSamples number of simulations) to use
-the same number of independent sample points as Sobol-Saltelli.
+Sobol-Saltelli approach. The number of simulations of the Sobol-Saltelli
+approach consists of 2\*nSampels+nPars\*nSamples number of simulations.
+In the binning approach below we use 2\*nSamples number of samples
+(corresponding to 2\*nSamples number of simulations) to use the same
+number of independent sample points as Sobol-Saltelli.
 
 Construct parameter prior samples according to Sobol-Saltelli (M1, M2,
 N).
@@ -88,14 +88,14 @@ for (i in seq_along(p)){
 
 ## Calculate and plot sensitivity indexes
 
-Calculate sensitivity indexes for sobol-saltelli
+Calculate sensitivity indexes for Sobol-Saltelli
 
 ``` r
 SA <- gsa_saltelli(fM1,fM2,fN)
 ```
 
 Plot first (SI) and total-order (SIT) sensitivity indexes for
-sobol-saltelli
+Sobol-Saltelli
 
 ``` r
 cols=rainbow(3)
@@ -134,7 +134,7 @@ barplot(
 par(oldpar)
 ```
 
-Plot all states and timeponts for the experiment
+Plot all states and time points for the experiment
 
 ``` r
 allTimesSample=s(t(prior$M2))[[E]]$state

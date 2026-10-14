@@ -33,9 +33,7 @@ These examples can be run on a laptop.
 
 These examples are meant to be run on a compute cluster, but with some patience you can test them on a multicore workstation or laptop.
 
-- [Parallel chains with MPI](./mpi.html) Describes how to run the package in parallel.
 - [UQ and SA of AKAP79 deterministic model](./sampleAKAP79.html)
-- [UQ and SA of AKAP79 stochastic model](./error.html)
 
 The Documentation article [Parallel chains with MPI](./mpi.html)
 includes a script that needs to be present as a _file_ to be able to

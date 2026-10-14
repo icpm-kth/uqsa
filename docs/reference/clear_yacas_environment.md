@@ -1,4 +1,4 @@
-# Clear Yacas variables
+# Clears Yacas variables
 
 The `reset` operation doesn't work in yacas, so this function wipes
 every variable one by one.
@@ -23,8 +23,8 @@ Ryacas::yac_str("restart")
 print(Ryacas::yac_str("D(x) y^2"))
 #> [1] "8*x"
 clear_yacas_environment()
-#> [1] "y"                   "reactionUNDERSCORE1" "reactionUNDERSCORE2"
-#> [4] "AKAR4UNDERSCOREC"    "AKAR4"              
+#> [1] "y"                   "reactionUNDERSCORE2" "reactionUNDERSCORE1"
+#> [4] "AKAR4"               "AKAR4UNDERSCOREC"   
 print(Ryacas::yac_str("D(x) y^2"))
 #> [1] "0"
 ```

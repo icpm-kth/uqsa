@@ -1,4 +1,4 @@
-# Find Integer
+# Finds the method id given a named method
 
 Given a ODE solver name (from the GSL solver module odeiv2), return an
 integer offset `{0..10}`. This integer can be passed as the "method"

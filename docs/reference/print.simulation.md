@@ -1,4 +1,4 @@
-# prints the simulation results
+# Prints the simulation results
 
 The results, if accidentally printed, are difficult to read. This
 function prevents these accidental prints. It summarizes the results
@@ -39,34 +39,34 @@ print(y)
 #> number of simulation experiments: 3
 #>                                      400nM 
 #> ------------------------------------------ 
-#>               cpuSeconds: 0.000389
+#>               cpuSeconds: 0.000663
 #>                 numSteps: 269
 #>                   status: 0
 #>                    state: 2, 225, 1 (dim)
 #>                     func: 1, 225, 1 (dim)
-#>            logLikelihood: -864.384
+#>            logLikelihood: -724.323
 #>        gradLogLikelihood: 5, 1 (dim)
 #>        FisherInformation: 5, 5, 1 (dim)
 #> 
 #>                                      100nM 
 #> ------------------------------------------ 
-#>               cpuSeconds: 0.000337
+#>               cpuSeconds: 0.000595
 #>                 numSteps: 248
 #>                   status: 0
 #>                    state: 2, 225, 1 (dim)
 #>                     func: 1, 225, 1 (dim)
-#>            logLikelihood: -840.397
+#>            logLikelihood: -692.889
 #>        gradLogLikelihood: 5, 1 (dim)
 #>        FisherInformation: 5, 5, 1 (dim)
 #> 
 #>                                       25nM 
 #> ------------------------------------------ 
-#>               cpuSeconds: 0.000283
+#>               cpuSeconds: 0.000574
 #>                 numSteps: 237
 #>                   status: 0
 #>                    state: 2, 225, 1 (dim)
 #>                     func: 1, 225, 1 (dim)
-#>            logLikelihood: -786.464
+#>            logLikelihood: -634.739
 #>        gradLogLikelihood: 5, 1 (dim)
 #>        FisherInformation: 5, 5, 1 (dim)
 #> 

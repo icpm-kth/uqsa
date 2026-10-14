@@ -1,4 +1,4 @@
-# Get units from a data.frame column
+# Finds units column in a data.frame and returns the values
 
 Given a data.frame this function retrieves the strings in the unit
 column named: unit, Unit, units (partial matching disregarding

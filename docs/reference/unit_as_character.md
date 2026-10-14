@@ -1,4 +1,4 @@
-# converts a unit data.frame into a printable string
+# Converts a unit data.frame into a printable string
 
 This is a crude function to make a printable representation of a unit
 data.frame, with very explicit parentheses and exponents.

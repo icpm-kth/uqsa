@@ -1,4 +1,4 @@
-# The stoichiometric matrix of a reaction network
+# Infers the stoichiometric matrix of a reaction network
 
 Given a model, described in tabular form (`m` is a list of data-frames).
 The stoichiometric matrix is the linear map between the model's flux

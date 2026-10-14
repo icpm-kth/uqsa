@@ -1,4 +1,4 @@
-# Print a summary about the ode
+# Prints a summary about the ode
 
 An ODE model was created by `as_ode` can be summarized here, including
 information about the compiled version of the model.

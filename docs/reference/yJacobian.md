@@ -1,4 +1,4 @@
-# Jacobian of string-math
+# Calculates the Jacobian of string-math
 
 Given a named character array of math expressions and a vector of
 independent variables, this function calculates the Jacobian matrix of

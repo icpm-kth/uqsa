@@ -55,7 +55,6 @@ Create the ODE interpretation of `m`:
 
 ``` r
 o <- as_ode(m)
-#> Loading required namespace: pracma
 cat(generate_code(o),sep="\n",file="/dev/shm/AKAP79.c")
 c_path(o) <- "/dev/shm/AKAP79.c"
 so_path(o) <- shlib(o)
@@ -66,9 +65,6 @@ Load the simulation instructions for `o`:
 
 ``` r
 ex <- experiments(m,o)
-#> Warning in experiments(m, o): CONFLICT: This model seems to have event based
-#> transformations and conservation laws. These two concepts clash with one
-#> another if a compound is conserved, but also changed by scheduled events.
 saveRDS(ex,file="/dev/shm/AKAP79-ex.RDS")
 ```
 
@@ -117,7 +113,7 @@ before, to keep the execution time short.
 
 ``` bash
 N=4 #  default number of MPI workers
-[ -e '/proc/cpuinfo' ] && N=$((`grep -c processor /proc/cpuinfo`)) && nm="`grep -m1 'model name' /proc/cpuinfo`"
+[ -e '/proc/cpuinfo' ] && N=$((`grep -c processor /proc/cpuinfo`)) && nm="$(grep -m1 'model name' /proc/cpuinfo)"
 echo "We will use $N cores with $nm"
 
 start_time=$(date +%s)
@@ -127,8 +123,8 @@ date
 end_time=$(date +%s)
 echo "Time spent sampling: $((end_time - start_time)) seconds ($(( (end_time - start_time)/60 )) minutes)."
 #> We will use 16 cores with model name : Intel(R) Xeon(R) CPU E5-2630 v3 @ 2.40GHz
-#> Wed 02 Sep 2026 04:37:57 PM CEST
-#> Wed 02 Sep 2026 04:37:57 PM CEST
+#> Wed Oct 14 13:43:59 CEST 2026
+#> Wed Oct 14 13:43:59 CEST 2026
 #> Time spent sampling: 0 seconds (0 minutes).
 ```
 
@@ -137,45 +133,40 @@ slurm script or similar workload manager.
 
 ### Inspect the Results
 
-Here we check the integrated auto-correlation length (Markov chain time)
+We load the generated sample from a file. Sampling is done twice, we
+ignore the first run (`j==1`) and only view the second half, in the
+hopes that the Markov chain converged by then. Convergence tests for
+Markov chains do exist, but this sample is very short (for demo
+purposes) and it is unlikely that it actually converged. We load the
+file with `rank==0`, because it contains only points for \\\beta=0\\
+(the correct posterior distribution):
 
 ``` r
 TMPDIR <- ifelse(dir.exists('/dev/shm'),'/dev/shm',Sys.getenv(TMPDIR,unset='/tmp'))
 r <- 0 # rank we want to see
-j <- 2 # iteration we want to see
+j <- 2 # iteration of MCMC runs we want to see
 f <- file.path(TMPDIR,sprintf("AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.rds",j,r))
 Sample <- readRDS(file=f)
-l <- attr(Sample,"logLikelihood")
-plot(l,type="l",xlab="mcmc index",ylab="log-likelihood")
+plot(
+    attr(Sample,"logLikelihood"),
+    type="s",
+    xlab="mcmc index",
+    ylab="log-likelihood"
+)
 ```
 
 ![](sampleAKAP79_files/figure-html/uwerr-1.png)
 
-``` r
-
-if (require(hadron)){
-    res <- hadron::uwerr(data=l,pl=TRUE)
-    tau <- ceiling(res$tauint + res$dtauint) # upper bound
-} else {
-    A <- acf(l)
-    tau <- ceiling(sum(A$acf[A$acf>0.2]))
-}
-#> Loading required package: hadron
-#> 
-#> Attaching package: 'hadron'
-#> The following object is masked from 'package:base':
-#> 
-#>     kappa
-```
-
-![](sampleAKAP79_files/figure-html/uwerr-2.png)![](sampleAKAP79_files/figure-html/uwerr-3.png)![](sampleAKAP79_files/figure-html/uwerr-4.png)
+The other ranks were sampling relaxed problems, which due to chain
+swapping makes it easier to explore the posterior and not get stuck in
+local likelihood maxima.
 
 We reduce the sample for plotting purposes, by showing only every
 \\\tau\_{\text{int.}}\\-th point and create a *pairs* plot for the first
 6 parameters:
 
 ``` r
-X <- Sample[seq(1,NROW(Sample),by=tau),]
+X <- small(Sample) # uses auto-correlation
 colnames(X) <- rownames(m$Parameter)
 if (require(hexbin)){
     hexplom(X[,seq(6)],xbins=12)

@@ -20,13 +20,12 @@ Model”](https://icpm-kth.github.io/uqsa/articles/user_model.md).
 f <- uqsa_example("AKAP79",full.names=TRUE)
 m <- model_from_tsv(f)
 o <- as_ode(m)
-#> Loading required namespace: pracma
 c_path(o) <- write_c_code(generate_code(o))
 so_path(o) <- shlib(o)
 print(o)
 #>                 Model name : AKAP79
-#>                     C file : /tmp/RtmpFdwl1n/RtmpesODen/RtmpCArSGo/b316367e5f817645/AKAP79.c [2026-09-02 16:48:53.068838]
-#>             shared library : /tmp/RtmpFdwl1n/RtmpesODen/RtmpCArSGo/b316367e5f817645/AKAP79.so [2026-09-02 16:48:53.068838]
+#>                     C file : /tmp/Rtmpo4qbYO/Rtmp20Kkyc/b316367e5f817645/AKAP79.c [2026-10-14 13:54:44.406014]
+#>             shared library : /tmp/Rtmpo4qbYO/Rtmp20Kkyc/b316367e5f817645/AKAP79.so [2026-10-14 13:54:44.406014]
 #>  Number of state variables : 11
 #>       Number of parameters : 33
 #>          Number of outputs : 1

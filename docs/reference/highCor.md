@@ -1,4 +1,4 @@
-# highCor returns ordered index-pairs of high to low correlation
+# Orders index-pairs from high to low correlation
 
 This function uses the correlation matrix C of a sample X, orders all
 values from the upper triangle of C (excluding the diagonal) from

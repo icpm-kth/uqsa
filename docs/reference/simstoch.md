@@ -1,4 +1,4 @@
-# Simulate stochastic model
+# Simulates a Stochastic Model
 
 Simulate a stochastic model generated with
 `uqsa::generateGillespieModel()`, using the solver in this package.

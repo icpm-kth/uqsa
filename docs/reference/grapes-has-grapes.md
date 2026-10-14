@@ -1,6 +1,6 @@
-# checks whether a variable has the named attributes
+# Checks whether a variable has the named attributes
 
-checks whether a variable has the named attributes
+Checks whether a variable has the named attributes
 
 ## Usage
 

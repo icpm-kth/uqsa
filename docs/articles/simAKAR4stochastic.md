@@ -97,7 +97,7 @@ The second argument can also be the path to the shared library. If it is
 
 ``` r
 print(so_path(cmeModel))
-#> [1] "/tmp/RtmpFdwl1n/RtmpesODen/RtmpT31JpO/054fd9b45fdf5005/AKAR4.so"
+#> [1] "/tmp/Rtmpo4qbYO/RtmpuWDo2L/054fd9b45fdf5005/AKAR4.so"
 ```
 
 ### Plot the results
@@ -145,5 +145,5 @@ if (require(rbenchmark)){
 }
 #> Loading required package: rbenchmark
 #>   test replications elapsed relative user.self sys.self user.child sys.child
-#> 1 uqsa         5000   0.932        1     0.716    0.214          0         0
+#> 1 uqsa         5000   0.933        1      0.72    0.213          0         0
 ```

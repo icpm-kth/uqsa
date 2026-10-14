@@ -1,4 +1,4 @@
-# LOG10 parameter mapping, jacobian
+# LOG10 parameter mapping, Jacobian
 
 This map is used by the simulator to transform sampling variables into
 ODE-model parameters. As we often calculate sensitivities, we also need

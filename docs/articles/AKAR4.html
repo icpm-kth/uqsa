@@ -16,7 +16,8 @@
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Sample deterministic AKAR4 with ABC">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<meta property="og:title" content="Sample deterministic AKAR4 with ABC">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -26,7 +27,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -118,7 +119,6 @@ the tsv files after package installation:</p>
 <code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAR4"</span><span class="op">)</span></span>
 <span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/model_from_tsv.html">model_from_tsv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
 <span><span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_ode.html">as_ode</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required namespace: pracma</span></span>
 <span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_code.html">generate_code</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span></span></code></pre></div>
 <p>The model can exist in R and C form, in different files: -
 <code>/path/to/AKAR4.R</code> - <code>/path/to/AKAR4.c</code> or
@@ -143,8 +143,8 @@ library:</p>
 <span><span class="fu"><a href="../reference/so_path.html">so_path</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shlib.html">shlib</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span>       <span class="co"># R CMD SHLIB</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                 Model name : AKAR4</span></span>
-<span><span class="co">#&gt;                     C file : /tmp/RtmpFdwl1n/RtmpQwNLH9/adf9204aaf2748b8/AKAR4.c [2026-09-02 16:22:43.446501]</span></span>
-<span><span class="co">#&gt;             shared library : /tmp/RtmpFdwl1n/RtmpQwNLH9/adf9204aaf2748b8/AKAR4.so [2026-09-02 16:22:43.446501]</span></span>
+<span><span class="co">#&gt;                     C file : /tmp/RtmpBpsANA/adf9204aaf2748b8/AKAR4.c [2026-10-14 13:35:38.639364]</span></span>
+<span><span class="co">#&gt;             shared library : /tmp/RtmpBpsANA/adf9204aaf2748b8/AKAR4.so [2026-10-14 13:35:38.639364]</span></span>
 <span><span class="co">#&gt;  Number of state variables : 2</span></span>
 <span><span class="co">#&gt;       Number of parameters : 5</span></span>
 <span><span class="co">#&gt;          Number of outputs : 1</span></span>
@@ -243,59 +243,37 @@ iterating the Bayesian problem via density estimation (VineCopula):</p>
 <span>        <span class="va">rprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rCopulaPrior.html">rCopulaPrior</a></span><span class="op">(</span><span class="va">COP</span><span class="op">)</span></span>
 <span>        <span class="va">dprior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dCopulaPrior.html">dCopulaPrior</a></span><span class="op">(</span><span class="va">COP</span><span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; Loading required namespace: ks</span></span></code></pre>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">end_time</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">end_time</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">time_</span> <span class="op">=</span> <span class="va">end_time</span> <span class="op">-</span> <span class="va">start_time</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">time_</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; Time difference of 9.493282 mins</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Time difference of 2.891208 mins</span></span></code></pre>
 <p>We plot the sample as a two dimensional histogram plot-matrix using
 the hexbin package:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">posterior</span><span class="op">$</span><span class="va">draws</span><span class="op">)</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">parVal</span><span class="op">)</span></span>
-<span><span class="co">#</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/HISKP-LQCD/hadron" class="external-link">hadron</a></span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">oldpar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">ac</span> <span class="op">&lt;-</span> <span class="fu">hadron</span><span class="fu">::</span><span class="fu">uwerr</span><span class="op">(</span>data<span class="op">=</span><span class="va">posterior</span><span class="op">$</span><span class="va">scores</span>,pl<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span>    <span class="va">tau</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">ceiling</a></span><span class="op">(</span><span class="va">ac</span><span class="op">$</span><span class="va">tauint</span><span class="op">+</span><span class="va">ac</span><span class="op">$</span><span class="va">dtauint</span><span class="op">)</span></span>
-<span>    <span class="va">i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">NROW</a></span><span class="op">(</span><span class="va">posterior</span><span class="op">$</span><span class="va">draws</span><span class="op">)</span>,by<span class="op">=</span><span class="va">tau</span><span class="op">)</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">oldpar</span><span class="op">)</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>    <span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/acf.html" class="external-link">acf</a></span><span class="op">(</span><span class="va">posterior</span><span class="op">$</span><span class="va">scores</span>,lag.max<span class="op">=</span><span class="fl">100</span><span class="op">)</span></span>
-<span>    <span class="va">l</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">A</span><span class="op">$</span><span class="va">acf</span><span class="op">&gt;</span><span class="fl">0.2</span><span class="op">)</span></span>
-<span>    <span class="va">tau</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">A</span><span class="op">$</span><span class="va">acf</span><span class="op">[</span><span class="va">l</span><span class="op">]</span><span class="op">)</span></span>
-<span>    <span class="va">i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">NROW</a></span><span class="op">(</span><span class="va">posterior</span><span class="op">$</span><span class="va">draws</span><span class="op">)</span>,by<span class="op">=</span><span class="va">tau</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span><span class="co">#&gt; Loading required package: hadron</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Attaching package: 'hadron'</span></span>
-<span><span class="co">#&gt; The following object is masked from 'package:base':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     kappa</span></span></code></pre></div>
-<p><img src="AKAR4_files/figure-html/sample-density-1.png" class="r-plt" alt="" width="100%"></p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
+<span><span class="va">Z</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/small.html">small</a></span><span class="op">(</span><span class="va">posterior</span><span class="op">$</span><span class="va">draws</span>,<span class="va">posterior</span><span class="op">$</span><span class="va">scores</span><span class="op">)</span></span>
+<span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/edzer/hexbin" class="external-link">hexbin</a></span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="fu">hexbin</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/hexbin/man/hexplom.html" class="external-link">hexplom</a></span><span class="op">(</span><span class="va">posterior</span><span class="op">$</span><span class="va">draws</span><span class="op">[</span><span class="va">i</span>,<span class="op">]</span>,xbins<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span>
+<span>    <span class="fu">hexbin</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/hexbin/man/hexplom.html" class="external-link">hexplom</a></span><span class="op">(</span><span class="va">Z</span>,xbins<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html" class="external-link">pairs</a></span><span class="op">(</span><span class="va">posterior</span><span class="op">$</span><span class="va">draws</span><span class="op">[</span><span class="va">i</span>,<span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html" class="external-link">pairs</a></span><span class="op">(</span><span class="va">Z</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="co">#&gt; Loading required package: hexbin</span></span></code></pre></div>
-<p><img src="AKAR4_files/figure-html/sample-density-2.png" class="r-plt" alt="" width="100%"></p>
+<p><img src="AKAR4_files/figure-html/sample-density-1.png" class="r-plt" alt="" width="100%"></p>
 <p>A sensitivity plot using the results of the above loop:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">y</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">posterior</span><span class="op">$</span><span class="va">draws</span><span class="op">)</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">y</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">Z</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">y</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1]     1   225 10000</span></span></code></pre></div>
+<span><span class="co">#&gt; [1]    1  225 5000</span></span></code></pre></div>
 <p>where <code>y[[1]]</code> refers to the simulation corresponding to
 the first experiment: <code>experiment[[1]]</code>, and
 <code>$func</code> refers to the output function values (rather than
 state variables). The output functions are defined in the table
 <code>SBtab$Output</code>.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/aperm.html" class="external-link">aperm</a></span><span class="op">(</span><span class="va">y</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">func</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span><span class="op">)</span> <span class="co"># aperm makes the sample-index (3rd) the first index of f, default permutation</span></span>
-<span><span class="va">S</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/gsa_binning.html">gsa_binning</a></span><span class="op">(</span><span class="va">posterior</span><span class="op">$</span><span class="va">draws</span>,<span class="va">f</span><span class="op">)</span></span>
+<span><span class="va">S</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/gsa_binning.html">gsa_binning</a></span><span class="op">(</span><span class="va">Z</span>,<span class="va">f</span><span class="op">)</span></span>
 <span><span class="va">S</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span><span class="op">&lt;-</span><span class="fl">0</span> <span class="co"># the first index of S is time, and initially sensitivity is 0</span></span>
 <span><span class="va">cuS</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">S</span>,<span class="fl">1</span>,<span class="va">cumsum</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/frame.html" class="external-link">plot.new</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -307,7 +285,7 @@ state variables). The output functions are defined in the table
 <span><span class="op">}</span></span></code></pre></div>
 <p><img src="AKAR4_files/figure-html/plot-1.png" class="r-plt" alt="" width="100%"></p>
 <p>Restore original options:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">opt</span><span class="op">)</span></span></code></pre></div>
   </main>
 </div>

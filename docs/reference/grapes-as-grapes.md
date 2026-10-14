@@ -1,10 +1,10 @@
-# %as% is a binary operator on strings with units in them
+# A binary operator on strings with units in them
 
 The function calls the units utility and converts the string on the left
 into the unit on the right, e.g.: "cm" %as% "inches", both units can
 contain numbers. Any input that is accepted by the units utility is
 acceptable, as long as it makes sense with the command line arguments:
-`units --strict --compact -1 "$originalUnit" "$targetUnit"`
+`units -t "$originalUnit" "$targetUnit"`
 
 ## Usage
 
@@ -16,8 +16,7 @@ txtUnit %as% target
 
 - txtUnit:
 
-  a string with numeric values, including units, e.g. "3 cm", can be a
-  character vector
+  a string with numeric values, including units, e.g. "3 cm"
 
 - target:
 
@@ -28,20 +27,34 @@ txtUnit %as% target
 a numeric value y: val*originalUnit = y*targetUnit, the target unit is
 attached to the returned value, as a comment.
 
+## Details
+
+FreeBSD and MacOS have a buggy `units` command: it fails to signal
+failure, so this function does some additional checks to make sure that
+the conversion worked.
+
 ## Examples
 
 ``` r
-  ## needs `unit` utility (a system utility)
+  ## needs `units` utility (a system utility)
   if (nzchar(Sys.which("units"))){
-    y <- "21 cm" %as% "inches"
-    y <- "12 nmol/L" %as% "mol/L"
-    print(comment(y))
-    y <- "12 mol/m^3" %as% "mmol/L"
-  } else {
-    message("The system utility 'units' is not installed, skipping example.")
+      y <- "21 cm" %as% "inches"
+      print(y)
+      y <- "12 nmol/L" %as% "mol/L"
+      print(y)
+      y <- "12 mol/m^3" %as% "mmol/L"
+      print(y)
   }
-#> Warning: The 'units' utility must be installed (system program, not R).
-#> Warning: The 'units' utility must be installed (system program, not R).
-#> NULL
-#> Warning: The 'units' utility must be installed (system program, not R).
+#>       21 cm 
+#> "8.2677165" 
+#> attr(,"unit")
+#> [1] "inches"
+#> 12 nmol/L 
+#> "1.2e-08" 
+#> attr(,"unit")
+#> [1] "mol/L"
+#> 12 mol/m^3 
+#>       "12" 
+#> attr(,"unit")
+#> [1] "mmol/L"
 ```

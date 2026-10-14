@@ -1,4 +1,4 @@
-# prints the simulation experiments
+# Prints the simulation experiments
 
 The experiments, if accidentally printed, are difficult to read. This
 function prevents these accidental prints. It summarizes the data and

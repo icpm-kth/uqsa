@@ -1,4 +1,4 @@
-# default distance function for one experiment
+# Default distance function for one experiment
 
 if each experiment corresponds to one simulation and is fully quantified
 by itself, then calculating the overall distance between data and

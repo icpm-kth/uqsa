@@ -1,6 +1,6 @@
-# Default gradient-Log-likelihood Function
+# Default Fisher-information function
 
-Extracts the `gradLogLikelihood` values from the simulations attribute
+Extracts the `FisherInformation` values from the simulations attribute
 of the parMCMC argument, requires:
 
 - parMCMC has simulations attribute

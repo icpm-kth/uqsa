@@ -1,4 +1,4 @@
-# showPosterior makes a pairs plot for a sample
+# Makes a pairs plot for a sample using density estimation methods
 
 This function will display the difference between the posterior and
 prior by plotting the posterior as shaded density plots and the prior as

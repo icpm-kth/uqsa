@@ -1,4 +1,4 @@
-# Sample for the Sobol-Homma-Saltelli Global Sensitivity Analysis
+# Creates prior samples for the Sobol-Homma-Saltelli global sensitivity analysis
 
 Each parameter vector has length nPars, The sample consists of two
 random (nSamples x nPars) matrices M1, M2 and a third (nSamples x nPars

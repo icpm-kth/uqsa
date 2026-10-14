@@ -1,4 +1,4 @@
-# model_from_tsv loads the content from a series of tsv files
+# Loads the content from a series of TSV files
 
 The argument can be either a series of tsv file-names, or a directory
 with tsv files. If it is a directory, all tsv files therein will be

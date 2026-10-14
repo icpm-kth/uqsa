@@ -1,4 +1,4 @@
-# Read Concise Error Notation
+# Reads Concise Error Notation
 
 Convert a vector of strings of the form: c("1.2(3)E-4","1.2(3)E-2") to a
 matrix with two rows:
@@ -10,7 +10,11 @@ matrix with two rows:
 ## Usage
 
 ``` r
-parse_concise(v, use.errors = requireNamespace("errors"), na = c(NA, NA))
+parse_concise(
+  v,
+  use.errors = requireNamespace("errors", quietly = TRUE),
+  na = c(NA, NA)
+)
 ```
 
 ## Arguments

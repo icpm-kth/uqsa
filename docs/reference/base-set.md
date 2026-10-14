@@ -1,4 +1,4 @@
-# Convert to linear space
+# Converts values to linear space
 
 A number given in some logarithmic space can be transformed back to
 linear space A call like `base(x) <- 10` means that x was provided in

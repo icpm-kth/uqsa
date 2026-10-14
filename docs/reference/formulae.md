@@ -1,4 +1,4 @@
-# Find a column that contains some kind of mathematic expression in a data.frame
+# Finds a column that contains some kind of mathematic expression in a data.frame
 
 Given a data.frame that should contain a column that assigns a math
 expression to a name (in row names), this function returns a named

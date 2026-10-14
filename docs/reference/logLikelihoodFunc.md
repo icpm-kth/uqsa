@@ -1,8 +1,9 @@
-# Default log-likelihood function
+# Constructs a custom log-likelihood function
 
-This returns a function f(simulations), which maps simulation results to
-log(likelihood) values. The experiments are used implicitly; simulations
-is a list as returned by rgsl::r_gsl_odeiv2_outer().
+This returns a function `f(parMCMC)`, which maps simulation results to
+log-likelihood values. The experiments are used implicitly. Here
+`parMCMC` is the Markov chain variable (vector), with attached
+simulations (i.e. initialized).
 
 ## Usage
 
@@ -61,9 +62,8 @@ attr(p,"simulations") <- s(p)
 ## this function is fairly flexible and accepts some user settings
 llf <- logLikelihoodFunc(ex)
 print(llf(p))
-#> Warning: In 'Ops' : non-'errors' operand automatically coerced to an 'errors' object with no uncertainty
-#> [1] -2491.245
+#> [1] -2051.95
 ## this function uses the values from the solver:
 print(ll(p))
-#> [1] -2491.245
+#> [1] -2051.95
 ```

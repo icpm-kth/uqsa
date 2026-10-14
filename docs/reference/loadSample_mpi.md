@@ -1,4 +1,4 @@
-# This function merges mpi-samples into one
+# Merges mpi-samples into one
 
 When using MPI, we save the sample immediately into a file, each rank
 saves to its own file. This function is basically a wrapper with several
@@ -7,7 +7,7 @@ calls to `Reduce`, it collects all of these smaller samples into one.
 ## Usage
 
 ``` r
-loadSample_mpi(files, verbose = interactive())
+loadSample_mpi(files, verbose = getOption("uqsa.verbose", interactive()))
 ```
 
 ## Arguments

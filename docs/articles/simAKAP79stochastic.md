@@ -368,7 +368,6 @@ ggplot(D) +
 
 ``` r
 o <- as_ode(m)
-#> Loading required namespace: pracma
 c_path(o) <- write_c_code(generate_code(o))
 so_path(o) <- shlib(o)
 sode <- simfi(ex,o,parMap=log10ParMap)

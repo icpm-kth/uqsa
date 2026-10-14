@@ -1,4 +1,4 @@
-# Reduce the size of the system
+# Reduces the size of the system
 
 Given a stoichiometric matrix, this function performs model reduction
 via linear algebra operations, with
@@ -7,7 +7,11 @@ via linear algebra operations, with
 ## Usage
 
 ``` r
-conservation_law_analysis(nu, iv, verbose = FALSE)
+conservation_law_analysis(
+  nu,
+  iv,
+  verbose = getOption("uqsa.verbose", interactive())
+)
 ```
 
 ## Arguments

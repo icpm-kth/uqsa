@@ -134,7 +134,6 @@ reference:
   - gllf
   - fi
   - tune_step_size
-  - change_temperature
   - loadSample_mpi
   - gatherSample
   - gatherReplicas
@@ -142,7 +141,6 @@ reference:
   desc: "Approximate Bayesian Computation (ABC) MCMC for parameter inference"
   contents:
   - makeObjective
-  - preCalibration
   - abc_mcmc
   - ABCSMC
 - title: "Global Sensitivity Analysis"
@@ -175,10 +173,11 @@ reference:
   - print.mcmcVariable
   - print.simulation
   - print.unit_of_measurement
+  - small
 - title: "Plotting functions"
   contents:
   - highCor
-  - pcDist
+  - pc_dist
   - sensitivity.graph
   - showPosterior
 - title: "Internal functions"
@@ -191,7 +190,6 @@ reference:
   - formulae
   - linear_scale
   - parse_concise
-  - simple.unit
   - method
   - plot.experiments
   - "[.experiments"

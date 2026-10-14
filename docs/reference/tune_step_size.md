@@ -1,4 +1,4 @@
-# Find a good Step-Size for a given MCMC Algorithm
+# Finds a good step-size for a given MCMC algorithm
 
 Given a closure `MCMC(p,N,eps)`, where `p` is the initial Markov-chain
 position, `N` a sample-size, and `eps` a step-size, this function finds
@@ -14,7 +14,7 @@ tune_step_size(
   iter.max = 6,
   h = 1e-04,
   N = 100,
-  verbose = interactive()
+  verbose = getOption("uqsa.verbose", interactive())
 )
 ```
 

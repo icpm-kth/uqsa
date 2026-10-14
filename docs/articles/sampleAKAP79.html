@@ -16,7 +16,8 @@
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Uncertainty Quantification of AKAP79 (deterministic model)">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<meta property="og:title" content="Uncertainty Quantification of AKAP79 (deterministic model)">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -26,7 +27,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -154,7 +155,6 @@ model files:</p>
 <p>Create the ODE interpretation of <code>m</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_ode.html">as_ode</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required namespace: pracma</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="../reference/generate_code.html">generate_code</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span>,sep<span class="op">=</span><span class="st">"\n"</span>,file<span class="op">=</span><span class="st">"/dev/shm/AKAP79.c"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/c_path.html">c_path</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"/dev/shm/AKAP79.c"</span></span>
 <span><span class="fu"><a href="../reference/so_path.html">so_path</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shlib.html">shlib</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span></span>
@@ -162,9 +162,6 @@ model files:</p>
 <p>Load the simulation instructions for <code>o</code>:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/experiments.html">experiments</a></span><span class="op">(</span><span class="va">m</span>,<span class="va">o</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in experiments(m, o): CONFLICT: This model seems to have event based</span></span>
-<span><span class="co">#&gt; transformations and conservation laws. These two concepts clash with one</span></span>
-<span><span class="co">#&gt; another if a compound is conserved, but also changed by scheduled events.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">ex</span>,file<span class="op">=</span><span class="st">"/dev/shm/AKAP79-ex.RDS"</span><span class="op">)</span></span></code></pre></div>
 <p>There is a high-level function that does most of what we need to do
 automatically:</p>
@@ -203,7 +200,7 @@ model):</p>
 shell will do: bash/zsh/fish/dash). We make the same number of
 iterations as before, to keep the execution time short.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="va">N</span><span class="op">=</span>4 <span class="co">#  default number of MPI workers</span></span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-e</span> <span class="st">'/proc/cpuinfo'</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="va">N</span><span class="op">=</span><span class="va">$((</span><span class="kw">`</span><span class="fu">grep</span> <span class="at">-c</span> processor /proc/cpuinfo<span class="kw">`</span><span class="va">))</span> <span class="kw">&amp;&amp;</span> <span class="va">nm</span><span class="op">=</span><span class="st">"</span><span class="kw">`</span><span class="fu">grep</span> <span class="at">-m1</span> <span class="st">'model name'</span> /proc/cpuinfo<span class="kw">`</span><span class="st">"</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-e</span> <span class="st">'/proc/cpuinfo'</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="va">N</span><span class="op">=</span><span class="va">$((</span><span class="kw">`</span><span class="fu">grep</span> <span class="at">-c</span> processor /proc/cpuinfo<span class="kw">`</span><span class="va">))</span> <span class="kw">&amp;&amp;</span> <span class="va">nm</span><span class="op">=</span><span class="st">"</span><span class="va">$(</span><span class="fu">grep</span> <span class="at">-m1</span> <span class="st">'model name'</span> /proc/cpuinfo<span class="va">)</span><span class="st">"</span></span>
 <span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"We will use </span><span class="va">$N</span><span class="st"> cores with </span><span class="va">$nm</span><span class="st">"</span></span>
 <span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a></span>
 <span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="va">start_time</span><span class="op">=</span><span class="va">$(</span><span class="fu">date</span> +%s<span class="va">)</span></span>
@@ -213,46 +210,43 @@ iterations as before, to keep the execution time short.</p>
 <span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="va">end_time</span><span class="op">=</span><span class="va">$(</span><span class="fu">date</span> +%s<span class="va">)</span></span>
 <span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Time spent sampling: </span><span class="va">$((end_time</span> <span class="op">-</span> <span class="va">start_time))</span><span class="st"> seconds (</span><span class="va">$((</span> (<span class="va">end_time</span> <span class="op">-</span> <span class="va">start_time</span>)<span class="op">/</span><span class="dv">60</span> <span class="va">))</span><span class="st"> minutes)."</span></span>
 <span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt; We will use 16 cores with model name : Intel(R) Xeon(R) CPU E5-2630 v3 @ 2.40GHz</span></span>
-<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt; Wed 02 Sep 2026 04:37:57 PM CEST</span></span>
-<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt; Wed 02 Sep 2026 04:37:57 PM CEST</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt; Wed Oct 14 13:43:59 CEST 2026</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt; Wed Oct 14 13:43:59 CEST 2026</span></span>
 <span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="co">#&gt; Time spent sampling: 0 seconds (0 minutes).</span></span></code></pre></div>
 <p>On a high performance computing (hpc) cluster, the above would be in
 a slurm script or similar workload manager.</p>
 <div class="section level3">
 <h3 id="inspect-the-results">Inspect the Results<a class="anchor" aria-label="anchor" href="#inspect-the-results"></a>
 </h3>
-<p>Here we check the integrated auto-correlation length (Markov chain
-time)</p>
+<p>We load the generated sample from a file. Sampling is done twice, we
+ignore the first run (<code>j==1</code>) and only view the second half,
+in the hopes that the Markov chain converged by then. Convergence tests
+for Markov chains do exist, but this sample is very short (for demo
+purposes) and it is unlikely that it actually converged. We load the
+file with <code>rank==0</code>, because it contains only points for
+<span class="math inline">\(\beta=0\)</span> (the correct posterior
+distribution):</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">TMPDIR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.exists</a></span><span class="op">(</span><span class="st">'/dev/shm'</span><span class="op">)</span>,<span class="st">'/dev/shm'</span>,<span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="va">TMPDIR</span>,unset<span class="op">=</span><span class="st">'/tmp'</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fl">0</span> <span class="co"># rank we want to see</span></span>
-<span><span class="va">j</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="co"># iteration we want to see</span></span>
+<span><span class="va">j</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="co"># iteration of MCMC runs we want to see</span></span>
 <span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">TMPDIR</span>,<span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"AKAP79-temperature-ordered-pt-smmala-sample-%i-for-rank-%i.rds"</span>,<span class="va">j</span>,<span class="va">r</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">Sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file<span class="op">=</span><span class="va">f</span><span class="op">)</span></span>
-<span><span class="va">l</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">Sample</span>,<span class="st">"logLikelihood"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">l</span>,type<span class="op">=</span><span class="st">"l"</span>,xlab<span class="op">=</span><span class="st">"mcmc index"</span>,ylab<span class="op">=</span><span class="st">"log-likelihood"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">Sample</span>,<span class="st">"logLikelihood"</span><span class="op">)</span>,</span>
+<span>    type<span class="op">=</span><span class="st">"s"</span>,</span>
+<span>    xlab<span class="op">=</span><span class="st">"mcmc index"</span>,</span>
+<span>    ylab<span class="op">=</span><span class="st">"log-likelihood"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="sampleAKAP79_files/figure-html/uwerr-1.png" class="r-plt" alt="" width="100%"></p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/HISKP-LQCD/hadron" class="external-link">hadron</a></span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">hadron</span><span class="fu">::</span><span class="fu">uwerr</span><span class="op">(</span>data<span class="op">=</span><span class="va">l</span>,pl<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span>    <span class="va">tau</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">ceiling</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">tauint</span> <span class="op">+</span> <span class="va">res</span><span class="op">$</span><span class="va">dtauint</span><span class="op">)</span> <span class="co"># upper bound</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>    <span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/acf.html" class="external-link">acf</a></span><span class="op">(</span><span class="va">l</span><span class="op">)</span></span>
-<span>    <span class="va">tau</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">ceiling</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">A</span><span class="op">$</span><span class="va">acf</span><span class="op">[</span><span class="va">A</span><span class="op">$</span><span class="va">acf</span><span class="op">&gt;</span><span class="fl">0.2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span><span class="co">#&gt; Loading required package: hadron</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Attaching package: 'hadron'</span></span>
-<span><span class="co">#&gt; The following object is masked from 'package:base':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     kappa</span></span></code></pre></div>
-<p><img src="sampleAKAP79_files/figure-html/uwerr-2.png" class="r-plt" alt="" width="100%"><img src="sampleAKAP79_files/figure-html/uwerr-3.png" class="r-plt" alt="" width="100%"><img src="sampleAKAP79_files/figure-html/uwerr-4.png" class="r-plt" alt="" width="100%"></p>
+<p>The other ranks were sampling relaxed problems, which due to chain
+swapping makes it easier to explore the posterior and not get stuck in
+local likelihood maxima.</p>
 <p>We reduce the sample for plotting purposes, by showing only every
 <span class="math inline">\(\tau_{\text{int.}}\)</span>-th point and
 create a <em>pairs</em> plot for the first 6 parameters:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="va">Sample</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">NROW</a></span><span class="op">(</span><span class="va">Sample</span><span class="op">)</span>,by<span class="op">=</span><span class="va">tau</span><span class="op">)</span>,<span class="op">]</span></span>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/small.html">small</a></span><span class="op">(</span><span class="va">Sample</span><span class="op">)</span> <span class="co"># uses auto-correlation</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">m</span><span class="op">$</span><span class="va">Parameter</span><span class="op">)</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/edzer/hexbin" class="external-link">hexbin</a></span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/pkg/hexbin/man/hexplom.html" class="external-link">hexplom</a></span><span class="op">(</span><span class="va">X</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span><span class="op">]</span>,xbins<span class="op">=</span><span class="fl">12</span><span class="op">)</span></span>
@@ -266,22 +260,22 @@ create a <em>pairs</em> plot for the first 6 parameters:</p>
 </h3>
 <p>Running the script in the previous section for many more iterations,
 results in a much bigger sample:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="va">N</span><span class="op">=</span>4 <span class="co">#  default number of MPI workers</span></span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-e</span> <span class="st">'/proc/cpuinfo'</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="va">N</span><span class="op">=</span><span class="va">$((</span><span class="kw">`</span><span class="fu">grep</span> <span class="at">-c</span> processor /proc/cpuinfo<span class="kw">`</span><span class="va">))</span> <span class="kw">&amp;&amp;</span> <span class="va">nm</span><span class="op">=</span><span class="st">"</span><span class="kw">`</span><span class="fu">grep</span> <span class="at">-m1</span> <span class="st">'model name'</span> /proc/cpuinfo<span class="kw">`</span><span class="st">"</span></span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"We will use </span><span class="va">$N</span><span class="st"> cores with </span><span class="va">$nm</span><span class="st">"</span></span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a></span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="va">start_time</span><span class="op">=</span><span class="va">$((</span><span class="kw">`</span><span class="fu">date</span> +%s<span class="kw">`</span><span class="va">))</span></span>
-<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="fu">date</span></span>
-<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co">#</span></span>
-<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="ex">mpirun</span> <span class="at">-H</span> localhost:<span class="va">$N</span> ./pt-smmala-akap79.R 5e5 <span class="op">&gt;</span> /dev/null <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span></span>
-<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#                      much bigger sample:  ^^^</span></span>
-<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="fu">date</span></span>
-<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="va">end_time</span><span class="op">=</span><span class="va">$((</span><span class="kw">`</span><span class="fu">date</span> +%s<span class="kw">`</span><span class="va">))</span></span>
-<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Time spent sampling: </span><span class="va">$((end_time</span> <span class="op">-</span> <span class="va">start_time))</span><span class="st"> seconds (</span><span class="va">$((</span> (<span class="va">end_time</span> <span class="op">-</span> <span class="va">start_time</span>)<span class="op">/</span><span class="dv">60</span> <span class="va">))</span><span class="st"> minutes)."</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="va">N</span><span class="op">=</span>4 <span class="co">#  default number of MPI workers</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="bu">[</span> <span class="ot">-e</span> <span class="st">'/proc/cpuinfo'</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="va">N</span><span class="op">=</span><span class="va">$((</span><span class="kw">`</span><span class="fu">grep</span> <span class="at">-c</span> processor /proc/cpuinfo<span class="kw">`</span><span class="va">))</span> <span class="kw">&amp;&amp;</span> <span class="va">nm</span><span class="op">=</span><span class="st">"</span><span class="kw">`</span><span class="fu">grep</span> <span class="at">-m1</span> <span class="st">'model name'</span> /proc/cpuinfo<span class="kw">`</span><span class="st">"</span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"We will use </span><span class="va">$N</span><span class="st"> cores with </span><span class="va">$nm</span><span class="st">"</span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="va">start_time</span><span class="op">=</span><span class="va">$((</span><span class="kw">`</span><span class="fu">date</span> +%s<span class="kw">`</span><span class="va">))</span></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="fu">date</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="ex">mpirun</span> <span class="at">-H</span> localhost:<span class="va">$N</span> ./pt-smmala-akap79.R 5e5 <span class="op">&gt;</span> /dev/null <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="co">#                      much bigger sample:  ^^^</span></span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="fu">date</span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="va">end_time</span><span class="op">=</span><span class="va">$((</span><span class="kw">`</span><span class="fu">date</span> +%s<span class="kw">`</span><span class="va">))</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Time spent sampling: </span><span class="va">$((end_time</span> <span class="op">-</span> <span class="va">start_time))</span><span class="st"> seconds (</span><span class="va">$((</span> (<span class="va">end_time</span> <span class="op">-</span> <span class="va">start_time</span>)<span class="op">/</span><span class="dv">60</span> <span class="va">))</span><span class="st"> minutes)."</span></span></code></pre></div>
 <p>This results in a much less spotty posterior plot:</p>
 <!-- ![posterior](pt-smmala-akap79-posterior.png) -->
 <p>Restore original options:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">opt</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>

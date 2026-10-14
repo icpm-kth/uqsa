@@ -1,4 +1,4 @@
-# Determine a prefix from a character vector str of similar contents
+# Determines a prefix from a character vector str of similar contents
 
 The result is such that `all(startsWith(str,determinePrefix(str)))` is
 `TRUE`.

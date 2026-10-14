@@ -1,4 +1,4 @@
-# gatherSample collects all sample points, from all files, with the given temperature
+# Collects all sample points, from all files, with the given temperature
 
 This function assumes that each supplied RDS file contains a matrix of
 model MCMC parameters, with an attribute called "beta" that lists the

@@ -1,4 +1,4 @@
-# Collect statistical Replicas
+# Collects statistical Replicas
 
 `gatherReplicas` collects all sample-points, from all files, which are
 assumed to be exact replicas. Replicas have different random number
@@ -74,7 +74,7 @@ Z <- gatherReplicas(f)
 print(N)
 #> [1] 100
 print(dim(Z))
-#> [1] 67  3
+#> [1] 33  3
 print(names(attributes(Z)))
 #> [1] "dim"           "logLikelihood" "stepSize"      "tau"          
 ```

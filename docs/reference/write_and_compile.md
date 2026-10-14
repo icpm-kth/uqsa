@@ -1,4 +1,4 @@
-# Writes code to file and compiles
+# Writes code to a file and compiles
 
 This function accepts an ode model, or cme model, generates code,
 compiles it to a shared library, and returns a changed object. possibly
@@ -35,8 +35,8 @@ m <- model_from_tsv(uqsa_example("AKAR4"))
 o <- write_and_compile(as_ode(m))
 print(o)
 #>                 Model name : AKAR4
-#>                     C file : /tmp/RtmpFdwl1n/RtmpesODen/AKAR4_176e902d428a91.c [2026-09-02 16:22:40.328526]
-#>             shared library : /tmp/RtmpFdwl1n/RtmpesODen/AKAR4_176e902d428a91.so [2026-09-02 16:22:40.328526]
+#>                     C file : /tmp/Rtmpo4qbYO/AKAR4_507de53b05422.c [2026-10-14 13:35:35.33839]
+#>             shared library : /tmp/Rtmpo4qbYO/AKAR4_507de53b05422.so [2026-10-14 13:35:35.33839]
 #>  Number of state variables : 2
 #>       Number of parameters : 5
 #>          Number of outputs : 1

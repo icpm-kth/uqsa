@@ -13,7 +13,6 @@ library(errors)
 ## Read the TSV files, create an ODE model
 m <- model_from_tsv(uqsa_example("AKAR4"))
 o <- as_ode(m)                                 # the ODE
-#> Loading required namespace: pracma
 
 C <- generate_code(o)                          # list of strings
 c_path(o) <- write_c_code(C)

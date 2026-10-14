@@ -16,7 +16,8 @@
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Global sensitivity analysis on AKAR4 - independent input factors">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<meta property="og:title" content="Global sensitivity analysis on AKAR4 - independent input factors">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -26,7 +27,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -138,11 +139,11 @@ parameter values.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nSamples</span> <span class="op">&lt;-</span> <span class="fl">40000</span></span></code></pre></div>
 <p>nSamples corresponds to the number of samples in M1 (or M2) of the
-Soboll-Saltelli approach. The number of simulations of the
-Sobol-Saltelli approach consists of 2*nSampels+nPars*nSamples number of
-simulations. In the binning approach below we use 2*nSamples number of
-samples (corresponding to 2*nSamples number of simulations) to use the
-same number of independent sample points as Sobol-Saltelli.</p>
+Sobol-Saltelli approach. The number of simulations of the Sobol-Saltelli
+approach consists of 2*nSampels+nPars*nSamples number of simulations. In
+the binning approach below we use 2*nSamples number of samples
+(corresponding to 2*nSamples number of simulations) to use the same
+number of independent sample points as Sobol-Saltelli.</p>
 <p>Construct parameter prior samples according to Sobol-Saltelli (M1,
 M2, N).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -178,11 +179,11 @@ M2, N).</p>
 <div class="section level2">
 <h2 id="calculate-and-plot-sensitivity-indexes">Calculate and plot sensitivity indexes<a class="anchor" aria-label="anchor" href="#calculate-and-plot-sensitivity-indexes"></a>
 </h2>
-<p>Calculate sensitivity indexes for sobol-saltelli</p>
+<p>Calculate sensitivity indexes for Sobol-Saltelli</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">SA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gsa_saltelli.html">gsa_saltelli</a></span><span class="op">(</span><span class="va">fM1</span>,<span class="va">fM2</span>,<span class="va">fN</span><span class="op">)</span></span></code></pre></div>
 <p>Plot first (SI) and total-order (SIT) sensitivity indexes for
-sobol-saltelli</p>
+Sobol-Saltelli</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cols</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/grDevices/palettes.html" class="external-link">rainbow</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
 <span><span class="va">oldpar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
@@ -215,7 +216,7 @@ sobol-saltelli</p>
 <p><img src="GSA_AKAR4_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="700"></p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">oldpar</span><span class="op">)</span></span></code></pre></div>
-<p>Plot all states and timeponts for the experiment</p>
+<p>Plot all states and time points for the experiment</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">allTimesSample</span><span class="op">=</span><span class="fu">s</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">prior</span><span class="op">$</span><span class="va">M2</span><span class="op">)</span><span class="op">)</span><span class="op">[[</span><span class="va">E</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">state</span></span>
 <span><span class="va">oldpar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>

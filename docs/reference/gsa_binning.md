@@ -1,4 +1,4 @@
-# Global Sensitivity Analysis
+# Performs global sensitivity analysis using the binning method
 
 This function performs a binning based estimation of the global
 sensitivity of a model's output with respect to the model's parameters.
@@ -42,8 +42,8 @@ sensitivity `S[i,j]` of `output[i]` with respect to `parameter[j]`
   colnames(Z) <- "alpha"
   GSA <- gsa_binning(X,Z)
   print(GSA)
-#>               A         B            C
-#> alpha 0.2414056 0.1553557 0.0003431458
+#>                A         B            C
+#> alpha 0.04250314 0.4520624 0.0002955065
   cat("global sensitivity of alpha with respect to B: ",GSA['alpha','B'],"\n")
-#> global sensitivity of alpha with respect to B:  0.1553557 
+#> global sensitivity of alpha with respect to B:  0.4520624 
 ```

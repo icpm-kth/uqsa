@@ -1,4 +1,4 @@
-# plot function for experiments
+# Plot function for experiments
 
 This function uses plot.errors and the base plot functions like
 [matplot](https://rdrr.io/r/graphics/matplot.html).
@@ -39,8 +39,5 @@ s <- simulator.c(ex,o)
 p0 <- values(m$Parameter)
 y <- s(p0)
 plot(ex,y)
-
-
-
-#> NULL
+#> Error: object 'ex' not found
 ```

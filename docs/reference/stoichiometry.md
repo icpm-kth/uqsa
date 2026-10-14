@@ -1,4 +1,4 @@
-# This function returns a list of named stoichiometric vectors
+# Returns a list of named stoichiometric vectors
 
 Given an already split list of entries such as c("3 A","B"), this
 function returns a numeric vector c(3,1) with names c("A","B").

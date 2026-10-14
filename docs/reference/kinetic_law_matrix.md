@@ -1,4 +1,4 @@
-# Split Kinetic Law
+# Represents the kinetic laws of the model as a two column matrix
 
 This function performs a very simplified split of a kinetic law into a
 forward part and a backward part, if it isn't pre-split in the file.

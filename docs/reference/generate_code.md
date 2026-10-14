@@ -1,4 +1,4 @@
-# Construct Code
+# Constructs Code
 
 Interpret the first argument and generate code in the specified language
 for the model type.

@@ -1,4 +1,4 @@
-# dUniformPrior creates a uniform density function
+# Creates a uniform density function
 
 The returned density function takes vectors of the same size as ll and
 ul. It returns the product of the component's one-dimensional uniform

@@ -1,4 +1,4 @@
-# simulates an ode model with extra work
+# Simulates an ode model
 
 This function calls a C function which solves an initial value problem,
 calculates the sensitivity of the solution, log-likelihood value `ll`,
@@ -111,8 +111,8 @@ on the system's command line (bash, zsh, etc.).
   so_path(o) <- shlib(o)
   print(o)
 #>                 Model name : AKAR4
-#>                     C file : /tmp/RtmpFdwl1n/RtmpesODen/adf9204aaf2748b8/AKAR4.c [2026-09-02 16:22:11.841752]
-#>             shared library : /tmp/RtmpFdwl1n/RtmpesODen/adf9204aaf2748b8/AKAR4.so [2026-09-02 16:22:11.841752]
+#>                     C file : /tmp/Rtmpo4qbYO/adf9204aaf2748b8/AKAR4.c [2026-10-14 13:35:06.177621]
+#>             shared library : /tmp/Rtmpo4qbYO/adf9204aaf2748b8/AKAR4.so [2026-10-14 13:35:06.177621]
 #>  Number of state variables : 2
 #>       Number of parameters : 5
 #>          Number of outputs : 1

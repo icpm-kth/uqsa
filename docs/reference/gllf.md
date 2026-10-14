@@ -1,4 +1,4 @@
-# Default gradient-log-likelihood Function
+# Default gradient-log-likelihood function
 
 Extracts the `FisherInformation` values from the simulations attribute
 of the parMCMC argument, requires:
@@ -54,9 +54,9 @@ s <- simulator.c(ex,o,omit=1) # not 3
 p <- values(m$Parameter)
 attr(p,"simulations") <- s(p)
 print(ll(p))
-#> [1] -2491.245
+#> [1] -2051.95
 trivialJac <- \(x) diag(1,length(x),length(x)) # the default
 gll <- gllf(parMapJac=trivialJac)
 print(gll(p))
-#> [1] 1643.53085001   -2.87257643    0.03029852
+#> [1] 6574.1245500  -11.4903077    0.1211941
 ```

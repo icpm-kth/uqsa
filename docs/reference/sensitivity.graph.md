@@ -1,4 +1,4 @@
-# plot the sensitivity matrix
+# Plot the result of global sensitivity analysis
 
 Produce a cumulative shaded area plot for the sensitivity matrix. This
 function is intended for use with many observables, e.g. the state of
@@ -76,8 +76,8 @@ nothing
   GSA <- gsa_binning(X,Z)
   print(GSA)
 #>                A            B            C
-#> sum  0.003866168 0.1098467776 0.1439837720
-#> mean 0.036469024 0.1845890990 0.4362508131
-#> exp1 0.492792736 0.0008455134 0.0002992867
+#> sum  0.003332149 0.0173470770 0.2267591781
+#> mean 0.037214710 0.1484997466 0.4730717605
+#> exp1 0.757198644 0.0003565719 0.0003178677
   sensitivity.graph(c(sum=1,mean=2,exp1=3),GSA)
 ```

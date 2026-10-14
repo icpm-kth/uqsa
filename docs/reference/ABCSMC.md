@@ -1,4 +1,4 @@
-# Performs and Approximate Bayesian Computation as a Particle Filter
+# Performs Approximate Bayesian Computation as a Particle Filter
 
 Given a set of simulation experiments (list), a model, parameter
 boundaries, this function will draw a sample of parameters from the
@@ -10,13 +10,13 @@ posterior probability density of the given problem.
 ABCSMC(
   objectiveFunction,
   startPar,
-  Sigma = 2 * cov(startPar),
+  Sigma = 2 * cov(t(startPar)),
   dprior,
   delta = c(2, 0.5),
   parAcceptable = function(p) {
      all(is.finite(p))
  },
-  verbose = interactive()
+  verbose = getOption("uqsa.verbose", interactive())
 )
 ```
 

@@ -72,13 +72,11 @@ Test evaluation of the objective function:
 
 ``` r
 d <- objFunc(log10(values(m$Parameter)))
-#> Warning: In 'Ops' : non-'errors' operand automatically coerced to an 'errors'
-#> object with no uncertainty
 print(d)
 #>            [,1]
-#> 400nM 0.2159661
-#> 100nM 0.0981006
-#> 25nM  0.2529964
+#> 400nM 0.4319322
+#> 100nM 0.1962012
+#> 25nM  0.5059928
 ```
 
 It returns a vector of distance values (one per simulation experiment).
@@ -87,10 +85,10 @@ But, when supplied with several parameters, it returns several columns:
 ``` r
 D <- objFunc(t(rprior(7)))
 print(D)
-#>           [,1]     [,2]      [,3]      [,4]     [,5]     [,6]     [,7]
-#> 400nM 3.706413 3.471893 0.2213616 1.5082723 3.674368 3.630655 3.671981
-#> 100nM 2.594305 2.566674 0.1673111 1.4905757 2.600011 2.597007 2.600011
-#> 25nM  1.156957 1.126462 0.2161215 0.7407346 1.156957 1.156957 1.156957
+#>           [,1]     [,2]      [,3]     [,4]     [,5]     [,6]     [,7]
+#> 400nM 7.412826 6.943785 0.4427233 3.016544 7.348735 7.261308 7.343961
+#> 100nM 5.188611 5.133347 0.3346222 2.981151 5.200022 5.194013 5.200022
+#> 25nM  2.313914 2.252923 0.4322429 1.481469 2.313914 2.313914 2.313914
 ```
 
 ## Run ABCSMC
@@ -119,7 +117,7 @@ posterior <- ABCSMC(
 t_final <- Sys.time()
 
 cat(difftime(t_final,t_initial,units="min")," minutes")
-#> 6.124675  minutes
+#> 6.064369  minutes
 ```
 
 ## Visualize the sampled parameters
@@ -176,7 +174,7 @@ y <- s(t(Z)) # using the stochastic simulator one final time
 t_final <- Sys.time()
 
 cat(difftime(t_final,t_initial,units="min")," minutes")
-#> 0.7592529  minutes
+#> 0.6245469  minutes
 oldpar <- par(mfrow=c(3,1))
 for (i in seq_along(ex)){
     tm <- ex[[i]]$outputTimes

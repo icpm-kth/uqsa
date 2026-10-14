@@ -1,0 +1,4 @@
+.dropdown-menu {
+  max-height: 80vh !important; /* 70% of the view-port height */
+  overflow-y: auto;            /* Scroll-bar when content overflows */
+}

@@ -52,7 +52,6 @@ library(parallel)
 f <- uqsa_example("AKAR4")
 m <- model_from_tsv(f)
 o <- write_and_compile(as_ode(m))
-#> Loading required namespace: pracma
 ex <- experiments(m,o)
 print(ex)
 #> number of simulation experiments: 3
@@ -118,7 +117,7 @@ y <- simulate(t(P))
 tf <- Sys.time()
 
 print(difftime(tf,ti))
-#> Time difference of 0.08073282 secs
+#> Time difference of 0.08167839 secs
 ```
 
 The matrix `P` has columns of model parameters that are log-normally

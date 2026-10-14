@@ -56,7 +56,7 @@ lapply(lapply(c("km/h","s^-2","1/s"),unit.from.string),print)
 #> (60 × second × 10^(0))^(-1)
 #> «s^-2» has been interpreted as
 #> the product of: 
-#>   s_to_the_power_of_2_inverted
+#>               s_square_inverse
 #> ==============================
 #> (1 × second × 10^(0))^(-2)
 #> «1/s» has been interpreted as
@@ -76,7 +76,7 @@ lapply(lapply(c("km/h","s^-2","1/s"),unit.from.string),print)
 #> [[2]]
 #> «s^-2» has been interpreted as
 #> the product of: 
-#>   s_to_the_power_of_2_inverted
+#>               s_square_inverse
 #> ==============================
 #> (1 × second × 10^(0))^(-2)
 #> 

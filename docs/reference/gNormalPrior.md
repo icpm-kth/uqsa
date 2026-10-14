@@ -1,4 +1,4 @@
-# gNormalPrior creates the gradient function of a multivariate normal distribution with independent components, in log-space
+# Creates the gradient function of a multivariate normal distribution with independent components, in log-space
 
 The returned density function takes vectors of the same size as mean and
 sd. It returns the gradient of the logarithm of the multivariate normal

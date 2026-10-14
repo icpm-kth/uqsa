@@ -1,4 +1,4 @@
-# dNormalPrior creates the density function of a multivariate normal distribution with independent components
+# Creates the density function of a multivariate normal distribution with independent components
 
 The returned density function takes vectors of the same size as mean and
 sd. It returns the product of the components' one-dimensional normal

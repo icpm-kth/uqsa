@@ -23,7 +23,6 @@ completed results of this:
 f <- uqsa_example("AKAR4")
 m <- model_from_tsv(f)
 o <- as_ode(m)
-#> Loading required namespace: pracma
 C <- generate_code(o)
 c_file <- "/dev/shm/AKAR4.c"
 cat(C,sep="\n",file=c_file)
@@ -55,8 +54,8 @@ date
 end_time=$((`date +%s`))
 echo "Time spent sampling: $((end_time - start_time)) seconds (for $sample_size points)."
 #> We will use 16 cores with model name : Intel(R) Xeon(R) CPU E5-2630 v3 @ 2.40GHz
-#> Wed 02 Sep 2026 04:48:46 PM CEST
-#> Wed 02 Sep 2026 04:48:46 PM CEST
+#> Wed Oct 14 13:54:37 CEST 2026
+#> Wed Oct 14 13:54:37 CEST 2026
 #> Time spent sampling: 0 seconds (for 30000 points).
 ```
 
@@ -69,26 +68,6 @@ Here we check the integrated auto-correlation length (Markov chain time)
 
 ``` r
 Sample <- readRDS(file="/dev/shm/AKAR4-parameter-sample-for-rank-0.RDS")
-n <- NROW(Sample)
-l <- attr(Sample,"logLikelihood")
-if (requireNamespace("hadron")){
-    oldpar <- par(mfrow=c(3,1))
-    res <- hadron::uwerr(data=l,pl=TRUE)
-    tau <- ceiling(res$tauint+res$dtauint)
-    par(oldpar)
-} else {
-    A <- acf(l)
-    tau <- sum(A$acf[A$acf>0.2])
-    plot(l,type="l",xlab="mcmc index",ylab="log-likelihood")
-}
-#> Loading required namespace: hadron
-```
-
-![](sampleAKAR4mpi_files/figure-html/uwerr-1.png)
-
-``` r
-cat(sprintf("Effective sampple size: %i\n",round(n/(2*tau))))
-#> Effective sampple size: 15000
 ```
 
 We reduce the sample for plotting purposes, by showing only every
@@ -96,8 +75,8 @@ We reduce the sample for plotting purposes, by showing only every
 parameters:
 
 ``` r
-X <- Sample[seq(1,n,by=tau),]
-colnames(X) <- rownames(m$Parameter)
+X <- small(Sample)
+
 if (require(hexbin)){
     hexbin::hexplom(X,xbins=16)
 } else {

@@ -65,5 +65,5 @@ cat(
   "average relative senitivity S(p1) / S(p2): ",
   mean(abs(GSA$SI[,1]/GSA$SI[,2]),na.rm=TRUE)
 )
-#> average relative senitivity S(p1) / S(p2):  759.8771
+#> average relative senitivity S(p1) / S(p2):  29141.6
 ```

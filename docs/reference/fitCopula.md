@@ -1,7 +1,11 @@
-# Makes a Probability Density Estimate (from a sample)
+# Makes a Probability Density Estimator from a Sample
 
 Given a sample (from some probability distribution) this function makes
 a Copula fit to the source distribution using the VineCopula package.
+This Copula can be used with the prior distribution functions
+[rCopulaPrior](https://icpm-kth.github.io/uqsa/reference/rCopulaPrior.md)
+and
+[dCopulaPrior](https://icpm-kth.github.io/uqsa/reference/dCopulaPrior.md).
 
 ## Usage
 
@@ -30,7 +34,7 @@ C <- fitCopula(X)
 rCopula <- rCopulaPrior(C)
 Z <- rCopula(1000)
 print(norm(cov(X) - cov(Z),"2")/norm(X,"2"))
-#> [1] 0.006741844
+#> [1] 0.008967842
 print(abs(sum(colMeans(X) - colMeans(Z)))/sum(colMeans(X)))
-#> [1] 0.02346827
+#> [1] 0.0413031
 ```

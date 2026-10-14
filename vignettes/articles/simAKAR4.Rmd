@@ -16,20 +16,23 @@ library(errors)
 
 This article provides code to simulate the AKAR4 deterministic model
 (one time, no sampling). Specifically, given a vector of initial
-conditions and a default parameter, we simulate the time evolution of
-the concentrations of compounds in the system.
+conditions and a vector of default parameters, we simulate the time
+evolution of the concentrations of compounds in the system.
 
 In this article, we are simulating the AKAR4 model with default
 parameters which are not expected to fit the data perfectly.
 
 # Load the Model
 
-The following instructions allow you to load all information needed to simulate the AKAR4 model in R. More details on each of the following commands can be found in the article ["Build your own model"](user_model.html).
+The following instructions allow you to load all information needed to
+simulate the AKAR4 model in R. More details on each of the following
+commands can be found in the article ["Build your own
+model"](user_model.html).
 
 ```{r, eval = TRUE}
 f <- uqsa_example("AKAR4") # TSV files
 m <- model_from_tsv(f)     # data.frames
-o <- as_ode(m)             # list
+o <- as_ode(m,cla=FALSE)   # list
 C <- generate_code(o)      # character vector
 c_path(o) <- write_c_code(C)
 so_path(o) <- shlib(o)     # shared library
@@ -67,8 +70,12 @@ ex <- experiments(m,o)
 This variable includes information about the initial value problem (for the ODE):
 
 ```{r, iv}
-print(ex[[1]]$initialState)
+print(ex[['400nM']]$initialState)
 ```
+
+Where `400nm` is the name of the experiment, referring to the initial
+concentration of `C` (0.4&nbsp;&micro;M = 400&nbsp;nM). The data for
+this experiment was taken from the file `400nM.tsv`.
 
 But, also the measured data, as a matrix:
 

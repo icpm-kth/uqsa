@@ -30,7 +30,7 @@ X<-matrix(x,100,3)
 C<-fitCopula(X)
 d<-dCopulaPrior(C)
 print(d(c(1,2,3)))
-#> [1] 0.003934713
+#> [1] 0.002709687
 print(prod(sapply(c(1,2,3),FUN=dnorm,mean=1,sd=2)))
 #> [1] 0.004248212
 ```

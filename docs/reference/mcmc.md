@@ -1,4 +1,4 @@
-# Markov Chain Monte Carlo
+# Creates a Markov Chain Monte Carlo sampler
 
 This function creates an MCMC function for a given set of experiments.
 The Markov chains have no communication between them if more than one is
@@ -7,7 +7,7 @@ created using this mechanism.
 ## Usage
 
 ``` r
-mcmc(update, verbose = interactive())
+mcmc(update, verbose = getOption("uqsa.verbose", interactive()))
 ```
 
 ## Arguments

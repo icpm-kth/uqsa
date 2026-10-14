@@ -1,4 +1,4 @@
-# Initialize the Markov chain
+# Initializes the Markov chain
 
 This function must append all required attributes to the MCMC variable,
 for the Markov chain to update correctly.

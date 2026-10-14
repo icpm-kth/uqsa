@@ -7,8 +7,8 @@ library(errors)
 
 This article provides code to simulate the AKAR4 deterministic model
 (one time, no sampling). Specifically, given a vector of initial
-conditions and a default parameter, we simulate the time evolution of
-the concentrations of compounds in the system.
+conditions and a vector of default parameters, we simulate the time
+evolution of the concentrations of compounds in the system.
 
 In this article, we are simulating the AKAR4 model with default
 parameters which are not expected to fit the data perfectly.
@@ -23,8 +23,7 @@ model”](https://icpm-kth.github.io/uqsa/articles/user_model.md).
 ``` r
 f <- uqsa_example("AKAR4") # TSV files
 m <- model_from_tsv(f)     # data.frames
-o <- as_ode(m)             # list
-#> Loading required namespace: pracma
+o <- as_ode(m,cla=FALSE)   # list
 C <- generate_code(o)      # character vector
 c_path(o) <- write_c_code(C)
 so_path(o) <- shlib(o)     # shared library
@@ -79,10 +78,14 @@ This variable includes information about the initial value problem (for
 the ODE):
 
 ``` r
-print(ex[[1]]$initialState)
-#> AKAR4p      C 
-#>    0.0    0.4
+print(ex[['400nM']]$initialState)
+#>   AKAR4 AKAR4_C  AKAR4p       C 
+#>     0.2     0.0     0.0     0.4
 ```
+
+Where `400nm` is the name of the experiment, referring to the initial
+concentration of `C` (0.4 µM = 400 nM). The data for this experiment was
+taken from the file `400nM.tsv`.
 
 But, also the measured data, as a matrix:
 
@@ -103,12 +106,12 @@ Also available as `data.frame`:
 ``` r
 print(head(ex[[1]]$measurements))
 #>            time AKAR4pOUT
-#> E400T001 -15(0)   110(10)
-#> E400T002 -10(0)   110(10)
-#> E400T003  -5(0)   110(10)
-#> E400T004   0(0)   110(10)
-#> E400T005   5(0)   110(10)
-#> E400T006  10(0)   110(20)
+#> E400T001 -15(0)    109(7)
+#> E400T002 -10(0)    111(7)
+#> E400T003  -5(0)    109(7)
+#> E400T004   0(0)    111(7)
+#> E400T005   5(0)    112(7)
+#> E400T006  10(0)    113(8)
 ```
 
 ## Simulate

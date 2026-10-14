@@ -1,11 +1,11 @@
-# Compile C code to shared library
+# Compiles C code to shared library
 
 Calls `R CMD SHLIB` to create the model's shared library.
 
 ## Usage
 
 ``` r
-shlib(file)
+shlib(file, verbose = getOption("uqsa.verbose", default = interactive()))
 ```
 
 ## Arguments
@@ -14,6 +14,10 @@ shlib(file)
 
   the c file that is to be compiled, OR an ODE/CME object with a c.file
   defined and recorded in it.
+
+- verbose:
+
+  print decition outcomes about the compiler options
 
 ## Value
 
@@ -38,8 +42,8 @@ c_path(o) <- write_c_code(C)
 so_path(o) <- shlib(o)
 print(o)
 #>                 Model name : AKAR4
-#>                     C file : /tmp/RtmpFdwl1n/RtmpesODen/adf9204aaf2748b8/AKAR4.c [2026-09-02 16:22:31.969592]
-#>             shared library : /tmp/RtmpFdwl1n/RtmpesODen/adf9204aaf2748b8/AKAR4.so [2026-09-02 16:22:31.969592]
+#>                     C file : /tmp/Rtmpo4qbYO/adf9204aaf2748b8/AKAR4.c [2026-10-14 13:35:26.200463]
+#>             shared library : /tmp/Rtmpo4qbYO/adf9204aaf2748b8/AKAR4.so [2026-10-14 13:35:26.200463]
 #>  Number of state variables : 2
 #>       Number of parameters : 5
 #>          Number of outputs : 1

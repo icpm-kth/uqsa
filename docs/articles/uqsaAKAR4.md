@@ -14,7 +14,6 @@ deterministically](https://icpm-kth.github.io/uqsa/articles/simAKAR4.md)).
 f  <- uqsa_example("AKAR4")
 m <- model_from_tsv(f)
 o <- write_and_compile(as_ode(m))
-#> Loading required namespace: pracma
 ex <- experiments(m,o)
 ```
 
@@ -97,7 +96,7 @@ if (require(hadron)){
 #>     kappa
 
 print(tau)
-#> [1] 50
+#> [1] 19
 
 if (1 < tau && tau < length(L_)){
     N <- length(L_)

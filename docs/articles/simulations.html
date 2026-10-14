@@ -16,7 +16,8 @@
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Simulate Models">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<meta property="og:title" content="Simulate Models">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -26,7 +27,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -157,13 +158,12 @@ package, we use <code><a href="../reference/uqsa_example.html">uqsa_example()</a
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/model_from_tsv.html">model_from_tsv</a></span><span class="op">(</span><span class="fu"><a href="../reference/uqsa_example.html">uqsa_example</a></span><span class="op">(</span><span class="st">"AKAP79"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_ode.html">as_ode</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required namespace: pracma</span></span>
 <span><span class="fu"><a href="../reference/c_path.html">c_path</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/write_c_code.html">write_c_code</a></span><span class="op">(</span><span class="fu"><a href="../reference/generate_code.html">generate_code</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/so_path.html">so_path</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shlib.html">shlib</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                 Model name : AKAP79</span></span>
-<span><span class="co">#&gt;                     C file : /tmp/RtmpFdwl1n/RtmpesODen/RtmpppoVob/b316367e5f817645/AKAP79.c [2026-09-02 16:49:28.148553]</span></span>
-<span><span class="co">#&gt;             shared library : /tmp/RtmpFdwl1n/RtmpesODen/RtmpppoVob/b316367e5f817645/AKAP79.so [2026-09-02 16:49:28.148553]</span></span>
+<span><span class="co">#&gt;                     C file : /tmp/Rtmpo4qbYO/RtmpAqFaBN/b316367e5f817645/AKAP79.c [2026-10-14 13:55:19.708726]</span></span>
+<span><span class="co">#&gt;             shared library : /tmp/Rtmpo4qbYO/RtmpAqFaBN/b316367e5f817645/AKAP79.so [2026-10-14 13:55:19.708726]</span></span>
 <span><span class="co">#&gt;  Number of state variables : 11</span></span>
 <span><span class="co">#&gt;       Number of parameters : 33</span></span>
 <span><span class="co">#&gt;          Number of outputs : 1</span></span>
@@ -191,10 +191,7 @@ the stated, experiment specific, initial condition.</p>
 <p>This list of data-sets also includes instructions for the simulator
 on how to simulate the scenario with the model.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/experiments.html">experiments</a></span><span class="op">(</span><span class="va">m</span>,<span class="va">o</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in experiments(m, o): CONFLICT: This model seems to have event based</span></span>
-<span><span class="co">#&gt; transformations and conservation laws. These two concepts clash with one</span></span>
-<span><span class="co">#&gt; another if a compound is conserved, but also changed by scheduled events.</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/experiments.html">experiments</a></span><span class="op">(</span><span class="va">m</span>,<span class="va">o</span><span class="op">)</span></span></code></pre></div>
 <p>We supply both <code>m</code> and <code>o</code> because
 <code>o</code> contains information about whether or not conservation
 law analysis has occurred. With conservation law analysis, we must
@@ -210,7 +207,7 @@ corresponds to the <code>m$Output</code> table: the
 observable/measurable quantities for this model. If you need to compare
 substance <code>A</code> to the data (in some way), then add an output
 function for it (e.g. <code>A_out</code> or <code>A_obs</code> with a
-vlaue of <code>A</code>). Then it doesn’t matter whether the
+value of <code>A</code>). Then it doesn’t matter whether the
 conservation law analysis removes <code>A</code> from the state space;
 it remains part of the <code>func</code> component.</p>
 </div>

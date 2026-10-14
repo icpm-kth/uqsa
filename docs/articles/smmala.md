@@ -111,7 +111,6 @@ library(parallel)
 f  <- uqsa_example("CaMKIIs")
 m <- model_from_tsv(f)
 o <- as_ode(m)
-#> Loading required namespace: pracma
 ex <- experiments(m,o)
 C <- generate_code(o)
 c_path(o) <- write_c_code(C)
@@ -150,9 +149,9 @@ names(cpuSeconds) <- names(ex)
 
 print(cpuSeconds)
 #>  Bradshaw2003Fig2E Shifman2006Fig1Bsq  ODonnel2010Fig3Co  Stemmer1993Fig1tr 
-#>           0.020554           0.018681           0.009943           0.005795 
+#>           0.020606           0.016958           0.009825           0.005679 
 #>  Stemmer1993Fig1fc Stemmer1993Fig2Afc 
-#>           0.008336           0.028326
+#>           0.008614           0.028580
 ```
 
 Next, we plot the results of that dense simulation:
@@ -339,16 +338,6 @@ f  <- uqsa_example("CaMKII") # no 's'
 m <- model_from_tsv(f)
 o <- as_ode(m)
 ex <- experiments(m,o)
-#>                             type  event
-#> Bradshaw2003Fig2E  dose response TurnOn
-#> Shifman2006Fig1Bsq dose response TurnOn
-#> ODonnel2010Fig3Co  dose response TurnOn
-#> Stemmer1993Fig1tr  dose response TurnOn
-#> Stemmer1993Fig1fc  dose response TurnOn
-#> Stemmer1993Fig2Afc dose response TurnOn
-#> Warning in dose_response_experiments(m, E[l, , drop = FALSE], iv[, l, drop =
-#> FALSE], : Dose response experiments are not (yet) fully compatible with events,
-#> this script will try its best.
 print(length(ex))
 #> [1] 100
 
@@ -367,7 +356,7 @@ y <- s(p)
 
 cpuSeconds <- Reduce(\(a,b) a+b$cpuSeconds,y,init=0.0)
 print(cpuSeconds)
-#> [1] 0.052218
+#> [1] 0.051353
 ```
 
 The simulation time is very slightly longer than before, because each

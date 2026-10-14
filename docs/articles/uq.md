@@ -145,8 +145,7 @@ Before running the MCMC algorithms with the ABC approach, it is useful
 to run a precalibration to determine good starting values for the MCMC
 chains, and obtain further information, such as a crude estimate of the
 parameter covariances. Precalibration can be performed in UQSA using
-function
-[`preCalibration()`](https://icpm-kth.github.io/uqsa/reference/preCalibration.md).
+function `preCalibration()`.
 
 ## Mapping between model parameters and MCMC parameters
 

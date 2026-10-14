@@ -1,4 +1,4 @@
-# Find the uncertainty of values in a data.frame that is derived from a tsv file or similar
+# Finds the uncertainty of values in a data.frame
 
 given a data.frame, this function will look for a column that contains
 some kind of standard error and retrieve it. The returned numeric vector

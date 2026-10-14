@@ -1,4 +1,4 @@
-# This function can be used to specify default values
+# Specifies default values, as fallback
 
 When attributes are missing, the
 [`base::attr()`](https://rdrr.io/r/base/attr.html) function returns

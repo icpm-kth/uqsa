@@ -1,4 +1,4 @@
-# Retrieve information about the model's C code
+# Retrieves information about the model's C code
 
 Returns the location of the model's C code (a file).
 

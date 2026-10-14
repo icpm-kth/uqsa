@@ -1,4 +1,4 @@
-# Add information about compiled code
+# Adds information about compiled code
 
 Adds the path of the shared library (.so file) to the ODE model.
 
@@ -31,8 +31,8 @@ c_path(o) <- write_c_code(generate_code(o))
 so_path(o) <- shlib(o)
 print(o)
 #>                 Model name : AKAR4
-#>                     C file : /tmp/RtmpFdwl1n/RtmpesODen/adf9204aaf2748b8/AKAR4.c [2026-09-02 16:22:35.438565]
-#>             shared library : /tmp/RtmpFdwl1n/RtmpesODen/adf9204aaf2748b8/AKAR4.so [2026-09-02 16:22:35.438565]
+#>                     C file : /tmp/Rtmpo4qbYO/adf9204aaf2748b8/AKAR4.c [2026-10-14 13:35:30.149431]
+#>             shared library : /tmp/Rtmpo4qbYO/adf9204aaf2748b8/AKAR4.so [2026-10-14 13:35:30.149431]
 #>  Number of state variables : 2
 #>       Number of parameters : 5
 #>          Number of outputs : 1

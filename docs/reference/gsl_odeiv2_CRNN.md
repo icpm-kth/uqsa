@@ -1,4 +1,4 @@
-# simulates a CRNN ode model with extra work
+# Simulates a CRNN ode model
 
 This function calls a C function which solves an initial value problem,
 derived from a CRNN.

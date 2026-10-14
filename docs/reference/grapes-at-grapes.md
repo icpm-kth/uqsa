@@ -1,4 +1,4 @@
-# Fetch an Attribute
+# Fetches an Attribute, with checks
 
 This function differs from `rlang::%@%` in that it stops if the
 attribute doesn't exist.

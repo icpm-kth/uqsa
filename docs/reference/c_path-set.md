@@ -1,4 +1,4 @@
-# Add information about the model's C code
+# Adds information about the model's C code
 
 Adds the location of the model's C code (a file). The model is typically
 a list of named numeric and named character vectors, which describe the

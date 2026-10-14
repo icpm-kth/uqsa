@@ -1,4 +1,4 @@
-# print information about the mcmc variable
+# Prints information about the mcmc variable
 
 Some mcmc variables have many attributes, which clutter the screen when
 accidentally printed. This function prevents these long printouts.
@@ -39,6 +39,6 @@ print(p)
 #> kf_C_AKAR4 kb_C_AKAR4 kcat_AKARp 
 #>      0.018      0.106     10.200 
 #>              simulations: 3 (length)
-#>            logLikelihood: -2491.25
+#>            logLikelihood: -2051.95
 #>                    prior: 0.819699
 ```

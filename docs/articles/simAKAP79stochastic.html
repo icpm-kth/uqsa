@@ -16,7 +16,8 @@
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Simulation of a Stochastic Model for the AKAP79 reaction network">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<meta property="og:title" content="Simulation of a Stochastic Model for the AKAP79 reaction network">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -26,7 +27,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">uqsa</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -465,7 +466,6 @@ supplied parameters.</p>
 <p><img src="simAKAP79stochastic_files/figure-html/ggplot-1.png" class="r-plt" alt="" width="700"></p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_ode.html">as_ode</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required namespace: pracma</span></span>
 <span><span class="fu"><a href="../reference/c_path.html">c_path</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/write_c_code.html">write_c_code</a></span><span class="op">(</span><span class="fu"><a href="../reference/generate_code.html">generate_code</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/so_path.html">so_path</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shlib.html">shlib</a></span><span class="op">(</span><span class="va">o</span><span class="op">)</span></span>
 <span><span class="va">sode</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simfi.html">simfi</a></span><span class="op">(</span><span class="va">ex</span>,<span class="va">o</span>,parMap<span class="op">=</span><span class="va">log10ParMap</span><span class="op">)</span></span>

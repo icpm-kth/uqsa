@@ -1,4 +1,4 @@
-# This creates a closure that simulates the model
+# Creates a closure that simulates the model
 
 This function will use the
 [parallel::mclapply](https://rdrr.io/r/parallel/mclapply.html) to do the
