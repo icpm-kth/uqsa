@@ -5,7 +5,12 @@
 #' @keywords internal
 #' @param x experiment setup (a list)
 #' @param y simulation results (a list)
-#' @param ... forwarded to the more specific plot function [plot.errors]
+#' @param func.names restrict the shown output functions to these
+#'     named outputs
+#' @param verbose prints additional information about name matching
+#'     between experiments and simulations
+#' @param ... forwarded to the more specific plot function
+#'     [plot.errors]
 #' @return plot object
 #' @export
 #' @examples
@@ -16,8 +21,7 @@
 #' p0 <- values(m$Parameter)
 #' y <- s(p0)
 #' plot(ex,y)
-plot.experiments <- function(x, y, ...){
-	experiments <- x
+plot.experiments <- function(x, y, func.names=NULL, verbose=getOption("uqsa.verbose",FALSE),...){
 	if (missing(y)) {
 		simulations <- NULL
 	} else {
@@ -25,29 +29,41 @@ plot.experiments <- function(x, y, ...){
 		simulations <- y
 		nf <- dim(simulations[[1]]$func)[1]
 	}
-	for (i in seq_along(experiments)){
-		time <- experiments[[i]]$outputTimes
+	if (missing(func.names)){
+		out <- seq(NROW(x[[1]]$data))
+	} else if (is.character(func.names)) {
+		out <- which(rownames(x[[1]]$data) %in% func.names)
+	} else if (is.numeric(func.names)){
+		out <- func.names
+	}
+	print(out)
+	p <- list()
+	for (i in seq_along(x)){
+		time <- x[[i]]$outputTimes
 		if (!is.null(simulations)){
 			n <- dim(simulations[[i]]$func)
 		} else {
-			n <- c(dim(experiments[[i]]$data),1)
+			n <- c(dim(x[[i]]$data),1)
 		}
 		errors(ex[[i]]$data)[!is.finite(errors(ex[[i]]$data))] <- NA
 		ex[[i]]$data[!is.finite(errors(ex[[i]]$data))] <- NA
-		oNames <- rownames(experiments[[i]]$data)
-		for (j in seq(n[1])){
+		oNames <- rownames(x[[i]]$data)
+		for (j in out){
 			a <- ceiling(255*exp(-0.01*n[3]))
 			## only plot if the output was actually measured
-			if (oNames[j] %in% colnames(experiments[[i]]$measurements)){
-				d <- experiments[[i]]$data[j,]
-				p <- plot(
-					errors::as.errors(time),
-					d,
-					main=names(experiments)[i],
-					xlab="time",
-					ylab=oNames[j],
-					lty=1,
-					...
+			if (verbose) cli::cli_alert_info("{oNames[j]} %in% {paste(colnames(x[[i]]$measurements),collapse=' ')}")
+			if (oNames[j] %in% colnames(x[[i]]$measurements)){
+				d <- x[[i]]$data[j,]
+				p <- c(p,
+					plot(
+						errors::as.errors(time),
+						d,
+						main=names(x)[i],
+						xlab="time",
+						ylab=oNames[j],
+						lty=1,
+						...
+					)
 				)
 				if (!is.null(simulations)){
 					matplot(

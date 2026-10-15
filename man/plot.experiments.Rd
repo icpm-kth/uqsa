@@ -4,14 +4,21 @@
 \alias{plot.experiments}
 \title{Plot function for experiments}
 \usage{
-\method{plot}{experiments}(x, y, ...)
+\method{plot}{experiments}(x, y, func.names = NULL, verbose = getOption("uqsa.verbose", FALSE), ...)
 }
 \arguments{
 \item{x}{experiment setup (a list)}
 
 \item{y}{simulation results (a list)}
 
-\item{...}{forwarded to the more specific plot function \link[errors:plot.errors]{plot.errors}}
+\item{func.names}{restrict the shown output functions to these
+named outputs}
+
+\item{verbose}{prints additional information about name matching
+between experiments and simulations}
+
+\item{...}{forwarded to the more specific plot function
+\link[errors:plot.errors]{errors::plot.errors}}
 }
 \value{
 plot object

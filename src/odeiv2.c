@@ -836,7 +836,6 @@ int FisherInformation(double *FI, Rdata experiment, double *funcSens, gsl_matrix
 				gsl_vector_set(&s.vector,i,INFINITY);
 			}
 		}
-
 		Sf = gsl_matrix_view_array(funcSens+(j*n*m),m,n);
 		if (gsl_matrix_memcpy(Sf_sd,&Sf.matrix) != GSL_SUCCESS){
 			REprintf("[%s] memcpy didn't work for Sf.matrix(%zu,%zu).",__func__,(&Sf.matrix)->size1,(&Sf.matrix)->size2);
