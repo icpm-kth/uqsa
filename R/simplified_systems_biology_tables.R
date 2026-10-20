@@ -306,10 +306,13 @@ stoichiometric_matrix <- function(m,compound.names=rownames(m$Compound)) {
 	reactants <- stoichiometry(lapply(strsplit(m$Reaction$reactants,"+",fixed=TRUE),trimws))
 	products <- stoichiometry(lapply(strsplit(m$Reaction$products,"+",fixed=TRUE),trimws))
 	for (j in seq_along(reactants)){
-		r <- reactants[[j]] %with% compound.names
-		p <- products[[j]] %with% compound.names
-		if (!is.null(r)) modify(nu,names(r),j) <- -r
-		if (!is.null(p)) modify(nu,names(p),j) <- p
+		nu[compound.names,j]=tapply(
+			c(-reactants[[j]],products[[j]]),
+			factor(
+				c(names(reactants[[j]]),names(products[[j]])),
+				levels=compound.names),
+			sum,default=0
+		)
 	}
 	attr(nu,"reactants") <- reactants
 	attr(nu,"products") <- products
@@ -390,60 +393,21 @@ linear_scale <- function(x,str_scale=attr(x,"scale")){
 	return(paste0(a,b))
 }
 
-#' Add a Reaction to an ODE
-#'
-#' This function operates on an ODE vector field. It makes it possible
-#' to construct the right hand side one reaction at a time:
-#' `reaction(vf,r,p) <- flux` will add a flux term to the ODE's right
-#' hand side (vector field), adding the given `flux` (reaction
-#' kinetic) in the right places, informed by the reactants and
-#' products.
-#'
-#' The reactants, e.g.: `c(A=2,B=1)` name which state variables are affected by the flux (negatively, for reactants)
-#' The products, e.g.: `c(C=1)` name which state variables are affected positively by the flux.
-#'
-#' @keywords internal
-#' @param vf a named character vector of the right length (number of state variables)
-#' @param r a named vector of stoichiometric coefficients for the reactants
-#' @param p a named vector of stoichiometric coefficients for the products
-#' @param value a reaction rate (string)
-#' @return updated vf
-#' @noRd
-#' @examples
-#' Reaction <- "A + B <=> C"
-#' r <- c(A=1,B=1)
-#' p <- c(C=1)
-#' vf <- c(A="",B="",C="") # empty
-#' reaction(vf,r,p) <- "A*B-C"
-#' print(vf)
-`reaction<-` <- function(vf,r,p,value){
-	stopifnot(vf %has% "names")
-	if (value %has% "names") {
-		f <- names(value)
+react <- function(r,p,flux,iv){
+	if (flux %has% "names") {
+		f <- names(flux)
 	} else {
-		f <- value
+		f <- flux
 	}
-	if (!is.null(r) && r %has% "names"){
-		l <- names(vf) %in% names(r)
-		k <- names(r) %in% names(vf)
-		if (all(r==1)) F <- f
-		if (all(r==1)){
-			vf[l] <- sprintf("%s-%s",vf[l],f)
-		} else {
-			vf[l] <- sprintf("%s-%i*%s",vf[l],r[k],f)
-		}
-	}
-	if (!is.null(p) && p %has% "names"){
-		l <- names(vf) %in% names(p)
-		k <- names(p) %in% names(vf)
-		if (all(p==1)){
-			vf[l] <- sprintf("%s+%s",vf[l],f)
-		} else {
-			vf[l] <- sprintf("%s+%i*%s",vf[l],p[k],f)
-		}
-	}
+	stopifnot(length(r)==length(p))
+	R <- c(
+		mapply(\(n,f) ifelse(n==1,paste0('-',f),sprintf("%+i*%s",n,f)),r,f),
+		mapply(\(n,f) ifelse(n==1,paste0('+',f),sprintf("%+i*%s",n,f)),p,f)
+	)
+	vf <- tapply(unlist(R),factor(unlist(lapply(R,names)),levels=names(iv)),paste0,collapse=" ",default="0")
 	return(vf)
 }
+
 
 #' Reduces the size of the system
 #'

@@ -40,13 +40,7 @@ as_ode <- function(m,cla=requireNamespace("pracma",quietly=TRUE)){
 	out <- formulae(m$Output)
 	nu <- stoichiometric_matrix(m)
 	flux <- formulae(m$Reaction)
-	vf <- character(NROW(iv))
-	names(vf) <- names(iv)
-	r <- nu %@% 'reactants'
-	p <- nu %@% 'products'
-	for (i in seq_along(flux)){
-		reaction(vf,r[[i]],p[[i]]) <- flux[i]
-	}
+	vf <- react(attr(nu,'reactants'),attr(nu,'products'),flux,iv)
 	xp <- c(formulae(m$Expression),formulae(m$Reaction))
 	if (as.logical(cla)){
 		CL <- conservation_law_analysis(nu,iv)
@@ -276,6 +270,7 @@ yJacobian <- function(f,x){
 #' print(replace_powers(c("2^3.1","10^-6","x^2","(1+(1+x))^(n-0.5)")))
 replace_powers <- function(v){
 	w<-.Call("replace_pow",as.character(v))
+	names(w) <- names(v)
 	return(w)
 }
 
@@ -481,7 +476,6 @@ generateCode <- function(odeModel){
 	# Output-Function Parameter Jacobian
 	fJp <- replace_powers(t(yJacobian(odeModel$func,names(odeModel$par))))
 	attr(fJp,"stride") <- length(odeModel$par)
-
 	C <- c(C,"",
 		writeComment("ODE vector field: y' = f(t,y;p)"),
 		writeCFunction(modelName,"vf",

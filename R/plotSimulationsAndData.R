@@ -36,7 +36,6 @@ plot.experiments <- function(x, y, func.names=NULL, verbose=getOption("uqsa.verb
 	} else if (is.numeric(func.names)){
 		out <- func.names
 	}
-	print(out)
 	p <- list()
 	for (i in seq_along(x)){
 		time <- x[[i]]$outputTimes
@@ -79,5 +78,5 @@ plot.experiments <- function(x, y, func.names=NULL, verbose=getOption("uqsa.verb
 			}
 		}
 	}
-	return(p)
+	return(invisible(p))
 }

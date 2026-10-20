@@ -27,7 +27,7 @@ kinetic_law_matrix <- function(r){
 		F <- matrix(trimws(unlist(strsplit(F,"-",fixed=TRUE))),ncol=2,byrow=TRUE,dimnames=list(rownames(r),c("fwd","bwd")))
 		return(F)
 	}
-	direction <- list(c("fwd","forward"),c("bwd","backward"))
+	direction <- list(c("fwd","forward"),c("bwd","backward","rev","reverse"))
 	F <- matrix("",NROW(r),2,dimnames=list(rownames(r),c("fwd","bwd")))
 	for (d in direction){
 		j <- na.omit(pmatch(d,colnames(r)))
@@ -144,14 +144,13 @@ stoichiometry <- function(formulaList){
 	sc <- onlyCoefficients(formulaList)
 	nm <- onlyNames(formulaList)
 	sc <- mapply(
-		function(a,b) {
-			if (length(a)==0) {
+		function(COUNTs,NAMEs) {
+			if (length(COUNTs)==0) {
 				return(NULL)
-			} else if (length(a) == 1 && is_empty(b)){
+			} else if (length(COUNTs) == 1 && is_empty(NAMEs)){
 				return(NULL)
 			} else {
-				names(a) <- trimws(b)
-				return(a)
+				return(tapply(COUNTs,NAMEs,sum))
 			}
 		},
 		sc,
