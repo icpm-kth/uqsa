@@ -77,7 +77,7 @@ onlyCoefficients <- function(formulaList){
 #' @examples
 #' print(onlyNames("12 A"))
 onlyNames <- function(formulaList){
-	return(lapply(formulaList,\(x) sub("^[0-9]+\\b","",x)))
+	return(lapply(formulaList,\(x) sub("^[^[:alpha:]]*","",x)))
 }
 
 ## the best thing is to keep empty lists of reactants or products just
