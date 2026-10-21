@@ -178,7 +178,7 @@ void set_names(Rdata list, const char *names[]);
 
 int cat_parameters(gsl_vector *c, double *p, size_t np, Rdata input){
 	memcpy(c->data,p,sizeof(double)*np);
-	if (input && input != R_NilValue) {
+	if (input && input != R_NilValue && length(input)>0) {
 		memcpy(c->data+(c->size - length(input)),REAL(AS_NUMERIC(input)),sizeof(double)*length(input));
 	}
 	return 0;
