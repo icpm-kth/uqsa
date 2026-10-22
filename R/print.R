@@ -1,3 +1,170 @@
+boxes <- function(txt,header=names(txt),footer=NULL,...){
+	if (length(txt) == 0) return(invisible(txt))
+	stopifnot(is(txt,"list"))
+	content_width <- max(sapply(txt,cli::ansi_nchar))
+	if (missing(footer)){
+		footer <- character(length(txt))
+		for (i in seq_along(footer)) {
+			footer[i] <- digest::digest(txt[[i]])
+		}
+	} else if (is.null(footer)){
+		footer <- character(length(txt))
+	} else if (length(footer)<length(txt)) {
+		footer <- rep_len(as.character(footer), length(txt))
+	}
+	B <- character(length(txt))
+	for (i in seq_along(txt)){
+		B[i] <- cli::boxx(
+			cli::ansi_align(txt[[i]], width=content_width),
+			padding=c(0,1,0,1),
+			header=header[i],
+			footer=footer[i],
+			border_style='round',
+			...
+		)
+	}
+	padding_width <- 6
+	N <- max(1,floor(cli::console_width()/(content_width+padding_width)))
+	for (j in seq(1,length(B),by=N)){
+		b <- B[seq(j,min(j+N-1,length(B)))]
+		BB <- do.call(
+			paste,
+			cli::ansi_strsplit(b,'\n',fixed=TRUE)
+		)
+		cat(BB,sep='\n')
+	}
+	return(invisible(txt))
+}
+
+boxes_of_reactions <- function(x,...){
+	if (is.null(x) || !is(x,"list") || length(x)==0) return(invisible(x))
+	if (is.null(x$Reaction) || NROW(x$Reaction) == 0) return(invisible(x))
+	MR <- max(nchar(x$Reaction$reactants))
+	MP <- max(nchar(x$Reaction$products))
+	K <- kinetic_law_matrix(x$Reaction)
+	rev <- x$Reaction$is.reversible
+	if (is.null(rev)) rev <- !logical(NROW(x$Reaction))
+	leftrightharpoons <- " \u21CC "
+	rightharpoon <- " \u21C0 "
+	W <- cli::ansi_nchar(leftrightharpoons)
+	arr <- ifelse(rev,leftrightharpoons,rightharpoon)
+	rev_str <- ifelse(rev,"reversible","irreversible")
+	txt <- list()
+	for (i in seq(NROW(x$Reaction))){
+		fwd <- paste(cli::col_blue("fwd:"),cli::col_grey(K[i,'fwd']))
+		bwd <- paste(cli::col_yellow("bwd:"),cli::col_grey(K[i,'bwd']))
+		# take care of possible synonyms of EMPTYSET
+		r <- gsub("\\b(NULL|Nil|\u00D8|\u2205x)\\b","NONE",x$Reaction$reactants[i])
+		p <- gsub("\\b(NULL|Nil|\u00D8|\u2205x)\\b","NONE",x$Reaction$products[i])
+		r_or_none <- ifelse(nchar(r)>0,r,"NONE")
+		p_or_none <- ifelse(nchar(p)>0,p,"NONE")
+		rs <- sprintf("%*s%s%s",MR,r_or_none,arr[i],p_or_none)
+		rs <- gsub("\\bNONE\\b",cli::col_grey("NONE"),rs)
+		txt[[i]] <- c(
+			cli::ansi_align(rs,width=MR+MP+W),
+			fwd,
+			bwd,
+			...
+		)
+	}
+	names(txt) <- rownames(x$Reaction)
+	boxes(txt,footer=rev_str,border_col='green')
+	return(invisible(x))
+}
+
+boxes_of_experiments <- function(x,...){
+	if (is.null(x) || !is(x,"list") || length(x)==0) return(invisible(x))
+	if (is.null(x$Experiment) || NROW(x$Experiment) == 0) return(invisible(x))
+	type <- x$Experiment$type
+	if ("t0" %in% names(x$Experiment)) {
+		t0 <- x$Experiment$t0
+	} else {
+		t0 <- numeric(NROW(x$Experiment))
+	}
+	if ("event" %in% names(x$Experiment)) {
+		ev <- x$Experiment$event
+	} else {
+		ev <- character(NROW(x$Experiment))
+	}
+	txt <- list()
+	type_str <- rep("time series",NROW(x$Experiment))
+	for (i in seq(NROW(x$Experiment))){
+		l <- colnames(x[[rownames(x$Experiment)[i]]]) %in% rownames(x$Output)
+		if (any(l)){
+			measured <- cli::col_grey(
+				paste(
+					colnames(x[[rownames(x$Experiment)[i]]])[l],
+					collapse=", "
+				)
+			)
+		} else {
+			measured <- cli::col_red("NA")
+		}
+		DATA <- x[[rownames(x$Experiment)[i]]]
+		if (is.null(DATA)) {
+			d <- cli::col_red("none")
+		} else {
+			d <- cli::style_bold(cli::col_green(NROW(DATA)))
+		}
+		txt[[i]] <- c(
+			paste(cli::col_magenta("data rows:"),d),
+			paste(cli::col_cyan("t0:"),t0[i]),
+			paste(cli::col_blue("events:"),ev[i]),
+			paste(cli::col_yellow("measured:"),measured),
+			...
+		)
+		if (!is.null(type) && isTRUE(grepl("^ *[Dd]ose[ .]?([Rr]esponse)? *$",type[i]))){
+			type_str[i] <- "dose response"
+		}
+	}
+	names(txt) <- rownames(x$Experiment)
+	boxes(txt,footer=type_str,border_col='yellow')
+	return(invisible(x))
+}
+
+#' Prints an overview of the model
+#'
+#' Print an overview of the model, arranged as boxes on screen.  The
+#' primary information is the reactions within the model.  When
+#' verbose output is required, boxes representing each simulation
+#' experiment and data-set that corresponds to it are displayed as
+#' well.
+#'
+#' @export
+#' @param x the model (class 'sbmodel')
+#' @param verbose whether to print information about the experiments and data-sets
+#' @param ... ignored
+#' @return the model, invisibly, called for side-effect
+#' @examples
+#' m <- model_from_tsv(uqsa_example("AKAR4"))
+#' print(m)
+print.sbmodel <- function(x,verbose=getOption("uqsa.verbose",TRUE),...){
+	if (is.null(x) || !is(x,"list") || length(x)==0) return(invisible(x))
+	d <- cli::cli_div(
+		theme=list(
+			rule=list("line-type" = "double", "color" = "cyan")
+		)
+	)
+	cli::cli_rule(cli::style_bold(cli::col_br_white(comment(x))))
+	cli::cli_end(d)
+	n <- c(
+		"constant"=NROW(x$Constant),
+		"input parameters"=NROW(x$Input),
+		"parameters"=NROW(x$Parameter),
+		"reacting compounds"=NROW(x$Compound),
+		"reactions"=NROW(x$Reaction),
+		"experiments"=NROW(x$Experiment)
+	)
+	cat(sprintf("%*s : %i",max(nchar(names(n))),names(n),n),sep='\n')
+	cli::cli_h1("Reactions")
+	boxes_of_reactions(x)
+	if (as.logical(verbose)) {
+		cli::cli_h1("Experiments")
+		boxes_of_experiments(x)
+	}
+	return(invisible(x))
+}
+
 #' Prints an interpretation string of a unit
 #'
 #' The unit object is a tagged data frame, with these columns:

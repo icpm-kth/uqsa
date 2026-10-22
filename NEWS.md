@@ -1,3 +1,8 @@
+# uqsa 0.8.4
+
+- added a print function for the model itself
+- the model printout is organized in box-art to condense the information
+
 # uqsa 0.8.3
 
 - The ODE solver was made more robust with respect to missing data

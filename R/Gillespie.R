@@ -24,18 +24,28 @@ kinetic_law_matrix <- function(r){
 			r$kinetic.law,
 			paste0(r$kinetic.law," - 0")
 		)
-		F <- matrix(trimws(unlist(strsplit(F,"-",fixed=TRUE))),ncol=2,byrow=TRUE,dimnames=list(rownames(r),c("fwd","bwd")))
-		return(F)
-	}
-	direction <- list(c("fwd","forward"),c("bwd","backward","rev","reverse"))
-	F <- matrix("",NROW(r),2,dimnames=list(rownames(r),c("fwd","bwd")))
-	for (d in direction){
-		j <- na.omit(pmatch(d,colnames(r)))
-		if (length(j)>0){
-			F[,head(d,1)] <- r[[j[1]]]
-		} else {
-			warning(sprintf("no %s rates found in reaction table.",tail(d,1)))
+		F <- matrix(
+			trimws(
+				unlist(
+					strsplit(F,"-",fixed=TRUE)
+				)
+			),
+			ncol=2,
+			byrow=TRUE,
+			dimnames=list(rownames(r),c("fwd","bwd"))
+		)
+	} else {
+		direction <- list(c("fwd","forward"),c("bwd","backward","rev","reverse"))
+		F <- matrix("",NROW(r),2,dimnames=list(rownames(r),c("fwd","bwd")))
+		for (d in direction){
+			j <- na.omit(pmatch(d,colnames(r)))
+			if (length(j)>0){
+				F[,head(d,1)] <- r[[j[1]]]
+			} else {
+				warning(sprintf("no %s rates found in reaction table.",tail(d,1)))
+			}
 		}
+
 	}
 	return(F)
 }

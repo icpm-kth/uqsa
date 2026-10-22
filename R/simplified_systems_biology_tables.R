@@ -54,6 +54,7 @@ model_from_tsv <- function(src="."){
 	m <- lapply(src,read.delim,row.names=1)
 	comment(m) <- modelName
 	names(m) <- names(src)
+	class(m) <- c("sbmodel","list")
 	return(m)
 }
 
