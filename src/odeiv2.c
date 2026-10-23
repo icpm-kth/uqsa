@@ -87,7 +87,7 @@ int (*ODE_jacp)(double t, const double y_[], double *jacp_, double *dfdt_, void 
 int (*ODE_func)(double t, const double y_[], double *func_, void *par);
 int (*ODE_funcJac)(double t, const double y_[], double *funcJac_, void *par);
 int (*ODE_funcJacp)(double t, const double y_[], double *funcJacp_, void *par);
-int (*ODE_default)(double t, void *par);
+int (*ODE_default)(double t, double *par);
 int (*ODE_init)(double t, double *y_, void *par);
 int (*ODE_event)(double t, double *y_, void *par, int EventLabel, double dose);
 
@@ -99,7 +99,7 @@ union symbol {
 	int (*ODE_func)(double t, const double y_[], double *func_, void *par);
 	int (*ODE_funcJac)(double t, const double y_[], double *funcJac_, void *par);
 	int (*ODE_funcJacp)(double t, const double y_[], double *funcJacp_, void *par);
-	int (*ODE_default)(double t, void *par);
+	int (*ODE_default)(double t, double *par);
 	int (*ODE_init)(double t, double *y_, void *par);
 	int (*ODE_event)(double t, double *y_, void *par, int EventLabel, double dose);
 };
