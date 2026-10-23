@@ -1021,11 +1021,9 @@ r_gsl_odeiv2_outer_CRNN(
 		);
 		t = from_list(VECTOR_ELT(experiments,i),"time times t outputTimes");
 		t0 = asReal(
-			AS_NUMERIC(
-				from_list(
-					VECTOR_ELT(experiments,i),
-					"intial_time initialTime t0 T0"
-				)
+			from_list(
+				VECTOR_ELT(experiments,i),
+				"intial_time initialTime t0 T0"
 			)
 		);
 		ev = event_from_R(
