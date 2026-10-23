@@ -177,9 +177,17 @@ Rdata from_list(Rdata List, const char *name);
 void set_names(Rdata list, const char *names[]);
 
 int cat_parameters(gsl_vector *c, double *p, size_t np, Rdata input){
+	if (!c || !p || !np) return 1;
 	memcpy(c->data,p,sizeof(double)*np);
-	if (input && input != R_NilValue && length(input)>0) {
-		memcpy(c->data+(c->size - length(input)),REAL(AS_NUMERIC(input)),sizeof(double)*length(input));
+	if (!input || input == R_NilValue || length(input)==0) return 0;
+	Rdata input_r;
+	double *dest = c->data+(c->size - length(input));
+	if (TYPEOF(input) == REALSXP){
+		memcpy(dest,REAL(input), sizeof(double) * length(input));
+	} else { /* perhaps integer? try to recover */
+		input_r = PROTECT(Rf_coerceVector(input, REALSXP));
+		memcpy(dest, REAL(input_r), sizeof(double) * length(input_r));
+		UNPROTECT(1);
 	}
 	return 0;
 }
@@ -207,12 +215,12 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters, Rdata time_
 	double tf = 10;
 	double t = t0;
 	double *p;
-	double limit_seconds = REAL(time_limit_s)[0];
+	double limit_seconds = asReal(time_limit_s);
 	int limit_nstep = asInteger(nstep);
 	clock_t cpu_t[2];
 	Rdata time, input, E, initialState, initialTime, yf, y, f, numSteps, cpuTime;
 	const char *snames[] = {"state","func","status","numSteps","cpuSeconds",NULL};
-	Rdata solution = PROTECT(NEW_LIST(length(experiments)));
+	Rdata solution = PROTECT(NEW_LIST(length(experiments)));   // 1
 	SET_NAMES(solution,GET_NAMES(experiments));
 	gsl_vector_int_view column;
 	Rdata status;
@@ -227,14 +235,14 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters, Rdata time_
 		E = VECTOR_ELT(experiments,i);
 		initialState = from_list(E,"initialState");
 		initialTime = from_list(E,"initialTime");
-		time = from_list(E,"outputTimes");
-		input = from_list(E,"input");
-		t0 = *REAL(AS_NUMERIC(initialTime));
-		y = PROTECT(alloc3DArray(INTSXP,n,length(time),M));
-		f = PROTECT(alloc3DArray(REALSXP,nf,length(time),M));
-		status = PROTECT(NEW_INTEGER(M));
-		numSteps = PROTECT(NEW_INTEGER(M));
-		cpuTime = PROTECT(NEW_NUMERIC(M));
+		time = PROTECT(AS_NUMERIC(from_list(E,"outputTimes"))); // 1
+		input = PROTECT(AS_NUMERIC(from_list(E,"input")));      // 1
+		t0 = asReal(initialTime);
+		y = PROTECT(alloc3DArray(INTSXP,n,length(time),M));     // 1
+		f = PROTECT(alloc3DArray(REALSXP,nf,length(time),M));   // 1
+		status = PROTECT(NEW_INTEGER(M));                       // 1
+		numSteps = PROTECT(NEW_INTEGER(M));                     // 1
+		cpuTime = PROTECT(NEW_NUMERIC(M));                      // 1
 		for (k=0;k<M;k++){
 			t = t0;
 			p = REAL(parameters)+(k*nrp);
@@ -250,7 +258,7 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters, Rdata time_
 			INTEGER(status)[k]=success; // success
 			count=0;
 			for (j=0; j<length(time); j++){
-				tf = REAL(AS_NUMERIC(time))[j];
+				tf = REAL(time)[j];
 				model_propensities(t0,x->data,c->data,a->data);
 				while (t < tf && (status_t = advance_in_time(&t,x,c,a,RNG))==0){
 					count++;
@@ -271,6 +279,7 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters, Rdata time_
 			INTEGER(numSteps)[k] = count;
 			REAL(cpuTime)[k] = seconds(clock(),cpu_t[0]);
 		}
+		UNPROTECT(2); // Rdata time, input
 		yf = PROTECT(NEW_LIST(5));
 		SET_VECTOR_ELT(yf,0,y);
 		SET_VECTOR_ELT(yf,1,f);
@@ -279,9 +288,9 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters, Rdata time_
 		SET_VECTOR_ELT(yf,4,cpuTime);
 		set_names(yf,snames);
 		SET_VECTOR_ELT(solution,i,yf);
-		UNPROTECT(6);
+		UNPROTECT(6); // yf-members
 	}
-	UNPROTECT(1);
+	UNPROTECT(1);     // solution
 	gsl_rng_free(RNG);
 	return solution;
 }

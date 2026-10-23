@@ -107,18 +107,7 @@ union symbol {
 
 void transition_matrix(gsl_matrix *Ji, gsl_matrix *Jf, double ti, double tf, gsl_matrix *phi);
 
-typedef enum {SCALE,DIAG,MATVEC} tf_t;
-
-typedef struct {
-	tf_t type;
-	int length_b;
-	int l;
-	double *A;
-	double *b;
-	gsl_vector *y; /* result vector */
-} affine_tf;
-
-enum event_type {affine_tf_event, model_func_event};
+enum event_type {model_func_event};
 struct event {
 	enum event_type type;
 	int *label;
@@ -127,8 +116,6 @@ struct event {
 	int nDose;
 	double *time;
 	double *dose;
-	affine_tf *state;
-	affine_tf *par;
 };
 
 static double sec(clock_t c){
@@ -141,10 +128,8 @@ static int in_list(Rdata List, const char *name){
 	if (!isVector(List)) return -1;
 	int i;
 	R_xlen_t N=length(List);
-	int l=strlen(name);
-	char *str=malloc(l+1);
+	char *str=strdup(name);
 	char *context=NULL;
-	*(((char*) memcpy(str,name,l))+l)='\0';
 	char *t=strtok_r(str," ",&context);
 	while (t){
 		for (i=0;i<N;i++){
@@ -170,138 +155,39 @@ Rdata from_list(Rdata List, const char *name){
 	return E;
 }
 
-/* creates an affine transformation struct from R objects, Rdata
-	 objects need to be kept alive as A and b arfe taken from R via
-	 pointers. Some memory is allocated to store an intermediate result. */
-static affine_tf* /* an affine transformation (linear with offset) map: x -> A*x+b */
-affine_transformation(
- Rdata A,/*a series of matrices, possibly just a set of diagonals*/
- Rdata b)/*a series of offsets*/
-{
-	if (A == R_NilValue || b == R_NilValue) return NULL;
-
-	Rdata dA=GET_DIM(A);
-	Rdata db=GET_DIM(b);
-	assert(length(dA)==length(db));
-	R_xlen_t n=length(dA);
-	int *dim=INTEGER(dA);
-	int *dim_b=INTEGER(db);
-	int j;
-	if (dim[0] != dim_b[0]) return NULL;
-	affine_tf *L=malloc(sizeof(affine_tf));
-	if (n==3) {
-		L->l=dim[2];
-	} else {
-		L->l=1;
-	}
-
-	if (dim[0]==dim[1]){
-		L->type=MATVEC;
-	} else if (dim[1] == 1) {
-		L->type=DIAG;
-	} else {
-		REprintf("[%s] A and b have weird dimensionality: A is ",__func__);
-		for (j=0;j<n;j++) Rprintf("%i%s",dim[j],j==n-1?"×":" ");
-		REprintf(" and b is ");
-		for (j=0;j<n;j++) Rprintf("%i%s",dim_b[j],j==n-1?"×":" ");
-		REprintf("\nThey should be both three dimensional (length(dim(A))==3).\n");
-		return NULL;
-	}
-	L->A=REAL(A);
-	L->b=REAL(b);
-	L->length_b=dim[0];
-	L->y=gsl_vector_alloc(dim[0]);
-	return L;
-}
-
-static void free_tf(affine_tf *L){
-	if (L){
-		gsl_vector_free(L->y);
-		free(L);
-	}
-}
-
-/* This function applies a affine transformation to the vector z. We
-	assume that A and b and z in the input are all of sufficient size:
-	n×n for matrices and n for vectors. A can be n-sized as well, if A
-	is a diagonal matrix, then we only store the diagonal. n is stored
-	in the transformation structure as length_b. */
-static int /* the returned status of the gsl operations */
-apply_tf(
-	affine_tf *L, /* a transformation struct: A and b are cast to gsl_vectors here */
-	double *z,/* an array of size n, it is updated using L */
-	int t_index /* if A and b are each a series of matrices, pick the one with this offset */
-)
-{
-	if (!L) return GSL_SUCCESS; /* nothing to be done */
-	if (!z || !(t_index >=0 && L->l > 0)) {
-		REprintf("[%s] (%p) z must be a pointer to a double array. t_index must be a valid index (0<=%i<%i), L must be applicable to z\n",__func__,(void*) z,t_index,L->l);
-		return GSL_EINVAL;
-	}
-	int n=L->length_b;
-	int i=t_index % (L->l);
-	int status=GSL_SUCCESS;
-	gsl_vector_view x=gsl_vector_view_array(z,n);
-	gsl_vector_view b=gsl_vector_view_array((L->b)+i*n,n);
-	gsl_vector_view a;
-	gsl_matrix_view A;
-	switch (L->type){
-	case SCALE:
-		status|=gsl_vector_memcpy(L->y,&(x.vector));
-		status|=gsl_vector_scale(L->y,L->A[i]);
-		break;
-	case DIAG:
-		/* y <- diag(A)*x + b */
-		a=gsl_vector_view_array((L->A)+i*n,n);
-		status|=gsl_vector_memcpy(L->y,&(x.vector));
-		status|=gsl_vector_mul(L->y,&(a.vector));
-		break;
-	case MATVEC:
-		/* y <- A*x + b */
-		A=gsl_matrix_view_array((L->A)+i*n*n,n,n);
-		status|=gsl_blas_dgemv(CblasNoTrans, 1.0, &(A.matrix), &(x.vector), 0.0, L->y);
-		break;
-	default:
-		REprintf("[%s] unknown transformation type %i.\n",__func__,L->type);
-		return GSL_EINVAL;
-	}
-	if (status==GSL_SUCCESS){
-		gsl_vector_add(L->y,&(b.vector));
-		gsl_vector_memcpy(&(x.vector),L->y);
-	}
-	return status;
-}
 
 struct event* event_from_R(Rdata E){
-	if (E == R_NilValue) return NULL;
-	if (!IS_VECTOR(E)) return NULL;
-	Rdata tf=from_list(E,"tf");
+	if (E == R_NilValue || !IS_VECTOR(E)) return NULL;
 	Rdata time = from_list(E,"time");
+	if (!time || time == R_NilValue) return NULL;
+	if (TYPEOF(time) != REALSXP || length(time)==0) {
+		REprintf("[%s] The event time variable is of the wrong type (must be double vector), or it is empty (%i).\n",__func__,length(time));
+		return NULL;
+	}
 	Rdata label = from_list(E,"label");
+	if (!label || label == R_NilValue) return NULL;
+	if (TYPEOF(label) != INTSXP || length(label)==0){
+		REprintf("[%s] The transformation label is of the wrong type (must be integer vector), or it is empty (%i).\n",__func__,length(time));
+		return NULL;
+	}
 	Rdata dose = from_list(E,"dose");
-	if (time == R_NilValue) return NULL;
+	if (!dose || dose == R_NilValue) return NULL;
+	if (TYPEOF(dose) != REALSXP || length(dose)==0){
+		REprintf("[%s] The transformation dose is of the wrong type (must be double vector), or it is empty (%i).\n",__func__,length(time));
+		return NULL;
+	}
+	if (length(dose) != length(label)){
+		REprintf("[%s] event time vector and event label vector must be the same length for this type of event. (%d != %d)\n",__func__,length(dose),length(label));
+		return(NULL);
+	}
 	struct event *event=malloc(sizeof(struct event));
-	if (label != R_NilValue){
-		event->nL = length(label);
-		event->label = INTEGER(AS_INTEGER(label));
-		event->dose = REAL(AS_NUMERIC(dose));
-		event->nDose = length(dose);
-		event->type = model_func_event;
-	} else if (tf != R_NilValue){
-		Rdata state_tf=from_list(tf,"state");
-		Rdata param_tf=from_list(tf,"param");
-		event->state=affine_transformation(from_list(state_tf,"A"),from_list(state_tf,"b"));
-		event->par=affine_transformation(from_list(param_tf,"A"),from_list(param_tf,"b"));
-		event->type=affine_tf_event;
-	} else {
-		REprintf("[%s] unknown type of event.\n",__func__);
-	}
-	ssize_t lt=length(time);
-	if (event->type == model_func_event && lt != event->nL){
-		REprintf("[%s] event time vector and event label vector must be the same length for this type of event. (%zd != %i)\n",__func__,lt,event->nL);
-	}
-	event->time = REAL(AS_NUMERIC(time));
-	event->nt=lt;
+	event->nL = length(label);
+	event->label = INTEGER(label);
+	event->dose = REAL(dose);
+	event->nDose = length(dose);
+	event->type = model_func_event;
+	event->nt = length(time);
+	event->time = REAL(time);
 	return event;
 }
 
@@ -311,10 +197,6 @@ struct event* event_from_R(Rdata E){
 static void event_free(struct event **ev){
 	if (ev && *ev){
 		switch ((*ev)->type){
-			case affine_tf_event:
-			free_tf((*ev)->state);
-			free_tf((*ev)->par);
-			break;
 			case model_func_event:
 			/* for now, no action is needed */
 			break;
@@ -437,6 +319,7 @@ simulate_timeseries(
 	int *n) /* (OUT) number of steps taken */
 {
 	gsl_set_error_handler_off();
+	if (!time || !time->size) return 1;
 	int nt=time->size;
 	int ny=(int) sys.dimension;
 	gsl_vector *y=gsl_vector_alloc(ny);
@@ -464,10 +347,6 @@ simulate_timeseries(
 				return(status);
 			}
 			switch (event->type){
-			case affine_tf_event:
-				apply_tf(event->state,y->data,i);
-				apply_tf(event->par,(double*) sys.params,i);
-				break;
 			case model_func_event:
 				nL = event->nL;
 				nDose = event->nDose;
@@ -524,7 +403,7 @@ gsl_matrix* params_alloc(Rdata experiments){
 		N=length(experiments);
 		P=gsl_matrix_alloc(N,p->size);
 		for (i=0;i<N;i++){
-			input = from_list(VECTOR_ELT(experiments,i),"input Input u inputs Inputs");
+			input = PROTECT(AS_NUMERIC(from_list(VECTOR_ELT(experiments,i),"input Input u inputs Inputs")));
 			nu = (input != R_NilValue) ? length(input) : 0;
 			row = gsl_matrix_row(P,i);
 			gsl_vector_memcpy(&row.vector,p);
@@ -532,6 +411,7 @@ gsl_matrix* params_alloc(Rdata experiments){
 				u = gsl_matrix_ptr(P,i,np-nu);
 				memcpy(u, REAL(input), nu*sizeof(double));
 			}
+			UNPROTECT(1);
 		}
 	} else {
 		P = gsl_matrix_alloc(1,p->size);
@@ -559,10 +439,9 @@ gsl_matrix* init_alloc(const gsl_odeiv2_system sys, gsl_matrix *p){
 
 void update_initial_values(gsl_vector *y0, gsl_odeiv2_system sys, Rdata iv){
 	gsl_vector_view r_init;
-	if (!y0) return;
-	if (!sys.params) return;
-	if (iv != R_NilValue && IS_VECTOR(iv) && length(iv) == y0->size){
-		r_init = gsl_vector_view_array(REAL(AS_NUMERIC(iv)),length(iv));
+	if (!y0 || !sys.params) return;
+	if (iv != R_NilValue && IS_VECTOR(iv) && TYPEOF(iv) == REALSXP && length(iv) == y0->size){
+		r_init = gsl_vector_view_array(REAL(iv),length(iv));
 		gsl_vector_memcpy(y0,&(r_init.vector));
 	} else if (ODE_init!=NULL && y0->size == sys.dimension) {
 		ODE_init(0.0,y0->data,(double*) sys.params);
@@ -770,6 +649,14 @@ int gradLogLikelihood(double *gll, Rdata experiment, double *func, double *funcS
 	if (!IS_NUMERIC(stdv)){
 		stdv = from_list(experiment,"stdv sd standardError standardDeviationOfTheMean");
 	}
+	if (!data || data==R_NilValue || TYPEOF(data) != REALSXP) {
+		REprintf("[%s] data must be made available (of type double) to calculate the gradient of the log-likelihood.\n",__func__);
+		return 1;
+	}
+	if (!stdv || stdv==R_NilValue || TYPEOF(stdv) != REALSXP) {
+		REprintf("[%s] standard errors of the data must be made available (of type double) to calculate the gradient of the log-likelihood.\n",__func__);
+		return 1;
+	}
 	//Rdata stdv=from_list(experiment,"stdv standardError standardDeviationOfTheMean");
 	Rdata time=from_list(experiment,"time times t outputTimes");
 	R_xlen_t nt=length(time);
@@ -815,6 +702,14 @@ int FisherInformation(double *FI, Rdata experiment, double *funcSens, gsl_matrix
 	Rdata stdv=getAttrib(data,install("errors"));
 	if (!IS_NUMERIC(stdv)){
 		stdv = from_list(experiment,"stdv sd standardError standardDeviationOfTheMean");
+	}
+	if (!data || data==R_NilValue || TYPEOF(data) != REALSXP) {
+		REprintf("[%s] data must be made available (of type double) to calculate the gradient of the log-likelihood.\n",__func__);
+		return 1;
+	}
+	if (!stdv || stdv==R_NilValue || TYPEOF(stdv) != REALSXP) {
+		REprintf("[%s] standard errors of the data must be made available (of type double) to calculate the gradient of the log-likelihood.\n",__func__);
+		return 1;
 	}
 	Rdata time=from_list(experiment,"time times t outputTimes OutputTimes");
 	R_xlen_t nt=length(time);
@@ -875,6 +770,7 @@ r_gsl_odeiv2_outer_fi(
  Rdata nmax) /* set a maximum number of steps for the solver */
 {
 	gsl_set_error_handler_off();
+	if (TYPEOF(parameters) != REALSXP) REprintf("[%s] parameters have the wrong type.\n",__func__);
 	const gsl_odeiv2_step_type* step_types[] = {gsl_odeiv2_step_msbdf, gsl_odeiv2_step_msadams, gsl_odeiv2_step_bsimp, gsl_odeiv2_step_rk4imp, gsl_odeiv2_step_rk2imp, gsl_odeiv2_step_rk1imp, gsl_odeiv2_step_rk8pd, gsl_odeiv2_step_rkck, gsl_odeiv2_step_rkf45, gsl_odeiv2_step_rk4, gsl_odeiv2_step_rk2, NULL};
 	const char* model_so=CHAR(asChar(getAttrib(modelName,install("comment"))));
 	const char* model_name=CHAR(STRING_ELT(modelName,0));
@@ -920,19 +816,18 @@ r_gsl_odeiv2_outer_fi(
 	if (NMAX) gsl_odeiv2_driver_set_nmax(driver,NMAX);
 	for (i=0; i<N; i++){
 		iv = from_list(VECTOR_ELT(experiments,i),"initial_value initialState initialValue initialValues");
-		t = from_list(VECTOR_ELT(experiments,i),"time times outputTimes t");
-		t0 = REAL(AS_NUMERIC(from_list(VECTOR_ELT(experiments,i),"intial_time initialTime t0 T0")))[0];
+		t = PROTECT(AS_NUMERIC(from_list(VECTOR_ELT(experiments,i),"time times outputTimes t")));
+		t0 = asReal(from_list(VECTOR_ELT(experiments,i),"intial_time initialTime t0 T0"));
 		ev = event_from_R(from_list(VECTOR_ELT(experiments,i),"event events scheduledEvents scheduledEvent scheduled_event"));
 		initial_value = gsl_matrix_row(Y0,0);
 		sys.params = gsl_matrix_ptr(P,i,0);
 		nt = length(t);
-		time=gsl_vector_view_array(REAL(AS_NUMERIC(t)),nt);
+		time=gsl_vector_view_array(REAL(t),nt);
 		ny = Y0->size2;
 		state=PROTECT(alloc3DArray(REALSXP,ny,nt,M));
 		cpuSeconds=PROTECT(NEW_NUMERIC(M));
 		numSteps=PROTECT(NEW_INTEGER(M));
 		Status=PROTECT(NEW_INTEGER(M));
-
 		for (j=0; j<ny*nt*M; j++) REAL(state)[j]=NA_REAL; /* initialize to NA */
 		/* here we initialize optional return values */
 		/* each output element implies the ones following it (fisherInformation implies all the rest) */
@@ -954,8 +849,8 @@ r_gsl_odeiv2_outer_fi(
 			for (j=0;j<nf*nt*M;j++) REAL(func)[j]=NA_REAL;     /* initialize to NA */
 		}
 		for (k=0;k<M;k++){
-			y=gsl_matrix_view_array(REAL(AS_NUMERIC(state))+(nt*ny*k),nt,ny);
-			memcpy((double*) sys.params, REAL(AS_NUMERIC(parameters))+abs(nrows(parameters))*k, abs(nrows(parameters))*sizeof(double));
+			y=gsl_matrix_view_array(REAL(state)+(nt*ny*k),nt,ny);
+			memcpy((double*) sys.params, REAL(parameters)+abs(nrows(parameters))*k, abs(nrows(parameters))*sizeof(double));
 			update_initial_values(&initial_value.vector,sys,iv);
 			ct0=clock();
 			status=simulate_timeseries(
@@ -966,7 +861,7 @@ r_gsl_odeiv2_outer_fi(
 				&(time.vector),
 				ev,
 				&(y.matrix),
-				REAL(time_limit_seconds)[0],
+				asReal(time_limit_seconds),
 				INTEGER(numSteps)+k
 			);
 			ct1=clock();
@@ -1027,7 +922,7 @@ r_gsl_odeiv2_outer_fi(
 		set_names(yf_list,yf_names);
 		SET_VECTOR_ELT(res_list,i,yf_list);
 		event_free(&ev);
-
+		UNPROTECT(1); /* t */
 		UNPROTECT(1); /* yf_list */
 		UNPROTECT(1); /* cpuSeconds */
 		UNPROTECT(1); /* numSteps*/
@@ -1141,7 +1036,7 @@ r_gsl_odeiv2_outer_CRNN(
 		);
 		initial_value = gsl_vector_view_array(REAL(iv),ny);
 		nt = length(t);
-		time=gsl_vector_view_array(REAL(AS_NUMERIC(t)),nt);
+		time=gsl_vector_view_array(REAL(t),nt);
 		Y=PROTECT(alloc3DArray(REALSXP,ny,nt,M));
 		cpuSeconds=PROTECT(NEW_NUMERIC(M));
 		numSteps=PROTECT(NEW_INTEGER(M));
@@ -1151,7 +1046,7 @@ r_gsl_odeiv2_outer_CRNN(
 		for (j=0;j<nf*nt*M;j++) REAL(F)[j]=NA_REAL;   /* initialize to NA */
 		for (k=0;k<M;k++){
 			p.l = (REAL(lparameters)+np*2*k); /* number of reactions, fwd & bwd */
-			y=gsl_matrix_view_array(REAL(AS_NUMERIC(Y))+(nt*ny*k),nt,ny);
+			y=gsl_matrix_view_array(REAL(Y)+(nt*ny*k),nt,ny);
 			ct0=clock();
 			status=simulate_timeseries(
 				sys,
@@ -1161,7 +1056,7 @@ r_gsl_odeiv2_outer_CRNN(
 				&(time.vector),
 				ev,
 				&(y.matrix),
-				REAL(time_limit_seconds)[0],
+				asReal(time_limit_seconds),
 				INTEGER(numSteps)+k
 			);
 			ct1=clock();
