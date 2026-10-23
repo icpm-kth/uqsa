@@ -358,6 +358,7 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 #' @param swapFunc can be a custom function that does the MPI
 #'     communication and decides whether or nopt to swap temperatures
 #' @param initial.value default starting position for Markov chains
+#' @param verbose when FALSE, nothing will be printed (except errors and warnings).
 #' @return an mcmc closure m(parMCMC,N,eps) that implicitly uses the
 #'     supplied update function
 #' @export
@@ -368,13 +369,12 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 #'   ## prepare the update functions
 #'   pt_mcmc <- mcmc_mpi(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures)
 #' }
-mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures, initial.value=NULL){
+mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures, initial.value=NULL, verbose=getOption("uqsa.verbose",FALSE)){
 	if (is.null(initial.value) || inherits(initial.value,"mcmcVariable")){
 		if (as.logical(verbose)) cli::cli_alert_info("Markov chain will start with provided initial position, by default.")
 	} else {
 		stop("initial.value must be an mcmc variable, if provided at all.")
 	}
-
 	if (!requireNamespace("pbdMPI",quietly=TRUE)) stop("this functions requires that pbdMPI is installed.")
 	D <- max(2*swapDelay+1,1)
 	M <- function(parMCMC=initial.value,N=1000,eps=1e-4){

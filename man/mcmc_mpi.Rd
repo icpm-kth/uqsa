@@ -9,7 +9,8 @@ mcmc_mpi(
   comm,
   swapDelay = 0,
   swapFunc = pbdMPI_bcast_reduce_temperatures,
-  initial.value = NULL
+  initial.value = NULL,
+  verbose = getOption("uqsa.verbose", FALSE)
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ iterations \link{deprecated}}
 communication and decides whether or nopt to swap temperatures}
 
 \item{initial.value}{default starting position for Markov chains}
+
+\item{verbose}{when FALSE, nothing will be printed (except errors and warnings).}
 }
 \value{
 an mcmc closure m(parMCMC,N,eps) that implicitly uses the
