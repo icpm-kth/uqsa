@@ -204,6 +204,8 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #' implicit (as a closure) or attributes of parGiven.
 #'
 #' @param update and update function
+#' @param initial.value the (optional) default initial position of the
+#'     Markov chain
 #' @param verbose prints a progress bar when TRUE
 #' @return M(initPar,N), a function of initial starting values and
 #'     number of Markov chain steps
@@ -218,8 +220,13 @@ change_temperature <- function(b1,ll1,b2,ll2){
 #'  } else {
 #'    smallSample <- rwm(rwm %@% "init",10,1e-4)
 #'  }
-mcmc <- function(update, verbose=getOption("uqsa.verbose", interactive())){
-	M <- function(parMCMC,N=1000,eps=1e-4){
+mcmc <- function(update, initial.value=NULL, verbose=getOption("uqsa.verbose", interactive())){
+	if (is.null(initial.value) || inherits(initial.value,"mcmcVariable")){
+		if (as.logical(verbose)) cli::cli_alert_info("Markov chain will start with provided initial position, by default.")
+	} else {
+		stop("initial.value must be an mcmc variable, if provided at all.")
+	}
+	M <- function(parMCMC=initial.value,N=1000,eps=1e-4){
 		sample <- matrix(NA,nrow=N,ncol=length(parMCMC))
 		colnames(sample) <- names(parMCMC)
 		ll <- numeric(N)
@@ -350,6 +357,7 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 #'     iterations [deprecated]
 #' @param swapFunc can be a custom function that does the MPI
 #'     communication and decides whether or nopt to swap temperatures
+#' @param initial.value default starting position for Markov chains
 #' @return an mcmc closure m(parMCMC,N,eps) that implicitly uses the
 #'     supplied update function
 #' @export
@@ -360,10 +368,16 @@ pbdMPI_bcast_reduce_temperatures <- function(i, B, LL, H, r, comm, cs){
 #'   ## prepare the update functions
 #'   pt_mcmc <- mcmc_mpi(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures)
 #' }
-mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures){
+mcmc_mpi <- function(update, comm, swapDelay=0, swapFunc=pbdMPI_bcast_reduce_temperatures, initial.value=NULL){
+	if (is.null(initial.value) || inherits(initial.value,"mcmcVariable")){
+		if (as.logical(verbose)) cli::cli_alert_info("Markov chain will start with provided initial position, by default.")
+	} else {
+		stop("initial.value must be an mcmc variable, if provided at all.")
+	}
+
 	if (!requireNamespace("pbdMPI",quietly=TRUE)) stop("this functions requires that pbdMPI is installed.")
 	D <- max(2*swapDelay+1,1)
-	M <- function(parMCMC,N=1000,eps=1e-4){
+	M <- function(parMCMC=initial.value,N=1000,eps=1e-4){
 		r <- attr(comm,"rank") # 0..n-1
 		cs  <- attr(comm,"size")
 		sample <- matrix(nrow=N,ncol=length(parMCMC))
@@ -1550,7 +1564,8 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 			gprior=gprior,
 			fisherInformation=fi(parMapJac),
 			fisherInformationPrior=diag(1.0/m$Parameter$stdv^2)
-		)
+		),
+		initial.value=parMCMC
 	)
 	attr(smmala,"sim") <- s
 	attr(smmala,"init") <- parMCMC
@@ -1637,7 +1652,8 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 			logLikelihood=ll,
 			dprior=dprior,
 			Sigma=diag(stdv^2)
-		)
+		),
+		initial.value=parMCMC
 	)
 	attr(metropolis,"sim") <- s
 	attr(metropolis,"init") <- parMCMC

@@ -8,7 +8,8 @@ mcmc_mpi(
   update,
   comm,
   swapDelay = 0,
-  swapFunc = pbdMPI_bcast_reduce_temperatures
+  swapFunc = pbdMPI_bcast_reduce_temperatures,
+  initial.value = NULL
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ iterations \link{deprecated}}
 
 \item{swapFunc}{can be a custom function that does the MPI
 communication and decides whether or nopt to swap temperatures}
+
+\item{initial.value}{default starting position for Markov chains}
 }
 \value{
 an mcmc closure m(parMCMC,N,eps) that implicitly uses the

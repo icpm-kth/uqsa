@@ -4,10 +4,17 @@
 \alias{mcmc}
 \title{Creates a Markov Chain Monte Carlo sampler}
 \usage{
-mcmc(update, verbose = getOption("uqsa.verbose", interactive()))
+mcmc(
+  update,
+  initial.value = NULL,
+  verbose = getOption("uqsa.verbose", interactive())
+)
 }
 \arguments{
 \item{update}{and update function}
+
+\item{initial.value}{the (optional) default initial position of the
+Markov chain}
 
 \item{verbose}{prints a progress bar when TRUE}
 }
