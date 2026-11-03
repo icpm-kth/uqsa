@@ -3,6 +3,7 @@
 S3method("[",experiments)
 S3method("[",simulation)
 S3method(plot,experiments)
+S3method(plot,sbmodel)
 S3method(print,cme)
 S3method(print,experiments)
 S3method(print,mcmcVariable)

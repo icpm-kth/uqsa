@@ -1,3 +1,165 @@
+#' Represents a model in a visual way
+#'
+#' This draws an illustration that represents the interactions within
+#' a model.
+#'
+#' @param x an sbmodel (list of data-frames)
+#' @param rotate (logical) the compound labels will be angled if TRUE]
+#' @param reorder an attempt is made to place the reaction nodes
+#'     symmetrically with respect to the reactants
+#' @param arrows direct arrows are drawn between reactantsm reaction
+#'     node, and products. If FALSE, a curved line is drawn.
+#' @param ... ignored
+#' @return nothing (called for sideeffect)
+#' @export
+#' @examples
+#' m <- uqsa_example("AKAP79") |> model_from_tsv()
+#' plot(m)
+plot.sbmodel <- function(x,rotate=TRUE,reorder=FALSE,arrows=TRUE,...){
+	m <- x
+	N <- stoichiometric_matrix(m)
+	## the conservation law matrix, could be used to group species
+	## Z <- pracma::rref(t(pracma::null(t(N))))
+	R_ <- 0.45
+	R1 <- 0.5
+	R0 <- 1.0
+	R2 <- 1.5
+	R3 <- 1.65
+	n <- NROW(m$Compound)
+	dphi <- 2*pi/n
+	phi <- seq(0,2*pi-dphi,length.out=n)
+	C <- cos(phi)
+	S <- sin(phi)
+	r_ <- R_*cbind(C,S)
+	r1 <- R1*cbind(C,S)
+	r2 <- R2*cbind(C,S)
+	r3 <- R3*cbind(C,S)
+	d <- paste0("#",apply(m$Compound,1,digest::digest,algo="crc32"))
+	frame()
+	plot.window(xlim=c(-2,2),ylim=c(-2,2))
+	title(main=comment(m))
+	symbols(
+		r2[,1],r2[,2],
+		circles=rep(0.07,n),
+		inches=FALSE,
+		xlab="",
+		ylab="",
+		bg=d,
+		add=TRUE
+	)
+	symbols(
+		r1[,1],r1[,2],
+		circles=rep(0.03,n),
+		inches=FALSE,
+		bg=d,
+		add=TRUE)
+	symbols(
+		0,0,
+		circles=(0.6),
+		inches=FALSE,
+		add=TRUE,
+		fg=NA,
+		bg="#40404010"
+	)
+	text(0,0,labels="reactants")
+	if (as.logical(rotate)){
+		for (k in seq(n)){
+			text(
+				r3[k,1],r3[k,2],
+				labels=rownames(m$Compound)[k],
+				srt = phi[k] * 180 / pi,
+				adj = 0
+			)
+			text(
+				r_[k,1],r_[k,2],
+				labels=rownames(m$Compound)[k],
+				srt = phi[k] * 180 / pi,
+				adj = 1.1,
+				col = "#80808080",
+				cex=0.5
+			)
+		}
+	} else {
+		for (k in seq(n)){
+			text(
+				r3[k,1],r3[k,2]+0.07*S[k]*(abs(S[k])>0.99),
+				labels=rownames(m$Compound)[k],
+				adj=0.5*cbind((1-C[k]),(1-S[k]))
+			)
+		}
+	}
+	nr <- NROW(m$Reaction)
+	dphi <- 2*pi/nr
+	r_phi <- seq(0,2*pi-dphi,length.out=nr)
+	if (isTRUE(reorder)){
+		for (j in seq(nr)) {
+			w <- which(N[, j] != 0)
+			MPHI <- mean(phi[w])
+			r_phi[j] <- MPHI
+		}
+	}
+	C <- R0*cos(r_phi)
+	S <- R0*sin(r_phi)
+	r0 <- cbind(C,S)
+	symbols(C,S,squares=rep(0.05,nr),inches=FALSE,add=TRUE)
+	d <- paste0("#",substr(apply(m$Reaction,1,digest::digest,algo="crc32"),start=1,stop=6),"80")
+	if (isTRUE(arrows)){
+		for (j in seq(NCOL(N))){
+			if (any(N[,j]<0)) {
+				w <- which(N[,j]<0)
+				for (i in w){
+					arrows(r1[i,1],r1[i,2],r0[j,1],r0[j,2],lwd=4,col=d[j],length=0)
+				}
+			}
+			if (any(N[,j]>0)) {
+				w <- which(N[,j]>0)
+				for (i in w){
+					arrows(r0[j,1],r0[j,2],r2[i,1],r2[i,2],lwd=4,col=d[j])
+				}
+			}
+		}
+	} else {
+		for (j in seq(NCOL(N))){
+			if (any(N[,j]<0)) {
+				w <- which(N[,j]<0)
+				for (i in w){
+					p1 <- r1[i,]
+					p2 <- r0[j,]
+					m1 <- 1.3*p1
+					m2 <- 0.7*p2
+					xspline(
+						c(p1[1],m1[1],m2[1],p2[1]),
+						c(p1[2],m1[2],m2[2],p2[2]),
+						open=TRUE,
+						shape=1,
+						border=d[j],
+						lwd=4
+					)
+				}
+			}
+			if (any(N[,j]>0)) {
+				w <- which(N[,j]>0)
+				for (i in w){
+					p1 <- r0[j,]
+					p2 <- r2[i,]
+					m1 <- 1.3*p1
+					m2 <- 0.7*p2
+					xspline(
+						c(p1[1],m1[1],m2[1],p2[1]),
+						c(p1[2],m1[2],m2[2],p2[2]),
+						open=TRUE,
+						shape=1,
+						lty=2,
+						border=d[j],
+						lwd=4
+					)
+				}
+			}
+		}
+	}
+}
+
+
 #' Plot function for experiments
 #'
 #' This function uses plot.errors and the base plot functions like

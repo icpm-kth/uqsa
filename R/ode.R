@@ -32,6 +32,9 @@
 #' print(names(o))
 #' print(o$vf)
 as_ode <- function(m,cla=requireNamespace("pracma",quietly=TRUE)){
+	if (!inherits(m,"sbmodel")) {
+		stop("m has to be a systems biology model (sbmodel)")
+	}
 	iv <- values(m$Compound)
 	pv <- values(m$Parameter)
 	xp <- c(formulae(m$Expression),formulae(m$Reaction))

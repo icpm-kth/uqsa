@@ -308,7 +308,7 @@ stoichiometric_matrix <- function(m,compound.names=rownames(m$Compound)) {
 	products <- stoichiometry(lapply(strsplit(m$Reaction$products,"+",fixed=TRUE),trimws))
 	for (j in seq_along(reactants)){
 		nu[compound.names,j]=tapply(
-			c(-reactants[[j]],products[[j]]),
+			c(-1.0*reactants[[j]],products[[j]]),
 			factor(
 				c(names(reactants[[j]]),names(products[[j]])),
 				levels=compound.names),
