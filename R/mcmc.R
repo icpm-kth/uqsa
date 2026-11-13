@@ -60,6 +60,25 @@ small <- function(S,L=attr(S,"logLikelihood"),verbose=getOption("uqsa.verbose",d
 	}
 }
 
+fix_mpi_comm <- function(comm=0, verbose=getOption("uqsa.verbose",FALSE)){
+	if (is.null(comm) || !is.numeric(comm) || length(comm)!=1) comm <- 0
+	if (requireNamespace("pbdMPI",quietly=TRUE)){
+		if (is.null(attr(comm,'rank'))) {
+			attr(comm,"rank") <- pbdMPI::comm.rank(comm)
+			if (isTRUE(verbose)) cli::cli_alert_info("MPI comm lacked a rank attribute, assigned {attr(comm,'rank')}")
+		}
+		if (is.null(attr(comm,'size'))) {
+			attr(comm,"size") <- pbdMPI::comm.size(comm)
+			if (isTRUE(verbose)) cli::cli_alert_info("MPI comm lacked a size attribute, assigned {attr(comm,'size')}")
+		}
+	} else {
+		comm <- 0
+		attr(comm,"rank") <- 0
+		attr(comm,"size") <- 1
+	}
+	return(comm)
+}
+
 #' Determines a prefix from a character vector str of similar contents
 #'
 #' The result is such that `all(startsWith(str,determinePrefix(str)))`
@@ -1494,6 +1513,7 @@ logParMapJac <- function(parMCMC){
 #' @param x initial point of the Markov chain, pre in initialized to
 #'     have the right attributes.
 #' @param comm (optional) a pbdMPI comm parameter, with rank and size attribute
+#' @param beta inverse temperatur parameter for parallel tempering (scales the log-likelihood)
 #' @param verbose prints extra messages when TRUE
 #' @return `smmala` a function of three arguments: p0, N, eps; where
 #'     p0 is the starting point, N is the desired sample-size, and eps
@@ -1501,26 +1521,143 @@ logParMapJac <- function(parMCMC){
 #'     with a pre-initialized starting point.
 #' @examples
 #'   m <- model_from_tsv(uqsa_example("AKAP79"))
-#'   rwm <- high_level_smmala(m) # "random walk", metropolis algorithm
-#'   p <- rwm %@% "init"          # a valid starting point
+#'   smmala <- high_level_smmala(m) # "random walk", metropolis algorithm
+#'   p <- smmala %@% "init"         # a valid starting point
 #'   N <- 100
 #'   if (interactive()){
-#'     smallSample <- rwm(rwm %@% "init",N,1e-4)
+#'     smallSample <- smmala(p,N,1e-4)
 #'     plot(
-#'       smallSample %@% "logLikelihood",
+#'       attr(smallSample,"logLikelihood"),
 #'       type='l',
 #'       main=sprintf("%i iterations",N),
 #'       xlab="iterations",
 #'       ylab="log-likelihood"
 #'     )
 #'   } else {
-#'     smallSample <- rwm(rwm %@% "init",1,1e-4)
+#'     smallSample <- smmala(p,1,1e-4)
 #'   }
-high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=values(m$Parameter), comm, verbose=getOption("uqsa.verbose", interactive())){
+high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=values(m$Parameter), comm=0, beta=1.0, verbose=getOption("uqsa.verbose", interactive())){
 	if (is.null(o$c_path) || is.null(o$so_path) || !file.exists(o$so_path)){
 		C <- generate_code(o)
 		c_path(o) <- write_c_code(C)
 		so_path(o) <- shlib(o)
+	}
+	NO_MPI_CONTEXT <- missing(comm) || !requireNamespace("pbdMPI",quietly=TRUE)
+	comm <- fix_mpi_comm(comm) # if necessary
+	if (missing(beta)){
+		beta <- (1.0-attr(comm,'rank')/attr(comm,'size'))^2
+	}
+	SCALE <- column(m$Parameter,c("scale","base"))
+	if (is.numeric(SCALE) && all(SCALE>0)){
+		lb <- log(SCALE)
+		parMap <- function(p) {
+			return(exp(p*lb))
+		}
+		parMapJac <- function(p) {
+			return(diag(exp(p*lb)*lb))
+		}
+	} else if (all(SCALE == "log10")){
+		if (verbose) message("The parameters are given in log10-scale, so the simulator will do the reverse transformation: 10^p.")
+		parMap <- log10ParMap
+		parMapJac <- log10ParMapJac
+	} else if (all(SCALE == "log2") || all(SCALE == "ld")) {
+		if (verbose) message("The parameters are given in log2-scale, so the simulator will do the reverse transformation: 2^p.")
+		parMap <- log2ParMap
+		parMapJac <- log2ParMapJac
+	} else if (all(SCALE == "log") || all(SCALE == "ln")){
+		if (verbose) message("The parameters are given in log-scale, so the simulator will do the reverse transformation: exp(p).")
+		parMap <- logParMap
+		parMapJac <- logParMapJac
+	} else {
+		if (verbose) message("The parameters are given in linear scale, they will be used as is.")
+		parMap <- identity
+		parMapJac <- diag(rep(1.0,length(x)))
+	}
+	if (NO_MPI_CONTEXT){
+		s <- simulator.c(ex,o,parMap=parMap,omit=0)
+	} else {
+		s <- simfi(ex,o,parMap=parMap,omit=0)
+	}
+	mean <- m$Parameter$mean %otherwise% values(m$Parameter)
+	stdv <- uncertainty(m$Parameter)
+	dprior <- dNormalPrior(
+		mean=mean,
+		sd=stdv
+	)
+	gprior <- gNormalPrior(
+		mean=mean,
+		sd=stdv
+	)
+	parMCMC <- mcmc_init(
+		beta,
+		x,
+		simulate=s,
+		dprior=dprior,
+		gradLogLikelihood=gllf(parMapJac),
+		gprior=gprior,
+		fisherInformation=fi(parMapJac)
+	)
+	if (NO_MPI_CONTEXT){
+		smmala <- mcmc(
+			smmala_update(
+				simulate=s,
+				gradLogLikelihood=gllf(parMapJac),
+				dprior=dprior,
+				gprior=gprior,
+				fisherInformation=fi(parMapJac),
+				fisherInformationPrior=diag(1.0/m$Parameter$stdv^2)
+			),
+			initial.value=parMCMC
+		)
+	} else {
+		smmala <- mcmc_mpi(
+			smmala_update(
+				simulate=s,
+				gradLogLikelihood=gllf(parMapJac),
+				dprior=dprior,
+				gprior=gprior,
+				fisherInformation=fi(parMapJac),
+				fisherInformationPrior=diag(1.0/m$Parameter$stdv^2)
+			),
+			comm=comm,
+			initial.value=parMCMC
+		)
+	}
+	attr(smmala,"sim") <- s
+	attr(smmala,"init") <- parMCMC
+	return(smmala)
+}
+
+#' Initializes a numeric vector for use with the smmala algorithm
+#'
+#' Given a model `m`, this function will initialize a provided MCMC
+#' variable `x` with required attributes to work in an SMMALA
+#' context.
+#'
+#' @param x MCMC variable (numeric vector)
+#' @param m sbmodel, a lost of data.frames, as returned by [model_from_tsv]
+#' @param o ode model, see [as_ode]
+#' @param ex simulation experiments, see [experiments]
+#' @param comm MPI comm object
+#' @param beta inverse temperature parameter for parallel tempering (scales the log-likelihood)
+#' @param verbose all diagnostic messages are suppressed when this is FALSE
+#' @export
+#' @return x with attributes
+#' @examples
+#' m <- uqsa_example("AKAP79") |> model_from_tsv()
+#' p0 <- values(m$Parameter)
+#' x <- smmala_init(p0,m)
+#' print(names(attributes(x)))
+smmala_init <- function(x,m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), comm=0, beta=1.0, verbose=getOption("uqsa.verbose", interactive())){
+	if (is.null(o$c_path) || is.null(o$so_path) || !file.exists(o$so_path)){
+		C <- generate_code(o)
+		c_path(o) <- write_c_code(C)
+		so_path(o) <- shlib(o)
+	}
+	NO_MPI_CONTEXT <- missing(comm) || !requireNamespace("pbdMPI",quietly=TRUE)
+	comm <- fix_mpi_comm(comm) # if necessary
+	if (missing(beta)){
+		beta <- (1.0-attr(comm,'rank')/attr(comm,'size'))^2
 	}
 	SCALE <- column(m$Parameter,c("scale","base"))
 	if (is.numeric(SCALE) && all(SCALE>0)){
@@ -1555,62 +1692,30 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 	}
 	mean <- m$Parameter$mean %otherwise% values(m$Parameter)
 	stdv <- uncertainty(m$Parameter)
-	dprior <- dNormalPrior(
-		mean=mean,
-		sd=stdv
-	)
-	gprior <- gNormalPrior(
-		mean=mean,
-		sd=stdv
-	)
-	parMCMC <- mcmc_init(
-		beta=1.0,
-		x,
-		simulate=s,
-		dprior=dprior,
-		gradLogLikelihood=gllf(parMapJac),
-		gprior=gprior,
-		fisherInformation=fi(parMapJac)
-	)
-	if (missing(comm)){
-		smmala <- mcmc(
-			smmala_update(
-				simulate=s,
-				gradLogLikelihood=gllf(parMapJac),
-				dprior=dprior,
-				gprior=gprior,
-				fisherInformation=fi(parMapJac),
-				fisherInformationPrior=diag(1.0/m$Parameter$stdv^2)
-			),
-			initial.value=parMCMC
-		)
-	} else if (length(comm)==1 && is.numeric(comm)) {
-		if (is.null(attr(comm,'rank'))) {
-			attr(comm,"rank") <- pbdMPI::comm.rank()
-			if (isTRUE(verbose)) cli::cli_alert_info("An MPI comm parameter was provided, but lacked a rank attribute, assigned {attr(comm,'rank')}")
+	if (length(mean) != length(x)){
+		if (isTRUE(verbose)){
+			cli::cli_alert_warning("lengths differ {length(mean)} != {length(x)} between 'mean' (tsv files) and 'x' (argument)")
+			print(mean)
+			print(x)
 		}
-		if (is.null(attr(comm,'size'))) {
-			attr(comm,"size") <- pbdMPI::comm.size()
-			if (isTRUE(verbose)) cli::cli_alert_info("An MPI comm parameter was provided, but lacked a size attribute, assigned {attr(comm,'size')}")
-		}
-		smmala <- mcmc_mpi(
-			smmala_update(
-				simulate=s,
-				gradLogLikelihood=gllf(parMapJac),
-				dprior=dprior,
-				gprior=gprior,
-				fisherInformation=fi(parMapJac),
-				fisherInformationPrior=diag(1.0/m$Parameter$stdv^2)
-			),
-			comm=comm,
-			initial.value=parMCMC
-		)
-	} else {
-		stop("'comm' doesn't seem to be a valid MPI comm.")
 	}
-	attr(smmala,"sim") <- s
-	attr(smmala,"init") <- parMCMC
-	return(smmala)
+	return(
+		mcmc_init(
+			beta,
+			x,
+			simulate=s,
+			dprior=dNormalPrior(
+				mean=mean,
+				sd=stdv
+			),
+			gradLogLikelihood=gllf(parMapJac),
+			gprior=gNormalPrior(
+				mean=mean,
+				sd=stdv
+			),
+			fisherInformation=fi(parMapJac)
+		)
+	)
 }
 
 #' Determines a likely Metropolis setup based on the information in the model
@@ -1656,11 +1761,16 @@ high_level_smmala <- function(m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), x=valu
 #'   } else {
 #'     smallSample <- rwm(rwm %@% "init",N/4,1e-6)
 #'   }
-high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x=values(m$Parameter), beta=1.0, comm=NULL, verbose=getOption("uqsa.verbose", interactive())){
+high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x=values(m$Parameter), beta=1.0, comm=0, verbose=getOption("uqsa.verbose", interactive())){
 	if (is.null(so_path(o)) || !file.exists(so_path(o))){
 		C <- generate_code(o)
 		c_path(o) <- write_c_code(C)
 		so_path(o) <- shlib(o)
+	}
+	NO_MPI_CONTEXT <- missing(comm) || !requireNamespace("pbdMPI",quietly=TRUE)
+	comm <- fix_mpi_comm(comm) # if necessary
+	if (missing(beta)){
+		beta <- (1.0-attr(comm,'rank')/attr(comm,'size'))^2
 	}
 	SCALE <- column(m$Parameter,c("scale","base"))
 	if (is.numeric(SCALE) && all(SCALE>0)){
@@ -1699,12 +1809,12 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 		sd=stdv
 	)
 	parMCMC <- mcmc_init(
-		beta=beta,
+		beta,
 		x,
 		simulate=s,
 		dprior=dprior
 	)
-	if (missing(comm)){
+	if (NO_MPI_CONTEXT){
 		metropolis <- mcmc(
 			metropolis_update(
 				simulate=s,
@@ -1714,15 +1824,7 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 			),
 			initial.value=parMCMC
 		)
-	} else if (length(comm)==1 && is.numeric(comm)) {
-		if (is.null(attr(comm,'rank'))) {
-			attr(comm,"rank") <- pbdMPI::comm.rank()
-			if (isTRUE(verbose)) cli::cli_alert_info("An MPI comm parameter was provided, but lacked a rank attribute, assigned {attr(comm,'rank')}")
-		}
-		if (is.null(attr(comm,'size'))) {
-			attr(comm,"size") <- pbdMPI::comm.size()
-			if (isTRUE(verbose)) cli::cli_alert_info("An MPI comm parameter was provided, but lacked a size attribute, assigned {attr(comm,'size')}")
-		}
+	} else {
 		metropolis <- mcmc_mpi(
 			metropolis_update(
 				simulate=s,
@@ -1733,13 +1835,96 @@ high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x
 			comm=comm,
 			initial.value=parMCMC
 		)
-	} else {
-		stop("'comm' doesn't seem to be a valid MPI comm.")
 	}
 	attr(metropolis,"sim") <- s
 	attr(metropolis,"init") <- parMCMC
 	return(metropolis)
 }
+
+#' Initializes a numeric vector for use with the metropolis algorithm
+#'
+#' Given a model `m`, this function will initialize a provided MCMC
+#' variable `x` with required attributes to work in a Metropolis
+#' context.
+#'
+#' @param x MCMC variable (numeric vector)
+#' @param m sbmodel, a lost of data.frames, as returned by [model_from_tsv]
+#' @param o ode model, see [as_ode]
+#' @param ex simulation experiments, see [experiments]
+#' @param beta inverse temperature parameter for parallel tempering (scales the log-likelihood)
+#' @param comm MPI comm object
+#' @param verbose all diagnostic messages are suppressed when this is FALSE
+#' @export
+#' @return x with attributes
+#' @examples
+#' m <- uqsa_example("AKAP79") |> model_from_tsv()
+#' p0 <- values(m$Parameter)
+#' x <- metropolis_init(p0,m)
+#' print(names(attributes(x)))
+metropolis_init <- function(x,m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), beta=1.0, comm=0, verbose=getOption("uqsa.verbose", interactive())){
+	if (is.null(so_path(o)) || !file.exists(so_path(o))){
+		C <- generate_code(o)
+		c_path(o) <- write_c_code(C)
+		so_path(o) <- shlib(o)
+	}
+	NO_MPI_CONTEXT <- missing(comm) || !requireNamespace("pbdMPI",quietly=TRUE)
+	comm <- fix_mpi_comm(comm) # if necessary
+	if (missing(beta)){
+		beta <- (1.0-attr(comm,'rank')/attr(comm,'size'))^2
+	}
+	SCALE <- column(m$Parameter,c("scale","base"))
+	if (is.numeric(SCALE) && all(SCALE>0)){
+		lb <- log(SCALE)
+		parMap <- function(p) {
+			return(exp(p*lb))
+		}
+		parMapJac <- function(p) {
+			return(diag(exp(p*lb)*lb))
+		}
+	} else if (all(SCALE == "log10")){
+		if (verbose) message("The parameters are given in log10-scale, so the simulator will do the reverse transformation: 10^p.")
+		parMap <- log10ParMap
+	} else if (all(SCALE == "log2") || all(SCALE == "ld")) {
+		if (verbose) message("The parameters are given in log2-scale, so the simulator will do the reverse transformation: 2^p.")
+		parMap <- log2ParMap
+	} else if (all(SCALE == "log") || all(SCALE == "ln")){
+		if (verbose) message("The parameters are given in log-scale, so the simulator will do the reverse transformation: exp(p).")
+		parMap <- logParMap
+	} else {
+		if (verbose) message("The parameters are given in linear scale, they will be used as is.")
+		parMap <- identity
+	}
+	if (NO_MPI_CONTEXT){
+		s <- simulator.c(ex,o,parMap=parMap,omit=2)
+	} else {
+		s <- simfi(ex,o,parMap=parMap,omit=2)
+	}
+	stdv <- uncertainty(m$Parameter)
+	if (is.null(stdv)) {
+		stop("no parameter standard deviation (sigma) provided in parameter table")
+	}
+	mean <- m$Parameter$median %otherwise% m$Parameter$mean %otherwise% m$Parameter$mu %otherwise% values(m$Parameter)
+	if (length(mean) != length(x)){
+		if (isTRUE(verbose)){
+			cli::cli_alert_warning("lengths differ {length(mean)} != {length(x)} between 'mean' (tsv files) and 'x' (argument)")
+			print(mean)
+			print(x)
+		}
+	}
+
+	return(
+		mcmc_init(
+			beta=beta,
+			x,
+			simulate=s,
+			dprior=dNormalPrior(
+				mean=mean,
+				sd=stdv
+			)
+		)
+	)
+}
+
 
 #' Finds a good step-size for a given MCMC algorithm
 #'

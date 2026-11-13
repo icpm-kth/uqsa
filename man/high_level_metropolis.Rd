@@ -10,7 +10,7 @@ high_level_metropolis(
   ex = experiments(m, o),
   x = values(m$Parameter),
   beta = 1,
-  comm = NULL,
+  comm = 0,
   verbose = getOption("uqsa.verbose", interactive())
 )
 }

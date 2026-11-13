@@ -9,7 +9,8 @@ high_level_smmala(
   o = as_ode(m, cla = TRUE),
   ex = experiments(m, o),
   x = values(m$Parameter),
-  comm,
+  comm = 0,
+  beta = 1,
   verbose = getOption("uqsa.verbose", interactive())
 )
 }
@@ -24,6 +25,8 @@ high_level_smmala(
 have the right attributes.}
 
 \item{comm}{(optional) a pbdMPI comm parameter, with rank and size attribute}
+
+\item{beta}{inverse temperatur parameter for parallel tempering (scales the log-likelihood)}
 
 \item{verbose}{prints extra messages when TRUE}
 }
@@ -43,19 +46,19 @@ likelihood and prior), as well as Fisher Information functions.
 }
 \examples{
   m <- model_from_tsv(uqsa_example("AKAP79"))
-  rwm <- high_level_smmala(m) # "random walk", metropolis algorithm
-  p <- rwm \%@\% "init"          # a valid starting point
+  smmala <- high_level_smmala(m) # "random walk", metropolis algorithm
+  p <- smmala \%@\% "init"         # a valid starting point
   N <- 100
   if (interactive()){
-    smallSample <- rwm(rwm \%@\% "init",N,1e-4)
+    smallSample <- smmala(p,N,1e-4)
     plot(
-      smallSample \%@\% "logLikelihood",
+      attr(smallSample,"logLikelihood"),
       type='l',
       main=sprintf("\%i iterations",N),
       xlab="iterations",
       ylab="log-likelihood"
     )
   } else {
-    smallSample <- rwm(rwm \%@\% "init",1,1e-4)
+    smallSample <- smmala(p,1,1e-4)
   }
 }
