@@ -10,6 +10,7 @@ high_level_metropolis(
   ex = experiments(m, o),
   x = values(m$Parameter),
   beta = 1,
+  comm = NULL,
   verbose = getOption("uqsa.verbose", interactive())
 )
 }
@@ -25,6 +26,11 @@ have the right attributes.}
 
 \item{beta}{for parallel tempering, the log-likelihood will have a
 factor of \code{beta} applied to it}
+
+\item{comm}{if provided the returned algorithm will use MPI; \code{comm}
+is an MPI comm object (usually an integer), with additional
+attributes (rank, size) specifying MPI_COMM_RANK and
+MPI_COMM_SIZE.}
 
 \item{verbose}{prints extra messages when TRUE}
 }

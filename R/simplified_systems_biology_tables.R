@@ -58,11 +58,15 @@ model_from_tsv <- function(src="."){
 	return(m)
 }
 
-#' Retrieves j-th column with names
+#' Retrieves one column, preserving names
 #'
 #' When indexing a matrix or data.frame, rownames are lost. This function will
-#' return a column of a matrix, as a vector (dropping rank so to
-#' speak), but the vector will retain the rownames of the matrix
+#' return a column of a matrix or data.frame, as a vector (dropping rank so to
+#' speak), but the vector will retain the rownames of the matrix.
+#'
+#' When the desired column `j` is a character vector, it is
+#' interpreted as a list of (rough) synonyms and the first match from
+#' that list is returned.
 #'
 #' @export
 #' @param m a matrix
@@ -72,8 +76,18 @@ model_from_tsv <- function(src="."){
 #' m <- model_from_tsv(uqsa_example("AKAP79"))
 #' u <- column(m$Parameter,"unit")
 column <- function(m,j=1){
-	v <- m[,j]
-	names(v) <- rownames(m)
+	if (is.numeric(j)){
+		i <- head(j,1) # ignore all other values, if j is a vector
+	} else if (is.character(j)) {
+		i <- head(intersect(j,colnames(m)),1)
+	}
+	if (length(i)==1) {
+		v <- m[,i]
+	} else {
+		cli::cli_alert_warning("column: {head(j,1)} does not work as an index.")
+		return(NULL)
+	}
+	if (!is.null(v)) names(v) <- rownames(m)
 	return(v)
 }
 

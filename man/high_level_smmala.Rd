@@ -9,6 +9,7 @@ high_level_smmala(
   o = as_ode(m, cla = TRUE),
   ex = experiments(m, o),
   x = values(m$Parameter),
+  comm,
   verbose = getOption("uqsa.verbose", interactive())
 )
 }
@@ -21,6 +22,8 @@ high_level_smmala(
 
 \item{x}{initial point of the Markov chain, pre in initialized to
 have the right attributes.}
+
+\item{comm}{(optional) a pbdMPI comm parameter, with rank and size attribute}
 
 \item{verbose}{prints extra messages when TRUE}
 }

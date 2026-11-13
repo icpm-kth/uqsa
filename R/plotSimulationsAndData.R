@@ -160,6 +160,15 @@ plot.sbmodel <- function(x,rotate=TRUE,reorder=FALSE,arrows=TRUE,...){
 }
 
 
+replace_inf_with_na <- function(x){
+	x[!is.finite(x)] <- NA
+	if (inherits(x,"errors")){
+		errors(x)[!is.finite(errors(x))] <- NA
+		x[!is.finite(errors(x))] <- NA
+	}
+	return(x)
+}
+
 #' Plot function for experiments
 #'
 #' This function uses plot.errors and the base plot functions like
@@ -206,15 +215,13 @@ plot.experiments <- function(x, y, func.names=NULL, verbose=getOption("uqsa.verb
 		} else {
 			n <- c(dim(x[[i]]$data),1)
 		}
-		errors(ex[[i]]$data)[!is.finite(errors(ex[[i]]$data))] <- NA
-		ex[[i]]$data[!is.finite(errors(ex[[i]]$data))] <- NA
 		oNames <- rownames(x[[i]]$data)
 		for (j in out){
 			a <- ceiling(255*exp(-0.01*n[3]))
 			## only plot if the output was actually measured
 			if (verbose) cli::cli_alert_info("{oNames[j]} %in% {paste(colnames(x[[i]]$measurements),collapse=' ')}")
 			if (oNames[j] %in% colnames(x[[i]]$measurements)){
-				d <- x[[i]]$data[j,]
+				d <- replace_inf_with_na(x[[i]]$data[j,])
 				p <- c(p,
 					plot(
 						errors::as.errors(time),

@@ -2,7 +2,7 @@
 % Please edit documentation in R/simplified_systems_biology_tables.R
 \name{column}
 \alias{column}
-\title{Retrieves j-th column with names}
+\title{Retrieves one column, preserving names}
 \usage{
 column(m, j = 1)
 }
@@ -16,8 +16,13 @@ a named vector
 }
 \description{
 When indexing a matrix or data.frame, rownames are lost. This function will
-return a column of a matrix, as a vector (dropping rank so to
-speak), but the vector will retain the rownames of the matrix
+return a column of a matrix or data.frame, as a vector (dropping rank so to
+speak), but the vector will retain the rownames of the matrix.
+}
+\details{
+When the desired column \code{j} is a character vector, it is
+interpreted as a list of (rough) synonyms and the first match from
+that list is returned.
 }
 \examples{
 m <- model_from_tsv(uqsa_example("AKAP79"))
