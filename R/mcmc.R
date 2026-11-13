@@ -1911,7 +1911,6 @@ metropolis_init <- function(x,m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), beta=
 			print(x)
 		}
 	}
-
 	return(
 		mcmc_init(
 			beta=beta,
@@ -1999,4 +1998,34 @@ tune_step_size <- function(MCMC,parMCMC=attr(MCMC,"init"),target_acceptance=0.25
 		if (verbose) cli::cli_progress_done()
 	}
 	return(h)
+}
+
+#' Initializes a numeric vector for use with an MCMC algorithm
+#'
+#' This is an abstraction over functions like [metropolis_init], and [smmala_init].
+#'
+#' Given a model `m`, this function will initialize a provided MCMC
+#' variable `x` with required attributes to work in a Metropolis
+#' context.
+#'
+#' @param x MCMC variable (numeric vector)
+#' @param algorithm a character vector of length 1, naming the algorithm
+#' @param ... passed to the more specific initializer
+#' @export
+#' @return x with attributes
+#' @examples
+#' m <- uqsa_example("AKAP79") |> model_from_tsv()
+#' p0 <- values(m$Parameter)
+#' x <- init(p0,"metropolis",m)
+#' print(names(attributes(x)))
+init <- function(x,algorithm=c('metropolis','smmala'),...){
+	algorithm <- match.arg(algorithm)
+	return(
+		switch(
+			algorithm,
+			metropolis=metropolis_init(x,...),
+			smmala=smmala_init(x,...),
+			NULL
+		)
+	)
 }
