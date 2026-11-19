@@ -4,12 +4,12 @@
 \alias{linear_scale}
 \title{Interprets a character vector as names of logarithms}
 \usage{
-linear_scale(x, str_scale = attr(x, "scale"))
+linear_scale(x, scale = attr(x, "scale"))
 }
 \arguments{
 \item{x}{values}
 
-\item{str_scale}{character vector}
+\item{scale}{character vector}
 }
 \value{
 a copy of \code{x},  transformed into linear space
@@ -22,12 +22,19 @@ transformations. Similarly, providing no scale at all causes no
 transformations.
 }
 \details{
-The words in \code{str_scale} name a logarithm, e.g. "log10". Currently understood scales:
+The words in \code{scale} name a logarithm, e.g. "log10". Currently understood scales:
 \itemize{
 \item log10
 \item log2, ld
 \item ln, log
 }
+
+If \code{scale} is a number, it is understood as the base of the logarithm, e.g.: 10 means decadig logarithm.
+When it is NULL, and x is a data.frame, then this function will look for a column named "scale".
+
+A scale of 1 or below, NA, or any other illegal value will be
+interpreted as the input already be in linear scale and cause no
+effect.
 }
 \examples{
 x <- c(1,2,3,1,1,1)

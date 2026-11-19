@@ -2,6 +2,7 @@
 
 S3method("[",experiments)
 S3method("[",simulation)
+S3method(plot,cme)
 S3method(plot,experiments)
 S3method(plot,sbmodel)
 S3method(print,cme)
@@ -11,6 +12,7 @@ S3method(print,ode)
 S3method(print,sbmodel)
 S3method(print,simulation)
 S3method(print,unit_of_measurement)
+S3method(summary,unit_of_measurement)
 export("%@%")
 export("%as%")
 export("%has%")
@@ -29,6 +31,7 @@ export(c_path)
 export(clear_yacas_environment)
 export(column)
 export(conservation_law_analysis)
+export(convert_units)
 export(dCopulaPrior)
 export(dNormalPrior)
 export(dUniformPrior)
@@ -99,59 +102,87 @@ export(tune_step_size)
 export(uncertainty)
 export(unit.from.string)
 export(unit.id)
-export(unit_as_character)
 export(units_from_table)
 export(uqsa_example)
 export(values)
 export(write_and_compile)
 export(write_c_code)
 export(yJacobian)
-importFrom(VineCopula,RVinePDF)
-importFrom(VineCopula,RVineSim)
-importFrom(VineCopula,RVineStructureSelect)
-importFrom(cli,cli_progress_bar)
-importFrom(cli,cli_progress_update)
-importFrom(errors,"errors<-")
-importFrom(errors,as.errors)
-importFrom(errors,errors)
-importFrom(errors,set_errors)
-importFrom(grDevices,contourLines)
-importFrom(grDevices,hcl.colors)
-importFrom(grDevices,rgb)
-importFrom(graphics,arrows)
-importFrom(graphics,axis)
-importFrom(graphics,hist)
-importFrom(graphics,image)
-importFrom(graphics,legend)
-importFrom(graphics,lines)
-importFrom(graphics,matplot)
-importFrom(graphics,pairs)
-importFrom(graphics,par)
-importFrom(graphics,polygon)
-importFrom(graphics,rect)
-importFrom(graphics,text)
-importFrom(methods,as)
-importFrom(methods,is)
-importFrom(methods,show)
-importFrom(parallel,detectCores)
-importFrom(parallel,mclapply)
-importFrom(stats,IQR)
-importFrom(stats,acf)
-importFrom(stats,approx)
-importFrom(stats,cor)
-importFrom(stats,cov)
-importFrom(stats,dnorm)
-importFrom(stats,dunif)
-importFrom(stats,median)
-importFrom(stats,na.omit)
-importFrom(stats,quantile)
-importFrom(stats,rnorm)
-importFrom(stats,runif)
-importFrom(stats,sd)
-importFrom(stats,spline)
-importFrom(stats,var)
-importFrom(utils,flush.console)
-importFrom(utils,head)
-importFrom(utils,read.delim)
-importFrom(utils,tail)
+importFrom(VineCopula,
+  RVinePDF,
+  RVineSim,
+  RVineStructureSelect
+)
+importFrom(cli,
+  cli_progress_bar,
+  cli_progress_update
+)
+importFrom(errors,
+  "errors<-",
+  as.errors,
+  errors,
+  set_errors
+)
+importFrom(grDevices,
+  contourLines,
+  dev.cur,
+  dev.flush,
+  dev.hold,
+  hcl.colors,
+  rgb
+)
+importFrom(graphics,
+  arrows,
+  axis,
+  frame,
+  hist,
+  image,
+  legend,
+  lines,
+  matplot,
+  mtext,
+  pairs,
+  par,
+  plot.window,
+  polygon,
+  rect,
+  symbols,
+  text,
+  title,
+  xspline
+)
+importFrom(methods,
+  as,
+  is,
+  show
+)
+importFrom(parallel,
+  detectCores,
+  mclapply
+)
+importFrom(stats,
+  IQR,
+  acf,
+  approx,
+  cor,
+  cov,
+  dnorm,
+  dunif,
+  median,
+  na.omit,
+  quantile,
+  rexp,
+  rnorm,
+  runif,
+  sd,
+  setNames,
+  spline,
+  var
+)
+importFrom(utils,
+  flush.console,
+  head,
+  read.delim,
+  tail
+)
 useDynLib(uqsa, .registration = TRUE)

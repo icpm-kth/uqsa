@@ -9,8 +9,6 @@
 #'
 #' @param Model either CME or ODE model
 #' @param language either C or R
-#' @param LV Avogadro's constant multiplied by the system's volume in
-#'     litres, only used for CME models
 #' @export
 #' @return a character vector with the code
 #' @examples
@@ -18,13 +16,13 @@
 #' o <- as_ode(m)
 #' C <- generate_code(o)
 #' cat(head(C),sep="\n")
-generate_code <- function(Model,language="C", LV=6.02214076e+8){
+generate_code <- function(Model,language="C"){
 	if (is(Model,"ode") && tolower(language)=="c"){
 		C <- generateCode(Model)
 	} else if (is(Model,"ode") && tolower(language)=="r"){
 		C <- generateRCode(Model)
 	} else if(is(Model,"cme") && tolower(language)=="c"){
-		C <- generateGillespieCode(Model,LV)
+		C <- generateGillespieCode(Model)
 	} else {
 		stop(sprintf("Requested source-code type not implemented (yet): %s in %s",class(Model),as.character(language)))
 	}

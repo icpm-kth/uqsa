@@ -152,7 +152,7 @@ stoichiometry <- function(formulaList){
 		names(formulaList) <- nm
 	}
 	sc <- onlyCoefficients(formulaList)
-	nm <- onlyNames(formulaList)
+	nm <- lapply(onlyNames(formulaList),trimws)
 	sc <- mapply(
 		function(COUNTs,NAMEs) {
 			if (length(COUNTs)==0) {
@@ -177,34 +177,29 @@ stoichiometry <- function(formulaList){
 #' returned number must be multiplied by Avogadro's constant and
 #' volume.
 #'
-#' The multiplication with LV isn't done here, because this allows the
-#' user to change the volume of the system in the C-file, without
-#' re-generating it from a model. The same c-file can be re-used that
-#' way.
 #' @noRd
 #' @param m the model data.frames obtained from [model_from_tsv]
+#' @param LV product of Avogadro's number and volume
 #' @return numeric vector or character vector, depending on how the
 #'     initial concentration was provided
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAP79"))
-#' i <- initialCount(m) # as multiples of LV
-#' l <- i>0
-#' cat(
-#'   sprintf("initial count of %s is %i (%g * LV)",rownames(m$Compound)[l],round(i[l]*6e8),i[l]),
-#'   sep="\n"
-#' )
-initialCount <- function(m){
+#' print(initialCount(m)
+initialCount <- function(m,LV){
 	v <- values(m$Compound)
 	unit <- units_from_table(m$Compound)
 	u <- lapply(unit,unit.from.string)
+	## f is the conversion-factor between the given substance units and mol/liter
 	f <- unlist(lapply(u,\(x) 10^sum(x$scale*x$exponent)))
 	if (is.numeric(v)){
-		IC <- v*f
+		IC <- round(v*f*LV); # LV is in: particles/mol * liter
 	} else {
-		IC <- sprintf("%s * %s",v,f)
+		## the initial value is a formula of some sort,
+		## an expression of parameters, constants, and other expressions.
+		IC <- sprintf("(%s) * %g * LV",v,f)
 		names(IC) <- names(v)
 	}
-	attr(IC,"unit") <- unit
+	attr(IC,"unit") <- rep("1",length(IC))
 	return(IC)
 }
 
@@ -293,13 +288,14 @@ flux_matrix <- function(Reaction){
 #' volume, this function tries to convert everything to Gillespie rate
 #' constants.
 #' @param m list of data.frames, obtained via `model_from_tsv()`
+#' @param LV product of Avogadro's number (Josef Loschmidt) and system volume
 #' @return a list containing the interpreted model.
 #' @export
 #' @examples
 #' m <- model_from_tsv(uqsa_example("AKAR4"))
 #' stochasticModel <- as_cme(m)
 #' print(stochasticModel)
-as_cme <- function(m){
+as_cme <- function(m,LV=6.02214076e+8){
 	rev <- as.logical(m$Reaction[["is.reversible"]])
 	F <- matrix(
 		c(
@@ -313,8 +309,8 @@ as_cme <- function(m){
 	cr <- stoichiometry(strsplit(F[,2],"+",fixed=TRUE))
 	names(cr) <- paste0(rownames(m$Reaction),"_bwd")
 	k <- c(
-		linear_scale(values(m$Parameter),m$Parameter$scale),
-		linear_scale(values(m$Input),m$Input$scale)
+		linear_scale(m$Parameter),
+		linear_scale(m$Input)
 	)
 	u <- c(
 		units_from_table(m$Parameter),
@@ -322,73 +318,58 @@ as_cme <- function(m){
 	)
 	attr(k,"unit") <- u
 	kl <- flux_matrix(m$Reaction)
+	ic <- linear_scale(m$Compound) # will have units, as linear_scale returns them
+	mcc <- moleCountConversion(attr(ic,"unit"))
+	pcc <- moleCountConversion(attr(k,"unit"))
+	stochastic_par <- convert_units(k,LV)
+	constants <- linear_scale(m$Constant) # preserves unit attribute
 	CME <- list(
-		left=cl, # reactants
-		right=cr,# products
-		parConversion=moleCountConversion(u), #parameterConversion(u,cl,cr,kl),
-		initialCount=initialCount(m),
-		par=k,
+		left=cl,                              # reactants
+		right=cr,                             # products
+		k=k,                                  # original (kinetic) parameters
+		initialConcentration=ic,
+		mcc=mcc,                              # mole to count conversion structure
+		initialCount=initialCount(m,LV),      # as number of particles
+		par=stochastic_par,                   # Gillespie parameters
+		pcc=pcc,                              # parameter conversion to counts and seconds
 		expression=formulae(m$Expression),
 		reactionMultiplicityFWD=sapply(cl,\(x) 1+sum(x-1)),
 		reactionMultiplicityBWD=sapply(cr,\(x) 1+sum(x-1)),
-		const=values(m$Constant),
+		const=constants,
 		kinetic.law=kl,
+		reaction.formula=cbind(
+			fwd=paste(m$Reaction$reactants,m$Reaction$products,sep=" -> "),
+			bwd=paste(m$Reaction$reactants,m$Reaction$products,sep=" <- ")
+		),
 		output=formulae(m$Output),
 		c_path=NULL,
 		c.date=NULL,
 		so_path=NULL,
 		so.date=NULL,
+		LV=LV,
 		name=comment(m)
 	)
+	comment(CME) <- comment(m)
 	class(CME) <- "cme"
 	return(CME)
 }
 
 reactionEffect <- function(sm){
-	all_reactants <- rep(
-		mapply(
-			\(a,b) {
-				unique(c(names(a),names(b)))
-			},
-			sm$left,
-			sm$right,
-			SIMPLIFY = FALSE
-		),
-		2
-	)
-	rNames <- c(names(sm$left),names(sm$right))
-	names(all_reactants) <- rNames
-	ar <- lapply( # affected reaction propensities
-		all_reactants,
-		\(reactants){
-			return(
-				unique(
-					unlist(
-						lapply(
-							sprintf("\\b%s\\b",reactants),
-							FUN=\(pat) grep(pat,all_reactants)
-						)
-					)
-				)
-			)
-		}
-	)
-	m <- c(sm$reactionMultiplicityFWD,sm$reactionMultiplicityBWD)
 	return(
 		unlist(
 			mapply(
-				\(x,y,n) {
+				\(x,y,n,rf) {
 					c(
-						sprintf("\tcase _%s:",n),
-						sprintf("\t\t%s -= %i; x[_%s] = %s;",names(x),x,names(x),names(x)),
-						sprintf("\t\t%s += %i; x[_%s] = %s;",names(y),y,names(y),names(y)),
-						sprintf("\t\ta[_%s] = %i*%s;",rNames[ar[[n]]],m[ar[[n]]],sm$kinetic.law[ar[[n]]]),
+						sprintf("\tcase _%s: /* %s */",n,rf),
+						sprintf("\t\tx[_%s] -= %i;",names(x),x),
+						sprintf("\t\tx[_%s] += %i;",names(y),y),
 						sprintf("\t\tbreak;")
 					)
 				},
 				c(sm$left,sm$right),
 				c(sm$right,sm$left),
 				c(names(sm$left),names(sm$right)),
+				sm$reaction.formula,
 				SIMPLIFY=FALSE
 			)
 		)
@@ -397,16 +378,16 @@ reactionEffect <- function(sm){
 
 lengths <- function(v){
 	if (is.null(v) || length(v)==0) return(0)
-	else return(sapply(as.character(v),nchar))
+	else return(nchar(as.character(v)))
 }
 
-padding <- function(v,upper.bound=40){
-	return(upper.bound - lengths(v))
+padding <- function(...,upper.bound=40){
+	return(pmax(0,upper.bound - lengths(paste(...))))
 }
 
 #' Returns a string that contains code to scale the parameter
 #'
-#' The goal is to convertthe kinetic parameter k to the stochastic
+#' The goal is to convert the kinetic parameter k to the stochastic
 #' parameter c.
 #'
 #' The input is a pre-calculated factor f, determined from the
@@ -425,14 +406,14 @@ scaleParameter <- function(f,x,name,arg="par"){
 	return(
 		paste0(
 		sprintf("\t%s[_%s] = ",arg,name),
-		ifelse(f<1,sprintf("(%s[_%s]/%g)",arg,name,1.0/f),sprintf("(%s[_%s]*%g)",arg,name,f)),
+		ifelse(f<1,sprintf("(%s[_%s]/%g)",arg,name,1/f),sprintf("(%s[_%s]*%g)",arg,name,f)),
 		mapply(\(x,name)
 			switch(as.character(x),
 			'1'="*LV;",
 			'0'=";",
 			'-1'="/LV;",
 			'-2'="/(LV*LV);",
-			sprintf("/pow(LV,%i);",x)),x,name)
+			sprintf("*pow(LV,%i);",x)),x,name)
 		)
 	)
 }
@@ -441,6 +422,130 @@ spacing <- function(v,max.width=40){
 	if (is.null(v)) return(max.width)
 	if (!is.null(names(v))) return(max.width - lengths(v) - lengths(names(v)))
 	else return(max.width - lengths(v))
+}
+
+prod_1 <- function(str, n) {
+	if (n <= 1) return(str)
+	return(
+		paste(
+			c(str, sprintf("(%s-%i)", str, seq_len(n-1))),
+			collapse="*"
+		)
+	)
+}
+
+rate_to_propensity <- function(reaction.rate,verbose=getOption("uqsa.verbose",TRUE)){
+	if (any(grepl("[-+/(]",reaction.rate))){
+		cli::cli_alert_info("reaction rate '{reaction.rate}' is not a mass action reaction.")
+		return(reaction.rate)
+	}
+	extract_factors <- function(e) {
+		if (is.call(e) && identical(e[[1]], as.name("*"))) {
+			c(extract_factors(e[[2]]), extract_factors(e[[3]]))
+		} else if (is.call(e) && identical(e[[1]], as.name("^")) && is.numeric(e[[3]])) {
+			rep(list(e[[2]]), e[[3]])
+		} else {
+			list(e)
+		}
+	}
+	## factors of mass action reaction
+	f <- vapply(extract_factors(str2lang(reaction.rate)),deparse1,character(1))
+	u <- unique(f)
+	n <- setNames(tabulate(match(f, u)), u)
+	prop <- mapply(prod_1,u,n)
+	return(paste(prop,collapse="*"))
+}
+
+## # alternative implementation for rate to propensity for mass action reactions with up to two reactants:
+## x <- re_substitutes(
+## 	x,
+## 	rex(boundary,capture(alpha,any_of(alpha,digit,"_"),name="A"),"*",capture_group("A"),boundary),
+## 	sprintf("%s*(%s-1)",cg(1),cg(1))
+## )
+## x <- re_substitutes(
+## 	x,
+## 	rex(boundary,capture(alpha,any_of(alpha,digit,"_"),name="A"),"^2",boundary),
+## 	sprintf("%s*(%s-1)",cg(1),cg(1))
+## )
+## x <- sub("\\b([[:alnum:]_]+)^2\\b","\\1*(\\1-1)",x)
+## fmt <- "\ta[_%s%s] = %s; %*s /* 0.5*%i*%s (%s)*/"
+
+
+#' Generates C code for Propensities
+#'
+#' Propensities can be slightly different depending on whether the
+#' reaction is combining two different molecules or two of the same.
+#'
+#' `A` and `B` shall be two different compounds and the number of
+#' molecules for each, while `a` and `b` are the concentrations for
+#' the two substances (e.g. in nM).
+#'
+#' Combinatorics:
+#'
+#' - in `A + B -> C` the number of combinations is `A*B`
+#' - in `A + A -> C` the number of uniqe combinations is `0.5*A*(A-1)`
+#'
+#' Propensity: consists of a parameter (factor) `c`, and the number of combinations, e.g.: `c*A*B`
+#'
+#' We are provided with a string from the kinetic formulation of the
+#' model, e.g.: kf*a*b, using some unit of cencentration in kf and the concentrations, e.g. nM
+#' (nanomoles per litre): kf is in 1/(nM*s), a & b are in nM.
+#'
+#' So, the two expressions are very similar.
+#'
+#' Given a function `f(kf,a,b) = kf*a*b`, we can plug in counts into
+#' the slots for `a` and `b` and convert the unit of `k` to remain
+#' compatible, we can get the propensity like this: `f(kf*nM,A,B)`
+#'
+#' For heterodimerization, and similar processes, it is a bit different:
+#'
+#' kinetic law: kf*A*A
+#' propensity: 0.5*c*a*(a-1)
+#'
+#' So, given the user supplied function `g(kf,a)` we can plug in `g(0.5*c,A)`
+#' the appropriate `c` is `2*kf*nM` (to get rid of the unit).
+#'
+#' The 2 and 0.5 cancel, so we can plug in directly: `g(kf*nM,A)`, we
+#' can also try to do string substitution in `g` (it is given as a
+#' user supplied string).
+#'
+#' @param multiplicity reaction multiplicity, 1 for heterodimerization, 2 for homodimerization
+#' @param flux values of the fluxes as character vector
+#' @param suffix e.g. "_fwd"
+#' @param formula reaction formula (will become a comment)
+#' @param do.substitution replace A*A with A*(A-1), and A^2 with A*(A-1)
+#' @noRd
+#' @return character vector of c code
+propensity_in_c <- function(multiplicity,flux,suffix,formula,do.substitution=TRUE){
+	cg <- \(n) sprintf(r"(\%i)",n) # captured groups
+	propensity <- unlist(
+		mapply(
+			function(n,f,x,rf) {
+				if (f>1 && isTRUE(do.substitution)){
+					p <- rate_to_propensity(x)
+					fmt <- "\ta[_%s%s] = %s; %*s /* 0.5*%i*%s (%s) made from flux %s */"
+				} else {
+					p <- x
+					fmt <- "\ta[_%s%s] = %s; %*s /* %.0s%s (%s) %.0s*/"
+				}
+				return(
+					sprintf(
+						fmt,
+						n,suffix,
+						p,
+						padding(n,suffix,x)," ",
+						f,p,
+						rf,x
+					)
+				)
+			},
+			names(flux),
+			multiplicity,
+			flux,
+			formula
+		)
+	)
+	return(propensity)
 }
 
 #' Generates C Code to solve a model stochastically
@@ -461,53 +566,85 @@ spacing <- function(v,max.width=40){
 #' (nanomole/L), then the volume needs to be in litres. Whenever the
 #' volume is a very small number (and Avogadro's constant just is a
 #' very big number), as a product, they often become a reasonable in
-#' scale.  the default is `round(log10(LV)) = 9` (+24 for Avogadro's
-#' constant L and -15 for the volume V).
+#' scale.
 #'
-#' @param sb a stochatsic Gillespie model obtained via `makeGillespieModel`
-#' @param LV Avogadro's Constant * volume (in litres)
+#' @param sm a stochatsic Gillespie model obtained via `makeGillespieModel`
 #' @return character vector with code
 #' @noRd
-generateGillespieCode <- function(sm,LV=6.02214076e+8){
-	Definitions <- c(
-		"\t/* constants */",
-		sprintf(
+generateGillespieCode <- function(sm){
+	LV <- sm$LV
+	C_Constants <- sprintf(
 			"\t double %s = %s; %*s /* %s */",
 			names(sm$const),
 			sm$const,
-			43 - lengths(sm$const) - lengths(names(sm$const))," ",
-			sm$const %@% "unit"
-		),
+			padding(sm$const,names(sm$const))," ",
+			attr(sm$const,"unit")
+	)
+	C_Expressions <- sprintf("\tdouble %s = %s;",names(sm$expression),replace_powers(sm$expression))
+	Definitions <- c(
+		"\t/* constants */",
+		C_Constants,
 		"\t/* parameters */",
 		sprintf(
-			"\tdouble %s = c[_%s]; %*s /* originally: %s */",
+			"\tdouble %s = c[_%s]; %*s /* %s; originally: %s = %.2g %s */",
 			names(sm$par),
 			names(sm$par),
-			40 - 2*lengths(names(sm$par))," ",
-			sm$par %@% "unit"
+			padding(names(sm$par),names(sm$par))," ",
+			attr(sm$par,"unit"),
+			names(sm$k),
+			sm$k,
+			attr(sm$k,"unit")
 		),
 		"\t/*state variables */"
 	)
-	Counts <- c(
+	C_Counts <- c(
 		sprintf("\tdouble %s = x[_%s];",names(sm$initialCount),names(sm$initialCount)),
-		sprintf("\tdouble %s = %s;",names(sm$expression),replace_powers(sm$expression))
+		C_Expressions
 	)
-	conc_to_count <- moleCountConversion(sm$initialCount %@% "unit")
 	FuncMolarities <- c(
+		sprintf(
+			"\tdouble %s = c[_%s]/(%g * pow(LV,%i)); %*s /* %s */",
+			names(sm$k),
+			names(sm$par),
+			sm$pcc$factor,
+			sm$pcc$lvpower,
+			padding(names(sm$k),names(sm$par),sm$pcc$factor,sm$pcc$lvpower)," ",
+			attr(sm$k,"unit")
+		),
 		sprintf(
 			"\tdouble %s = ((double) x[_%s])/(LV * %g); %*s /* %s */",
 			names(sm$initialCount),
 			names(sm$initialCount),
-			conc_to_count$factor,
-			40 - 2*lengths(names(sm$initialCount))-nchar(conc_to_count$factor),"",
-			sm$initialCount %@% "unit" # original unit
+			sm$mcc$factor,
+			padding(names(sm$initialCount),names(sm$initialCount),sm$mcc$factor),"",
+			attr(sm$initialConcentration,"unit") # original unit
 		),
-		sprintf(
-			"\tdouble %s = %s;",
-			names(sm$expression),
-			replace_powers(sm$expression)
-		)
+		C_Expressions
 	)
+	if (is.numeric(sm$initialCount)){
+		C_initialCount <- sprintf(
+			"\tx[_%s] = %i; %*s /* originally: %.2g %s */",
+			names(sm$initialCount),
+			sm$initialCount,
+			padding(sm$initialCount,names(sm$initialCount))," ",
+			sm$initialConcentration,
+			attr(sm$initialConcentration,"unit")
+		)
+	} else if (is.character(sm$initialCount)){
+		C_initialCount <- c(
+			Definitions,
+			sprintf(
+				"\tx[_%s] = lround(%s); %*s /* originally: %s %s */",
+				names(sm$initialCount),
+				sm$initialCount,
+				padding(sm$initialCount,names(sm$initialCount))," ",
+				sm$initialConcentration,
+				attr(sm$initialConcentration,"unit")
+			)
+		)
+	} else {
+		stop("initial count is broken.")
+	}
 	C <- c(
 	"#include <stdlib.h>",
 	"#include <math.h>","",
@@ -533,8 +670,6 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 	"",
 	"int model_effects(double t, int *x, double *c, double* a, int j){",
 	sprintf("\tif (!x) return numStateVariables;"),
-	Definitions,
-	Counts,
 	sprintf("\tswitch(j){"),
 	reactionEffect(sm),
 	"\t}",
@@ -550,38 +685,18 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 	"int model_propensities(double t, int *x, double *c, double *a){",
 	"\tif (!x || !a) return numReactions;",
 	Definitions,
-	Counts,
-	unlist(
-		mapply(
-			\(x,n,f,rf) {
-				sprintf(
-					"\ta[_%s_fwd] = %i*%s; %*s /* %s */",
-					n,f,x,
-					40-lengths(x)-lengths(n)," ",
-					rf
-				)
-			},
-			sm$kinetic.law[,'fwd'],
-			rownames(sm$kinetic.law),
-			sm$reactionMultiplicityFWD,
-			reaction_formula_from_stoichiometry(sm$left,sm$right)
-		)
+	C_Counts,
+	propensity_in_c(
+		sm$reactionMultiplicityFWD,
+		sm$kinetic.law[,'fwd'],
+		"_fwd",
+		reaction_formula_from_stoichiometry(sm$left,sm$right)
 	),
-	unlist(
-		mapply(
-			\(x,n,f,rf) {
-				sprintf(
-					"\ta[_%s_bwd] = %i*%s; %*s /* %s */",
-					n,f,x,
-					40-lengths(x)-lengths(n)," ",
-					rf
-				)
-			},
-			sm$kinetic.law[,'bwd'],
-			rownames(sm$kinetic.law),
-			sm$reactionMultiplicityBWD,
-			reaction_formula_from_stoichiometry(sm$right,sm$left)
-		)
+	propensity_in_c(
+		sm$reactionMultiplicityBWD,
+		sm$kinetic.law[,'bwd'],
+		"_bwd",
+		reaction_formula_from_stoichiometry(sm$right,sm$left)
 	),
 	"\treturn 0;",
 	"}","",
@@ -590,26 +705,25 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 	"/* So, these are not directly usable, but we'll write the propensities with conversion factors */",
 	"int model_reaction_coefficients(double *c){",
 	"\tif (!c) return numParameters;",
-	sprintf("\tc[_%s] = %s; %*s /* %s */",names(sm$par),sm$par,40-lengths(names(sm$par))-lengths(sm$par),"",sm$par %@% "unit"),
+	sprintf(
+		"\tc[_%s] = %.6g; %*s /* %s */",
+		names(sm$par),
+		sm$par,
+		padding(names(sm$par),sprintf("%.6g",sm$par)),"",
+		attr(sm$par,"unit")
+	),
 	"\treturn 0;",
 	"}","",
 	"int model_initial_counts(int *x, double *c){",
 	"\tif(!x) return numStateVariables;",
-	Definitions,
-	sprintf(
-		"\tx[_%s] = lround(%s * LV); %*s /* originally in %s */",
-		names(sm$initialCount),
-		as.character(sm$initialCount),
-		40-nchar(as.character(sm$initialCount))-nchar(names(sm$initialCount))," ",
-		sm$initialCount %@% "unit"
-	),
+	C_initialCount,
 	"\treturn 0;",
 	"}","",
 	"/* This function will try to convert the model's state to concentrations */",
 	"/* We assume that the model was originally phrased as concentrations and kinetic laws. */",
 	"int model_func(double t, int *x, double *c, double *func){",
 	"\tif(!func) return numFunctions;",
-	Definitions,
+	C_Constants,
 	FuncMolarities,
 	sprintf("\tfunc[_%s] = %s;",names(sm$output),sm$output),
 	"\treturn 0;",
@@ -619,18 +733,25 @@ generateGillespieCode <- function(sm,LV=6.02214076e+8){
 	"int model_stochastic_parameters(double t, double *par){",
 	"\tif (!par) return numParameters;",
 	scaleParameter(
-		sm$parConversion$factor,
-		sm$parConversion$lvpower,
-		rownames(sm$parConversion)
+		sm$pcc$factor,
+		sm$pcc$lvpower,
+		rownames(sm$pcc)
 	),
 	"\treturn 0;",
 	"}","",
-	"/* The list of experiments we'll receive from R will cointain */",
+	"/* The list of experiments we'll receive from R will contain  */",
 	"/* initial concentrations rather than particle counts.        */",
 	"/* We need to convert them.                                   */",
 	"int model_particle_count(double t, double *molarity, int *x){",
 	"\tif(!molarity || !x) return numStateVariables;",
-	sprintf("\tx[_%s] = lround(%g * molarity[_%s] * LV);",names(sm$initialCount),conc_to_count$factor,names(sm$initialCount)),
+	sprintf(
+		"\tx[_%s] = lround(%g * molarity[_%s] * LV); %*s /* from: %s */",
+		names(sm$initialCount),
+		sm$mcc$factor,
+		names(sm$initialConcentration),
+		padding(names(sm$initialCount),sm$mcc$factor,names(sm$initialConcentration))," ",
+		attr(sm$initialConcentration,"unit")
+	),
 	"\treturn 0;",
 	"}"
 	)

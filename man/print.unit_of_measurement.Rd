@@ -12,7 +12,7 @@
 \item{...}{required by the generic print function.}
 }
 \value{
-called for the side-effect; no value.
+x, invisibly
 }
 \description{
 The unit object is a tagged data frame, with these columns:

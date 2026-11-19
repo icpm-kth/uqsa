@@ -168,6 +168,8 @@ int advance_in_time(double *t, gsl_vector_int *x, gsl_vector *c, gsl_vector *a, 
 	r = gsl_rng_uniform(RNG);
 	j = pick_reaction(a,r*sum_a);
 	model_effects(*t,x->data,c->data,a->data,j);
+	// 4. update propensities
+	model_propensities(*t, x->data, c->data, a->data);
 	*t += tau;
 	return 0; /* success */
 }

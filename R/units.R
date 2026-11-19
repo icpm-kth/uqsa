@@ -34,6 +34,9 @@ units_from_table <- function(df,default="1"){
 #' well as what the exponent of LV (Avogadro's constant * Volume)
 #' applies in this case. This is an internal function.
 #'
+#' It resolves all SI prefixes and returns something in moles and
+#' litres (with the origianal powers of mol and litre).
+#'
 #' @noRd
 #' @param unit character vector, will be parsed for SI prefixes and to
 #'     determine the mole component
@@ -45,18 +48,52 @@ moleCountConversion <- function(unit) {
 	u <- lapply(unit,unit.from.string)
 	f <- sapply(u,\(x) with(x,10^sum(scale*exponent)))
 	l <- sapply(u,\(x) with(x,sum(exponent*(kind=='mole'))))
-	new_unit <- sapply(
+	new_unit <- sapply( # after conversion
 		u,
 		function(x) {
 			x$scale<-0
-			l <- na.omit(pmatch(c("dimensionless","mole"),x$kind))
-			if (length(l) > 0 && all(is.finite(l))) x <- x[-l,]
-			return(unit_as_character(x))
+			## delete all moles from the transformed unit (will be removed by LV)
+			m <- na.omit(pmatch(c("mole"),x$kind))
+			if (any(m)) x <- x[-m,]
+			## delete all litres from the transformed unit (will be removed by LV)
+			v <- na.omit(pmatch(c("litre"),x$kind))
+			if (any(v)) x <- x[-v,]
+			## delete extra dimensionless factors like "dimensionless litre^-1"
+			d <- na.omit(pmatch(c("dimensionless"),x$kind))
+			if (NROW(x)>sum(d) && all(is.finite(d)) && any(d)) x <- x[-d,]
+			if (NROW(x)==0) return("dimensionless")       # all units were removed by conversion
+			else return(unit_as_character(x)) # some units remained
 		}
 	)
-	return(data.frame(lvpower=l, factor=f, effectively=new_unit, row.names=names(unit)))
+	return(data.frame(lvpower=l, factor=f, effectively=new_unit, originally=unit, row.names=names(unit)))
 }
 
+#' Converts units from concentration based to molecule counts
+#'
+#' This function converts the units of a value by using all available
+#' SI prefixes found, and converting all molarities to molecule counts
+#' (LV contains the modelled volume).
+#'
+#' LV is Avogadro's constant L multiplied with the modelled system
+#' volume V, the volume is usually microscopic, while Avogadro's
+#' constant is large. The product should be a more moderate number,
+#' being the product of the two.
+#'
+#' @param x numeric vector to convert
+#' @param LV Avogadro's number and system volume in litres (product)
+#' @return numeric vector in new units (without moles and litres)
+#' @export
+#' @examples
+#' x <- 12
+#' attr(x,"unit") <- "nM"
+#' y <- convert_units(x)
+#' print(y)
+convert_units <- function(x,LV=6.02214076e+8){
+	mcc <- moleCountConversion(attr(x,"unit"))
+	v <- mcc$factor * LV^mcc$lvpower * x
+	attr(v,"unit") <- mcc$effectively # new unit, after conversion
+	return(v)
+}
 
 #' Finds unit category
 #'
@@ -203,7 +240,7 @@ simple.unit <- function(u=NULL){
 	u.s <- 0
 	u.k <- "dimensionless"
 	## an empty unit means that the value is dimensionless (the unit is '1')
-	if (!nzchar(u)) return(data.frame(scale=u.s,multiplier=u.m,exponent=u.x,kind=u.k))
+	if (nchar(u)==0) return(data.frame(scale=u.s,multiplier=u.m,exponent=u.x,kind=u.k))
 	## um, actually, kg is an SI unit "kind", but doesn't take other prefixes
 	prefix.pattern <- "(G|giga|M|mega|k|kilo|h|hecto|c|centi|m|milli|u|\u00B5|\u03BC|micro|n|nano|p|pico|f|femto)?"
 	unit.name.pattern <- "(l|L|liter|litre|g|gram|mole?|h|hour|s|second|m|meter|metre|K|kelvin|cd|candela|A|ampere|M|molarity|N|[Nn]ewton)"
@@ -260,6 +297,10 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 #' denominator, so: l/mol s is the same as (l)/(mol s) Remark: not all
 #' units are understood.
 #'
+#' SBML units have a multiplier field to accomodate units that
+#' represent things like inches "2.54 cm", where 2.54 is a
+#' multiplier. This function does not process multipliers (yet).
+#'
 #' @param unit.str a string that contains a human readable unit
 #' @return data.frame with an interpretation of the unit (multiplier
 #'     is unused here, but may be used later to deal with units such
@@ -270,24 +311,25 @@ trimmed_split <- function(a,b,fixed=TRUE,...){
 #' print(unit.from.string("micromolarity"))
 #' print(unit.from.string("µM"))
 unit.from.string <- function(unit.str){
-	if (!is.character(unit.str)){
-		stop("unit.str has to be a charcter vector of length 1.")
-	}
-	stopifnot(length(unit.str)==1)
-	unit <- NULL
-	a <- gsub("[()]","",unit.str)
-	a <- gsub("molarity","mol l^-1",a);
-	if (grepl("/",unit.str)){
-		a <- trimmed_split(a,"/")
-	}
-	n <- length(a)
-	stopifnot(n==1 || n==2)
-	for (j in 1:n){
-		b <- trimmed_split(a[j],"[* ]",fixed=FALSE)
-		for (u in b){
-			su <- simple.unit(u)
-			if (j>1) su$exponent <- -su$exponent
-			unit <- rbind(unit,su)
+	unit.str <- head(as.character(unit.str),1)
+	if (is.na(unit.str) || nchar(unit.str)==0) {
+		unit <- simple.unit("1")
+	} else {
+		unit <- NULL
+		a <- gsub("[()]","",unit.str)
+		a <- gsub("molarity","mol l^-1",a);
+		if (grepl("/",unit.str)){
+			a <- trimmed_split(a,"/")
+		}
+		n <- length(a)
+		stopifnot(n==1 || n==2)
+		for (j in 1:n){
+			b <- trimmed_split(a[j],"[* ]",fixed=FALSE)
+			for (u in b){
+				su <- simple.unit(u)
+				if (j>1) su$exponent <- -su$exponent
+				unit <- rbind(unit,su)
+			}
 		}
 	}
 	comment(unit) <- unit.str
@@ -302,14 +344,14 @@ unit.from.string <- function(unit.str){
 #' unit data.frame, with very explicit parentheses and exponents.
 #'
 #' @keywords internal
-#' @export
+#' @noRd
 #' @param unit a data.frame created by unit.from.string()
 #' @return a string representation of that data.frame purely for printing
 #' @examples
 #' u <- unit.from.string("s^-1")
-#' str <- unit_as_character(u)
+#' str <- unit_verbose(u)
 #' print(str)
-unit_as_character <- function(unit){
+unit_verbose <- function(unit){
 	if (any(unit$multiplier!=1.0)){
 		return(
 			paste(

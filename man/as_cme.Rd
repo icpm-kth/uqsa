@@ -4,10 +4,12 @@
 \alias{as_cme}
 \title{Interprets the provided biological reaction model as stochastic}
 \usage{
-as_cme(m)
+as_cme(m, LV = 602214076)
 }
 \arguments{
 \item{m}{list of data.frames, obtained via \code{model_from_tsv()}}
+
+\item{LV}{product of Avogadro's number (Josef Loschmidt) and system volume}
 }
 \value{
 a list containing the interpreted model.

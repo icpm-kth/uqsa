@@ -18,7 +18,7 @@ named outputs}
 between experiments and simulations}
 
 \item{...}{forwarded to the more specific plot function
-\link[errors:plot.errors]{errors::plot.errors}}
+\link[errors:plot.errors]{plot.errors}}
 }
 \value{
 plot object

@@ -1,3 +1,119 @@
+#' Plots a Diagram of the Gillespie algorithm
+#'
+#' This produces an animation, recreating the Gillespie algorithm
+#' visually, without trying to be numerically correct.
+#'
+#' We use only the default values for every model constituent.
+#'
+#' The C backend is not used here.
+#'
+#' @param x a stochastic model
+#' @param y final time of animation
+#' @param ... ignored
+#' @return x, invisibly
+#' @export
+#' @examples
+#' m <- uqsa_example("AKAR4") |> model_from_tsv()
+#' G <- as_cme(m)
+#' G$initialCount["C"] <- 100
+#' G$initialCount["AKAR4_C"] <- 100
+#' if (interactive()) plot(G,100)
+plot.cme <- function(x,y=100,...){
+	on.exit(
+		{
+			while (dev.cur() > 1 && dev.hold(0) > 0) dev.flush()
+		},
+		add = TRUE
+	)
+	t_final <- y
+	n <- length(x$initialCount)
+	r <- 2*NROW(x$kinetic.law)
+	reactants <- c(x$left,x$right)
+	products <- c(x$right,x$left)
+	## x-Positioning (y-Positioning depends on number of compounds and reactions)
+	xPOS <- c(-1,0,1)
+	yPOS <- seq((n-1)/2,by=-1,length.out=n)
+	rPOS <- seq((r-1)/2,by=-1,length.out=r)
+	names(yPOS) <- names(x$initialCount)
+	## thermometer template
+	tht <- c(0.2,0.5) # width and height
+	A <- str2lang(
+		paste(
+			c(
+				"{",
+				if (!is.null(x$expression)) paste0(names(x$expression),"=",x$expression),
+				paste0("c(",paste(x$kinetic.law,collapse=", "),")"),
+				"}"
+			),
+			collapse="\n"
+		)
+	)
+	state <- x$initialCount
+	ENV <- list2env(as.list(c(x$par,state)))
+	a_hat <- max(eval(A, ENV), 1e-12)
+	t_ <- 0
+	while (t_ < t_final){
+		a <- eval(A,ENV)
+		a0 <- sum(a)
+		if (a0<=0) break
+		tau <- rexp(1,rate=a0)
+		t_ <- t_ + tau
+		j <- sample.int(length(a),1,prob=a/a0)
+		L <- reactants[[j]]
+		R <- products[[j]]
+		rP <- rPOS[j]
+		## redraw
+		dev.hold()
+		frame()
+		plot.window(xlim=c(-2,2),ylim=c(-max(n,r)/2,max(n,r)/2))
+		title(main=x$name)
+		mtext(sprintf("time: %g",t_),side=1)
+		## 1. Reactants
+		cBars <- cbind(rep(tht[1],n),rep(tht[2],n),state/max(state,1))
+		symbols(rep(xPOS[1],n),yPOS,thermometers=cBars,fg='red4',inches=FALSE,add=TRUE)
+		text(
+			rep(xPOS[1]-tht[1]/2-0.01,n),
+			yPOS,
+			labels=names(x$initialCount),
+			pos=2
+		)
+		text(xPOS[1],max(yPOS)+tht[2],labels="REACTANTS",pos=3)
+		text(xPOS[3],max(yPOS)+tht[2],labels="PRODUCTS",pos=3)
+		## 2. Reactions
+		rBars <- cbind(rep(tht[1],r),rep(tht[2],r),a/max(a_hat,a0))
+		symbols(rep(xPOS[2],r),rPOS,thermometers=rBars,fg='yellow4',inches=FALSE,add=TRUE)
+		text(
+			rep(xPOS[2],r),
+			rPOS+tht[2]/2,
+			labels=paste0("r",seq(r)),
+			pos=3
+		)
+		## 3. Products
+		if (length(L)>0) state[names(L)] <- state[names(L)]-L
+		if (length(R)>0) state[names(R)] <- state[names(R)]+R
+		list2env(as.list(state), envir = ENV)
+		cBars <- cbind(rep(tht[1],n),rep(tht[2],n),state/max(state,1))
+		symbols(rep(xPOS[3],n),yPOS,thermometers=cBars,fg='red4',inches=FALSE,add=TRUE)
+		text(
+			rep(xPOS[3]+tht[1]/2+0.01,n),
+			yPOS,
+			labels=names(x$initialCount),
+			pos=4
+		)
+		COL <- "blue4"
+		if (length(L)>0){
+			arrows(rep(xPOS[1],length(L)),yPOS[names(L)],rep(xPOS[2],length(L)),rep(rP,length(L)),col=COL,lwd=2)
+		}
+		if (length(R)>0){
+			arrows(rep(xPOS[2],length(R)),rep(rP,length(R)),rep(xPOS[3],length(R)),yPOS[names(R)],col=COL,lwd=2)
+		}
+		dev.flush()
+		Sys.sleep(max(tau/10,0.1))
+	}
+	return(invisible(x))
+}
+
+
 #' Represents a model in a visual way
 #'
 #' This draws an illustration that represents the interactions within

@@ -4,15 +4,12 @@
 \alias{generate_code}
 \title{Constructs Code}
 \usage{
-generate_code(Model, language = "C", LV = 602214076)
+generate_code(Model, language = "C")
 }
 \arguments{
 \item{Model}{either CME or ODE model}
 
 \item{language}{either C or R}
-
-\item{LV}{Avogadro's constant multiplied by the system's volume in
-litres, only used for CME models}
 }
 \value{
 a character vector with the code

@@ -371,6 +371,19 @@ stoichiometric_matrix <- function(m,compound.names=rownames(m$Compound)) {
 	}
 }
 
+scale_from_table <- function(x){
+	if (is.data.frame(x)){
+		j <- pmatch("scale",tolower(colnames(x)))
+		if (is.finite(j))
+			return(column(x,colnames(x)[j]))
+		else
+			return(rep("linear",NROW(x)))
+	} else if (!is.null(attr(x,"scale"))){
+		return(attr(x,"scale"))
+	}
+	return(NA)
+}
+
 #' Interprets a character vector as names of logarithms
 #'
 #' The values in `x` are possibly given in a logarithmic space. The
@@ -379,29 +392,46 @@ stoichiometric_matrix <- function(m,compound.names=rownames(m$Compound)) {
 #' transformations. Similarly, providing no scale at all causes no
 #' transformations.
 #'
-#' The words in `str_scale` name a logarithm, e.g. "log10". Currently understood scales:
+#' The words in `scale` name a logarithm, e.g. "log10". Currently understood scales:
 #' - log10
 #' - log2, ld
 #' - ln, log
 #'
+#' If `scale` is a number, it is understood as the base of the logarithm, e.g.: 10 means decadig logarithm.
+#' When it is NULL, and x is a data.frame, then this function will look for a column named "scale".
+#'
+#' A scale of 1 or below, NA, or any other illegal value will be
+#' interpreted as the input already be in linear scale and cause no
+#' effect.
+#'
 #' @param x values
-#' @param str_scale character vector
+#' @param scale character vector
 #' @return a copy of `x`,  transformed into linear space
 #' @export
 #' @examples
 #' x <- c(1,2,3,1,1,1)
 #' attr(x,"scale") <- c("log10","log2","log","ln","ld","log5")
 #' print(linear_scale(x))
-linear_scale <- function(x,str_scale=attr(x,"scale")){
-	if (is.character(str_scale)){
-		# general case: logXX
-		l <- grepl("^log[0-9]+$",str_scale)
-		base(x,l) <- as.numeric(sub("^log([0-9]+)$","\\1",str_scale[l]))
-		# some special cases:
-		base(x,grepl("^log$|^ln$",str_scale)) <- exp(1)
-		base(x,grepl("^ld$",str_scale)) <- 2
+linear_scale <- function(x,scale=attr(x,"scale")){
+	if (is.data.frame(x)){
+		v <- values(x)
+		if (is.null(scale)) scale <- scale_from_table(x)
+	} else if (is.numeric(x)) {
+		v <- x
+	} else {
+		v <- as.numeric(x)
 	}
-	return(x)
+	if (is.character(scale)){
+		# general case: logXX
+		l <- grepl("^log[0-9]+$",scale)
+		base(v,l) <- as.numeric(sub("^log([0-9]+)$","\\1",scale[l]))
+		# some special cases:
+		base(v,grepl("^log$|^ln$",scale)) <- exp(1)
+		base(v,grepl("^ld$",scale)) <- 2
+	} else if (is.numeric(scale) && all(scale>1.0)){
+		base(v) <- scale
+	}
+	return(v)
 }
 
 `%&%` <- function(a,b) {

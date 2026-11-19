@@ -11,5 +11,8 @@
 #' @importFrom stats acf approx cor cov dnorm dunif median na.omit quantile rnorm runif sd spline var IQR
 #' @importFrom utils flush.console head read.delim tail
 #' @importFrom cli cli_progress_bar cli_progress_update
+#' @importFrom grDevices dev.cur dev.flush dev.hold
+#' @importFrom graphics frame mtext plot.window symbols title xspline
+#' @importFrom stats rexp setNames
 ## usethis namespace: end
 NULL

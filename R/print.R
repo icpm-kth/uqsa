@@ -165,6 +165,38 @@ print.sbmodel <- function(x,verbose=getOption("uqsa.verbose",TRUE),...){
 	return(invisible(x))
 }
 
+unit_as_character <- function(x){
+	p <- character(NROW(x))
+	#cli::cli_alert_info("x is a {class(x)} ({NROW(x)},{NCOL(x)}), made from '{comment(x)}'")
+	for (i in seq(NROW(x))){
+		if (x$exponent[i]==0) {
+			p[i]="1"
+		} else {
+			p[i] <- paste0(
+				switch(x$multiplier[i],"0"="",paste0(x$multiplier[i],"*")),
+				switch(
+					as.character(x$scale[i]),
+					"9"="Giga",
+					"6"="Mega",
+					"3"="kilo",
+					"0"="",
+					"-1"="deci",
+					"-2"="centi",
+					"-3"="milli",
+					"-6"="micro",
+					"-9"="nano",
+					"-12"="pico",
+					"-15"="femto",
+					sprintf("10^(%i)",x$scale[i])
+				),
+				x$kind[i],
+				switch(as.character(x$exponent[i]),"1"="",sprintf("^(%i)",x$exponent[i]))
+			)
+		}
+	}
+	return(paste(p,collapse=" "))
+}
+
 #' Prints an interpretation string of a unit
 #'
 #' The unit object is a tagged data frame, with these columns:
@@ -187,11 +219,41 @@ print.sbmodel <- function(x,verbose=getOption("uqsa.verbose",TRUE),...){
 #' @param x an object of type 'unit_of_measurement'
 #' @param ... required by the generic print function.
 #' @export
-#' @return called for the side-effect; no value.
+#' @return x, invisibly
 #' @examples
 #' lapply(lapply(c("km/h","s^-2","1/s"),unit.from.string),print)
 print.unit_of_measurement <- function(x,...){
-	unit <- x
+	cli::cli_alert_info(unit_as_character(x))
+	invisible(x)
+}
+
+#' Summarizes the interpretation of a unit
+#'
+#' The unit object is a tagged data frame, with these columns:
+#' - multiplier
+#' - kind
+#' - scale
+#' - exponent
+#'
+#' The interpretation is the same as in SBML units. This function also
+#' prints an inferred unit id: a string that has no special characters
+#' in it and can be used in places where such characters are not
+#' allowed (e.g. SBML unit `id` attribute).
+#'
+#' The original string that a unit was derived from is attached to the
+#' unit object as a [comment].
+#'
+#' Units are produced by the function [unit.from.string].
+#'
+#' @keywords internal
+#' @param object an object of type 'unit_of_measurement'
+#' @param ... required by the generic print function.
+#' @export
+#' @return object, invisibly.
+#' @examples
+#' lapply(lapply(c("km/h","s^-2","1/s"),unit.from.string),summary)
+summary.unit_of_measurement <- function(object,...){
+	unit <- object
 	cat(
 		sprintf("\u00ab%s\u00bb has been interpreted as",comment(unit)),
 		"the product of: ",
@@ -206,8 +268,9 @@ print.unit_of_measurement <- function(x,...){
 		),
 		sep='\n'
 	)
-	invisible(x)
+	invisible(object)
 }
+
 
 #' Prints the simulation experiments
 #'

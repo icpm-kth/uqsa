@@ -24,7 +24,7 @@ will be translated into two SI units (mol and litre)
 3. prefixes and units can be words or single letters
 4. everything after a slash is the denominator
 5. u is an accepted replacement for \eqn{\\mu}{μ}
-          (unicode Greek mu or unicode micro symbol)
+(unicode Greek mu or unicode micro symbol)
 6. no parentheses (ignored): "(m/s)*kg" will be misinterpreted
 }
 \details{
@@ -33,6 +33,10 @@ kind, multiplier, scale and exponent since there is only one
 slash,parentheses do nothing everything after a slash is the
 denominator, so: l/mol s is the same as (l)/(mol s) Remark: not all
 units are understood.
+
+SBML units have a multiplier field to accomodate units that
+represent things like inches "2.54 cm", where 2.54 is a
+multiplier. This function does not process multipliers (yet).
 }
 \examples{
 print(unit.from.string("m/s"))
