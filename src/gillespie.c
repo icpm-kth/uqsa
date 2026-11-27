@@ -183,7 +183,8 @@ int cat_parameters(gsl_vector *c, double *p, size_t np, Rdata input){
 	memcpy(c->data,p,sizeof(double)*np);
 	if (!input || input == R_NilValue || length(input)==0) return 0;
 	Rdata input_r;
-	double *dest = c->data+(c->size - length(input));
+	double *dest=NULL;
+	if (c->size>length(input)) dest = c->data+(c->size - length(input));
 	if (TYPEOF(input) == REALSXP){
 		memcpy(dest,REAL(input), sizeof(double) * length(input));
 	} else { /* perhaps integer? try to recover */
@@ -294,5 +295,9 @@ Rdata gillespie(Rdata model_so, Rdata experiments, Rdata parameters, Rdata time_
 	}
 	UNPROTECT(1);     // solution
 	gsl_rng_free(RNG);
+	gsl_vector_int_free(x);
+	gsl_vector_free(c);
+	gsl_vector_free(krc);
+	gsl_vector_free(a);
 	return solution;
 }

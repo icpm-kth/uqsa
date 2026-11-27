@@ -61,6 +61,7 @@ static uint64_t FNV1a(const char* str) {
 
 
 static char* pcpy(char *dest, const char *src, size_t n){
+	if (!n) return dest;
 	return ((char*) memcpy(dest,src,n)+n);
 }
 
@@ -161,23 +162,23 @@ struct event* event_from_R(Rdata E){
 	Rdata time = from_list(E,"time");
 	if (!time || time == R_NilValue) return NULL;
 	if (TYPEOF(time) != REALSXP || length(time)==0) {
-		REprintf("[%s] The event time variable is of the wrong type (must be double vector), or it is empty (%i).\n",__func__,length(time));
+		REprintf("[%s] The event time variable is of the wrong type (must be double vector), or it is empty (%td).\n",__func__,length(time));
 		return NULL;
 	}
 	Rdata label = from_list(E,"label");
 	if (!label || label == R_NilValue) return NULL;
 	if (TYPEOF(label) != INTSXP || length(label)==0){
-		REprintf("[%s] The transformation label is of the wrong type (must be integer vector), or it is empty (%i).\n",__func__,length(time));
+		REprintf("[%s] The transformation label is of the wrong type (must be integer vector), or it is empty (%td).\n",__func__,length(time));
 		return NULL;
 	}
 	Rdata dose = from_list(E,"dose");
 	if (!dose || dose == R_NilValue) return NULL;
 	if (TYPEOF(dose) != REALSXP || length(dose)==0){
-		REprintf("[%s] The transformation dose is of the wrong type (must be double vector), or it is empty (%i).\n",__func__,length(time));
+		REprintf("[%s] The transformation dose is of the wrong type (must be double vector), or it is empty (%td).\n",__func__,length(time));
 		return NULL;
 	}
 	if (length(dose) != length(label)){
-		REprintf("[%s] event time vector and event label vector must be the same length for this type of event. (%d != %d)\n",__func__,length(dose),length(label));
+		REprintf("[%s] event time vector and event label vector must be the same length for this type of event. (%td != %td)\n",__func__,length(dose),length(label));
 		return(NULL);
 	}
 	struct event *event=malloc(sizeof(struct event));
@@ -772,15 +773,19 @@ r_gsl_odeiv2_outer_fi(
 	gsl_set_error_handler_off();
 	if (TYPEOF(parameters) != REALSXP) REprintf("[%s] parameters have the wrong type.\n",__func__);
 	const gsl_odeiv2_step_type* step_types[] = {gsl_odeiv2_step_msbdf, gsl_odeiv2_step_msadams, gsl_odeiv2_step_bsimp, gsl_odeiv2_step_rk4imp, gsl_odeiv2_step_rk2imp, gsl_odeiv2_step_rk1imp, gsl_odeiv2_step_rk8pd, gsl_odeiv2_step_rkck, gsl_odeiv2_step_rkf45, gsl_odeiv2_step_rk4, gsl_odeiv2_step_rk2, NULL};
-	const char* model_so=CHAR(asChar(getAttrib(modelName,install("comment"))));
-	const char* model_name=CHAR(STRING_ELT(modelName,0));
+	Rdata comment=getAttrib(modelName,install("comment"));
+	if (TYPEOF(comment)!=STRSXP) return R_NilValue;
+	const char* model_so   = CHAR(STRING_ELT(comment, 0));
+	const char* model_name = CHAR(STRING_ELT(modelName, 0));
 	int i,j,k,status;
 	double abs_tol=asReal(absolute_tolerance);
 	double rel_tol=asReal(relative_tolerance);
 	double h=asReal(initial_step_size);
 	R_xlen_t N=GET_LENGTH(experiments);
 	size_t M=ncols(parameters);
-	const gsl_odeiv2_step_type * T=step_types[asInteger(method)];
+	int m = asInteger(method);
+	if (m < 0 || m > 10) error("Invalid method.");
+	const gsl_odeiv2_step_type * T=step_types[m];
 	int OUTPUTS = asInteger(optional_outputs);                        /* 0,1,2,3 */
 	enum possible_outputs {output_fisher_information, output_grad_log_likelihood, output_log_likelihood, output_functions, numOptOutputs};
 	Rdata res_list = PROTECT(NEW_LIST(N));                            /* use VECTOR_ELT and SET_VECTOR_ELT */
@@ -819,7 +824,7 @@ r_gsl_odeiv2_outer_fi(
 		t = PROTECT(AS_NUMERIC(from_list(VECTOR_ELT(experiments,i),"time times outputTimes t")));
 		t0 = asReal(from_list(VECTOR_ELT(experiments,i),"intial_time initialTime t0 T0"));
 		ev = event_from_R(from_list(VECTOR_ELT(experiments,i),"event events scheduledEvents scheduledEvent scheduled_event"));
-		initial_value = gsl_matrix_row(Y0,0);
+		initial_value = gsl_matrix_row(Y0,i);
 		sys.params = gsl_matrix_ptr(P,i,0);
 		nt = length(t);
 		time=gsl_vector_view_array(REAL(t),nt);
@@ -835,22 +840,22 @@ r_gsl_odeiv2_outer_fi(
 		switch(OUTPUTS){ /* with fall-through on purpose */
 		case output_fisher_information:
 			FI=PROTECT(alloc3DArray(REALSXP,np,np,M));
-			// fall-through
+			/* fall through */
 		case output_grad_log_likelihood:
 			gll=PROTECT(allocMatrix(REALSXP,np,M));        /* gradient of log-likelihood */
-			// fall-through
+			/* fall through */
 		case output_log_likelihood:
 			ll=PROTECT(NEW_NUMERIC(M));                    /* log-likelihood */
 			sy_k=malloc(sizeof(double)*ny*np*nt);          /* sensitivity of state: d state/dp */
 			sf_k=malloc(sizeof(double)*nf*np*nt);          /* sensitivity of  func: d  func/dp */
-			// fall-through
+			/* fall through */
 		case output_functions:
 			func=PROTECT(alloc3DArray(REALSXP,nf,nt,M));   /* output functions */
 			for (j=0;j<nf*nt*M;j++) REAL(func)[j]=NA_REAL;     /* initialize to NA */
 		}
 		for (k=0;k<M;k++){
 			y=gsl_matrix_view_array(REAL(state)+(nt*ny*k),nt,ny);
-			memcpy((double*) sys.params, REAL(parameters)+abs(nrows(parameters))*k, abs(nrows(parameters))*sizeof(double));
+			if (abs(nrows(parameters))) memcpy(sys.params, REAL(parameters)+abs(nrows(parameters))*k, abs(nrows(parameters))*sizeof(double));
 			update_initial_values(&initial_value.vector,sys,iv);
 			ct0=clock();
 			status=simulate_timeseries(
@@ -881,17 +886,21 @@ r_gsl_odeiv2_outer_fi(
 				switch(OUTPUTS){
 				case output_fisher_information:
 					FisherInformation(REAL(FI)+(k*np*np),VECTOR_ELT(experiments,i),sf_k,Sf_sd);
+					/* fall through */
 				case output_grad_log_likelihood:
 					gradLogLikelihood(REAL(gll)+(k*np),VECTOR_ELT(experiments,i),REAL(func)+(k*nf*nt),sf_k,np,v);
+					/* fall through */
 				case output_log_likelihood:
 					REAL(ll)[k]=logLikelihood(VECTOR_ELT(experiments,i),REAL(func)+(k*nf*nt));
 				}
 			} else {
 				switch(OUTPUTS){
 				case output_fisher_information:
-					memset(REAL(FI)+(k*np*np),0,sizeof(double)*np*np);
+					if (np>0) memset(REAL(FI)+(k*np*np),0,sizeof(double)*np*np);
+					/* fall through */
 				case output_grad_log_likelihood:
-					memset(REAL(gll)+(k*np),0,sizeof(double)*np);
+					if (np>0) memset(REAL(gll)+(k*np),0,sizeof(double)*np);
+					/* fall through */
 				case output_log_likelihood:
 					REAL(ll)[k] = -INFINITY;
 				}
@@ -932,10 +941,13 @@ r_gsl_odeiv2_outer_fi(
 		switch (OUTPUTS){
 		case output_fisher_information:
 			UNPROTECT(1);
+			/* fall through */
 		case output_grad_log_likelihood:
 			UNPROTECT(1);
+			/* fall through */
 		case output_log_likelihood:
 			UNPROTECT(1);
+			/* fall through */
 		}
 		/* if (status!=GSL_SUCCESS){ */
 		/* 	REprintf("[%s] parameter set lead to solver errors (%s) in experiment %i/%zd\n",__func__,gsl_strerror(status),i,N); */
@@ -987,7 +999,9 @@ r_gsl_odeiv2_outer_CRNN(
 	double h=asReal(initial_step_size);
 	R_xlen_t N=GET_LENGTH(experiments);
 	size_t M=1; //dim(lparameters)[3];
-	const gsl_odeiv2_step_type * T=step_types[asInteger(method)]; //gsl_odeiv2_step_msbdf;
+	int m = asInteger(method);
+	if (m<0 || m>10) error("Invalid method.");
+	const gsl_odeiv2_step_type * T=step_types[m]; //gsl_odeiv2_step_msbdf;
 	struct par p = {REAL(lparameters), REAL(stoichiometry), REAL(modifiers)}; /* l, nu, m */
 	Rdata res_list = PROTECT(NEW_LIST(N)); /* use VECTOR_ELT and SET_VECTOR_ELT */
 	SET_NAMES(res_list, GET_NAMES(experiments));
@@ -1007,7 +1021,7 @@ r_gsl_odeiv2_outer_CRNN(
 		return R_NilValue;
 	}
 	free(sys.params); /* auto-allocated by load system */
-	sys.params = (void *) &p;
+	sys.params = &p;
 	size_t nf = abs(ODE_func(0,NULL,NULL,NULL));
 	size_t ny = sys.dimension;
 	size_t np = abs(nrows(lparameters)); /* also number of reactions */
@@ -1019,7 +1033,7 @@ r_gsl_odeiv2_outer_CRNN(
 			VECTOR_ELT(experiments,i),
 			"initial_value initialState initialValue initialValues iv"
 		);
-		t = from_list(VECTOR_ELT(experiments,i),"time times t outputTimes");
+		t = PROTECT(AS_NUMERIC(from_list(VECTOR_ELT(experiments,i),"time times t outputTimes")));
 		t0 = asReal(
 			from_list(
 				VECTOR_ELT(experiments,i),
@@ -1081,7 +1095,7 @@ r_gsl_odeiv2_outer_CRNN(
 		set_names(yf_list,yf_names);
 		SET_VECTOR_ELT(res_list,i,yf_list);
 		if (ev) event_free(&ev);
-		UNPROTECT(6);
+		UNPROTECT(7);
 	} // experiments: 0 to N-1
 	UNPROTECT(1); /* res_list */
 	gsl_odeiv2_driver_free(driver);

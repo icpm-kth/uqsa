@@ -94,7 +94,7 @@ Rdata concise(Rdata charVector){
 		} else {
 			a=read_number(line);
 		}
-		memcpy(d,&a,sizeof(a));
+		d[0] = a.v; d[1] = a.u; //memcpy(d,&a,sizeof(a));
 		d+=2;
 	}
 	UNPROTECT(1);
