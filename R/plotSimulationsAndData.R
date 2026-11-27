@@ -9,6 +9,7 @@
 #'
 #' @param x a stochastic model
 #' @param y final time of animation
+#' @param arrows use the arrows function to draw reaction arrows
 #' @param ... ignored
 #' @return x, invisibly
 #' @export
@@ -18,7 +19,7 @@
 #' G$initialCount["C"] <- 100
 #' G$initialCount["AKAR4_C"] <- 100
 #' if (interactive()) plot(G,100)
-plot.cme <- function(x,y=100,...){
+plot.cme <- function(x,y=100,arrows=FALSE,...){
 	on.exit(
 		{
 			while (dev.cur() > 1 && dev.hold(0) > 0) dev.flush()
@@ -69,7 +70,7 @@ plot.cme <- function(x,y=100,...){
 		title(main=x$name)
 		mtext(sprintf("time: %g",t_),side=1)
 		## 1. Reactants
-		cBars <- cbind(rep(tht[1],n),rep(tht[2],n),state/max(state,1))
+		cBars <- cbind(rep(tht[1],n),rep(tht[2],n),state/sum(state,1))
 		symbols(rep(xPOS[1],n),yPOS,thermometers=cBars,fg='red4',inches=FALSE,add=TRUE)
 		text(
 			rep(xPOS[1]-tht[1]/2-0.01,n),
@@ -92,7 +93,7 @@ plot.cme <- function(x,y=100,...){
 		if (length(L)>0) state[names(L)] <- state[names(L)]-L
 		if (length(R)>0) state[names(R)] <- state[names(R)]+R
 		list2env(as.list(state), envir = ENV)
-		cBars <- cbind(rep(tht[1],n),rep(tht[2],n),state/max(state,1))
+		cBars <- cbind(rep(tht[1],n),rep(tht[2],n),state/sum(state,1))
 		symbols(rep(xPOS[3],n),yPOS,thermometers=cBars,fg='red4',inches=FALSE,add=TRUE)
 		text(
 			rep(xPOS[3]+tht[1]/2+0.01,n),
@@ -101,14 +102,45 @@ plot.cme <- function(x,y=100,...){
 			pos=4
 		)
 		COL <- "blue4"
-		if (length(L)>0){
-			arrows(rep(xPOS[1],length(L)),yPOS[names(L)],rep(xPOS[2],length(L)),rep(rP,length(L)),col=COL,lwd=2)
-		}
-		if (length(R)>0){
-			arrows(rep(xPOS[2],length(R)),rep(rP,length(R)),rep(xPOS[3],length(R)),yPOS[names(R)],col=COL,lwd=2)
+		if (isTRUE(arrows)){
+			if (length(L)>0){
+				arrows(rep(xPOS[1],length(L)),yPOS[names(L)],rep(xPOS[2],length(L)),rep(rP,length(L)),col=COL,lwd=2)
+			}
+			if (length(R)>0){
+				arrows(rep(xPOS[2],length(R)),rep(rP,length(R)),rep(xPOS[3],length(R)),yPOS[names(R)],col=COL,lwd=2)
+			}
+		} else { # bezier curves
+			dx <- tht[1]*0.6
+			DX <- 4*dx
+			for (i in seq_along(L)){
+				xspline(
+					x=c(xPOS[1]+dx,xPOS[1]+DX,xPOS[2]-DX,xPOS[2]-dx),
+					y=c(yPOS[names(L)[i]],yPOS[names(L)[i]],rP,rP),
+					shape=1,
+					border=COL,
+					lwd=2
+				)
+			}
+			for (i in seq_along(R)){
+				xspline(
+					x=c(xPOS[2]+dx,xPOS[2]+DX,xPOS[3]-DX,xPOS[3]-dx),
+					y=c(rP,rP,yPOS[names(R)[i]],yPOS[names(R)[i]]),
+					shape=1,
+					border=COL,
+					lwd=2
+				)
+				symbols(
+					xPOS[3]-dx,
+					yPOS[names(R)[i]],
+					stars=matrix(c(2,1,2,0.5,2,1)*4e-2,1,6),
+					bg=COL,
+					inches=FALSE,
+					add=TRUE
+				)
+			}
 		}
 		dev.flush()
-		Sys.sleep(max(tau/10,0.1))
+		Sys.sleep(max(tau/10,0.05))
 	}
 	return(invisible(x))
 }

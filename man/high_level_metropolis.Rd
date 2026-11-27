@@ -63,6 +63,6 @@ likelihood and prior), as well as Fisher Information functions.
       ylab="log-likelihood"
     )
   } else {
-    smallSample <- rwm(rwm \%@\% "init",N/4,1e-6)
+    smallSample <- rwm(rwm \%@\% "init",floor(N/5),1e-6)
   }
 }

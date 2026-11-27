@@ -4,12 +4,14 @@
 \alias{plot.cme}
 \title{Plots a Diagram of the Gillespie algorithm}
 \usage{
-\method{plot}{cme}(x, y = 100, ...)
+\method{plot}{cme}(x, y = 100, arrows = FALSE, ...)
 }
 \arguments{
 \item{x}{a stochastic model}
 
 \item{y}{final time of animation}
+
+\item{arrows}{use the arrows function to draw reaction arrows}
 
 \item{...}{ignored}
 }

@@ -1759,7 +1759,7 @@ smmala_init <- function(x,m,o=as_ode(m,cla=TRUE),ex=experiments(m,o), comm=0, be
 #'       ylab="log-likelihood"
 #'     )
 #'   } else {
-#'     smallSample <- rwm(rwm %@% "init",N/4,1e-6)
+#'     smallSample <- rwm(rwm %@% "init",floor(N/5),1e-6)
 #'   }
 high_level_metropolis <- function(m,o=as_ode(m,cla=FALSE),ex=experiments(m,o), x=values(m$Parameter), beta=1.0, comm=0, verbose=getOption("uqsa.verbose", interactive())){
 	if (is.null(so_path(o)) || !file.exists(so_path(o))){
